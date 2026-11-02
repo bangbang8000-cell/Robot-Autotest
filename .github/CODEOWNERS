@@ -1,0 +1,15 @@
+# 关键路径必审人。改动命中下列路径时，对应 owner 的评审不可跳过。
+# 语法：<路径模式> <@用户 或 @组织/团队>
+
+# 默认归属
+*                       @bangbang8000-cell
+
+# 衍生代码边界（自 RoboScope 移植，涉及上游补丁与许可义务）
+/packages/editor/       @bangbang8000-cell
+
+# 对外交付文档
+/docs/                  @bangbang8000-cell
+
+# CI 与协作配置
+/.github/               @bangbang8000-cell
+/CONTRIBUTING.md        @bangbang8000-cell

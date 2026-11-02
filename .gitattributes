@@ -1,0 +1,38 @@
+# 跨平台（Windows / Linux）协作，统一换行符，避免无意义 diff
+* text=auto eol=lf
+
+# 源码
+*.java    text eol=lf
+*.kt      text eol=lf
+*.ts      text eol=lf
+*.vue     text eol=lf
+*.js      text eol=lf
+*.py      text eol=lf
+*.sql     text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.md      text eol=lf
+*.json    text eol=lf
+*.sh      text eol=lf
+
+# Windows 脚本保持 CRLF
+*.bat     text eol=crlf
+*.cmd     text eol=crlf
+*.ps1     text eol=crlf
+
+# 二进制，禁止换行转换（否则 .docx 会损坏）
+*.docx    binary
+*.xlsx    binary
+*.pptx    binary
+*.pdf     binary
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.zip     binary
+*.tgz     binary
+*.jar     binary
+*.whl     binary
+
+# 报告产物不做 diff
+*.xml     text eol=lf

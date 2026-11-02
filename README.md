@@ -1,6 +1,45 @@
 # Robot-Autotest
 
-自动化测试平台（RF + robotdashboard + RoboScope 内核）主仓库。
+自动化测试平台主仓库。技术内核为 Robot Framework + robotdashboard + RoboScope，
+平台本体采用 Spring Boot + MariaDB + Vue 3。
 
-- 托管：Synology DS918+ `10.202.54.201`，裸仓库路径 `/volume1/git/repos/robot-autotest.git`
-- 访问：`ssh://silence@10.202.54.201:22/volume1/git/repos/robot-autotest.git`
+> 当前阶段：立项评估。代码尚未开写，仓库内主体是评估与架构文档，见 `docs/`。
+
+## 仓库与远程
+
+本仓库双远程，同一份历史：
+
+| 远程名 | 地址 | 用途 |
+|---|---|---|
+| `github` | `git@github.com:bangbang8000-cell/Robot-Autotest.git` | 主协作仓：PR 评审、Actions、议题 |
+| `origin` | `ssh://silence@10.202.54.201:22/volume1/git/repos/robot-autotest.git` | 内网镜像（群晖 DS918+，仅 SSH 协议） |
+
+首次克隆：
+
+```bash
+git clone git@github.com:bangbang8000-cell/Robot-Autotest.git
+cd Robot-Autotest
+git remote add synology ssh://silence@10.202.54.201:22/volume1/git/repos/robot-autotest.git
+```
+
+内网镜像推送必须显式指定密钥（群晖只认部署密钥，不认账号口令）：
+
+```bash
+GIT_SSH_COMMAND="ssh -i ~/.ssh/syno_robot_autotest -o BatchMode=yes" git push synology main
+```
+
+## 文档索引
+
+| 文件 | 内容 |
+|---|---|
+| `docs/03-完整版调研与架构评估报告_v4_20261102.md` | **主报告**：29 章，含架构原则、逻辑架构、工程结构、部署、安全、运维、质量 |
+| `docs/02-立项可行性评估_v3_20261102.md` | 8001 信息架构解剖 + Agent 文档体系 |
+| `docs/01-立项可行性评估_v2_20261102.md` | 可视化编辑器源码级集成评估 |
+| `docs/00-立项可行性评估_20261102.md` | 初版可行性评估 |
+
+历史版本仅作留档，结论以 v4 为准。
+
+## 协作
+
+多人协作规则见 [CONTRIBUTING.md](CONTRIBUTING.md)。`main` 分支受保护，
+所有改动走 Pull Request，禁止直接推送。
