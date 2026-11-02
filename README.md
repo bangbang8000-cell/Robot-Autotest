@@ -11,7 +11,7 @@
 
 | 远程名 | 地址 | 用途 |
 |---|---|---|
-| `github` | `git@github.com:bangbang8000-cell/Robot-Autotest.git` | 主协作仓：PR 评审、Actions、议题 |
+| `github` | `git@github.com:huanchen811509-silence/Robot-Autotest.git` | 主协作仓：PR 评审、Actions、议题 |
 | `origin` | `ssh://silence@10.202.54.201:22/volume1/git/repos/robot-autotest.git` | 内网镜像（群晖 DS918+，仅 SSH 协议） |
 
 > GitHub 仓为 **public**。这是为了启用免费的服务端分支保护（私有库需 GitHub Pro）。
@@ -21,7 +21,7 @@
 首次克隆：
 
 ```bash
-git clone git@github.com:bangbang8000-cell/Robot-Autotest.git
+git clone git@github.com:huanchen811509-silence/Robot-Autotest.git
 cd Robot-Autotest
 git remote add synology ssh://silence@10.202.54.201:22/volume1/git/repos/robot-autotest.git
 ```
@@ -36,12 +36,10 @@ GIT_SSH_COMMAND="ssh -i ~/.ssh/syno_robot_autotest -o BatchMode=yes" git push sy
 
 | 文件 | 内容 |
 |---|---|
-| `docs/03-完整版调研与架构评估报告_v4_20261102.md` | **主报告**：29 章，含架构原则、逻辑架构、工程结构、部署、安全、运维、质量 |
-| `docs/02-立项可行性评估_v3_20261102.md` | 8001 信息架构解剖 + Agent 文档体系 |
-| `docs/01-立项可行性评估_v2_20261102.md` | 可视化编辑器源码级集成评估 |
-| `docs/00-立项可行性评估_20261102.md` | 初版可行性评估 |
+| `docs/自动化测试平台调研与架构评估报告_v4.1_20261102.md` | **唯一基线报告**：29 章，含架构原则、逻辑架构、工程结构、部署、安全、运维、质量、容量测算与证据附录 |
 
-历史版本仅作留档，结论以 v4 为准。
+**只维护这一份。** v1/v2/v3 及其 docx 已从工作区移除，需要追溯时从 git 历史取
+（`git show b6a4491:docs/`）。修订理由与差异见报告 §0.4。
 
 ## 协作
 
