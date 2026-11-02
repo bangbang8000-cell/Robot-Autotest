@@ -66,7 +66,30 @@ feat(editor): 节点面板支持按关键词标签过滤
 3. **原始报告必须带 metadata**：六项必填 `CASE_ID` / `RUN_ID` / `QA_PROJECT` / `DUT` / `LINK` / `SW_BUILD`。缺项在 CI 拦截，不靠自觉。
 4. **凭据不入库**：密码、token、私钥一律不进仓库。评测环境的凭据通过环境变量或密钥管理注入。
 
-## 六、提交前自检
+## 六、分支保护的现状（重要）
+
+**GitHub 免费版的私有仓库不支持服务端分支保护。** 实测结论：
+
+| 能力 | 结果 |
+|---|---|
+| Rulesets | 403 `Upgrade to GitHub Pro or make this repository public` |
+| 经典 branch protection | 同上 403 |
+| 当前 `main` 保护状态 | `protected: false` |
+
+因此服务端**不会**替我们拦截直推。替代方案是仓库内置的 `pre-push` 钩子，**每个协作者克隆后必须执行一次**：
+
+```bash
+git config core.hooksPath .githooks
+```
+
+装好后直接 `git push github main` 会被拒绝并提示改走分支 + PR。
+应急放行（仅限初始化与紧急回滚）：`ALLOW_MAIN_PUSH=1 git push github main`。
+
+> 这条约束是「客户端自觉」而非「服务端强制」，绕过成本很低。
+> 若团队规模超过 3 人或代码涉及对外合规，应升级 GitHub Pro 或改用组织仓，
+> 届时把钩子降级为辅助手段。
+
+## 七、提交前自检
 
 ```bash
 git status                    # 无意外文件（.docbuild/、target/、node_modules/ 已被忽略）
@@ -76,7 +99,7 @@ git log --oneline -3          # 提交信息格式正确
 
 新增或修改测试用例时，另需确认 `output.xml` 的 metadata 齐全。
 
-## 七、环境
+## 八、环境
 
 - 开发机：Windows，路径 `E:\workspace\自动化测试\Robot-Autotest`
 - 运行环境：Ubuntu 26.04，`192.168.110.149`，Python 3.14 虚拟环境在 `~/rf-stack/.venv`

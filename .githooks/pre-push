@@ -1,0 +1,47 @@
+#!/bin/sh
+# 阻断直接推送 main。GitHub 免费版私有库不支持服务端分支保护，
+# 这是客户端替代方案：本仓库所有协作者执行一次安装命令后生效。
+#
+# 安装：git config core.hooksPath .githooks
+# 应急放行：ALLOW_MAIN_PUSH=1 git push ...
+
+protected="refs/heads/main"
+
+check_ref() {
+    ref="$1"
+    if [ "$ref" = "$protected" ]; then
+        if [ "${ALLOW_MAIN_PUSH:-0}" = "1" ]; then
+            echo "[pre-push] ALLOW_MAIN_PUSH=1，放行一次直推 main" >&2
+            return 0
+        fi
+        cat >&2 <<'EOF'
+
+============================================================
+ 禁止直接推送到 main。
+
+ 请改用分支 + PR：
+   git switch -c feat/<模块>-<简述>
+   git push github HEAD
+   然后在 GitHub 上开 Pull Request。
+
+ 确需直推（仅限初始化、紧急回滚）：
+   ALLOW_MAIN_PUSH=1 git push github main
+
+ 规则见 CONTRIBUTING.md
+============================================================
+
+EOF
+        return 1
+    fi
+    return 0
+}
+
+status=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+    # 删除远端分支的推送同样拦截（main 不可删）
+    if [ "$remote_ref" = "$protected" ]; then
+        check_ref "$remote_ref" || status=1
+    fi
+done
+
+exit $status
