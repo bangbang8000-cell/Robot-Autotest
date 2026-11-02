@@ -66,28 +66,31 @@ feat(editor): 节点面板支持按关键词标签过滤
 3. **原始报告必须带 metadata**：六项必填 `CASE_ID` / `RUN_ID` / `QA_PROJECT` / `DUT` / `LINK` / `SW_BUILD`。缺项在 CI 拦截，不靠自觉。
 4. **凭据不入库**：密码、token、私钥一律不进仓库。评测环境的凭据通过环境变量或密钥管理注入。
 
-## 六、分支保护的现状（重要）
+## 六、分支保护
 
-**GitHub 免费版的私有仓库不支持服务端分支保护。** 实测结论：
+`main` 由 GitHub ruleset **`protect-main`** 服务端强制保护（仓库已转公开，免费版私有库不支持该能力）：
 
-| 能力 | 结果 |
+| 规则 | 效果 |
 |---|---|
-| Rulesets | 403 `Upgrade to GitHub Pro or make this repository public` |
-| 经典 branch protection | 同上 403 |
-| 当前 `main` 保护状态 | `protected: false` |
+| `pull_request` | 必须走 PR，且需 1 人评审通过；新提交会使旧评审失效；评审讨论须全部已解决 |
+| `required_linear_history` | 禁止合并提交，历史保持线性（配合 Squash merge） |
+| `non_fast_forward` | 禁止强推 |
+| `deletion` | 禁止删除 `main` |
+| 绕过 | 仅仓库管理员（`RepositoryRole` 5），用于初始化与紧急回滚 |
 
-因此服务端**不会**替我们拦截直推。替代方案是仓库内置的 `pre-push` 钩子，**每个协作者克隆后必须执行一次**：
+协作者（`write` 权限）**无法**绕过，直推会被服务端拒绝。
+
+本地另有 `.githooks/pre-push` 作为第二道防线，在本地直接拦截，省一次远程往返。安装：
 
 ```bash
 git config core.hooksPath .githooks
 ```
 
-装好后直接 `git push github main` 会被拒绝并提示改走分支 + PR。
-应急放行（仅限初始化与紧急回滚）：`ALLOW_MAIN_PUSH=1 git push github main`。
+镜像远程（群晖 `origin`）不受钩子拦截，同步命令：
 
-> 这条约束是「客户端自觉」而非「服务端强制」，绕过成本很低。
-> 若团队规模超过 3 人或代码涉及对外合规，应升级 GitHub Pro 或改用组织仓，
-> 届时把钩子降级为辅助手段。
+```bash
+GIT_SSH_COMMAND="ssh -i ~/.ssh/syno_robot_autotest -o BatchMode=yes" git push origin main
+```
 
 ## 七、提交前自检
 

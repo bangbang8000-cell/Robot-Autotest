@@ -14,6 +14,10 @@
 | `github` | `git@github.com:bangbang8000-cell/Robot-Autotest.git` | 主协作仓：PR 评审、Actions、议题 |
 | `origin` | `ssh://silence@10.202.54.201:22/volume1/git/repos/robot-autotest.git` | 内网镜像（群晖 DS918+，仅 SSH 协议） |
 
+> GitHub 仓为 **public**。这是为了启用免费的服务端分支保护（私有库需 GitHub Pro）。
+> 代价是文档中的内网地址（`10.202.54.x`、`192.168.110.x`）与登录账号名对外可见。
+> 若后续回归私有，需同步把 `main` 保护降级为本地 `pre-push` 钩子，见 CONTRIBUTING §6。
+
 首次克隆：
 
 ```bash
