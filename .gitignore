@@ -1,0 +1,9 @@
+.docbuild/
+target/
+node_modules/
+artifacts/
+logs/
+*.log
+.venv/
+__pycache__/
+.DS_Store
