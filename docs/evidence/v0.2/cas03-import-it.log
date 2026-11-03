@@ -1,0 +1,34 @@
+# CAS-03 台账导入 —— 端到端集成测试实测（2026-11-04）
+# 环境：WSL Ubuntu-24.04 / JDK 21.0.12 / Maven 3.9.16 / MySQL 8.0.46 / DB=robot_it
+# 命令：DB_NAME=robot_it mvn -B -Pit test -Djacoco.skip=true
+
+## 被测对象
+backend/src/test/java/com/qa/autotest/application/caseasset/CaseImportIT.java
+数据：fixtures/case-ledger/ledger-sample-226.xlsx（脱敏样本，226 数据行 / 14 列）
+
+## 实测输出
+[INFO] Running com.qa.autotest.application.caseasset.CaseImportIT
+[CAS-03] preview totalRows=226 validRows=226 errors=0 | commit imported=226 skipped=0 | 重导 validRows=0 errors=226 | 首条=TN-IMP-001 末条=TN-IMP-226
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 34.09 s -- in com.qa.autotest.application.caseasset.CaseImportIT
+[INFO] Running com.qa.autotest.db.SchemaIT
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 31.33 s -- in com.qa.autotest.db.SchemaIT
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+## 判据对照
+| CAS-03 判据 | 实测 | 结论 |
+|---|---|---|
+| preview 读该结构、226 行 | totalRows=226 validRows=226 errors=0 | 达成 |
+| 0 错误 | errors=0（未映射的 8 列不导致任何行被跳过） | 达成 |
+| 重导幂等 | 重导 validRows=0 errors=226，首条错误为「编号已存在于项目」 | 达成 |
+| 编号完整 | 首条 TN-IMP-001、末条 TN-IMP-226 | 达成 |
+
+## 本测试不覆盖（别读成覆盖了）
+1. 不起 Spring 上下文 → @Transactional 不生效，**「整批回滚」未被验证**；
+2. 权限拒绝（403）路径未验证；
+3. 并发导入未验证；
+4. 不做任何 SSH / 设备操作（符合 ADR-0013 开发期禁跑令）。
+
+## 数据卫生
+每次运行用带时间戳的唯一项目号并自行清理。实测运行后：
+  残留项目 0 / 残留用户 0 / 全库 test_case 0 → 可重复执行

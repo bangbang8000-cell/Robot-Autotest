@@ -12,7 +12,7 @@
 
 **当前进度：0 / 61（0% 已完成 · 53 待验 · 8 待现场 · 0 未开始）**
 
-**一句话读法**：功能代码已铺到 v1.0（后端 `Tests run: 450, Failures: 0`、`-Pit` 集成 `5/5`，前端 `build`/`lint` exit 0，dev/it 库均已迁到 **V7_1 / 44 表**），但**验收尚未启动**，所以读数是 0%。**这不是烂尾，是验收产能没建起来**——详见 `docs/plan/开发计划评估与后续推进-20261103.md`。
+**一句话读法**：功能代码已铺到 v1.0（后端 `Tests run: 450, Failures: 0`、`-Pit` 集成 **6/6**（`SchemaIT` 5 + `CaseImportIT` 1），前端 `build`/`lint` exit 0，dev/it 库均已迁到 **V7_1 / 44 表**），但**验收尚未启动**，所以读数是 0%。**这不是烂尾，是验收产能没建起来**——详见 `docs/plan/开发计划评估与后续推进-20261103.md`。
 
 | 分组 | 包数 | 现状 | 下一步 |
 |---|---:|---|---|
@@ -49,7 +49,7 @@
 | 15 | AST-04 | 技术域标签体系与筛选器 | B2 | 待验 | `application/asset/LabelService.java`、`api/asset/LabelController.java`；设备列表按 `domain` 筛选、用例页按技术域筛选 | 标签与用例共用标签集需集成测试确认 |
 | 16 | CAS-01 | 双模用例模型（台账 + 脚本）建模与评审 | B2 | 待验 | `docs/adr/0005-dual-mode-case-model.md`、`docs/release/v0.2-ledger/CAS-01-评审纪要.md`；`V2_3__case_fields.sql` | 待人工签字冻结（G2 后改模型需 ADR） |
 | 17 | CAS-02 | 用例库 / 用例集 CRUD | B2 | 待验 | `application/caseasset/{TestCaseService,TestSetService}.java`、`api/caseasset/{CaseController,TestSetController}.java`；前端 `views/CasesView.vue`（筛选/新建/提审/审核/删除） | 用例集前端页面未做（仅后端 API） |
-| 18 | CAS-03 | 台账导入（字段映射 + 校验 + 回滚） | B2 | 待验 | `application/caseasset/CaseImportService.java`（POI 5.2.5，中英文表头别名、整批事务、行级错误）、`CaseController` preview/commit；前端导入面板。**安全分级已做**：`tools/classify_cases.py` 对 226 条样本产出 L0 10 / L1 89 / L2 32 / LX 95，证据 `docs/evidence/v0.2/cas03-classify.log` + `cas03-ledger-classification.csv`（见 ADR-0013） | **只做导入、不做执行**：`preview` 按 226 条跑通、重导幂等；条数口径待定（461 vs 226），**不得据 226 置 `已完成`**；`CaseImportService` 无执行路径（已核 `robot/exec/ssh/pabot` 0 命中） **2026-11-04 解除阻断（大师定「补别名，接受命令列丢失」）**：`HEADER_ALIASES` 补入「测试编号 / 测试用例 / 一级分类 / 测试类型 / 预置条件」，静态对账从 **1/14 → 6/14 且 `[PASS]`**（证据 `docs/evidence/v0.1/env04-header-check.log`）。三点必须记住：① **测试步骤 / A端命令 / B端命令 / 交换机配置 4 列无处存放，导入时静默丢弃**（`ImportRow` 无对应字段，属定案取舍）；② 台账**无优先级列** → 226 条全部落 `P2`；③ 「执行顺序」（"第二优先：其余70项"）**故意不映射**到 priority，否则 `Priority.from` 抛「非法优先级」把全表判错。**仍待做**：真跑 `preview` 对 226 条出 0 错误（静态对账 PASS ≠ preview 通过），且须连 `robot_it` |
+| 18 | CAS-03 | 台账导入（字段映射 + 校验 + 回滚） | B2 | 待验 | `application/caseasset/CaseImportService.java`（POI 5.2.5，中英文表头别名、整批事务、行级错误）、`CaseController` preview/commit；前端导入面板。**安全分级已做**：`tools/classify_cases.py` 对 226 条样本产出 L0 10 / L1 89 / L2 32 / LX 95，证据 `docs/evidence/v0.2/cas03-classify.log` + `cas03-ledger-classification.csv`（见 ADR-0013） | **只做导入、不做执行**：`preview` 按 226 条跑通、重导幂等；条数口径待定（461 vs 226），**不得据 226 置 `已完成`**；`CaseImportService` 无执行路径（已核 `robot/exec/ssh/pabot` 0 命中） **2026-11-04 解除阻断（大师定「补别名，接受命令列丢失」）**：`HEADER_ALIASES` 补入「测试编号 / 测试用例 / 一级分类 / 测试类型 / 预置条件」，静态对账从 **1/14 → 6/14 且 `[PASS]`**（证据 `docs/evidence/v0.1/env04-header-check.log`）。三点必须记住：① **测试步骤 / A端命令 / B端命令 / 交换机配置 4 列无处存放，导入时静默丢弃**（`ImportRow` 无对应字段，属定案取舍）；② 台账**无优先级列** → 226 条全部落 `P2`；③ 「执行顺序」（"第二优先：其余70项"）**故意不映射**到 priority，否则 `Priority.from` 抛「非法优先级」把全表判错。**2026-11-04 真跑通过（判据达成）**：新增 `CaseImportIT`（`@Tag("it")`，连真库 `robot_it`）端到端验证 —— `preview totalRows=226 validRows=226 errors=0` → `commit imported=226` → 重导 `validRows=0 errors=226`（逐行「编号已存在于项目」），首末条 `TN-IMP-001` / `TN-IMP-226` 完整。证据 `docs/evidence/v0.2/cas03-import-it.log`。**未覆盖项（勿读成已验）**：不起 Spring 上下文故 `@Transactional` 不生效 → **「整批回滚」未验证**；403 拒绝路径、并发导入未验证 |
 | 19 | CAS-04 | 文件工作区 6 端点（树/上传/下载/移动/重命名/删除） | B2 | 待验 | `application/caseasset/FileWorkspaceService.java`、`api/caseasset/FileController.java`（tree/content/versions/save/upload/move/delete）、`FilePathTest` 5 条 | 6 端点集成测试待跑；编辑器 UI 属 v0.3 |
 | 20 | CAS-05 | 能力索引（关键词能力清单） | B2 | 待验 | `application/caseasset/CapabilityService.java`、`api/caseasset/CaseController#capabilities`；前端用例页能力索引展示 | 按能力反查非空需真实数据验证 |
 | 21 | EDT-01 | 依赖闭包抽取（39 文件 / 15,946 行）+ monorepo 化 | B3 | 待验 | `packages/editor/`（40 个上游文件 + 9 个适配缝）、`scripts/closure.mjs`、`UPSTREAM.md`、`NOTICE.md`、`LICENSE-roboscope`；`npm run build` exit 0（82 modules / 403.6 kB / gzip 81 kB）；HTTP 扫描 `docs/evidence/v0.3/http-scan.log` 0 命中 | 需评审认定「api 模块重写为适配缝而非物理删除」这一偏差（理由见 `packages/editor/UPSTREAM.md` §4）；19 个上游测试已于 EDT-06 接入（见 #26） |
@@ -106,6 +106,7 @@
 
 | 日期 | WBS | 一句话结果 | 证据 |
 |---|---|---|---|
+| 2026-11-04 | CAS-03 | 台账导入**真跑通过**（此前只有静态对账顶替）：226 行 preview 零错误 → commit 入库 226 → 重导 226 行全报「编号已存在」；`CaseImportIT` 入 `-Pit` 套件 | `docs/evidence/v0.2/cas03-import-it.log`、`backend/src/test/java/com/qa/autotest/application/caseasset/CaseImportIT.java` |
 | 2026-11-04 | ENV-01~05 | 五项全转 `待验`，环境类阻断清零：口令重置、`robot_it`→V7_1/44 表、表头对账 1/14→**6/14 PASS**；顺带修掉三个「验证在说谎」（`-Pit` 空跑、`ArtifactVerifier` 假绿、`check_import_header` 假红）；全量 **450 单测全绿** + `SchemaIT` **5/5** | `docs/evidence/v0.1/{env02-build-test-20261104.log, env04-header-check.log, env-README.md}`、`docs/plan/决策纪要-20261104.md` §4 |
 | 2026-11-04 | 计划 | 规划升 **v2.1**：新增 ENV-01~05、状态扩五态、新增 §16.1 墙上时钟门；本表同步为 61 包 | `docs/自动化测试平台中长期工作规划.md` §6.1/§6.4/§16.1、`docs/plan/决策纪要-20261104.md` |
 | 2026-11-03 | 评估 | 开发计划评估：56/56 待验、七版齐发导致门禁失效、环境欠账 9 包；复跑后端 `Tests run: 444` 全绿 | `docs/plan/开发计划评估与后续推进-20261103.md` |

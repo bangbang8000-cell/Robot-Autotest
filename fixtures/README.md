@@ -81,12 +81,17 @@ python tools/anonymize_ledger.py \
 
 工具本身也修过一个假红缺陷：原正则 `alias\(...\)` 跨不过 `//` 注释，导致夹了注释的 `alias("caseCode", …, "测试编号")` 整条被丢弃，别名统计错报成「30 个别名 / 8 个字段」（正确是 36/9），据此得出的「caseCode 认不出来」结论是假的。现改为**先剥注释再解析**，并加了「调用点数量 == 解析条数」的自检，漏抓直接非零退出。
 
-`ENV-04` 因此可结；`CAS-03`（preview 读 N 行 0 错误）仍需真跑后端确认，不因静态对账 PASS 就算过。
+`ENV-04` 因此可结。`CAS-03`（preview 读 N 行 0 错误）**已于 2026-11-04 真跑通过**，不是靠静态对账推的：
+`CaseImportIT`（`@Tag("it")`，连真库 `robot_it`）实测 `preview totalRows=226 validRows=226 errors=0`，
+`commit imported=226`，重导 `validRows=0 errors=226`。证据 `docs/evidence/v0.2/cas03-import-it.log`。
+**静态对账 PASS 只能说明表头认得出，不能替代这一步** —— 之前正是因为只做了静态对账，
+「461 条导入」才在 `待验` 上挂了三天。
 
 复现：
 
 ```bash
 python tools/check_import_header.py fixtures/case-ledger/ledger-sample-226.xlsx
+DB_NAME=robot_it mvn -B -Pit test -Dtest=CaseImportIT   # 在 backend/ 下执行
 ```
 
 
