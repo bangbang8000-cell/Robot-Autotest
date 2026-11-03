@@ -18,7 +18,7 @@
 git switch -c feat/editor-flow-node-palette
 ```
 
-**禁止**：直接在 `main` 上提交；`push --force`；`reset --hard` 后强推。分支保护已拦截，绕过行为视为违规。
+**正常流程禁止**直接在 `main` 上提交；`push --force` 与 `reset --hard` 后强推一律禁止。当前账号已列入服务端 bypass 名单，直推 `main` 不会被拒绝，但会跳过评审与 CODEOWNERS，属自担风险操作，仍建议走分支 + PR。
 
 ## 二、提交信息
 
@@ -76,11 +76,11 @@ feat(editor): 节点面板支持按关键词标签过滤
 | `required_linear_history` | 禁止合并提交，历史保持线性（配合 Squash merge） |
 | `non_fast_forward` | 禁止强推 |
 | `deletion` | 禁止删除 `main` |
-| 绕过 | 仅仓库管理员（`RepositoryRole` 5），用于初始化与紧急回滚 |
+| 绕过 | 仓库管理员（`RepositoryRole` 5）与 bypass 名单内的账号（当前为 `bangbang8000-cell`），用于初始化、紧急回滚与批量同步 |
 
-协作者（`write` 权限）**无法**绕过，直推会被服务端拒绝。
+不在 bypass 名单内的协作者（`write` 权限）**无法**绕过，直推会被服务端拒绝；名单内账号可直推，服务端会记录一条 bypass 审计。
 
-本地另有 `.githooks/pre-push` 作为第二道防线，在本地直接拦截，省一次远程往返。安装：
+本地另有 `.githooks/pre-push`：直推 `main` 时仅打印提醒、不再阻断（设置 `ALLOW_MAIN_PUSH=1` 可静默提示）。安装：
 
 ```bash
 git config core.hooksPath .githooks
