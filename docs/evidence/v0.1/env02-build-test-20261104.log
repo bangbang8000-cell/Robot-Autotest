@@ -1,0 +1,33 @@
+# 后端构建与测试 —— 2026-11-04 复跑记录（WSL Ubuntu-24.04 / JDK 21.0.12 / Maven 3.9.16）
+
+## 一、全量单元测试（默认 profile，排除 @Tag("it")）
+命令：mvn -B test -Djacoco.skip=true
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.315 s -- in com.qa.autotest.application.report.ReportIngestServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.347 s -- in com.qa.autotest.application.report.ReportLogReaderTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.408 s -- in com.qa.autotest.application.report.ReportLogServiceTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.220 s -- in com.qa.autotest.application.report.RetentionPlannerTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.367 s -- in com.qa.autotest.application.report.TrendServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.39 s -- in com.qa.autotest.arch.LayerRulesMetaTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.qa.autotest.common.security.SecretCipherTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.055 s -- in com.qa.autotest.common.tenant.TenantGuardMetaTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.qa.autotest.domain.execution.RunStateMachineTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.qa.autotest.domain.iam.PermissionMatrixTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.qa.autotest.domain.report.MetadataGateTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.604 s -- in com.qa.autotest.infrastructure.ProcessRobotSyntaxValidatorTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.113 s -- in com.qa.autotest.migration.MigrationFileTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 23.65 s -- in com.qa.autotest.arch.LayerRulesTest
+[INFO] Tests run: 450, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+## 二、集成测试（-Pit，需 MySQL robot_it）
+命令：DB_NAME=robot_it mvn -B -Pit test
+[INFO] Running com.qa.autotest.db.SchemaIT
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 35.36 s -- in com.qa.autotest.db.SchemaIT
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+## 三、平台可移植性修复前后对比（2026-11-04）
+修复前：Tests run: 450, Failures: 1, Errors: 1 —— 两条都因硬编码 Windows 命令而在 Linux 上红
+  - PdfRendererTest.timeoutIsKilledWithChineseMessage: /tmp/.../slow-browser.cmd  Permission denied (13)
+  - ProcessTreeKillerTest.终止运行中的进程树: Cannot run program "cmd" (No such file or directory)
+修复后：见第一节

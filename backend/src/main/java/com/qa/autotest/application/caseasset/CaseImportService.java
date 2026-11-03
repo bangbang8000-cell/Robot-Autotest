@@ -30,6 +30,30 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>两步式：{@link #preview} 只解析与校验、不落库，把错误整表返回；{@link #commit}
  * 在一个事务里写库，任何一行冲突就整批回滚。
+ *
+ * <h2>已知信息丢失（2026-11-04 确认，大师已接受）</h2>
+ *
+ * <p>真实实验室台账（如「详细测试流程」页）除编号/标题/分类/预置条件/预期结果外，还有
+ * <b>测试步骤、A 端命令、B 端命令、交换机配置</b>等列。当前 {@link ImportRow} 没有承载
+ * 这些内容的字段，导入时会被<b>静默忽略</b>（不报错、也不入库）。
+ *
+ * <p>这是刻意的取舍：先让「台账能导进来」（补表头别名），而不在导入器里硬塞一个
+ * 挂错语义的字段。要真正支持带命令的台账，需要扩展用例模型 —— 那属于产品设计变更，
+ * 须走评估 → PRD，不在补别名的范围内。记录见 {@code fixtures/README.md}。
+ *
+ * <h2>表头解析规则</h2>
+ *
+ * <p>① 表头行 = 前 10 行里第一处含任一已知别名的行；② 别名匹配忽略大小写与首尾空白；
+ * ③ <b>多列撞同一字段时先出现的列赢</b>（{@code columns.put} 前用 {@code containsKey} 判重），
+ * 后面的列静默丢弃 —— 例如真实台账同时有「一级分类」和「测试类型」，两者都映射到
+ * {@code category}，最终取「一级分类」（"基本功能测试"），而「测试类型」（"功能"）被丢弃。
+ * 这个丢弃是有意的：语义上「一级分类」粒度更合适。工具
+ * {@code tools/check_import_header.py} 会对撞字段打 WARN，别当成没事。
+ *
+ * <p>④ 没有优先级列时全部落 {@link Priority#P2}（{@code Priority.from("")} 的默认），
+ * 不报错。真实台账确实没有优先级列，所以 226 条导入后都是 P2 —— 需要真实分级得另补一列，
+ * 但「执行顺序」那种自然语言（"第二优先：其余70项"）不能当地优先级喂进来，{@code Priority.from}
+ * 会抛「非法优先级」把整行判错。
  */
 @Service
 public class CaseImportService {
@@ -57,11 +81,16 @@ public class CaseImportService {
     private static final Map<String, String> HEADER_ALIASES = new LinkedHashMap<>();
 
     static {
-        alias("caseCode", "用例编号", "编号", "case_code", "casecode", "external_id");
-        alias("title", "标题", "用例名称", "名称", "title");
-        alias("category", "分类", "类型", "case_kind", "category");
+        alias("caseCode", "用例编号", "编号", "case_code", "casecode", "external_id",
+                // 真实实验室台账用的是「测试编号」（TN-IMP-xxx 那一套）。原别名表只收
+                // 「用例编号/编号」，导致这份表连必需列都认不出来、preview 直接抛
+                // 「缺少必需列」。加别名是让它「能读」，不代表那几列命令也能存下来，
+                // 见类注释「已知信息丢失」。
+                "测试编号");
+        alias("title", "标题", "用例名称", "名称", "title", "测试用例");
+        alias("category", "分类", "类型", "case_kind", "category", "一级分类", "测试类型");
         alias("priority", "优先级", "priority");
-        alias("precondition", "前置条件", "前置", "precondition");
+        alias("precondition", "前置条件", "前置", "precondition", "预置条件");
         alias("expected", "预期结果", "预期", "expected");
         alias("domainTag", "技术域", "域", "domain", "domain_tag");
         alias("capability", "能力", "能力项", "capability");

@@ -85,8 +85,16 @@ public class PabotOrchestrator {
 
         Path outputXml = outputDir.resolve("output.xml");
         ArtifactVerifier.VerifyResult verified = verifier.verify(outputXml);
-        String reason = timeoutHit ? "timeout" : verified.reason();
-        boolean success = !timeoutHit && exitCode == 0 && verified.success();
+        // 分片完整性：被杀分片的 output.xml 是 0 字节，合并后的 totalTests 只会变小、
+        // 不会变错，所以必须单独查一遍分片，否则「用例凭空消失」会被判成全绿。
+        ArtifactVerifier.ShardIntegrity shards = verifier.checkShards(outputDir);
+        String reason = timeoutHit ? "timeout"
+                : (!shards.ok() ? shards.reason() : verified.reason());
+        boolean success = !timeoutHit && exitCode == 0 && verified.success() && shards.ok();
+        if (!shards.ok()) {
+            emit(runId, runLog, logSink, "[system] 分片不完整: reason=" + shards.reason()
+                    + ", 空分片=" + shards.emptyShards());
+        }
         if (success) {
             emit(runId, runLog, logSink, "[system] 产物校验通过，totalTests=" + verified.totalTests());
         } else {

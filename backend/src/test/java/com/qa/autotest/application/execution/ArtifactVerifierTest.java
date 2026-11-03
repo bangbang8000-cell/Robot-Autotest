@@ -3,6 +3,7 @@ package com.qa.autotest.application.execution;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -70,5 +71,77 @@ class ArtifactVerifierTest {
         assertEquals("ok", result.reason());
         assertEquals(2, result.totalTests());
         assertTrue(result.sizeBytes() > 1024);
+    }
+
+    // ---- 以下四条针对 2026-11-04 实测发现的两个漏洞 ----
+    // 背景：pabot 4 分片里 kill -9 掉一个，output.xml 只剩 6 条（应 8 条），
+    // 旧逻辑只判 totalTests>0 → 6>0 → 返回 ok，用例凭空消失却被判全绿。
+
+    @Test
+    void 少于期望条数返回_partial_results() throws Exception {
+        // ok.xml 内有 2 条用例，这里声称应跑 3 条
+        ArtifactVerifier.VerifyResult result = verifier.verify(fixture("ok.xml"), 3);
+        assertFalse(result.success());
+        assertEquals("partial_results", result.reason());
+        assertEquals(2, result.totalTests());
+        assertEquals(3, result.expectedTests());
+    }
+
+    @Test
+    void 多于期望条数返回_unexpected_extra() throws Exception {
+        ArtifactVerifier.VerifyResult result = verifier.verify(fixture("ok.xml"), 1);
+        assertFalse(result.success());
+        assertEquals("unexpected_extra", result.reason());
+    }
+
+    @Test
+    void 期望条数为零时不做条数校验() throws Exception {
+        // 调用方不知道应跑多少条时，不能因此判失败（旧行为必须保持）
+        ArtifactVerifier.VerifyResult result = verifier.verify(fixture("ok.xml"), 0);
+        assertTrue(result.success());
+        assertEquals("ok", result.reason());
+    }
+
+    @Test
+    void 分片产物为空返回_shard_incomplete_且指出编号() throws Exception {
+        Path out = tmp.resolve("run");
+        for (int i = 0; i < 4; i++) {
+            Path dir = out.resolve("pabot_results").resolve(String.valueOf(i));
+            Files.createDirectories(dir);
+            Path xml = dir.resolve("output.xml");
+            if (i == 1) {
+                // 被 kill -9 的分片：pabot 会建出 0 字节的 output.xml（实测如此）
+                Files.writeString(xml, "", StandardCharsets.UTF_8);
+            } else {
+                Files.write(xml, new byte[2048]);
+            }
+        }
+        ArtifactVerifier.ShardIntegrity result = verifier.checkShards(out);
+        assertFalse(result.ok());
+        assertEquals("shard_incomplete", result.reason());
+        assertEquals(List.of(1), result.emptyShards());
+    }
+
+    @Test
+    void 分片齐全返回_ok() throws Exception {
+        Path out = tmp.resolve("run-ok");
+        for (int i = 0; i < 2; i++) {
+            Path dir = out.resolve("pabot_results").resolve(String.valueOf(i));
+            Files.createDirectories(dir);
+            Files.write(dir.resolve("output.xml"), new byte[2048]);
+        }
+        ArtifactVerifier.ShardIntegrity result = verifier.checkShards(out);
+        assertTrue(result.ok());
+        assertEquals("ok", result.reason());
+        assertTrue(result.emptyShards().isEmpty());
+    }
+
+    @Test
+    void 没有分片目录时不判失败_避免误伤单分片与替身() {
+        // 单分片执行、测试替身、换用别的执行器都可能没有 pabot_results，
+        // 这里判失败会误伤一大片；只在「有分片」时校验它们是否完整。
+        ArtifactVerifier.ShardIntegrity result = verifier.checkShards(tmp.resolve("nothing"));
+        assertTrue(result.ok());
+        assertEquals("no_shard_dir", result.reason());
     }
 }

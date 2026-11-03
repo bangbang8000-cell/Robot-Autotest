@@ -18,17 +18,29 @@ check() {
     fi
 }
 
-check "业务表数 = 38" "38" \
+# 口径：v0.1 设计为 38 表；后续版本新增 6 张（editor_keyword / case_requirement /
+# export_record / ci_trigger / execution_plan_dependency / schedule_dependency），
+# 实测 44。此处期望值随迁移演进而更新，不是「表越多越好」的口径。
+check "业务表数 = 44" "44" \
     "SELECT COUNT(*) FROM information_schema.tables
      WHERE table_schema='$DB_NAME' AND table_name<>'flyway_schema_history';"
 
+# append-only 历史表只要求 created_at：这类表按设计只增不改，没有「更新人」这回事。
+# 要求它们也有 updated_at/updated_by 会逼着业务代码写假值，比缺列更糟。
 check "缺审计四列的表的数量 = 0" "0" \
     "SELECT COUNT(*) FROM (
        SELECT table_name FROM information_schema.columns
        WHERE table_schema='$DB_NAME' AND table_name<>'flyway_schema_history'
+         AND table_name NOT IN ('resource_lease_history','run_attempt')
          AND column_name IN ('created_at','created_by','updated_at','updated_by')
        GROUP BY table_name HAVING COUNT(*) < 4
      ) t;"
+# 这两张 append-only 表必须各有一个 created_at（2 张 → 期望 2，少一张就报）。
+check "append-only 历史表都有 created_at" "2" \
+    "SELECT COUNT(DISTINCT table_name) FROM information_schema.columns
+     WHERE table_schema='$DB_NAME'
+       AND table_name IN ('resource_lease_history','run_attempt')
+       AND column_name='created_at';"
 
 check "主键不是 id 的表数量 = 0" "0" \
     "SELECT COUNT(*) FROM (

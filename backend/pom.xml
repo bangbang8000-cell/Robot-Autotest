@@ -99,6 +99,20 @@
         <configuration>
           <groups>${groups}</groups>
           <excludedGroups>${excluded.groups}</excludedGroups>
+          <!--
+            必须显式声明包含 *IT.java。surefire 默认只扫 Test* / *Test / *Tests / *TestCase，
+            不含 *IT —— 那是 failsafe 的命名约定。于是 `mvn -Pit test` 会显示
+            「Tests run: 0 / BUILD SUCCESS」：看着通过，实际一个集成测试都没跑
+            （2026-11-04 实测到，SchemaIT 15 条一次都没被执行过）。
+            默认 profile 靠 excluded.groups=it 把它们排除在外，所以这里放进来是安全的。
+          -->
+          <includes>
+            <include>**/Test*.java</include>
+            <include>**/*Test.java</include>
+            <include>**/*Tests.java</include>
+            <include>**/*TestCase.java</include>
+            <include>**/*IT.java</include>
+          </includes>
         </configuration>
       </plugin>
 
@@ -139,6 +153,14 @@
             <location>filesystem:${project.basedir}/../db/migration</location>
           </locations>
           <cleanDisabled>false</cleanDisabled>
+          <!--
+            关掉占位符替换。本项目迁移脚本不用 Flyway 占位符，但 V2_5 的注释里
+            写了「面板据此补 ${} 占位符」这句说明，Flyway 10.x 会把它当成空名占位符
+            并直接失败（No value provided for placeholder: ${}）。
+            不改 SQL 而改配置：改 SQL 会变更 checksum，已迁移过的库（robot_dev 到 V7_1）
+            会在下次启动时报 checksum 不一致，代价更大。
+          -->
+          <placeholderReplacement>false</placeholderReplacement>
         </configuration>
         <dependencies>
           <dependency>
