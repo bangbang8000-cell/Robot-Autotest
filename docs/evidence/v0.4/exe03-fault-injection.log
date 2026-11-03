@@ -1,0 +1,36 @@
+# EXE-03 故障注入：kill -9 一个 pabot 分片，验中断是否被如实上报
+# 时间: 2026-11-04 01:08:03 CST  RF: Robot Framework 7.5.1 (Python 3.12.3 on linux)
+
+== 启动 pabot（4 进程）==
+pabot pid=61531
+== 进程树 ==
+your 131072x1 screen size is bogus. expect trouble
+  61529   61514 bash artifacts/tmp/pabot-fault.sh
+  61531   61529 /home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/pabot --processes 4 --outputdir /mnt/e/workspace/自动化测试/Robot-Autotest/artifacts/tmp/pabot-fault --include bench fixtures/bench/4suite-2cases
+  61534   61531 /home/evergreen/rf-stack/.venv/bin/python -m pabot.pabotlib  127.0.0.1 47352
+  61543   61531 /home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /mnt/e/workspace/自动化测试/Robot-Autotest/artifacts/tmp/pabot-fault/pabot_results/1/robot_argfile.txt
+  61544   61531 /home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /mnt/e/workspace/自动化测试/Robot-Autotest/artifacts/tmp/pabot-fault/pabot_results/0/robot_argfile.txt
+  61546   61531 /home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /mnt/e/workspace/自动化测试/Robot-Autotest/artifacts/tmp/pabot-fault/pabot_results/3/robot_argfile.txt
+  61551   61531 /home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /mnt/e/workspace/自动化测试/Robot-Autotest/artifacts/tmp/pabot-fault/pabot_results/2/robot_argfile.txt
+your 131072x1 screen size is bogus. expect trouble
+== 目标分片 pid=61543 ==
+your 131072x1 screen size is bogus. expect trouble
+   该进程命令行：/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /mnt/e/workspace/自动化测试/Robot-Autotest/artifacts/tmp/pabot-fault/pabot_results/1/robot_argfile.txt
+已 kill -9 61543（确认是 robot 分片）
+== 等待 pabot 收尾 ==
+pabot 退出码 = 252
+== 产物 ==
+log.html
+output.xml
+pabot_results
+report.html
+--- pabot_results 分片 ---
+0
+1
+2
+3
+pabot_manager.log
+== output.xml 状态统计 ==
+用例数: 6 状态: {'PASS': 6}
+== 判定 ==
+PASS：退出码非 0（252），中断被如实上报

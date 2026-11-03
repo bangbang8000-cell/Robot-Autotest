@@ -1,0 +1,35 @@
+# EXE-03 证据：pabot 并行编排真跑（合成用例，不碰设备）
+# 时间: 2026-11-04 01:06:13 CST  主机: Thinkbook14G5  RF: Robot Framework 7.5.1 (Python 3.12.3 on linux)
+# 命令: pabot --processes 2 --outputdir artifacts/tmp/pabot-smoke --include bench fixtures/bench/4suite-2cases
+
+Initialized logging in artifacts/tmp/pabot-smoke/pabot_results
+Warning: specified pabotlibport 8270 is already in use. A free port will be assigned automatically.
+Robot Framework remote server at 127.0.0.1:45870 started.
+2026-11-04 01:06:14.753284 [PID:61324] [1] [ID:1] EXECUTING 4Suite-2Cases.Suite2
+2026-11-04 01:06:14.757232 [PID:61325] [0] [ID:0] EXECUTING 4Suite-2Cases.Suite1
+2026-11-04 01:06:19.767657 [PID:61324] [1] [ID:1] still running 4Suite-2Cases.Suite2 after 5.0s
+2026-11-04 01:06:19.769132 [PID:61325] [0] [ID:0] still running 4Suite-2Cases.Suite1 after 5.0s
+2026-11-04 01:06:27.397772 [PID:61325] [0] [ID:0] PASSED 4Suite-2Cases.Suite1 in 12.6 seconds
+2026-11-04 01:06:27.400746 [PID:61324] [1] [ID:1] PASSED 4Suite-2Cases.Suite2 in 12.6 seconds
+2026-11-04 01:06:27.437209 [PID:61337] [0] [ID:2] EXECUTING 4Suite-2Cases.Suite3
+2026-11-04 01:06:27.439535 [PID:61338] [1] [ID:3] EXECUTING 4Suite-2Cases.Suite4
+2026-11-04 01:06:32.447997 [PID:61337] [0] [ID:2] still running 4Suite-2Cases.Suite3 after 5.0s
+2026-11-04 01:06:32.449766 [PID:61338] [1] [ID:3] still running 4Suite-2Cases.Suite4 after 5.0s
+2026-11-04 01:06:40.082823 [PID:61337] [0] [ID:2] PASSED 4Suite-2Cases.Suite3 in 12.6 seconds
+2026-11-04 01:06:40.083201 [PID:61338] [1] [ID:3] PASSED 4Suite-2Cases.Suite4 in 12.6 seconds
+8 tests, 8 passed, 0 failed, 0 skipped.
+===================================================
+Output:  /mnt/e/workspace/自动化测试/Robot-Autotest/artifacts/tmp/pabot-smoke/output.xml
+Log:     
+/mnt/e/workspace/自动化测试/Robot-Autotest/artifacts/tmp/pabot-smoke/log.html
+
+Report:  
+/mnt/e/workspace/自动化测试/Robot-Autotest/artifacts/tmp/pabot-smoke/report.html
+
+Finalizing Pabot execution...
+Stopping PabotLib process
+Robot Framework remote server at 127.0.0.1:45870 stopped.
+PabotLib process stopped
+Total testing: 50.40 seconds
+Elapsed time:  26.75 seconds
+Logs flushed successfully.
