@@ -13,11 +13,16 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * 全局异常映射（FR-v0.1-06）：把异常翻译成 {@link ApiResponse}，同时给出正确的 HTTP 状态码。
  *
  * <p>三类分支：参数校验 → 400；业务异常 → 按错误码定状态；其余 → 500 并记录堆栈。
+ *
+ * <p><b>状态码不能一律落到兜底 500</b>：405 和 404 都是「请求本身不成立」，不是服务故障。
+ * 误报成 500 会有两个后果 —— 对外看起来像故障，对内把真正的 500 淹在噪声里。
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -63,6 +68,26 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
                 .body(ApiResponse.fail(ErrorCode.METHOD_NOT_ALLOWED,
                         "请求方法不支持：" + ex.getMethod()));
+    }
+
+    /**
+     * 路径不存在：Spring 6.1 起，未匹配到任何 handler 的请求会抛
+     * {@link NoResourceFoundException}（走静态资源处理器）。
+     *
+     * <p>以前这个异常落到下面的 {@link #handleUnexpected} 兜底分支，于是
+     * <b>{@code GET /} 返回 500「服务内部错误」并打一条 ERROR 堆栈</b>。后果不是"多打一行日志"：
+     * 前端路由写错、用户输错 URL、扫描器探测，全都会伪装成服务端故障，真正的 500 被淹掉。
+     *
+     * <p>由 2026-11-04 启动自检（{@code scripts/boot-check.sh}）实测发现：真实启动后
+     * {@code /} → 500，{@code /api/*} → 401 正常。这是"从没起过 Spring 上下文"才会漏掉的一类问题。
+     */
+    @ExceptionHandler({NoResourceFoundException.class, NoHandlerFoundException.class})
+    public ResponseEntity<ApiResponse<Void>> handleNotFound(Exception ex) {
+        String detail = ex instanceof NoResourceFoundException notFound
+                ? "路径不存在：" + notFound.getResourcePath()
+                : "路径不存在";
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.fail(ErrorCode.NOT_FOUND, detail));
     }
 
     @ExceptionHandler(BusinessException.class)

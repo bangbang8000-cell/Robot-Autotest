@@ -12,7 +12,7 @@
 
 **当前进度：0 / 61（0% 已完成 · 53 待验 · 8 待现场 · 0 未开始）**
 
-**一句话读法**：功能代码已铺到 v1.0（后端 `Tests run: 450, Failures: 0`、`-Pit` 集成 **6/6**（`SchemaIT` 5 + `CaseImportIT` 1），前端 `build`/`lint` exit 0，dev/it 库均已迁到 **V7_1 / 44 表**），但**验收尚未启动**，所以读数是 0%。**这不是烂尾，是验收产能没建起来**——详见 `docs/plan/开发计划评估与后续推进-20261103.md`。
+**一句话读法**：功能代码已铺到 v1.0（后端 `Tests run: 453, Failures: 0`、`-Pit` 集成 **6/6**（`SchemaIT` 5 + `CaseImportIT` 1），**应用真启动通过**（构建 13.6s + 启动 4.5s），前端 `build`/`lint` exit 0，dev/it 库均已迁到 **V7_1 / 44 表**），但**验收尚未启动**，所以读数是 0%。**这不是烂尾，是验收产能没建起来**——详见 `docs/plan/开发计划评估与后续推进-20261103.md`。
 
 | 分组 | 包数 | 现状 | 下一步 |
 |---|---:|---|---|
@@ -106,6 +106,7 @@
 
 | 日期 | WBS | 一句话结果 | 证据 |
 |---|---|---|---|
+| 2026-11-04 | G1 判据 | 后端**真启动**通过（此前 450+ 单测从未起过 Spring 上下文）：空目录 → 构建 13.6s → 启动 4.5s；顺带抓到一个真缺陷 —— 未匹配路径返回 **500 而非 404**，已修并用真启动复验；G1 第三条（ArchUnit 拦故意跨层）经查**早已满足**，未重做 | `docs/evidence/v0.1/g1-boot-check.md`、`g1-jar-boot.log`、`scripts/boot-check.sh`、`GlobalExceptionHandlerTest` |
 | 2026-11-04 | CAS-03 | 台账导入**真跑通过**（此前只有静态对账顶替）：226 行 preview 零错误 → commit 入库 226 → 重导 226 行全报「编号已存在」；`CaseImportIT` 入 `-Pit` 套件 | `docs/evidence/v0.2/cas03-import-it.log`、`backend/src/test/java/com/qa/autotest/application/caseasset/CaseImportIT.java` |
 | 2026-11-04 | ENV-01~05 | 五项全转 `待验`，环境类阻断清零：口令重置、`robot_it`→V7_1/44 表、表头对账 1/14→**6/14 PASS**；顺带修掉三个「验证在说谎」（`-Pit` 空跑、`ArtifactVerifier` 假绿、`check_import_header` 假红）；全量 **450 单测全绿** + `SchemaIT` **5/5** | `docs/evidence/v0.1/{env02-build-test-20261104.log, env04-header-check.log, env-README.md}`、`docs/plan/决策纪要-20261104.md` §4 |
 | 2026-11-04 | 计划 | 规划升 **v2.1**：新增 ENV-01~05、状态扩五态、新增 §16.1 墙上时钟门；本表同步为 61 包 | `docs/自动化测试平台中长期工作规划.md` §6.1/§6.4/§16.1、`docs/plan/决策纪要-20261104.md` |

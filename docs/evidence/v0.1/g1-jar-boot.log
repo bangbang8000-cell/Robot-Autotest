@@ -1,0 +1,45 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.5)
+
+2026-11-04T02:23:31.199+08:00  INFO 69364 --- [robot-autotest] [           main] c.qa.autotest.RobotAutotestApplication   : Starting RobotAutotestApplication v0.1.0-SNAPSHOT using Java 21.0.12.1 with PID 69364 (/home/evergreen/build/ra/backend/target/robot-autotest-backend-0.1.0-SNAPSHOT.jar started by evergreen in /home/evergreen/build/ra)
+2026-11-04T02:23:31.202+08:00 DEBUG 69364 --- [robot-autotest] [           main] c.qa.autotest.RobotAutotestApplication   : Running with Spring Boot v3.3.5, Spring v6.1.14
+2026-11-04T02:23:31.204+08:00  INFO 69364 --- [robot-autotest] [           main] c.qa.autotest.RobotAutotestApplication   : No active profile set, falling back to 1 default profile: "dev"
+2026-11-04T02:23:33.251+08:00  INFO 69364 --- [robot-autotest] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 18081 (http)
+2026-11-04T02:23:33.274+08:00  INFO 69364 --- [robot-autotest] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-11-04T02:23:33.274+08:00  INFO 69364 --- [robot-autotest] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.31]
+2026-11-04T02:23:33.314+08:00  INFO 69364 --- [robot-autotest] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-11-04T02:23:33.316+08:00  INFO 69364 --- [robot-autotest] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2028 ms
+2026-11-04T02:23:35.149+08:00  INFO 69364 --- [robot-autotest] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 18081 (http) with context path '/'
+2026-11-04T02:23:35.180+08:00  INFO 69364 --- [robot-autotest] [           main] c.qa.autotest.RobotAutotestApplication   : Started RobotAutotestApplication in 4.544 seconds (process running for 5.168)
+2026-11-04T02:23:35.181+08:00 DEBUG 69364 --- [robot-autotest] [   scheduling-1] o.s.jdbc.core.JdbcTemplate               : Executing SQL query [SELECT DISTINCT job_id FROM resource_lease
+ WHERE lease_state = 'held' AND project_id > 0
+]
+2026-11-04T02:23:35.183+08:00 DEBUG 69364 --- [robot-autotest] [           main] o.s.jdbc.core.JdbcTemplate               : Executing SQL query [SELECT id, run_id, project_id, test_set_id, run_status, priority, concurrency,
+       attempt_no, total_tests, passed_tests, failed_tests, failure_class,
+       failure_reason, failure_message, artifacts_dir, enqueued_at, started_at, finished_at
+  FROM run
+ WHERE project_id > 0 AND run_status IN ('preparing', 'running')]
+2026-11-04T02:23:35.185+08:00  INFO 69364 --- [robot-autotest] [   scheduling-1] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-04T02:23:35.297+08:00  INFO 69364 --- [robot-autotest] [   scheduling-1] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.mariadb.jdbc.Connection@16974034
+2026-11-04T02:23:35.299+08:00  INFO 69364 --- [robot-autotest] [   scheduling-1] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-11-04T02:23:35.319+08:00 DEBUG 69364 --- [robot-autotest] [   scheduling-1] o.s.jdbc.core.JdbcTemplate               : Executing prepared SQL query
+2026-11-04T02:23:35.321+08:00 DEBUG 69364 --- [robot-autotest] [   scheduling-1] o.s.jdbc.core.JdbcTemplate               : Executing prepared SQL statement [SELECT resource_key, job_id, run_id, project_id, leased_at, expires_at
+  FROM resource_lease
+ WHERE lease_state = 'held' AND expires_at IS NOT NULL AND expires_at < ? AND project_id > 0 ORDER BY expires_at]
+2026-11-04T02:23:35.342+08:00 DEBUG 69364 --- [robot-autotest] [   scheduling-1] o.s.jdbc.core.JdbcTemplate               : Executing SQL query [SELECT id, run_id, project_id, test_set_id, run_status, priority, concurrency,
+       attempt_no, total_tests, passed_tests, failed_tests, failure_class,
+       failure_reason, failure_message, artifacts_dir, enqueued_at, started_at, finished_at
+  FROM run
+ WHERE project_id > 0 AND run_status IN ('preparing', 'running')]
+2026-11-04T02:23:35.607+08:00  INFO 69364 --- [robot-autotest] [io-18081-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-11-04T02:23:35.607+08:00  INFO 69364 --- [robot-autotest] [io-18081-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-11-04T02:23:35.609+08:00  INFO 69364 --- [robot-autotest] [io-18081-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-11-04T02:23:35.740+08:00  INFO 69364 --- [robot-autotest] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-11-04T02:23:35.749+08:00  INFO 69364 --- [robot-autotest] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
