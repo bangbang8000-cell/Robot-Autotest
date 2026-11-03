@@ -8,3 +8,6 @@ logs/
 .venv/
 __pycache__/
 .DS_Store
+
+# 本地开发文档（不上 GitHub）
+AGENTS.md

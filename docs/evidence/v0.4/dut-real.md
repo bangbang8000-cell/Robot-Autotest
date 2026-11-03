@@ -6,7 +6,7 @@
 
 > **本文件不证明实网通过。** 本机到不了 `10.202.54.106/107`，三条采集命令全部由
 > `ReplaySshClient` 返回 `backend/src/test/resources/fixtures/dut-replay/` 下的真实形态样本。
-> 实网结论只能由 149 现场跑出来（见文末「149 实网待办」）。
+> 实网结论只能由本地 WSL 现场跑出来（见文末「本地 WSL 实网待办」）。
 
 ---
 
@@ -101,11 +101,11 @@ Get-ChildItem -Path 'backend\src\test\resources\fixtures\dut-replay' -Recurse -F
   argv 中只有 `sshpass -e`，不含明文。`DutTarget.toString()` 只输出 `user@host[:port]`（+ 跳板
   + `key:yes` 标记），不含口令，也不含私钥完整路径。
 
-## 5. 149 实网待办（未执行）
+## 5. 本地 WSL 实网待办（未执行）
 
 **前置条件**
 
-1. DUT 恢复：`10.202.54.106` / `10.202.54.107` 从 149 可达（当前机房侧掉线，见 AGENTS.md §5.5）。
+1. DUT 恢复：`10.202.54.106` / `10.202.54.107` 从本地 WSL 可达（当前机房侧掉线，见 AGENTS.md §5.5）。
 2. 180 段路由与跳板机 `192.168.180.2` 可用（跳板账号 `evergreen`）。
 3. 口令模式需 `sshpass` 存在：`command -v sshpass` 有输出；否则只能走公钥模式，预检直接拒绝口令模式。
 4. 目标机系统含 `iproute2`（`ip`）、`ethtool`、`/proc/interrupts`。

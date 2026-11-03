@@ -33,7 +33,7 @@
 
 **前端**
 本包**未改前端**（无需构建/ lint）。原因：PLN-03/04 的交付面是接口、回写与文档；
-「群晖不支持回写」已在 `ci_trigger.writeback_status`、触发响应 `writeback` 字段与文档中体现，
+「内网镜像仓（NAS）不支持回写」已在 `ci_trigger.writeback_status`、触发响应 `writeback` 字段与文档中体现，
 前端暂无 CI 触发记录页，故不改 UI。
 
 ## 1. 迁移与表结构
@@ -102,7 +102,7 @@ Content-Type: application/json
 {"code":200,"data":{"runId":"RUN-20261103-000123","duplicated":true,"writeback":"pending"}}
 ```
 
-`writeback`：`pending` / `disabled`（`ci.writeback.enabled=false`）/ `not_supported`（群晖仓库）。
+`writeback`：`pending` / `disabled`（`ci.writeback.enabled=false`）/ `not_supported`（内网镜像仓（NAS）仓库）。
 
 ### 2.3 状态码一览
 
@@ -149,7 +149,7 @@ Content-Type: application/json
 | 回写调用异常 / 非 2xx | `failed` | 是 | `github_error: ...` 或 `github_http_<code>` |
 | `ci.writeback.enabled=false`（默认） | `skipped` | **否** | `disabled` |
 | 未配置 `GITHUB_STATUS_TOKEN` | `skipped` | **否** | `token_missing` |
-| `repo` 为群晖（`ssh://` / `git@` / `synology`） | `not_supported` | **否** | `synology_git_server_has_no_http_status_api` |
+| `repo` 为内网镜像仓（NAS）（`ssh://` / `git@` 或运维配置的仓库标识） | `not_supported` | **否** | 内网镜像仓（NAS）无 HTTP status API |
 | 非 CI 触发的 run | 无记录，静默跳过 | 否 | — |
 | CANCELED 等非 passed/failed 终态 | 不更新，仍为 `pending` | 否 | — |
 
@@ -186,7 +186,7 @@ Tests run:  9, Failures: 0, Errors: 0, Skipped: 0 -- in com.qa.autotest.applicat
 | **GitHub 真实 commit status 回写** | **未验证（无 `GITHUB_STATUS_TOKEN`）** | 只有伪 HTTP 客户端的单测；真实 GitHub API 未调用过 |
 | GitHub Actions 端到端 | **未验证** | 指南中的 workflow 示例按接口契约编写，未在真实 GitHub 上跑过 |
 | 8081 运行实例上的接口实测 | **未验证** | 本包要求不重启 8081；新接口需重启后端后才生效 |
-| 群晖状态回写 | **不支持** | 代码固定返回 `not_supported` 并写审计，不发起请求 |
+| 内网镜像仓（NAS）状态回写 | **不支持** | 代码固定返回 `not_supported` 并写审计，不发起请求 |
 | 多实例限流 | 未验证 | 当前为单实例内存计数，扩多实例需共享存储 |
 
 ## 7. 证据文件

@@ -116,16 +116,16 @@ V6_1__execution_plan.down.sql
 
 | 项 | 状态 | 说明 |
 |---|---|---|
-| **真实回滚演练** | ❌ **未做** | 本机是 Windows 开发态，无 149 的 jar/dist 发布包与 systemd unit；**没有执行任何停服/部署/down** |
+| **真实回滚演练** | ❌ **未做** | 本机是 Windows 开发态，无本地 WSL 的 jar/dist 发布包与 systemd unit；**没有执行任何停服/部署/down** |
 | **RTO 计时** | ❌ **未计时** | `docs/ROLLBACK.md §7` 演练记录表为空；干跑耗时不能当 RTO |
 | **down 迁移实跑** | ❌ 未执行 | 未连接生产库，未删任何表/列；`--schema=down` 仅验证命令生成与顺序 |
-| **发布包归档** | ❌ 未建立 | `releases/v0.6-automation/` 在本机不存在，需在 149 部署时归档最近 3 个版本 |
+| **发布包归档** | ❌ 未建立 | `releases/v0.6-automation/` 在本机不存在，需在本地 WSL 部署时归档最近 3 个版本 |
 | **抽样验证** | ❌ 未做 | 登录/看报告/跑用例需在真实回滚后人工完成 |
 | **大师签字** | ❌ 待签字 | 演练完成后在 `ROLLBACK.md §7` 填表签字 |
 
 ---
 
-## 5. 在 149 上补齐的步骤
+## 5. 在本地 WSL 上补齐的步骤
 
 1. 归档当前版本与上一版到 `~/robot-autotest/releases/<标签>/`（jar + dist）；
 2. 按 `docs/ROLLBACK.md §2` 做一次**不停生产**的干跑：`--dry-run`，核对路径；

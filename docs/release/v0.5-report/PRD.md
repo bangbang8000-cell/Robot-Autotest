@@ -187,5 +187,5 @@
 | 假设 | pabot 合并后的 `output.xml` 保留子套件 metadata（已在 v4.1 实测验证） |
 | 风险 | **报告效果不如预期**（R5）→ W2 先出「丑陋但完整」的版本，早评审早改 |
 | 风险 | 历史冒充当轮 → FR-v0.5-16 双侧禁止，测试用例 TC-v0.5-303 专门验证 |
-| 风险 | PDF 中文乱码 → 导出用 Chromium 渲染（149 有 node 22），不用 wkhtmltopdf |
+| 风险 | PDF 中文乱码 → 导出用 Chromium 渲染（本地 WSL 有 node 22），不用 wkhtmltopdf |
 | 风险 | 清理误删 → 三条保护规则 + dry-run 对比清单 |

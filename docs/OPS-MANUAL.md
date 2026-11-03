@@ -1,12 +1,12 @@
 # Robot-Autotest 运维手册（v1.0 / HRD-03）
 
-**对应需求** FR-v1.0-13 / FR-v1.0-14 / FR-v1.0-15 ｜ **配套脚本** `scripts/stability-24h.sh`、`scripts/window-stats.sql`
+**对应需求** FR-v1.0-13 / FR-v1.0-14 / FR-v1.0-15 ｜ **配套脚本** `scripts/rollback.sh`、`scripts/window-stats.sql`（运行统计）
 
 > **两种形态必须分清，不要混用命令：**
 > - **D = Windows 开发态**：本机 `E:\workspace\自动化测试\Robot-Autotest`，后端 jar 跑在 8081、Vite 跑在 5173、MySQL 在 WSL `Ubuntu-24.04`（Windows 经 `127.0.0.1:3306` 访问）。这是**今天实际在跑**的形态。
-> - **P = 149 生产态**：`192.168.110.149` Ubuntu + systemd **用户级** unit。本产品尚未在 149 部署；下面的 unit 名与路径是**部署约定值**，首次部署后必须按实际值回填本手册。端口默认 **8081**（`application-prod.yml` 的 `${SERVER_PORT:8081}`）；149 上 8080 已被 robotdashboard 占用，不要改回 8080。
+> - **P = 本地 WSL 常驻态**：本地 WSL Ubuntu + systemd **用户级** unit。本产品尚未在本地 WSL 部署；下面的 unit 名与路径是**部署约定值**，首次部署后必须按实际值回填本手册。端口默认 **8081**（`application-prod.yml` 的 `${SERVER_PORT:8081}`），不要改回 8080。
 >
-> **验证状态（2026-11-03）**：D 的命令已在本机逐条只读执行过；P 的命令**未在 149 执行**，属待人工验证项。
+> **验证状态（2026-11-03）**：D 的命令已在本机逐条只读执行过；P 的命令**未在本地 WSL 执行**，属待人工验证项。
 > **禁止**把 D 的 `java -jar` / `npm run dev` 当成生产启动方式；也禁止把 P 的 `systemctl` 命令拿到 Windows 上跑。
 
 ---
@@ -30,17 +30,17 @@ Get-NetTCPConnection -State Listen -LocalPort 8081, 5173 |
     Select-Object LocalAddress, LocalPort, OwningProcess
 ```
 
-### 1.2 P 形态（149 生产机，部署约定）
+### 1.2 P 形态（本地 WSL 常驻态，部署约定）
 
 | 服务 | 端口 | systemd 用户 unit | 关键路径 |
 |---|---:|---|---|
-| 后端 Spring Boot（API） | `${SERVER_PORT:-8081}`（149 的 8080 已被 robotdashboard 占用） | `robot-autotest.service` | jar `~/robot-autotest/app/robot-autotest-backend.jar`；环境文件 `~/.config/robot-autotest/env` |
+| 后端 Spring Boot（API） | `${SERVER_PORT:-8081}` | `robot-autotest.service` | jar `~/robot-autotest/app/robot-autotest-backend.jar`；环境文件 `~/.config/robot-autotest/env` |
 | 前端 dist（静态） | 同域，由后端静态资源或 Nginx 承载 | Nginx 为系统 unit `nginx`（若使用） | `~/robot-autotest/dist/` |
-| MariaDB | 3306（仅本机监听） | `mariadb`（系统 unit） | 库名以 `DB_NAME` 为准，建议 `robot_dev` |
+| MySQL | 3306（仅本机监听） | `mysql`（系统 unit） | 库名以 `DB_NAME` 为准，建议 `robot_dev` |
 | Robot 执行器 | 无监听端口 | 由后端 spawn | `~/rf-stack/.venv/bin/{robot,pabot}`，PATH 必须前置 |
 
 ```bash
-# 149 上先确认 unit 真实名字与linger（用户级 unit 不加 linger，重启后不会自动拉起）
+# 本地 WSL 上先确认 unit 真实名字与 linger（用户级 unit 不加 linger，重启后不会自动拉起）
 systemctl --user list-units --type=service --state=running | grep -E 'robot-autotest|nginx'
 loginctl show-user "$USER" | grep Linger
 ```
@@ -71,7 +71,7 @@ npm run dev          # 启动（5173）
 
 > 开发态**不允许**用 `systemctl`；Windows 没有用户级 systemd。
 
-### 2.2 P 形态（149）
+### 2.2 P 形态（本地 WSL）
 
 ```bash
 UNIT=robot-autotest.service
@@ -132,7 +132,7 @@ curl.exe -sS -o NUL -w "HTTP=%{http_code}`n" http://127.0.0.1:8081/api/execution
 
 2026-11-03 本机实测：① 返回 `{"code":0,"codeName":"OK","message":"OK","data":{"status":"UP","app":"robot-autotest","version":"v0.1"},"success":true}`；② 返回 200；③ 返回 401。
 
-### 4.2 P 形态（149）
+### 4.2 P 形态（本地 WSL）
 
 ```bash
 PORT="${SERVER_PORT:-8081}"
@@ -158,7 +158,7 @@ curl -sS -o /dev/null -w 'HTTP=%{http_code}\n' "http://127.0.0.1:${PORT}/api/exe
 ### 5.1 DB 每日全量
 
 ```bash
-# 通用（D 的 WSL / P 的 149 都适用）
+# 通用（D / P 的本地 WSL 都适用）
 BACKUP_ROOT="${BACKUP_ROOT:-$HOME/robot-autotest/backups}"
 STAMP="$(date +%Y%m%d_%H%M%S)"
 mkdir -p "$BACKUP_ROOT/db"
@@ -237,7 +237,7 @@ find "$BACKUP_ROOT" -type f -mtime +30 -delete
 
 ## 6. 恢复（从备份到新库 → 切配置 → 验证）
 
-**适用场景**：生产库损坏、误删、迁移失败。**不要在 149 生产库上直接试**；先在临时库走一遍。
+**适用场景**：业务库损坏、误删、迁移失败。**不要在运行库上直接试**；先在临时库走一遍。
 
 ```bash
 # 1) 建新库（名字带日期，避免覆盖）
@@ -263,14 +263,14 @@ MYSQL_PWD="$DB_PASSWORD" mysql -h"${DB_HOST:-127.0.0.1}" -P"${DB_PORT:-3306}" -u
   -e "SELECT COUNT(*) FROM \`run\`; SELECT version FROM flyway_schema_history ORDER BY installed_rank DESC LIMIT 1;"
 ```
 
-**所需时间**：本机 `robot_dev` 为空库，未做真实恢复计时；149 生产库必须实测后回填下表，**不许估数充数**。
+**所需时间**：本机 `robot_dev` 为空库，未做真实恢复计时；本地 WSL 生产库必须实测后回填下表，**不许估数充数**。
 
 | 步骤 | 实测耗时 | 记录人 / 日期 |
 |---|---|---|
-| 建库 + 导入 | 待 149 回填 | |
-| 切配置 + 重启 | 待 149 回填 | |
-| 验证 | 待 149 回填 | |
-| **合计** | 待 149 回填 | |
+| 建库 + 导入 | 待本地 WSL 回填 | |
+| 切配置 + 重启 | 待本地 WSL 回填 | |
+| 验证 | 待本地 WSL 回填 | |
+| **合计** | 待本地 WSL 回填 | |
 
 **回退本次恢复**：把 `DB_NAME` 改回原库名并重启；新库先保留，确认无误后再删。
 
@@ -342,7 +342,7 @@ find "$HOME/robot-autotest/backups" -type f -mtime +30 -print | head
 
 ```bash
 # P：服务与端口
-systemctl status mariadb --no-pager
+systemctl status mysql --no-pager
 ss -ltnp | grep 3306
 
 # 连通性 + 账号 + 当前连接数/上限
@@ -354,7 +354,7 @@ SELECT COUNT(*) FROM information_schema.processlist;"
 
 | 现象 | 判断 | 处理 |
 |---|---|---|
-| `Connection refused` | 库没起 / 端口不通 | `systemctl restart mariadb`；防火墙只放本机 |
+| `Connection refused` | 库没起 / 端口不通 | `systemctl restart mysql`；防火墙只放本机 |
 | `Access denied for user` | 口令或账号错 | 核对 `~/.config/robot-autotest/env` 的 `DB_USERNAME/DB_PASSWORD`，不要改代码 |
 | `Too many connections` | 连接泄漏或池上限过高 | 查 `information_schema.processlist` 来源；临时调大 `max_connections`，再按 §7.2 查泄漏 |
 | 应用日志 `HikariPool ... connectionTimeout` | 池拿不到连接 | 先看库是否可达，再看 `maximum-pool-size`（prod 16 / dev 4） |
@@ -378,7 +378,7 @@ FROM export_record ORDER BY id DESC LIMIT 10;"
 ```
 
 处置：
-1. 浏览器缺失 → 149 安装 chromium 或显式设 `REPORT_PDF_CHROME=/usr/bin/chromium` 后重启。
+1. 浏览器缺失 → 本地 WSL 安装 chromium 或显式设 `REPORT_PDF_CHROME=/usr/bin/chromium` 后重启。
 2. `print-base-url` 不可达 → 改环境变量为前端实际地址；生产同域时指向 `http://127.0.0.1:${SERVER_PORT}`。
 3. 单次导出超 90 秒（`report.export.timeout-seconds`）→ 看后端日志是否卡在页面加载；大报告先拆小。
 4. `export_status=failed` → 按 `run_key` 找对应 run，重试一次；连续失败按缺陷记录。

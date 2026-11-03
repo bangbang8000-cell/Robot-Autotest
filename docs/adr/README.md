@@ -22,10 +22,10 @@ ADR 用来记「为什么这么定」，不记「代码怎么写」。代码怎�
 | [0001](0001-monorepo.md) | monorepo 单体仓库 + 目录即边界 | 已采纳 | 全仓 |
 | [0002](0002-real-mariadb-for-integration-test.md) | 集成测试用真实 MariaDB 独立库，不用 H2 / Testcontainers | 已采纳 | v0.1 起所有集成测试 |
 | [0003](0003-handwritten-down-migrations.md) | 迁移回滚用同名手写 down 脚本 | 已采纳 | 所有 Flyway 迁移 |
-| [0004](0004-ci-runner-on-149.md) | CI runner 落在 149 裸进程 | 提议（待注册验证） | CI |
+| [0004](0004-ci-runner-on-wsl.md) | CI runner 落在本地 WSL 裸进程 | 提议（待注册验证） | CI |
 | [0005](0005-dual-mode-case-model.md) | 双模用例模型：台账 + 脚本，`content` 唯一真源 | 已采纳 | v0.2 起用例域 |
 | [0006](0006-tenant-isolation.md) | 租户隔离：上下文 + 强制守卫 + 元测试 | 已采纳 | v0.2 起全部业务表 |
-| [0011](ADR-0011-双仓与Gitea决策.md) | 双仓与 Gitea 决策：群晖权威源 + GitHub 协作与 CI | 已采纳 | v0.6 起代码托管、CI 触发与回写 |
+| [0011](ADR-0011-双仓与Gitea决策.md) | 双仓与 Gitea 决策：内网镜像仓（NAS）权威源 + GitHub 协作与 CI | 已采纳 | v0.6 起代码托管、CI 触发与回写 |
 
 ## 模板
 

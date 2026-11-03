@@ -15,7 +15,7 @@
 | WS-02 | Spring Boot 分层骨架 + ArchUnit | 5 | WS-01 | A | `mvn test` 绿；注入跨层引用后红 |
 | WS-03 | Vue 3 骨架 + 路由 + i18n | 5 | WS-01 | A | `npm run build` 成功；6 路由可访问 |
 | WS-05 | 自托管 runner + PR 三关 | 6 | WS-02/03/04 | B | PR 上三 job 独立可见；非法提交变红 |
-| WS-06 | 环境与配置基线 | 6 | WS-02 | B | 149 与本地各跑一次 `make bootstrap` |
+| WS-06 | 环境与配置基线 | 6 | WS-02 | B | 本地 WSL 与 Windows 各跑一次 `make bootstrap` |
 | DOC-01 | `AGENTS.md` | 6 | WS-01~05 | A | 未参与者按它提第一个 PR |
 | DOC-04 | ADR 机制 + 首批 2 条 | 3 | — | A | `docs/adr/README.md` 索引链到 2 个文件 |
 
@@ -75,13 +75,13 @@ Robot-Autotest/
 | 后果 | CI 需要路径过滤（只跑受影响侧）；发布时打两个产物 |
 | 关联 | WS-01、N9（本地目录约定） |
 
-### 3.2 ADR-0002 · 集成测试不用 Testcontainers（149 无 Docker）
+### 3.2 ADR-0002 · 集成测试不用 Testcontainers（按最小依赖约定不装 Docker）
 
 | 项 | 内容 |
 |---|---|
-| 背景 | 规划 §8.1 原写 `Testcontainers(MariaDB)`；基线报告实测 **149 无 Docker**（`command -v docker` 空），且规划 §3.2 明确不做容器化 |
+| 背景 | 规划 §8.1 原写 `Testcontainers(MariaDB)`；基线报告实测 **当时测试环境无 Docker**（`command -v docker` 空），且规划 §3.2 明确不做容器化 |
 | 选项 | ① 装 Docker；② Testcontainers 改远程 Docker；③ **真实 MariaDB 独立库**；④ H2 内存库 |
-| **决定** | **③**。CI 用 149 本机 MariaDB 的 `robot_it` 库，每轮 `flyway clean + migrate`；本地需要时用 SSH 隧道连 `robot_it_local`（独立库，与 CI 不冲突） |
+| **决定** | **③**。CI 用本地 WSL 本机 MySQL 8.0 的 `robot_it` 库，每轮 `flyway clean + migrate`；本地需要时用 SSH 隧道连 `robot_it_local`（独立库，与 CI 不冲突） |
 | 否决④的理由 | H2 与 MariaDB 在 `DATETIME(3)`、`JSON`、`ON UPDATE` 上语义不同，**集成测试会骗人** |
 | 后果 | 集成测试串行执行（同库不能并行）；`mvn test` 默认跳过 `@Tag("it")`，CI 显式 `-Dgroups=it` |
 | 关联 | WS-05、FR-v0.1-19 |
@@ -242,7 +242,7 @@ test -f AGENTS.md && ls docs/adr/*.md
 | runner 落点未定（P3） | WS-05 无法开始 | 先用人工脚本跑三关（`scripts/ci-local.sh`），CI 延后到 v0.2 开头 | 大师 |
 | 38 表 DDL 返工 | 后续版本频繁改表结构 | **不降级**：改表是正常的，靠 Flyway 增量解决；但禁止改历史脚本 | — |
 | ArchUnit domain 纯 POJO 有争议 | 评审否决 | 保留规则但把 `jakarta.persistence` 放宽为「允许注解、禁止 Repository」 | silence |
-| 149 MariaDB 版本与本地不一致 | 迁移在 CI 过、本地不过 | 固定版本（`mariadb --version` 写进环境基线），本地用同版本 | — |
+| 本地 WSL MySQL 版本与 Windows 本机不一致 | 迁移在 CI 过、本地不过 | 固定版本（`mysql --version` 写进环境基线），本地用同版本 | — |
 | 集成测试串行导致 CI 慢 | test job >10 分钟 | 拆 `it-fast` / `it-slow` 两个 job，slow 只在合并前跑 | — |
 
 ---

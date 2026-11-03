@@ -80,7 +80,7 @@ CronExpression expr = CronExpression.parse(s.getCron());          // Spring 6 �
 ZonedDateTime next = expr.next(ZonedDateTime.now(ZoneId.of("Asia/Shanghai")));
 ```
 
-- **时区硬编码 `Asia/Shanghai`**，不读 `systemDefault`——149 的 TZ 变了会影响触发，这是运维事故源。
+- **时区硬编码 `Asia/Shanghai`**，不读 `systemDefault`——本地 WSL 的 TZ 变了会影响触发，这是运维事故源。
 - 校验时用 `CronExpression.isValidExpression()`，并在保存前算 5 次触发时间给用户确认。
 - 支持 6 段（秒 分 时 日 月 周），**不支持年字段**，文档写清。
 
@@ -214,7 +214,7 @@ jobs:
 | 目标 | 可行性 | 做法 |
 |---|---|---|
 | **GitHub commit status** | ✅ 有 API | 运行结束回调：POST `/repos/{owner}/{repo}/statuses/{sha}`，`state=success/failure`，`target_url` 指向报告页 |
-| **群晖 Git** | ❌ 无 API | **不假装**。只写 `schedule_trigger_log` 与审计；文档明确「群晖侧无状态回写」 |
+| **内网镜像仓（NAS）的 Git** | ❌ 无 API | **不假装**。只写 `schedule_trigger_log` 与审计；文档明确「内网镜像仓（NAS）侧无状态回写」 |
 | 通知（IM/邮件） | ⬜ 不在范围 | 待办池 |
 
 **回写失败的容错**：回写失败不影响 run 结论，只记 `trigger_log.writeback_error`。**不能让「回写不上」把一次成功的运行变成失败**。
@@ -227,16 +227,16 @@ jobs:
 
 | 项 | 事实 |
 |---|---|
-| 群晖 `git server` | 只有 SSH 协议，**无 HTTP、无 Web UI、无 webhook、无细粒度权限** |
-| 群晖 Container Manager | 24.0.2 已安装，可跑容器（149 没有 Docker） |
+| 内网镜像仓（NAS）内置 Git 服务 | 只有 SSH 协议，**无 HTTP、无 Web UI、无 webhook、无细粒度权限** |
+| 内网镜像仓（NAS）的 Container Manager | 24.0.2 已安装，可跑容器（本地 WSL 按最小依赖约定不装 Docker） |
 | GitHub | 个人号仓库，协作者权限上限 write；已转 public 才有 branch protection |
 
 ### 5.2 决策（ADR-0011）
 
 | 方案 | 内容 | 成本 | 结论 |
 |---|---|---|---|
-| A | 群晖为权威源 + GitHub 协作与 CI，无 Web 评审 | 0 | **✅ 采用（本版）** |
-| B | 群晖上 Gitea（容器），内网 Web 评审 | 半天部署 + 长期维护 | 触发条件：涉密代码不得出内网，或需要内网 PR 流程时 |
+| A | 内网镜像仓（NAS）为权威源 + GitHub 协作与 CI，无 Web 评审 | 0 | **✅ 采用（本版）** |
+| B | 内网镜像仓（NAS）上 Gitea（容器），内网 Web 评审 | 半天部署 + 长期维护 | 触发条件：涉密代码不得出内网，或需要内网 PR 流程时 |
 
 **采用的 A 方案，必须写清它的代价**：
 
@@ -289,7 +289,7 @@ curl -X POST .../api/schedules/2/deps -d '{"dependsOn":1}'   # 400 + 环路径
 for i in 1 2 3; do curl -X POST .../api/ci/trigger -d '{"planId":12,"commitSha":"abc123"}'; done
 mysql robot_dev -e "SELECT COUNT(*) FROM run WHERE commit_sha='abc123'"   # 1
 
-# 7. 群晖不虚报
+# 7. 内网镜像仓（NAS）不虚报
 curl .../api/ci/trigger/repo=syno | jq '.writeback'   # "not_supported"（不返回 success）
 ```
 
@@ -302,7 +302,7 @@ curl .../api/ci/trigger/repo=syno | jq '.writeback'   # "not_supported"（不返
 | 7 天观测期间触发失败 | 成功率 <100% | 查 tick 日志与 DB 行锁；必要时 tick 间隔从 30 s 降到 10 s | — |
 | 重启导致重复触发 | 同一分钟两个 run | 行锁逻辑加固；已产生的重复 run 手工取消 | silence |
 | GitHub token 权限不足 | 回写 403 | 降级为「只记录不回写」，报告链接手工贴 | — |
-| 群晖被误以为能回写 | 用户问「为什么群晖没状态」 | 文档 + 页面提示「群晖侧不支持状态回写」 | — |
+| 内网镜像仓（NAS）被误以为能回写 | 用户问「为什么内网镜像仓（NAS）没状态」 | 文档 + 页面提示「内网镜像仓（NAS）侧不支持状态回写」 | — |
 | 依赖等待卡住队列 | 多个 blocked 堆积 | 超时默认调为 15 分钟；blocked 不占执行资源 | — |
 | CI token 泄露 | 恶意触发 | token 按项目隔离 + 限流 + 可即时吊销 | 大师 |
 

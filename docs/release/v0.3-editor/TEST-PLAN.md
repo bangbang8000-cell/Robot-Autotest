@@ -157,10 +157,10 @@
 
 | 项 | 内容 |
 |---|---|
-| 前端 | Node 22（149 的 `~/tools/node`），Chromium |
-| 后端 | test 环境（149 `robot_test` 库） |
+| 前端 | Node 22（本地 WSL apt 安装），Chromium |
+| 后端 | test 环境（本地 WSL `robot_test` 库） |
 | 样本 | `fixtures/roundtrip/{prod,legacy,syntax}` 共 50 个 `.robot` |
-| 裁判 | `tools/roundtrip_judge.py`，依赖 RF 7.5（149 venv 已有） |
+| 裁判 | `tools/roundtrip_judge.py`，依赖 RF 7.5（本地 WSL 按 lock 重建） |
 | 隔离 | 往返测试**不改库**，纯文件级，可离线跑（除 dryrun 需 RF 环境） |
 
 ---

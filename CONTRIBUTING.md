@@ -86,10 +86,11 @@ feat(editor): 节点面板支持按关键词标签过滤
 git config core.hooksPath .githooks
 ```
 
-镜像远程（群晖 `origin`）不受钩子拦截，同步命令：
+镜像远程（`origin`，内网镜像仓（NAS））不受钩子拦截，同步命令：
 
 ```bash
-GIT_SSH_COMMAND="ssh -i ~/.ssh/syno_robot_autotest -o BatchMode=yes" git push origin main
+# 地址与密钥按运维配置
+GIT_SSH_COMMAND="ssh -i <内网镜像仓部署密钥> -o BatchMode=yes" git push origin main
 ```
 
 ## 七、提交前自检
@@ -105,7 +106,7 @@ git log --oneline -3          # 提交信息格式正确
 ## 八、环境
 
 - 开发机：Windows，路径 `E:\workspace\自动化测试\Robot-Autotest`
-- 运行环境：Ubuntu 26.04，`192.168.110.149`，Python 3.14 虚拟环境在 `~/rf-stack/.venv`
-- 代码托管：GitHub 私有仓（主）+ 群晖裸仓（内网镜像）
+- 运行环境：本地 WSL `Ubuntu-24.04`（MySQL 8.0 @ `127.0.0.1:3306`，业务库 `robot_dev`；JDK 21；Node 22）
+- 代码托管：GitHub 私有仓（主）+ 内网镜像仓（NAS）裸仓
 
 跨平台协作，换行符由 `.gitattributes` 统一为 LF，不要手动改。

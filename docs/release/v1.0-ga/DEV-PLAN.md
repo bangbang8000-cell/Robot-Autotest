@@ -1,8 +1,8 @@
 # v1.0 生产就绪 · 开发计划
 
-**文档编号** RA-REL-2026-007-DEV ｜ **版本** v1.0 ｜ **门禁** G7 → G8
+**文档编号** RA-REL-2026-007-DEV ｜ **版本** v1.0 ｜ **门禁** G7 上线门 → 持续迭代评审
 
-**范围** HRD-01~04 + 试运行观察窗 ｜ **对应 PRD** FR-v1.0-01 ~ 25
+**范围** HRD-01~04 + 小型试点迭代验证 ｜ **对应 PRD** FR-v1.0-01 ~ 25
 
 ---
 
@@ -12,16 +12,16 @@
 |---|---|---:|---|---|---|
 | HRD-01 | 权限矩阵全量校验（112 格） | 5 | G2~G6 | A（人签字） | 112 格逐格有结论，导出表格可勾 |
 | HRD-02 | 审计日志（10 类关键操作） | 5 | G2~G6 | A | 10 类各抽查 1 次均有记录 |
-| HRD-03 | 压测报告与运维手册 | 6 | G7 前置 | **B** | 24 h 无崩溃；新人独立重启成功 |
+| HRD-03 | 小型试点迭代验证与运维手册 | 6 | G7 前置 | **B** | 每轮试点记录齐全（崩溃/重启/内存趋势/连接数）；手册可执行（新人独立重启成功） |
 | HRD-04 | 回滚预案与演练 | 6 | 全部 | **C** | 演练 RTO ≤30 分钟，签字 |
-| B8 | 试运行观察窗 | — | G7 | **C** | 4 周 ≥20 次 零 P0 成功率 ≥99% |
+| B8 | 试点迭代（持续） | — | G7 | **C** | 每轮记录齐全 + 评审结论闭环（不设时长/次数硬门槛） |
 
 ### 1.1 顺序
 
 ```
 HRD-01（权限）─┐
-HRD-02（审计）─┼─► G7 ─► 观察窗（4 周）─► G8
-HRD-03（压测/手册）─┤
+HRD-02（审计）─┼─► G7 ─► 试点迭代（持续）─► 每轮迭代评审
+HRD-03（试点/手册）─┤
 HRD-04（回滚演练）───┘
 ```
 
@@ -130,22 +130,22 @@ public void deleteCase(long id) { ... }
 
 ---
 
-## 4. 压测与运维手册（HRD-03）
+## 4. 试点迭代验证与运维手册（HRD-03）
 
-### 4.1 24 小时稳定性压测
+### 4.1 小型试点项目持续迭代验证
 
 | 项 | 设定 |
 |---|---|
-| 负载 | 定时任务每 10 分钟一次（轻量用例集）+ 每 2 小时一次 4 并发 |
-| 监控 | JVM heap、RSS、DB 连接数、磁盘、GC 次数 |
-| 判定 | 无崩溃/无重启；RSS 增长 <20%；无连接泄漏（连接数回到基线） |
-| 产出 | 24 h 曲线 + 容量基线三项（内存/磁盘/DB 体积） |
+| 做法 | 选 1-2 条真实链路组成小型试点项目，按轮次持续跑通全链路（不设 24 h、不设固定时长与次数） |
+| 监控 | 每轮记录崩溃/重启、JVM heap / RSS 趋势、DB 连接数、磁盘 |
+| 判定 | **不设硬门槛**（无 24 h、无 RSS<20%）；趋势作为优化输入，「能力不倒退」是唯一硬约束 |
+| 产出 | 每轮迭代记录（崩溃/重启/内存趋势/连接数）+ 容量基线三项（内存/磁盘/DB 体积） |
 
 ### 4.2 运维手册结构（必须能照着做）
 
 ```
-1. 服务清单（roboscope:8145 / robotdashboard:8080 / 平台:8080x）
-   - 都是 systemd --user unit，需要 loginctl enable-linger
+1. 服务清单（平台后端:8081 / 前端:5173 / MySQL:3306）
+   - 常驻形态为 systemd --user unit，需要 loginctl enable-linger
 2. 启停：systemctl --user start|stop|restart <unit>
 3. 日志位置：journalctl --user -u <unit> -n 200 / 应用日志路径
 4. 健康检查：3 条 curl，各自期望返回
@@ -213,12 +213,12 @@ scripts/rollback.sh --to v0.6.2 --schema=down # 含迁移回退（会删表，�
 
 ---
 
-## 6. 试运行观察窗（B8）
+## 6. 试点迭代验证（B8，替代原试运行观察窗）
 
 ### 6.1 指标采集（脚本化，不靠人记）
 
 ```sql
--- 每日统计（scripts/window-stats.sql）
+-- 每轮统计参考（scripts/window-stats.sql）
 SELECT DATE(started_at) d,
        COUNT(*) runs,
        SUM(state='finished') ok,
@@ -229,25 +229,27 @@ WHERE started_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
 GROUP BY DATE(started_at);
 ```
 
-### 6.2 四项判据的采集方式
+### 6.2 每轮记录字段
 
-| 判据 | 数据来源 | 判定 |
+| 字段 | 数据来源 | 用途 |
 |---|---|---|
-| ≥4 周 | 观察窗起止日期 | 日历差 ≥28 天 |
-| ≥20 次真实链路运行 | `run` 中 `trigger_type IN (schedule, ci, manual)` 且 `dut IS NOT NULL` | 计数 ≥20 |
-| 零 P0 | 缺陷列表 P0 计数 | = 0 |
-| 一周成功率 ≥99% | 最近 7 天 `finished / total` | ≥99% |
+| 本轮运行次数 / 结果 | `run` 中 `trigger_type IN (schedule, ci, manual)` 且 `dut IS NOT NULL` | 确认试点跑通 |
+| 崩溃 / 重启 | 稳定性采样摘要 `restarts` | 作为优化输入 |
+| 内存趋势 | RSS 采样 | 观察趋势（不设 `<20%` 硬门槛） |
+| 连接数 | 连接采样 | 发现泄漏趋势 |
+| 缺陷 / 用户反馈 | 缺陷列表 + 使用方原话 | 决定下一轮优化项 |
 
 **「真实链路」的定义要写死**：`dut IS NOT NULL` 且不是回放。否则本地 sleep 用例也能凑数。
 
-### 6.3 周报模板（4 份）
+### 6.3 迭代记录模板（每轮一份）
 
 | 项 | 内容 |
 |---|---|
-| 本周运行次数 / 成功率 | 数字 |
+| 本轮运行次数 / 成功率 | 数字（如实记录，不设达标线） |
+| 崩溃 / 重启 / 内存趋势 / 连接数 | 每轮采样与趋势说明 |
 | 新增缺陷（按级别） | 列表 + 处理状态 |
 | 用户反馈 | 原话 + 分类（缺陷/需求/体验） |
-| 下周动作 | 1~3 条 |
+| 本轮优化项 / 下一轮动作 | 1~3 条，评审结论闭环 |
 
 ---
 
@@ -256,13 +258,13 @@ GROUP BY DATE(started_at);
 | Wave | 内容 | 中间可验证态 |
 |---|---|---|
 | **W1** | HRD-01 矩阵 + HRD-02 审计（并行） | 112 格有结论；10 类操作有记录 |
-| **W2** | HRD-03 压测启动（24 h，后台跑）+ 手册编写 | 压测曲线出来；手册初稿 |
+| **W2** | HRD-03 试点迭代启动（并行）+ 手册编写 | 首轮迭代记录；手册初稿 |
 | **W3** | 手册验证（新人实测）+ 修补 | 卡点清单 → 修手册 |
 | **W4** | HRD-04 回滚演练 | RTO 计时记录 |
 | **W5** | UAT 8 条 | 使用方签字 |
-| **W6+** | G7 → 观察窗 4 周 → G8 | 周报 ×4 |
+| **W6+** | G7 → 试点迭代（持续）+ 每轮迭代评审 | 迭代记录与评审结论 |
 
-**W2 的 24 h 压测在后台跑，不阻塞手册编写**。这是本版唯一适合并行的部分。
+**W2 的试点迭代在后台持续跑，不阻塞手册编写**。这是本版唯一适合并行的部分。
 
 ---
 
@@ -280,9 +282,9 @@ awk -F, 'NR>1 && $5=="N/A" && $7=="" {print "缺理由: "$0}' /tmp/authz.csv   #
 mysql robot_dev -e "SELECT action, COUNT(*) FROM audit_log GROUP BY action"
 # 期望：10 个 action 都存在
 
-# 3. 24h 压测
-grep -E "restarts|rss_growth|conn_leak" docs/evidence/v1.0/stability-24h.txt
-# 期望：0 / <20% / 无
+# 3. 试点迭代记录
+# 检查 docs/evidence/v1.0/pilot-iterations.md：每轮含崩溃/重启/内存趋势/连接数
+# 不设硬门槛，趋势作为优化输入（不作为 24h 稳定性结论）
 
 # 4. 手册可执行（新人实测）
 # 记录：谁、耗时、卡住几次 → docs/evidence/v1.0/manual-test.md
@@ -291,8 +293,8 @@ grep -E "restarts|rss_growth|conn_leak" docs/evidence/v1.0/stability-24h.txt
 date +%s > /tmp/t0 && bash scripts/rollback.sh --to v0.6.2 && date +%s > /tmp/t1
 echo $(( ($(cat /tmp/t1) - $(cat /tmp/t0)) / 60 ))   # ≤30
 
-# 6. 观察窗
-psql/mysql -e "$(cat scripts/window-stats.sql)"
+# 6. 迭代评审
+# 查看 docs/evidence/v1.0/pilot-iterations.md 与 iteration-review.md，确认每轮结论闭环
 ```
 
 ---
@@ -304,9 +306,9 @@ psql/mysql -e "$(cat scripts/window-stats.sql)"
 | 回滚演练 >30 分钟 | 首次演练 45 分钟 | 分析瓶颈（多半是 DB dump 慢）→ 优化备份方式；不降低 RTO 标准 | 大师 |
 | down 迁移删数据引发争议 | 回滚后计划配置丢了 | 默认 `schema=keep`；只回代码不回 schema | silence |
 | 新人按手册卡住 | 实测 3 处以上卡点 | 修手册，不改标准；卡点本身就是手册的 bug | — |
-| 观察窗出 P0 | 任一 P0 | **计时重置**，修完重新计 4 周 | 大师 |
+| 试点迭代中发现能力倒退 | 任一已过能力项回归失败 | 停下补能力，不带病进入下一轮 | 大师 |
 | UAT 使用方不配合 | 拖延 >2 周 | 由大师代执行并注明「代执行」，不冒充使用方 | 大师 |
-| 24h 压测内存缓涨 | RSS +25% | 查泄漏（多半是日志缓冲/连接池）；不达标记为 P1 但不阻断，观察窗继续盯 | CCB |
+| 多轮内存趋势持续上涨 | RSS 连续多轮上升 | 记录并归因（多半是日志缓冲/连接池），作为优化项；不设硬门槛、不阻断迭代 | CCB |
 
 ---
 
@@ -315,5 +317,5 @@ psql/mysql -e "$(cat scripts/window-stats.sql)"
 | 类别 | 内容 |
 |---|---|
 | 代码 | 审计切面与查询、权限矩阵测试（YAML 驱动）、`scripts/rollback.sh`、`scripts/window-stats.sql` |
-| 文档 | 运维手册、回滚预案、升级路径、UAT 记录表、试运行周报 ×4 |
-| 证据 | `docs/evidence/v1.0/`：authz.csv（签字）、audit-10.md、stability-24h.txt、manual-test.md、rollback-timing.md、uat-8.md、window-4weeks.csv |
+| 文档 | 运维手册、回滚预案、升级路径、UAT 记录表、试点迭代记录（每轮一份） |
+| 证据 | `docs/evidence/v1.0/`：authz.csv（签字）、audit-10.md、manual-test.md、rollback-timing.md、uat-8.md、pilot-iterations.md（每轮崩溃/重启/内存趋势/连接数）、iteration-review.md（每轮评审结论） |

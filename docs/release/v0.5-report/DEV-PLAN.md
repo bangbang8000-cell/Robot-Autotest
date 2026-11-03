@@ -185,7 +185,7 @@ GET /api/reports/{runId}/compare?baselineRunId=opt
 |---|---|
 | 样式与页面一致 | 不用维护两套排版 |
 | 中文天然支持 | Chromium 自带字体回退；wkhtmltopdf 的中文配置是长期坑 |
-| 149 有 Node | `~/tools/node` v22.23.4，已存在 |
+| 本地 WSL 有 Node | Node 22（apt 安装），已可用 |
 
 **依赖准备**（M0 之外的额外动作，写进部署文档）：
 

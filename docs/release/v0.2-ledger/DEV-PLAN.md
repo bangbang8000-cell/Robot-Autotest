@@ -215,7 +215,7 @@ mysql robot_dev -e "SELECT COUNT(*) FROM test_case WHERE project_id=1"   # 461
 # 再导一次，条数仍为 461（幂等）
 
 # 5. 凭据
-grep -rEi "mfkipkhgef|Eht@2026" /var/lib/mysql /home/evergreen/robot-test 2>/dev/null   # 无输出
+grep -rEi "<项目口令>|<历史口令>" /var/lib/mysql /home/evergreen/robot-test 2>/dev/null   # 无输出
 curl localhost:8080/api/credentials/1 | grep -i "password\|secret"                      # 无明文
 
 # 6. 前端主流程（Playwright）

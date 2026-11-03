@@ -1,78 +1,79 @@
-# Robot-Autotest
+# Robot-Autotest 自动化测试平台
 
-自动化测试平台主仓库。技术内核为 Robot Framework + robotdashboard + RoboScope，
-平台本体采用 Spring Boot + MariaDB + Vue 3。
+面向 GPU、智能网卡与基础设施的一体化自动化测试平台：把「设备台账 → 用例编写 → 并发执行 → 报告交付 → 定时/CI 自动化」收在同一个系统里，并用 metadata 门禁保证每一份对外报告都能追溯。
 
-> 当前阶段：**G0 立项门已过（有条件）**，`WS-01` monorepo 骨架与 `DOC-01` 待验；业务代码未开写。
-> 进度看 [`docs/plan/WBS-STATUS.md`](docs/plan/WBS-STATUS.md)，门禁纪要在 `docs/plan/G0-评审纪要-20261102.md`。
+> 当前阶段：**v1.0 能力已就绪，进入迭代开发**。后续以小型试点项目持续验证，按实际使用反馈迭代优化。
 
-## 仓库与远程
+## 能做什么
 
-本仓库双远程，同一份历史：
+| 能力 | 说明 |
+|---|---|
+| 资产台账 | 设备、端口、链路（DUT-LINK-HOST）、环境档案与技术域标签；凭据加密存储，运行时注入不落盘 |
+| 用例管理 | 台账 + 脚本双模；用例/用例集 CRUD、批量导入、能力索引；三视图编辑器（文本 / 表单 / 流程）内容不漂移 |
+| 执行引擎 | 状态机、资源租约、4 并发不打架；实时日志、取消与超时、失败分类与重试；pabot 编排 |
+| 报告中心 | 解析 `output.xml`，递归采集 metadata；十项门禁；用例树、原始日志分页、跨运行对比、趋势与通过率；PDF / Word / CSV 导出与一次性打印链接 |
+| 自动化 | 执行计划（cron + 时区固定）、依赖 DAG（环检测 / 前置失败阻断）、CI 触发（幂等 + 限流 + 状态回写） |
+| 安全与治理 | 登录与令牌、RBAC 权限矩阵、项目级租户隔离、审计日志（只增不改、脱敏）、产物保留策略 |
 
-| 远程名 | 地址 | 用途 |
-|---|---|---|
-| `github` | `git@github.com:huanchen811509-silence/Robot-Autotest.git` | 主协作仓：PR 评审、Actions、议题 |
-| `origin` | `ssh://silence@10.202.54.201:22/volume1/git/repos/robot-autotest.git` | 内网镜像（群晖 DS918+，仅 SSH 协议） |
+## 适用场景
 
-> GitHub 仓为 **public**。这是为了启用免费的服务端分支保护（私有库需 GitHub Pro）。
-> 代价是文档中的内网地址（`10.202.54.x`、`192.168.110.x`）与登录账号名对外可见。
-> 若后续回归私有，需同步把 `main` 保护降级为本地 `pre-push` 钩子，见 CONTRIBUTING §6。
+- GPU / 智能网卡性能与稳定性回归，多机多卡并发执行。
+- 基础设施巡检：连通性、GPU 健康、存储与磁盘挂载。
+- 需要对外交付报告的测试：报告自带设备、链路、软件版本等可追溯信息。
+- 需要「提交即跑、定时跑」的持续测试流水线。
 
-首次克隆：
+## 技术架构
+
+- **后端**：Spring Boot 3 + Java 21，分层 `api / application / domain / infrastructure / common`，ArchUnit 约束依赖方向。
+- **数据库**：MySQL 8.0 / MariaDB，Flyway 版本化迁移，手写 down 脚本。
+- **前端**：Vue 3 + Vite + TypeScript + Pinia + vue-i18n。
+- **测试内核**：Robot Framework 7.5，兼容 pabot 并发与 robotdashboard 看板。
+
+## 快速开始
+
+前置：JDK 21、Node.js 22、MySQL 8.0（本地或 WSL 均可）。
 
 ```bash
-git clone git@github.com:huanchen811509-silence/Robot-Autotest.git
-cd Robot-Autotest
-git remote add synology ssh://silence@10.202.54.201:22/volume1/git/repos/robot-autotest.git
+# 1. 初始化数据库（库名/账号按需修改）
+mysql -uroot -p -e "CREATE DATABASE robot_dev CHARACTER SET utf8mb4;"
+
+# 2. 启动后端（首次启动前先执行 Flyway 迁移与种子数据）
+cd backend && mvn -DskipTests package
+java -jar target/robot-autotest-backend-0.1.0-SNAPSHOT.jar
+
+# 3. 启动前端
+cd frontend && npm ci && npm run dev
 ```
 
-内网镜像推送必须显式指定密钥（群晖只认部署密钥，不认账号口令）：
+打开 `http://localhost:5173`，使用内置管理员账号登录；**生产部署前必须修改默认口令**。
 
-```bash
-GIT_SSH_COMMAND="ssh -i ~/.ssh/syno_robot_autotest -o BatchMode=yes" git push synology main
+## 目录结构
+
+```
+backend/          Spring Boot 服务端（api / application / domain / infrastructure / common）
+frontend/         Vue 3 前端
+packages/editor/  Robot Framework 用例编辑器（三视图）
+db/               Flyway 迁移与 down 脚本
+scripts/          运维与稳定性脚本（回滚、诊断）
+docs/             设计、运维、CI 接入与版本文档
 ```
 
-## 文档索引
+## 文档
 
-| 文件 | 内容 | 定位 |
-|---|---|---|
-| `docs/process/版本开发流程.md` | **流程铁律**：每个大版本七道环节（需求调研 → 评估报告 → PRD → 开发计划 → 测试计划 → 测试执行 → 文档回写）与六份产物的准入门槛 | **开工顺序只认这份** |
-| `docs/自动化测试平台中长期工作规划.md` | **执行总纲**：10 个工作包 / 56 个任务包，含 AI 推进机制、批次门禁 G0-G8、质量策略、变更治理 | **任务从哪来** |
-| `docs/plan/WBS-STATUS.md` | **进度真源**：56 个任务包的四态状态表（未开始/进行中/待验/已完成） | **看进度只认这张表** |
-| `docs/release/README.md` | **版本地图**：7 个主线版本 v0.1→v1.0 的划分依据、版本号规则、能力阶梯、兼容性策略 | **决定「这版包含什么」** |
-| `docs/release/v*/` | **每版六份产物**：①`00-RESEARCH.md` ②`01-ASSESSMENT.md` ③`PRD.md` ④`DEV-PLAN.md` ⑤`TEST-PLAN.md` ⑥`05-TEST-REPORT.md` | 按流程**逐份产出**，不一次性铺 |
-| `tools/check_release_docs.py` | **流程机检**：产物齐全 / FR→TC 覆盖 / TC 有结果 / 评估报告与回写是否做 | 发版前与 PR 时跑 |
-| `docs/自动化测试平台调研与架构评估报告_v4.1_20261102.md` | **技术基线**：29 章，含架构原则、逻辑架构、工程结构、部署、安全、运维、质量、容量测算与证据附录 | 技术结论以此为准 |
+| 文档 | 用途 |
+|---|---|
+| [CONTRIBUTING.md](CONTRIBUTING.md) | 分支模型、提交规范、PR 与评审规则 |
+| [docs/OPS-MANUAL.md](docs/OPS-MANUAL.md) | 服务启停、日志、健康检查、备份恢复、常见故障处置 |
+| [docs/ROLLBACK.md](docs/ROLLBACK.md) | 版本回滚步骤与风险 |
+| [docs/CI接入指南.md](docs/CI接入指南.md) | CI 触发接口与流水线接入示例 |
+| [docs/adr/](docs/adr/) | 架构决策记录 |
 
-五层分工：**流程铁律回答「按什么顺序做」，报告回答「为什么这么设计」，规划回答「下一件做什么」，版本表回答「这版包含什么」，状态表回答「现在到哪了」**。
+## 路线图
 
-> **每个大版本的固定动作（大师 2026-11-02 定规，永久有效）**：
-> **先调研需求写评估报告 → 再写 PRD → 开发计划 → 测试计划 → 写完再测试 → 测完回写文档。**
-> 缺任一环，该版本不算完成，不得对外称已交付。机检：`python tools/check_release_docs.py`。
+1. 搭建小型试点测试项目，覆盖「建项目 → 编用例 → 并发执行 → 出报告 → 定时/CI」全链路。
+2. 按试点反馈迭代：优先修可用性问题，再补能力缺口。
+3. 每个迭代产出可复现的验证记录，能力不倒退。
 
-### 版本一览
+## 许可
 
-| 版本 | 代号 | 门禁 | 这一版能做到 |
-|---|---|---|---|
-| v0.1 | 地基 | G1 | 拉下代码 30 分钟跑起空壳，CI 能拦住跨层调用 |
-| v0.2 | 台账 | G2 | 能登录、建项目、录设备、导 461 条用例、按技术域筛 |
-| v0.3 | 编辑器 | G3 | 用例三视图编辑，改完还能跑（往返保真） |
-| v0.4 | 执行 | G4 | 4 条并发跑不打架，日志实时，取消停得住 |
-| v0.5 | 报告 | G5 | metadata 十项齐全，PDF 能直接发客户 |
-| v0.6 | 自动化 | G6 | 定时跑、提交就跑，结果自动回写 |
-| v1.0 | 生产就绪 | G7→G8 | 权限可审、出事能回滚、有人能守 |
-
-7 个版本 = 7 道门禁，56 个任务包一个不落。每版的能力**不倒退**：上一版的验收证据会固化成 `REG-*` 回归集，跑不过不许发版（`docs/release/README.md` §4）。
-
-> **进度口径**：不按日期、不按人月。**进度 = 已通过门禁的任务包数 / 56**。
-> 规划中出现的「参考人日/人月」只是相对体量，不构成承诺、不用于考核。
-> 推进主体为 AI 智能体，人类守四道闸门（决策 / 评审 / 授权 / 门禁）——见规划 §7。
-
-> 历史版本（v1/v2/v3 及 docx）已从工作区移除，需要追溯时从 git 历史取
-> （`git show b6a4491:docs/`）。报告修订理由见 §0.4。
-
-## 协作
-
-多人协作规则见 [CONTRIBUTING.md](CONTRIBUTING.md)。`main` 分支受保护，
-所有改动走 Pull Request，禁止直接推送。
+第三方组件许可与归属见 [packages/editor/NOTICE.md](packages/editor/NOTICE.md)（编辑器部分源自 RoboScope，Apache-2.0）。

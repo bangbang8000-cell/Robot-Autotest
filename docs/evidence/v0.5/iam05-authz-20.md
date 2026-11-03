@@ -43,7 +43,7 @@ $env:JAVA_HOME='C:\Users\everg\.jdk\temurin-25\jdk-25.0.2'
 |---|---|---|
 | 控制器级（MockMvc） | **36** | `MockMvcBuilders.standaloneSetup(...)` 装配 6 个控制器 + `AuthInterceptor` + `GlobalExceptionHandler`；越权判定走**真实** `AccessControlService`（真实 `PermissionMatrix` / `RoleCode`），仅 `UserRepository`、`ProjectRepository`、各业务仓储为内存桩 |
 | 纯服务级 | 0 | 本批未新增“只调 Service”的用例；服务内部的授权调用是通过控制器链路被真实执行的 |
-| 真实环境 HTTP 全链路 | 0 | **真实 149 + 真账号的 HTTP 全链路仍未跑**；本批不连接任何远端环境，也不依赖数据库 |
+| 真实环境 HTTP 全链路 | 0 | **本地 WSL 真实环境 + 真账号的 HTTP 全链路仍未跑**；本批不连接任何远端环境，也不依赖数据库 |
 
 其他说明：
 
@@ -110,7 +110,7 @@ $env:JAVA_HOME='C:\Users\everg\.jdk\temurin-25\jdk-25.0.2'
 
 ## 5. 仍未覆盖
 
-- **真实 149 + 真账号的 HTTP 全链路仍未跑**：本批全部是 MockMvc 控制器级，未经过真实
+- **本地 WSL 真实环境 + 真账号的 HTTP 全链路仍未跑**：本批全部是 MockMvc 控制器级，未经过真实
   Web 容器、真实数据库、真实令牌签发与真实项目数据。
 - 未纳入本批的端点：凭据（CREDENTIAL）、报告下载/导出、文件上传/下载、审计日志导出的
   越权矩阵；建议在 HRD-01 全矩阵验收时统一补齐。

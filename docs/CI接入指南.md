@@ -27,7 +27,7 @@ run 结束（passed / failed）
 ```
 
 **为什么必须自托管 runner**：托管 runner 在 GitHub 的公网网段，到不了 `10.202.54.x`
-被测设备与内网平台。自托管 runner 建议落在 149（见 ADR-0004）。
+被测设备与内网平台。自托管 runner 建议落在本地 WSL（见 ADR-0004）。
 
 ---
 
@@ -35,7 +35,7 @@ run 结束（passed / failed）
 
 | 项 | 要求 |
 |---|---|
-| 平台 | 后端 `:8081` 可从 runner 访问；前端 `:5173`（或生产地址）可从 GitHub 打开报告页 |
+| 平台 | 后端 `:8081` 可从 runner 访问；前端 `:5173`（或运行地址）可从 GitHub 打开报告页 |
 | 项目 | 已在平台创建，且该项目的执行计划（`planId`）已配置套件 |
 | 令牌 | 项目 API token，`token_kind='api'`、绑定单个 `project_id`、scope 含 `ci:trigger` |
 | 迁移 | 数据库已到 **V6_3**（`api_token.project_id` / `scopes`、`ci_trigger` 表） |
@@ -94,7 +94,7 @@ curl -i -X POST "http://<平台地址>:8081/api/ci/trigger" \
 | `commitSha` | 是 | 1~64 位十六进制，统一转小写后作为幂等键 |
 | `ref` | 否 | 如 `refs/heads/main`，进报告 metadata `CI_REF`（≤40 字符） |
 | `build` | 否 | 缺省取 `commitSha` 前 8 位，进报告 metadata `BUILD`（≤40 字符） |
-| `repo` | 否 | `owner/repo` 或群晖 `ssh://...`，用于判定回写目标 |
+| `repo` | 否 | `owner/repo` 或内网镜像仓（NAS）地址（`ssh://` / `git@`，按运维配置），用于判定回写目标 |
 
 响应（**成功与重复都是 202**）：
 
@@ -143,7 +143,7 @@ jobs:
             -d "{\"planId\":12,\"commitSha\":\"${GITHUB_SHA}\",\"ref\":\"${GITHUB_REF}\",\"repo\":\"${GITHUB_REPOSITORY}\"}"
 ```
 
-- `QA_PLATFORM_URL` 放 Repository variable，例如 `http://10.202.54.149:8081`。
+- `QA_PLATFORM_URL` 放 Repository variable，例如 `http://127.0.0.1:8081`。
 - `QA_CI_TOKEN` 放 Repository secret，值就是第 3 步生成的明文。
 - 不要用 `${{ secrets.* }}` 直接拼进 `run:` 之外的地方，也不要 `set -x`。
 
@@ -186,16 +186,16 @@ Actions 里对 202 视为成功即可；429 表示提交过于频繁（例如批
 > **未验证**。当前只有伪 HTTP 客户端的单测（passed→success / failed→failure / 失败不改结论）。
 > 首次启用时请先用一个测试仓库验证 status 是否出现在 commit 上。
 
-### 7.2 群晖 Git：明确不支持
+### 7.2 内网镜像仓（NAS）的 Git：明确不支持
 
-群晖 `git server` 只有 SSH，没有 HTTP/Web UI/webhook，**无法接收 commit status**。
+内网镜像仓（NAS）内置 Git 服务只有 SSH，没有 HTTP/Web UI/webhook，**无法接收 commit status**。
 
-- 代码判定 `ssh://` / `git@` / 含 `synology`、`syno.` 的仓库为群晖；
+- 代码按 `ssh://` / `git@` 前缀或运维配置的仓库标识判定为内网镜像仓（NAS）；
 - 回写时直接返回 **`not_supported`** 并写审计（`CI_WRITEBACK`，`result=not_supported`），
   **不发起任何 HTTP 请求，不假装成功**；
 - 触发响应里的 `writeback` 也会显示 `not_supported`。
 
-因此群晖仓库接入 CI 时，只能做到「触发 + 平台内看结论」，GitHub 侧没有状态徽章。
+因此内网镜像仓（NAS）仓库接入 CI 时，只能做到「触发 + 平台内看结论」，GitHub 侧没有状态徽章。
 
 ---
 
@@ -213,7 +213,7 @@ Actions 里对 202 视为成功即可；429 表示提交过于频繁（例如批
 | **202 但 `duplicated=true`** | 同计划同 commit 已触发过 | 正常；要重跑请换 commit 或换 plan |
 | run 长时间 Pending | 平台单 worker 串行队列 | 等或取消；不是 CI 接口问题 |
 | **回写 failed**，run 仍 passed | 设计如此：回写失败不改变结论 | 看 `ci_trigger.writeback_error`；修 token/权限后手工重试（当前无自动重试） |
-| 回写 `not_supported` | `repo` 是群晖 SSH 地址 | 预期行为；群晖不支持状态回写 |
+| 回写 `not_supported` | `repo` 是内网镜像仓（NAS） SSH 地址 | 预期行为；内网镜像仓（NAS）不支持状态回写 |
 | 回写 `skipped / token_missing` | 未配置 `GITHUB_STATUS_TOKEN` | 配环境变量并重启后端 |
 | 回写 `skipped / disabled` | `ci.writeback.enabled=false` | 显式开启 |
 | 回写 `github_http_403` | GitHub token 无 `repo:status` 权限或仓库不对 | 重新签发 token，确认 `repo` 字段 |
@@ -228,4 +228,4 @@ Actions 里对 202 视为成功即可；429 表示提交过于频繁（例如批
 | 迁移 V6_3 应用到 dev 库 | ✅ `flyway_schema_history` 到 6.3 |
 | GitHub 真实 commit status 回写 | ⚠️ **未验证（无 GITHUB_STATUS_TOKEN）** |
 | GitHub Actions 端到端触发 | ⚠️ **未在真实 GitHub 上跑过**（示例基于接口契约编写） |
-| 群晖回写 | ❌ **不支持**（代码返回 `not_supported`） |
+| 内网镜像仓（NAS）回写 | ❌ **不支持**（代码返回 `not_supported`） |

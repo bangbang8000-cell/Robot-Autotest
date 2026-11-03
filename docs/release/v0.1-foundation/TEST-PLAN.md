@@ -18,7 +18,7 @@ v0.1 没有业务功能，测试的对象是**约束**，不是**功能**。所�
 | 数据库迁移 | 空库能建、能拆、能重建；表结构与规范一致；关键约束真的生效 |
 | 构建链路 | 干净环境能一次跑通；同一命令连跑两次结果相同 |
 | CI 门禁 | 前一道关失败时后一道关不启动（不是全跑一遍再一起报） |
-| 环境基线 | 换一台机器（149 ↔ Windows）照文档能跑起来 |
+| 环境基线 | 换一台机器（本地 WSL ↔ Windows）照文档能跑起来 |
 
 ### 1.2 这一版不测什么（明确写出来，防止假覆盖）
 
@@ -40,7 +40,7 @@ v0.1 没有业务功能，测试的对象是**约束**，不是**功能**。所�
 | 层 | 本版用途 | 工具 | 归属 |
 |---|---|---|---|
 | L1 单元 | 统一响应体、异常映射、工具类 | JUnit 5 + AssertJ | AI |
-| L2 集成 | 迁移、约束、仓储骨架 | Spring Boot Test（`@Tag("it")`）+ 真实 MariaDB | AI |
+| L2 集成 | 迁移、约束、仓储骨架 | Spring Boot Test（`@Tag("it")`）+ 真实 MySQL 8.0 独立库 | AI |
 | 架构测试 | 分层规则 + **元测试**（证明规则能拦住违规） | ArchUnit | AI |
 | 构建验证 | bootstrap / build / lint 幂等 | Make + shell 断言 | AI |
 | L3-L7 | 不适用 | — | — |
@@ -134,9 +134,9 @@ void 规则能拦住故意违规的包() {
 
 | 项 | 内容 |
 |---|---|
-| 数据库（CI） | 149 本机 MariaDB，库 `robot_it`，每轮 `DROP + CREATE + migrate` |
+| 数据库（CI） | 本地 WSL 本机 MySQL 8.0，库 `robot_it`，每轮 `DROP + CREATE + migrate` |
 | 数据库（本地） | 经 SSH 隧道连 `robot_it_local`，与 CI 库隔离（ADR-0002） |
-| 运行时 | 149：Ubuntu 26.04 / JDK 21+ / Node 22 / MariaDB；本地：Windows + 同版本 JDK/Node |
+| 运行时 | 本地 WSL：Ubuntu-24.04 / JDK 21+ / Node 22 / MySQL 8.0；本地：Windows + 同版本 JDK/Node |
 | 数据 | **无业务数据**；仅 schema 与 flyway 元数据 |
 | 隔离要求 | CI 与本地**不得共用同一库**，否则会出现「偶发失败」且查不出原因 |
 

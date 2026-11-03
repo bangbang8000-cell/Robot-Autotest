@@ -31,7 +31,7 @@ CREATE TABLE `ci_trigger` (
   commit_sha       VARCHAR(64)  NOT NULL COMMENT '触发提交（统一小写，幂等键之一）',
   ref              VARCHAR(255) NULL COMMENT '如 refs/heads/main',
   build            VARCHAR(128) NOT NULL COMMENT 'SW_BUILD 取值；缺省为 sha 前 8 位',
-  repo             VARCHAR(255) NULL COMMENT 'owner/repo 或 ssh:// 群晖仓库，用于回写判定',
+  repo             VARCHAR(255) NULL COMMENT 'owner/repo 或 ssh:// 内网仓库，用于回写判定',
   run_id           VARCHAR(64)  NULL COMMENT '平台 RUN_ID；建 run 后回填',
   writeback_status VARCHAR(16)  NOT NULL DEFAULT 'pending'
     COMMENT 'pending/success/failed/skipped/not_supported',

@@ -137,7 +137,7 @@
 | TC-v0.6-408 | 非法 planId | 404，不返回 500 |
 | TC-v0.6-409 | 回写成功 | GitHub 上 commit 状态变 `success`，链接指向报告 |
 | TC-v0.6-410 | 回写失败不影响 run | 造 token 失效 → run 仍 `finished`，`trigger_log.writeback_error` 有记录 |
-| TC-v0.6-411 | **群晖不虚报** | 群晖仓库触发 → `writeback=not_supported`，不是 `success` |
+| TC-v0.6-411 | **内网镜像仓（NAS）不虚报** | 内网镜像仓（NAS）仓库触发 → `writeback=not_supported`，不是 `success` |
 | TC-v0.6-412 | Actions 端到端 | 用示例 workflow 真实 push 一次，平台产生 run |
 
 ---
@@ -157,7 +157,7 @@
 
 | 项 | 内容 |
 |---|---|
-| 环境 | test（149 `robot_test`），单实例 |
+| 环境 | test（本地 WSL `robot_test`），单实例 |
 | 计划数据 | 3 个观测计划 + 2 个依赖计划 + 1 个 CI 计划 |
 | 用例集 | 轻量（2 条 sleep 3 s），避免观测期占满设备 |
 | 重启测试 | 观测期第 3 天主动重启一次平台 |
@@ -172,7 +172,7 @@
 - [ ] **7 天观测：成功率 100%，偏差 ≤30 s，无重复，无堆积**
 - [ ] metadata 注入 9 条（201~209）全绿，**含「能导对外 PDF」**
 - [ ] 依赖 10 条（301~310）全绿，含跨天口径与环路径
-- [ ] CI 触发 12 条（401~412）全绿，含幂等与「群晖不虚报」
+- [ ] CI 触发 12 条（401~412）全绿，含幂等与「内网镜像仓（NAS）不虚报」
 - [ ] 安全 4 条（501~504）全绿
 - [ ] 无 P0/P1 未关闭缺陷
 
@@ -190,7 +190,7 @@
 | `meta-inject.md` | 定时 run 的十项 + 对外 PDF 截图 |
 | `dep-cycle.txt` | 环检测报错含路径 |
 | `ci-idempotent.log` | 5 次重放只 1 个 run |
-| `writeback.md` | GitHub status 截图 + 群晖 `not_supported` |
+| `writeback.md` | GitHub status 截图 + 内网镜像仓（NAS） `not_supported` |
 | `security-4.md` | token 相关四条结果 |
 
 ---
@@ -203,5 +203,5 @@
 | 只测单次触发不测并发 | 重启/多线程下重复触发 | 111/112 必测 |
 | 忘测「跨天口径」 | 昨晚成功当成今天通过，依赖形同虚设 | 307 必测 |
 | metadata 只测字段不测导出 | 字段对了但导不出（长度/格式问题） | 208 必测 |
-| 群晖回写被假设成功 | 用户以为有状态，实际没有 | 411 断言 `not_supported` |
+| 内网镜像仓（NAS）回写被假设成功 | 用户以为有状态，实际没有 | 411 断言 `not_supported` |
 | 观测期占用真实设备 | 影响其他测试 | 观测用轻量用例集 + 独立测试项目 |

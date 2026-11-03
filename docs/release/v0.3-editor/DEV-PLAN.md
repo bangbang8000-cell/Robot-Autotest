@@ -154,7 +154,7 @@ def judge(a, b):
 
 | 来源 | 数量 | 覆盖什么 | 目录 |
 |---|---:|---|---|
-| 149 现有 Roce 套件 | 13 | 真实生产用例（含 metadata 十项、`Suite Setup`、库导入） | `fixtures/roundtrip/prod/` |
+|仓库内现有 Roce 套件 | 13 | 真实生产用例（含 metadata 十项、`Suite Setup`、库导入） | `fixtures/roundtrip/prod/` |
 | 8001 的 461 条中抽取 | 17 | 各技术域典型步骤（iperf、PFC、RDMA、MTU、中断亲和） | `fixtures/roundtrip/legacy/` |
 | 手工构造的语法边界 | 20 | 见下表 | `fixtures/roundtrip/syntax/` |
 

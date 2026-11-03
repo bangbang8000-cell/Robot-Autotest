@@ -14,7 +14,7 @@
 - [x] T0-2 确认权限资源 `EXECUTION` 方案（ADMIN 全 / PM 全 / ENGINEER 读写执行 / VIEWER 读）
 - [x] T0-3 确认 DUT 采用系统 OpenSSH + `sshpass -e`，不引入 JSch
 - [x] T0-4 确认前端只做 `RunsView`（运行记录 + 实时日志面板）
-- [x] T0-5 确认 EXE-07/08 本机只交付脚本与回放证据，实跑留 149
+- [x] T0-5 确认 EXE-07/08 本机只交付脚本与回放证据，实跑留本地 WSL
 
 ---
 
@@ -108,7 +108,7 @@
 - [x] T3-8 生成 `docs/evidence/v0.4/lease-concurrency.log`
   - 判据：真实 `mvn -Dtest=LeaseConcurrencyTest` 输出，不手写。
 - [x] T3-9 生成 `docs/evidence/v0.4/lease-conflict-0.sql`
-  - 判据：SQL 文本 + 149 执行命令，首行 `[待149执行]`。
+  - 判据：SQL 文本 + 本地 WSL 执行命令，首行 `[待本地 WSL执行]`。
 
 **验收**：`LeaseConcurrencyTest` 成功数恰为 1；`LeaseServiceTest` 全绿。
 
@@ -132,7 +132,7 @@
 - [x] T4-7 新增 `CancelServiceTest`、`RunTimeoutMonitorTest`、`RestartRecoveryTest`、`ProcessTreeKillerTest`
   - 判据：spec §5.1 对应行；OS 不支持子进程时 `Assumptions` 跳过并记录原因。
 
-**验收**：单测全绿；本机子进程 kill 实测；149 重启恢复待人工。
+**验收**：单测全绿；本机子进程 kill 实测；本地 WSL 重启恢复待人工。
 
 ---
 
@@ -156,9 +156,9 @@
 - [x] T5-8 前端 `frontend/src/api/execution.ts` + `RunsView.vue` 实时面板
   - 判据：WS 连接/重连 3s/补 200 行/FAIL 过滤/自动滚动；`npm run build` 与 `npm run lint` exit 0。
 - [x] T5-9 生成 `docs/evidence/v0.4/log-latency.txt`
-  - 判据：首行 `[待149实跑]` + 测量方法与命令；不编造 P95。
+  - 判据：首行 `[待本地 WSL 实跑]` + 测量方法与命令；不编造 P95。
 
-**验收**：日志单测全绿；前端 build/lint 双 0；真实延迟留 149。
+**验收**：日志单测全绿；前端 build/lint 双 0；真实延迟留本地 WSL。
 
 ---
 
@@ -191,7 +191,7 @@
 - [x] T6B-6 新增 `DutCollectorServiceTest`、`DutTargetRedactionTest`
   - 判据：解析非空；三类失败分类正确；口令 grep 0 命中。
 - [x] T6B-7 生成 `docs/evidence/v0.4/dut-real.md`
-  - 判据：首行 `[REPLAY] 非实网`；实网命令与 149 待办列清；不冒充通过。
+  - 判据：首行 `[REPLAY] 非实网`；实网命令与本地 WSL 待办列清；不冒充通过。
 
 **验收**：分类 30/30；回放采集解析成功；口令扫描 0；EXE-08 状态 `待验`。
 
@@ -208,9 +208,9 @@
 - [x] T7-3 新增 `fixtures/bench/README.md`
   - 判据：固定用例形态、加速比口径、独占环境要求。
 - [x] T7-4 生成 `docs/evidence/v0.4/bench-20rounds.txt`、`bench-2process.log`
-  - 判据：首行 `[待149实跑]`；附脚本命令与预期门槛（≥2.5x / 最差 ≥2.2x / 冲突 0）。
+  - 判据：首行 `[待本地 WSL 实跑]`；附脚本命令与预期门槛（≥2.5x / 最差 ≥2.2x / 冲突 0）。
 
-**验收**：脚本 `bash -n` 通过；fixture 可被 RF 解析需 149 验证。
+**验收**：脚本 `bash -n` 通过；fixture 可被 RF 解析需本地 WSL 验证。
 
 ---
 
@@ -228,7 +228,7 @@
 
 ---
 
-## 人工验收（149）
+## 人工验收（本地 WSL）
 
 - [ ] H-1 `make db-reset` + `make db-migrate` + `make db-audit`：V4_1~V4_3 落库无错
 - [ ] H-2 `mvn -B -Pit test`：DB 集成测试全绿

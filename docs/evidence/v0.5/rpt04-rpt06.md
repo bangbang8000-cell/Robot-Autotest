@@ -117,7 +117,7 @@
 
 ## 3. 清理 dry-run 示例（**伪造数据**）
 
-> 以下响应为手写示例，**未在本机或 149 执行过真实清理**；真实执行需管理员显式 `dryRun=false`，且默认开关 `report.retention.enabled=false`。
+> 以下响应为手写示例，**未在本机或本地 WSL 执行过真实清理**；真实执行需管理员显式 `dryRun=false`，且默认开关 `report.retention.enabled=false`。
 
 `POST /api/reports/retention/run?projectId=3&dryRun=true`
 
@@ -172,7 +172,7 @@
 ## 5. 未覆盖项与风险
 
 1. **迁移需手工执行**：`spring.flyway.enabled=false`，新增的 `V5_4__artifact_pin.sql` 不会随应用启动自动落库，必须在部署窗口执行 `make db-migrate`；未执行前调用清理接口会因 `run_artifact.pinned` 不存在而报 SQL 错误。
-2. **真实大产物清理未在 149 执行**：本机仅有单元/行为测试，`ArtifactFileStoreImpl` 的真实文件系统删除未做实机验证；149 上建议先在 `dryRun=true` 核对清单，再由管理员在窗口期执行。
+2. **真实大产物清理未在本地 WSL 执行**：本机仅有单元/行为测试，`ArtifactFileStoreImpl` 的真实文件系统删除未做实机验证；本地 WSL 上建议先在 `dryRun=true` 核对清单，再由管理员在窗口期执行。
 3. **清理为破坏性操作**：`report.retention.enabled=false` 默认关闭，接口 `dryRun` 默认 true；执行前仍须人工二次确认，且审计写入与原文件删除不是同一事务（删文件成功但审计失败时，文件已不可恢复）。
 4. **趋势按最近 N 次跨环境取点**：`limit` 限制的是用例最近 N 次运行（可能跨环境），前端按 `envKey` 分组断线；若某环境历史点被其他环境挤出 N，则该环境线只显示剩余点，不会回补更早历史。
 5. **通过率统计口径**：只统计 `run_status IN ('passed','failed')` 的 run，`created/running/cancelled` 不计入分母；bucket 使用数据库时区（Asia/Shanghai），跨时区部署需复核。

@@ -21,7 +21,7 @@
 | 取消/超时/幂等/恢复 | 杀进程树、释放租约、同 `run_request_id` 只创建 1 个 run、重启无僵尸 |
 | 失败分类 | `assert / env / infra / canceled` 四类，30 条样本准确率 100%，仅 env 重试 1 次 |
 | DUT 采集 | SSH 采集 `ip -br addr` / `ethtool -S` / `/proc/interrupts`，失败分类与建议，凭据不进日志 |
-| 4 并发压测 | 固定 fixture + 可复跑脚本，20 轮报告（本机只交付脚本，实跑留 149） |
+| 4 并发压测 | 固定 fixture + 可复跑脚本，20 轮报告（本机只交付脚本，实跑留本地 WSL） |
 
 ### 1.2 明确不做
 
@@ -33,7 +33,7 @@
 
 ### 1.3 环境事实与降级口径
 
-| 项 | 本机（Windows） | 149（验收环境） |
+| 项 | 本机（Windows） | 本地 WSL（验收环境） |
 |---|---|---|
 | MariaDB | 无 | 有，`make db-reset` / `make db-audit` |
 | RF / pabot | 无 | `~/rf-stack/.venv`（RF 7.5 + pabot 5.2.2） |
@@ -396,7 +396,7 @@ CREATE TABLE `run_attempt` (
 | `RunExecutionServiceTest` | 最小闭环 | 假 launcher + 临时 output.xml → FINISHED + totalTests>0；空产物 → FAILED(no_tests_executed) |
 | `MigrationFileTest` | 迁移完整性 | `V4_1/V4_2/V4_3` 与对应 down 文件存在；文本含关键表/列名 |
 
-### 5.2 需要 149 的验收（本机不跑，证据标「待 149」）
+### 5.2 需要本地 WSL 的验收（本机不跑，证据标「待本地 WSL」）
 
 - 真实 `mvn -B -Pit test` + `make db-reset` + `make db-audit`。
 - TC-v0.4-301/303/306：真实 pabot 故障注入；本机只做单测等价用例。
@@ -407,7 +407,7 @@ CREATE TABLE `run_attempt` (
 ### 5.3 前端验证
 
 - `npm run build` exit 0；`npm run lint` exit 0。
-- 运行时面板需 149 + 真实后端联调（本机只做构建与静态检查）。
+- 运行时面板需本地 WSL + 真实后端联调（本机只做构建与静态检查）。
 
 ---
 
@@ -418,13 +418,13 @@ CREATE TABLE `run_attempt` (
 | `mvn-test.log` | 是 | 全量单测输出（含 `Tests run`） |
 | `lease-concurrency.log` | 是 | `LeaseConcurrencyTest` 专项输出（成功 1 / 总成功 10） |
 | `failure-class-30.md` | 是 | 30 条样本 → 分类结果表，100% |
-| `fault-injection-8.md` | 是 | 8 条映射到单测/149 实跑，标注哪些未实跑 |
-| `bench-20rounds.txt` | 否 | 首行 `[待149实跑]`，附脚本命令与固定 fixture 说明 |
-| `bench-2process.log` | 否 | 首行 `[待149实跑]` |
-| `log-latency.txt` | 否 | 首行 `[待149实跑]` |
-| `cancel-ps.txt` | 部分 | 本机子进程 kill 单测结果 + 149 实跑待办 |
-| `restart-recovery.log` | 是 | 单测恢复报告 + 149 重启验证待办 |
-| `lease-conflict-0.sql` | 否 | 提供 SQL 与执行命令，标注 `[待149执行]` |
+| `fault-injection-8.md` | 是 | 8 条映射到单测/本地 WSL 实跑，标注哪些未实跑 |
+| `bench-20rounds.txt` | 否 | 首行 `[待本地 WSL 实跑]`，附脚本命令与固定 fixture 说明 |
+| `bench-2process.log` | 否 | 首行 `[待本地 WSL 实跑]` |
+| `log-latency.txt` | 否 | 首行 `[待本地 WSL 实跑]` |
+| `cancel-ps.txt` | 部分 | 本机子进程 kill 单测结果 + 本地 WSL 实跑待办 |
+| `restart-recovery.log` | 是 | 单测恢复报告 + 本地 WSL 重启验证待办 |
+| `lease-conflict-0.sql` | 否 | 提供 SQL 与执行命令，标注 `[待本地 WSL执行]` |
 | `dut-real.md` | 部分 | 首行 `[REPLAY] 非实网`，回放样本 + 口令扫描 0 命中；实网待 DUT |
 | `frontend-build.log` / `frontend-lint.log` | 是 | 前端构建与 lint |
 
@@ -457,10 +457,10 @@ npm run lint
 | #30 EXE-01 | 状态机 / 队列 / 运行骨架 | `待验` | `mvn-test.log` |
 | #31 EXE-02 | 租约 | `待验` | `lease-concurrency.log` |
 | #32 EXE-03 | pabot 编排 | `待验` | `fault-injection-8.md` |
-| #33 EXE-04 | 实时日志 | `待验` | `log-latency.txt`（待149） |
+| #33 EXE-04 | 实时日志 | `待验` | `log-latency.txt`（待本地 WSL） |
 | #34 EXE-05 | 取消/超时/幂等/恢复 | `待验` | `cancel-ps.txt` |
 | #35 EXE-06 | 失败分类 | `待验` | `failure-class-30.md` |
-| #36 EXE-07 | 4 并发压测 | `待验` | `bench-20rounds.txt`（待149） |
+| #36 EXE-07 | 4 并发压测 | `待验` | `bench-20rounds.txt`（待本地 WSL） |
 | #37 EXE-08 | DUT 实网 | `待验` | `dut-real.md`（`[REPLAY]`） |
 
 汇总行从 `24 / 1 / 31 / 0` 变为 `16 / 1 / 39 / 0`；AI 不得改 `已完成`。
@@ -472,21 +472,21 @@ npm run lint
 | 风险 | 触发信号 | 处置 |
 |---|---|---|
 | 新增 websocket 依赖拉取失败 | `mvn` 报无法解析 `spring-boot-starter-websocket` | 回退为 SSE（`SseEmitter`）并记录偏差，找你确认 |
-| 本机 JDK 23 与 `release 21` 不兼容 | 编译报 `--release 21` 错 | 用 JDK 21（149 同版）或调 `maven.compiler.release`；不改业务代码 |
-| 系统 `sshpass` 缺失 | 预检 `SSHPASS_NOT_AVAILABLE` | 只用公钥模式；口令模式在 149 装 `sshpass` |
+| 本机 JDK 23 与 `release 21` 不兼容 | 编译报 `--release 21` 错 | 用 JDK 21（本地 WSL 同版）或调 `maven.compiler.release`；不改业务代码 |
+| 系统 `sshpass` 缺失 | 预检 `SSHPASS_NOT_AVAILABLE` | 只用公钥模式；口令模式在本地 WSL 装 `sshpass` |
 | DUT 掉线 | 实网命令超时 | 回放证据 `[REPLAY]`，EXE-08 保持 `待验` |
-| 真实 pabot 未装 | 本机无法跑最小闭环 | 单测用 Fake launcher + 合成 output.xml；真跑留 149 |
+| 真实 pabot 未装 | 本机无法跑最小闭环 | 单测用 Fake launcher + 合成 output.xml；真跑留本地 WSL |
 
 ---
 
 ## 10. 决策点（已按批准结论落地）
 
-> 2026-11-03：以下 7 项随 v0.4 实施采纳，原意未改；第 6 项严格按承诺执行——EXE-07/08 只交付可复跑脚本与回放，证据标注 `[待149实跑]` / `[REPLAY]`，状态置 `待验`，未冒充实网通过。
+> 2026-11-03：以下 7 项随 v0.4 实施采纳，原意未改；第 6 项严格按承诺执行——EXE-07/08 只交付可复跑脚本与回放，证据标注 `[待本地 WSL 实跑]` / `[REPLAY]`，状态置 `待验`，未冒充实网通过。
 
 1. 新增 `spring-boot-starter-websocket` 依赖（EXE-04 必须）。
 2. 新增权限资源 `EXECUTION` 及三角色动作分配（§2.3）。
 3. 队列表本版不写，队列语义落 `run.priority + enqueued_at`（§2.2）。
 4. DUT 认证采用系统 OpenSSH + `sshpass -e`（口令经环境变量，不落盘），不引入 JSch。
 5. 前端只做 `RunsView` 运行记录 + 实时日志面板（§2.4）。
-6. 本机无法实跑 pabot/DUT/压测：EXE-07/08 证据标注 `[待149实跑]` / `[REPLAY]`，状态置 `待验`。
-7. 全部 DB 集成验证留 149（`mvn -Pit` + `make db-*`），本机只跑无库单测。
+6. 本机无法实跑 pabot/DUT/压测：EXE-07/08 证据标注 `[待本地 WSL 实跑]` / `[REPLAY]`，状态置 `待验`。
+7. 全部 DB 集成验证留本地 WSL（`mvn -Pit` + `make db-*`），本机只跑无库单测。

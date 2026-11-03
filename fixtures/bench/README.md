@@ -42,7 +42,7 @@
 
 压测对机器负载敏感，**不独占的机器上跑出来的数字不能进证据**：
 
-1. 149 上不得有其他并发任务：不跑平台执行、不跑 `mvn -Pit`、不跑前端构建、
+1. 本地 WSL 上不得有其他并发任务：不跑平台执行、不跑 `mvn -Pit`、不跑前端构建、
    不同时开 `robotdashboard` 的入库脚本。
 2. 无残留进程：跑前确认 `ps -ef | grep -E 'pabot|robot' | grep -v grep` 为空；
    上一轮被中断时残留的 `pabot` 会抢占 CPU，直接让耗时失真。
@@ -53,10 +53,10 @@
 
 ## 4. 复跑命令
 
-### 149（唯一可产出正式证据的环境）
+### 本地 WSL（唯一可产出正式证据的环境）
 
 ```bash
-cd ~/robot-autotest            # 仓库根（按 149 实际检出路径为准）
+cd ~/robot-autotest            # 仓库根（按本地 WSL 实际检出路径为准）
 ps -ef | grep -E 'pabot|robot' | grep -v grep   # 应为空
 bash scripts/bench-4way.sh --rounds 20 --venv "$HOME/rf-stack/.venv/bin"
 ```
@@ -93,6 +93,6 @@ bash scripts/bench-4way.sh --help      # 只打印用法
 
 ## 6. 与 spec 的对应
 
-- spec §1.1「4 并发压测」：固定 fixture + 可复跑脚本，20 轮报告（本机只交付脚本，实跑留 149）。
+- spec §1.1「4 并发压测」：固定 fixture + 可复跑脚本，20 轮报告（本机只交付脚本，实跑留本地 WSL）。
 - spec §4.4 pabot 编排环境变量：`TZ` / `LANG` / `PYTHONUNBUFFERED` / PATH 前置 venv。
-- spec §6 证据清单：`bench-20rounds.txt`、`bench-2process.log`，首行 `[待149实跑]`。
+- spec §6 证据清单：`bench-20rounds.txt`、`bench-2process.log`，首行 `[待本地 WSL 实跑]`。
