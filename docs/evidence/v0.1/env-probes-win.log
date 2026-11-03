@@ -1,0 +1,16 @@
+环境八探针 @ Thinkbook14G5 / Windows/Git-Bash / 2026-11-04 01:01:37    
+---------------------------------------------------------------------------------------------------
+级|探针  |实测值                         |修复建议
+---------------------------------------------------------------------------------------------------
+OK |java    |java 23.0.2                       |-
+FAIL|mvn     |本会话未找到（PATH 为启动时快照）|已写入注册表 PATH 的：重开终端；否则装 3.9.x 并加入 PATH
+OK |node    |node 22.22.2                      |-
+WARN|mysql   |本平台无 mysql/mariadb 客户端|数据库在 WSL；Windows 侧不装也能构建
+WARN|rf      |本平台未找到                |执行内核在 WSL：bash scripts/env-setup-rf.sh
+WARN|pabot   |本平台未找到                |执行内核在 WSL：bash scripts/env-setup-rf.sh
+OK |chrome  |chrome.exe                        |-
+SKIP|dut     |未提供 DUT_A / DUT_B           |需要时：DUT_A=... DUT_B=... bash scripts/env-probes.sh
+---------------------------------------------------------------------------------------------------
+[结果] FAIL：硬项 1 个不满足，软项告警 3 个
+  红：mvn      — 本会话未找到（PATH 为启动时快照）
+win 探针 exit=1

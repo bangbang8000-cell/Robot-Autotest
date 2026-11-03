@@ -1,0 +1,24 @@
+数据源: 基本功能导入测试v0.2.6.0.1.xlsx [详细测试流程]
+用例总数: 226
+  L0    10
+  L1    89
+  L2    32
+  LX    95
+
+规则命中分布:
+  LX:not-whitelisted               74
+  L1:ethtool-write                 52
+  L1:title-action                  34
+  LX:no-command                    21
+  L2:switch-config                 21
+  L0:readonly-whitelist            10
+  L1:ip-modify                      3
+  L2:step-reboot-power              2
+  L2:firmware-bios                  2
+  L2:reboot-power                   2
+  L2:step-power-cycle               2
+  L2:driver                         1
+  L2:ethtool-selftest               1
+  L2:link-down                      1
+
+已写出: docs/evidence/v0.2/cas03-ledger-classification.csv（226 行）

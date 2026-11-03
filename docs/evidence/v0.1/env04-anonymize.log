@@ -1,0 +1,9 @@
+源文件      : 基本功能导入测试v0.2.6.0.1.xlsx
+用例页      : 详细测试流程
+保留数据行  : 226
+替换统计    : IP 782 / MAC 7 / 账户 19 / 序列号 0
+唯一映射    : IP 34 / MAC 6 / 账户 1 / 序列号 0
+输出        : fixtures\case-ledger\ledger-sample-226.xlsx
+映射表      : artifacts/tmp/ledger-map.csv（含真实值，不得入仓）
+自检通过：输出中 IP 全部落在 10.0.0.0/16 假地址段（782 处）
+脱敏 exit=0

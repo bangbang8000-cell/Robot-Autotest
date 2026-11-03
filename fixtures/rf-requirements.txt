@@ -1,0 +1,15 @@
+# ENV-01：RF 执行内核依赖清单（版本固定，供 ~/rf-stack/.venv 原地重建）
+#
+# 口径见 docs/env/环境基线.md §2。改版本必须有理由，并同步更新基线文档。
+# 安装：bash scripts/env-setup-rf.sh
+
+# 执行内核。基线口径 7.5.x；RF 7 起 --output 序列化格式为 <meta name= value=>，
+# 影响 tools/check_meta.py 与 RPT-01 的产物解析，升大版要先跑回归。
+robotframework==7.5.1
+
+# 并行执行。EXE-03 / EXE-07 依赖；5.2.2 为已实测版本。
+robotframework-pabot==5.2.2
+
+# SSH 采集器。EXE-08 与 fixtures/smoke 依赖。
+# 3.8.0 是当前最高稳定版（3.8.1 仅有 rc，不锁预发布）。
+robotframework-sshlibrary==3.8.0

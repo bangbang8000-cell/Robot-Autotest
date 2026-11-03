@@ -1,0 +1,11 @@
+[rf] python3 3.12
+[rf] 复用已有 venv：/home/evergreen/rf-stack/.venv
+[rf] 安装依赖（源：https://pypi.tuna.tsinghua.edu.cn/simple）
+[rf] ~/.bashrc 已有 rf-stack 段，跳过
+[rf] robot     : Robot Framework 7.5.1 (Python 3.12.3 on linux)
+[rf] pabot     : Version 5.2.2
+[rf] SSHLibrary: 3.8.0
+[rf] PATH 检查: robot 可在未加绝对路径时被解析（pabot 子进程依赖此项）
+[rf] OK：/home/evergreen/rf-stack/.venv
+[rf] 复探：bash scripts/env-probes.sh
+setup exit=0

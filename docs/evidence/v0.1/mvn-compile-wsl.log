@@ -1,0 +1,8 @@
+[INFO] --- compiler:3.13.0:compile (default-compile) @ robot-autotest-backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  42.889 s
+[INFO] Finished at: 2026-11-04T01:02:33+08:00
+[INFO] ------------------------------------------------------------------------

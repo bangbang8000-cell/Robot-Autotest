@@ -1,0 +1,238 @@
+﻿用例编号,安全级,判定规则,依据,标题,一级分类,二级分类,交换机列原文
+TN-IMP-001,LX,LX:not-whitelisted,未在白名单： curl --fail --insecure --user admin https://10.202 / curl --fail --insecure --user admin https://10.202,BMC/BIOS网卡资产识别,基本功能测试,BMC/BIOS识别测试（源表续行）,无（不修改交换机）
+TN-IMP-002,L0,L0:readonly-whitelist,命令全命中只读白名单，步骤无动作,BMC 识别 - SMBus/I2C 链路硬件识别,基本功能测试,BMC/BIOS识别测试,无（无需交换机配置）。
+TN-IMP-003,LX,LX:no-command,命令列为空，无法白名单核验,BMC 识别 - MCTP over SMBus 端点识别,基本功能测试,BMC/BIOS识别测试,无（无需交换机配置）。
+TN-IMP-004,LX,LX:no-command,命令列为空，无法白名单核验,BMC 识别 - MCTP over PCIe 端点识别,基本功能测试,BMC/BIOS识别测试,无（无需交换机配置）。
+TN-IMP-005,LX,LX:no-command,命令列为空，无法白名单核验,BMC 识别 - NCSI 边带端口识别,基本功能测试,BMC/BIOS识别测试,无（无需交换机配置）。
+TN-IMP-006,LX,LX:no-command,命令列为空，无法白名单核验,BIOS 识别 - PCIe 原生枚举识别,基本功能测试,BMC/BIOS识别测试,无（无需交换机配置）。
+TN-IMP-007,LX,LX:no-command,命令列为空，无法白名单核验,BIOS 识别 - PCIe Option ROM 识别,基本功能测试,BMC/BIOS识别测试,无（无需交换机配置）。
+TN-IMP-008,LX,LX:no-command,命令列为空，无法白名单核验,BIOS 识别 - SMBus/I2C 设备枚举识别,基本功能测试,BMC/BIOS识别测试,无（无需交换机配置）。
+TN-IMP-009,LX,LX:no-command,命令列为空，无法白名单核验,BIOS 识别 - MCTP 协议端点识别,基本功能测试,BMC/BIOS识别测试,无（无需交换机配置）。
+TN-IMP-010,LX,LX:no-command,命令列为空，无法白名单核验,BIOS 识别 - NCSI 端口配置识别,基本功能测试,BMC/BIOS识别测试,无（无需交换机配置）。
+TN-IMP-011,L1,L1:title-action,命令只读但标题含动作词：OS安装,OS安装,基本功能测试,OS安装与网卡识别测试,无（无需交换机配置）。
+TN-IMP-012,LX,LX:not-whitelisted,未在白名单： modinfo mlx5_core,驱动版本更新与检查,基本功能测试,OS安装与网卡识别测试,无（无需交换机配置）。
+TN-IMP-013,LX,LX:not-whitelisted,未在白名单： sudo mlxfwmanager -d 0000:45:00.0 --query,FW版本更新与检查,基本功能测试,OS安装与网卡识别测试,无（无需修改交换机）。
+TN-IMP-014,LX,LX:not-whitelisted,未在白名单： ip address show dev ens17np0,网卡信息检查,基本功能测试,OS安装与网卡识别测试,无（无需修改交换机）。
+TN-IMP-015,L2,L2:driver,sudo modprobe -r mlx5_ib mlx5_core,驱动卸载加载测试,基本功能测试,OS安装与网卡识别测试,无（无需修改交换机）。
+TN-IMP-016,L0,L0:readonly-whitelist,命令全命中只读白名单，步骤无动作,多型号CPU服务器兼容测试,基本功能测试,OS安装与网卡识别测试,无；如新平台需配置测试网络，使用独立测试链路，不修改现网。
+TN-IMP-017,L0,L0:readonly-whitelist,命令全命中只读白名单，步骤无动作,操作系统兼容性测试,基本功能测试,OS安装与网卡识别测试,无（无需修改交换机；需要时使用隔离测试网络）。
+TN-IMP-018,L1,L1:title-action,"命令只读但标题含动作词：iommu设置
+（后续测试都需要保留此项配置）","iommu设置
+（后续测试都需要保留此项配置）",基本功能测试,iommu配置,无（不修改交换机）。
+TN-IMP-019,LX,LX:not-whitelisted,未在白名单： curl --fail --insecure --user admin https://10.202 / curl --fail --insecure --user admin https://10.202,redfish获取网卡信息测试,基本功能测试,redfish识别测试,无（不修改交换机）。
+TN-IMP-020,LX,LX:not-whitelisted,未在白名单： sudo lldpcli show neighbors ports ens17np0 details,LLDP 功能测试,基本功能测试,LLDP 功能测试,无需改动；确保所连交换机接口已启用LLDP。
+TN-IMP-021,L0,L0:readonly-whitelist,命令全命中只读白名单，步骤无动作,网卡PCIE信息检查,基本功能测试,网卡PCIE信息检查,无（不修改交换机）。
+TN-IMP-022,LX,LX:not-whitelisted,未在白名单： ip -s -s link show dev ens17np0 / rdma statistic show link mlx5_0/1,全量统计指标查询验证,基本功能测试,网卡监控指标完整性验证,无（不修改交换机）。
+TN-IMP-023,LX,LX:not-whitelisted,未在白名单： ipmitool -I lanplus -H 10.202.54.11 -U admin -a sd / ipmitool -I lanplus -H 10.202.54.11 -U admin -a fr,IPMI 协议带外采集网卡信息验证,基本功能测试,带外 IPMI 网卡指标采集测试,无（不修改交换机）。
+TN-IMP-024,LX,LX:no-command,命令列为空，无法白名单核验,SNMP 协议带外采集网卡信息验证,基本功能测试,带外 SNMP 网卡指标采集测试,无（不修改交换机）。
+TN-IMP-025,L0,L0:readonly-whitelist,命令全命中只读白名单，步骤无动作,光模块数字诊断指标验证,基本功能测试,光模块 DDM 指标监控测试,无（不修改交换机）。
+TN-IMP-026,LX,LX:not-whitelisted,未在白名单： curl --fail --insecure --user admin https://10.202 / curl --fail --insecure --user admin https://10.202,网卡和光模块sensor检查测试,基本功能测试,光模块兼容测试,无（不修改交换机）。
+TN-IMP-027,L0,L0:readonly-whitelist,命令全命中只读白名单，步骤无动作,光模块信息检查测试,基本功能测试,光模块兼容测试,无（不修改交换机）。
+TN-IMP-028,LX,LX:not-whitelisted,未在白名单： numactl --physcpubind=16-47 --membind=0 /home/insp / numactl --physcpubind=16-47 --membind=0 /home/insp,光模块打流测试,基本功能测试,光模块兼容测试,无（沿用已连通的CX7测试链路；不改交换机）。
+TN-IMP-029,L0,L0:readonly-whitelist,命令全命中只读白名单，步骤无动作,与其它型号网卡混用测试,基本功能测试,不同型号网卡兼容测试,无（不修改交换机；复用现有两套网卡测试网络）。
+TN-IMP-030,L1,L1:title-action,命令只读但标题含动作词：验证网卡端口速率与双工模式的自动协商能力，覆盖自协商开关控制、全速率档位,验证网卡端口速率与双工模式的自动协商能力，覆盖自协商开关控制、全速率档位协商、双工模式匹配、协商后业务验证，需对接物理链,基本功能测试,端口速率自动协商功能验证,保持现有400G测试端口配置。
+TN-IMP-031,L2,L2:ethtool-selftest,sudo ethtool -t ens17np0 online,网卡驱动自测试,基本功能测试,网卡驱动自测试,无（不修改交换机）。
+TN-IMP-032,LX,LX:not-whitelisted,未在白名单： sudo ip -6 addr add fd00:30:11::1/64 dev ens17np0 / sudo ip -6 addr del fd00:30:11::1/64 dev ens17np0,IPv6支持测试,基本功能测试,网卡IPV6测试,无（当前L2链路支持IPv6二层转发；不修改交换机）。
+TN-IMP-033,L1,L1:title-action,命令只读但标题含动作词：网卡WOL功能测试,网卡WOL功能测试,基本功能测试,网卡唤醒功能,无（沿用现有二层网络；交换机须允许用于WOL的二层广播报文转发）。
+TN-IMP-034,LX,LX:not-whitelisted,未在白名单： sudo mlxfwmanager -d 0000:45:00.0 --query / modinfo mlx5_core,网卡固件升降级测试,基本功能测试,固件测试,无（不修改交换机）。
+TN-IMP-035,L1,L1:title-action,命令只读但标题含动作词：驱动安装、卸载测试,驱动安装、卸载测试,基本功能测试,驱动测试,无（不修改交换机）。
+TN-IMP-036,L1,L1:title-action,命令只读但标题含动作词：测试mode1绑定功能与解绑,测试mode1绑定功能与解绑,基本功能测试,绑定功能测试,800G交换机10.202.54.91：GPU01 eth-0-5/1、eth-
+TN-IMP-037,L1,L1:title-action,命令只读但标题含动作词：测试mode2绑定功能与解绑,测试mode2绑定功能与解绑,基本功能测试,绑定功能测试,800G交换机10.202.54.91：GPU01 eth-0-5/1、eth-
+TN-IMP-038,L1,L1:title-action,命令只读但标题含动作词：测试mode4绑定功能与解绑,测试mode4绑定功能与解绑,基本功能测试,绑定功能测试,800G交换机10.202.54.91：GPU01 eth-0-5/1、eth-
+TN-IMP-039,L1,L1:title-action,命令只读但标题含动作词：测试mode6绑定功能与解绑,测试mode6绑定功能与解绑,基本功能测试,绑定功能测试,800G交换机10.202.54.91：GPU01 eth-0-5/1、eth-
+TN-IMP-040,LX,LX:not-whitelisted,未在白名单： sudo ip link set dev ens17np0 promisc on / ip -d link show dev ens17np0,反复进入退出混杂模式测试,基本功能测试,网卡混杂模式测试,无；不修改交换机。
+TN-IMP-041,LX,LX:no-command,命令列为空，无法白名单核验,UEFI下网卡HII界面配置测试,基本功能测试,网卡UEFI下BIOS配置测试,无；在服务器UEFI/BMC KVM中操作，不在交换机配置。
+TN-IMP-042,L2,L2:step-reboot-power,步骤含高危动作：2. 重启进入Legacy Option ROM界面，核对CX7设备身份及可访问的网络引导参数,LEGACY下网卡Option ROM界面配置测试,基本功能测试,网卡LEGACY下BIOS配置测试,无；需要BMC KVM在服务器BIOS/Legacy ROM中操作，不能用Ubu
+TN-IMP-043,LX,LX:no-command,命令列为空，无法白名单核验,PXE功能测试,基本功能测试,PXE功能测试,仅需确保 CX7 测试端口所在 VLAN 可达专用 PXE DHCP 与启动服务
+TN-IMP-044,LX,LX:no-command,命令列为空，无法白名单核验,iPXE功能测试,基本功能测试,iPXE功能测试,隔离测试 VLAN 需能访问 DHCP/TFTP（链式加载）及 HTTP 测试服
+TN-IMP-045,L1,L1:title-action,命令只读但标题含动作词：网卡位置灯点灯测试,网卡位置灯点灯测试,基本功能测试,网卡位置灯点灯测试,无需交换机配置。
+TN-IMP-046,L0,L0:readonly-whitelist,命令全命中只读白名单，步骤无动作,指示灯功能测试,基本功能测试,指示灯功能测试,无需变更交换机配置；只允许在维护窗口操作 GPU01 专用测试链路。
+TN-IMP-047,L2,L2:switch-config,交换机列要求变更端口/速率：交换机端口及模块需支持目标速率；如需调整对端速率，须经维护批准按实际 NOS 配置后再执行，测试,网卡速率查询和设置测试,基本功能测试,网卡速率测试,交换机端口及模块需支持目标速率；如需调整对端速率，须经维护批准按实际 NOS 配
+TN-IMP-048,L0,L0:readonly-whitelist,命令全命中只读白名单，步骤无动作,Advertised Link Modes查询,基本功能测试,网卡速率测试（源表续行）,无需修改交换机配置。
+TN-IMP-049,L0,L0:readonly-whitelist,命令全命中只读白名单，步骤无动作,端口介质类型识别,基本功能测试,网卡速率测试（源表续行）,无需修改交换机配置。
+TN-IMP-050,L2,L2:switch-config,交换机列要求变更端口/速率：仅在实际需要时，按交换机 NOS 和模块能力配置对端目标速率；测试完毕恢复原交换机配置。不可盲目,强制速率及双工档位验证,基本功能测试,网卡速率测试（源表续行）,仅在实际需要时，按交换机 NOS 和模块能力配置对端目标速率；测试完毕恢复原交换
+TN-IMP-051,L2,L2:switch-config,"交换机列要求变更端口/速率：configure terminal
+interface eth-0-5/1
+shutdown
+",交换机端口关闭后的Link Down,基本功能测试,网卡速率测试（源表续行）,configure terminal interface eth-0-5/1 s
+TN-IMP-052,L2,L2:switch-config,"交换机列要求变更端口/速率：configure terminal
+interface eth-0-5/1
+no shutdo",交换机端口恢复后的Link Up,基本功能测试,网卡速率测试（源表续行）,configure terminal interface eth-0-5/1 n
+TN-IMP-053,L1,L1:ethtool-write,sudo ethtool -s ens17np0 autoneg on,恢复端口自协商模式,基本功能测试,网卡速率测试（源表续行）,无需修改交换机；但对端须启用与目标自协商模式兼容的速率/协商设置。不得擅自切换交
+TN-IMP-054,L2,L2:switch-config,交换机列要求变更端口/速率：按实际交换机 NOS 与已确认支持的速率，逐档设置/恢复 GPU01 所连接端口；必要时更换匹配,不同对端速率下的自协商兼容,基本功能测试,网卡速率测试（源表续行）,按实际交换机 NOS 与已确认支持的速率，逐档设置/恢复 GPU01 所连接端口
+TN-IMP-055,L1,L1:ethtool-write,sudo ethtool -K ens17np0 gro off,GRO功能开关ethtool接口测试-关闭,基本功能测试,GRO功能测试,无（不修改交换机）。
+TN-IMP-056,L1,L1:ethtool-write,sudo ethtool -K ens17np0 gro off,GRO功能开关ethtool接口测试-开启,基本功能测试,GRO功能测试,无（不修改交换机）。
+TN-IMP-057,L1,L1:ethtool-write,sudo ethtool -K ens17np0 gro off,GRO功能关闭多次抓包测试（MTU1500）,基本功能测试,GRO功能测试,无（两端物理网口临时设置 MTU 1500，交换机现有 MTU 需允许 1500
+TN-IMP-058,L1,L1:ethtool-write,sudo ethtool -K ens17np0 gro off,GRO功能关闭多次抓包测试（MTU9000）,基本功能测试,GRO功能测试,无；现有交换机路径需支持 MTU 9000 对应帧长。
+TN-IMP-059,L1,L1:ethtool-write,sudo ethtool -K ens17np0 gro on,GRO功能开启多次抓包测试（MTU1500）,基本功能测试,GRO功能测试,无；无需更改交换机。
+TN-IMP-060,L1,L1:ethtool-write,sudo ethtool -K ens17np0 gro on,GRO功能开启多次抓包测试（MTU9000）,基本功能测试,GRO功能测试,无；现有交换机路径需支持 MTU 9000 对应帧长。
+TN-IMP-061,L1,L1:ethtool-write,sudo ethtool -K ens17np0 lro off,LRO功能开关ethtool接口测试-关闭,基本功能测试,LRO功能测试,无（不修改交换机）。
+TN-IMP-062,L1,L1:ethtool-write,sudo ethtool -K ens17np0 lro off,LRO功能开关ethtool接口测试-开启,基本功能测试,LRO功能测试,无（不修改交换机）。
+TN-IMP-063,L1,L1:ethtool-write,sudo ethtool -K ens17np0 lro off,LRO功能关闭多次抓包测试（MTU1500）,基本功能测试,LRO功能测试,无；沿用现有交换机配置，路径须支持测试 MTU。
+TN-IMP-064,L1,L1:ethtool-write,sudo ethtool -K ens17np0 lro off,LRO功能关闭多次抓包测试（MTU9000）,基本功能测试,LRO功能测试,无；沿用现有交换机配置，路径须支持测试 MTU。
+TN-IMP-065,L1,L1:ethtool-write,sudo ethtool -K ens17np0 lro on,LRO功能开启多次抓包测试（MTU1500）,基本功能测试,LRO功能测试,无；沿用现有交换机配置，路径须支持测试 MTU。
+TN-IMP-066,L1,L1:ethtool-write,sudo ethtool -K ens17np0 lro on,LRO功能开启多次抓包测试（MTU9000）,基本功能测试,LRO功能测试,无；沿用现有交换机配置，路径须支持测试 MTU。
+TN-IMP-067,L1,L1:ethtool-write,sudo ethtool -K ens17np0 tso off,TSO功能开关ethtool接口测试-关闭,基本功能测试,TSO功能测试,无（不修改交换机）。
+TN-IMP-068,L1,L1:ethtool-write,sudo ethtool -K ens17np0 tso off,TSO功能开关ethtool接口测试-开启,基本功能测试,TSO功能测试,无（不修改交换机）。
+TN-IMP-069,L1,L1:ethtool-write,sudo ethtool -K ens17np0 tso off,TSO功能关闭多次抓包测试（MTU1500）,基本功能测试,TSO功能测试,无（沿用现有RoCE交换机配置；须支持对应MTU）。
+TN-IMP-070,L1,L1:ethtool-write,sudo ethtool -K ens17np0 tso off,TSO功能关闭多次抓包测试（MTU9000）,基本功能测试,TSO功能测试,无（沿用现有RoCE交换机配置；须支持对应MTU）。
+TN-IMP-071,L1,L1:ethtool-write,sudo ethtool -K ens17np0 tso on,TSO功能开启多次抓包测试（MTU1500）,基本功能测试,TSO功能测试,无（沿用现有RoCE交换机配置；须支持对应MTU）。
+TN-IMP-072,L1,L1:ethtool-write,sudo ethtool -K ens17np0 tso on,TSO功能开启多次抓包测试（MTU9000）,基本功能测试,TSO功能测试,无（沿用现有RoCE交换机配置；须支持对应MTU）。
+TN-IMP-073,L1,L1:ethtool-write,sudo ethtool -K ens17np0 gso off,GSO 功能开关 ethtool 接口测试 - 关闭,基本功能测试,GSO 功能测试（通用分段卸载）,无（不修改交换机）
+TN-IMP-074,L1,L1:ethtool-write,sudo ethtool -K ens17np0 gso off,GSO 功能开关 ethtool 接口测试 - 开启,基本功能测试,GSO 功能测试（通用分段卸载）,无（不修改交换机）
+TN-IMP-075,L1,L1:ethtool-write,sudo ethtool -K ens17np0 gso off,GSO 功能关闭多次抓包测试 (MTU1500),基本功能测试,GSO 功能测试（通用分段卸载）,无（不修改交换机）
+TN-IMP-076,L1,L1:ethtool-write,sudo ethtool -K ens17np0 gso off,GSO 功能关闭多次抓包测试 (MTU9000),基本功能测试,GSO 功能测试（通用分段卸载）,无（不修改交换机）
+TN-IMP-077,L1,L1:ethtool-write,sudo ethtool -K ens17np0 gso on,GSO 功能开启多次抓包测试 (MTU1500),基本功能测试,GSO 功能测试（通用分段卸载）,无（不修改交换机）
+TN-IMP-078,L1,L1:ethtool-write,sudo ethtool -K ens17np0 gso on,GSO 功能开启多次抓包测试 (MTU9000),基本功能测试,GSO 功能测试（通用分段卸载）,无（不修改交换机）
+TN-IMP-079,L1,L1:title-action,命令只读但标题含动作词：UFO 功能开关 ethtool 接口测试 - 关闭,UFO 功能开关 ethtool 接口测试 - 关闭,基本功能测试,UFO 功能测试（UDP 分片卸载）,无（不修改交换机）。
+TN-IMP-080,L1,L1:title-action,命令只读但标题含动作词：UFO 功能开关 ethtool 接口测试 - 开启,UFO 功能开关 ethtool 接口测试 - 开启,基本功能测试,UFO 功能测试（UDP 分片卸载）,无（不修改交换机）。
+TN-IMP-081,L1,L1:title-action,命令只读但标题含动作词：UFO 功能关闭多次抓包测试 (MTU1500),UFO 功能关闭多次抓包测试 (MTU1500),基本功能测试,UFO 功能测试（UDP 分片卸载）,无（不修改交换机；路径必须已经支持对应MTU）。
+TN-IMP-082,L1,L1:title-action,命令只读但标题含动作词：UFO 功能关闭多次抓包测试 (MTU9000),UFO 功能关闭多次抓包测试 (MTU9000),基本功能测试,UFO 功能测试（UDP 分片卸载）,无（不修改交换机；路径必须已经支持对应MTU）。
+TN-IMP-083,L1,L1:title-action,命令只读但标题含动作词：UFO 功能开启多次抓包测试 (MTU1500),UFO 功能开启多次抓包测试 (MTU1500),基本功能测试,UFO 功能测试（UDP 分片卸载）,无（不修改交换机；测试链路必须已支持指定MTU）。
+TN-IMP-084,L1,L1:title-action,命令只读但标题含动作词：UFO 功能开启多次抓包测试 (MTU9000),UFO 功能开启多次抓包测试 (MTU9000),基本功能测试,UFO 功能测试（UDP 分片卸载）,无（不修改交换机；测试链路必须已支持指定MTU）。
+TN-IMP-085,L1,L1:ethtool-write,sudo ethtool -K ens17np0 tx off,TX 发送校验和开关测试 - 关闭,基本功能测试,硬件校验和卸载测试,无（不修改交换机）。
+TN-IMP-086,L1,L1:ethtool-write,sudo ethtool -K ens17np0 tx off,TX 发送校验和开关测试 - 开启,基本功能测试,硬件校验和卸载测试,无（不修改交换机）。
+TN-IMP-087,L1,L1:ethtool-write,sudo ethtool -K ens17np0 rx off,RX 接收校验和开关测试 - 关闭,基本功能测试,硬件校验和卸载测试,无（不修改交换机）。
+TN-IMP-088,L1,L1:ethtool-write,sudo ethtool -K ens17np0 rx off,RX 接收校验和开关测试 - 开启,基本功能测试,硬件校验和卸载测试,无（不修改交换机）。
+TN-IMP-089,L1,L1:ethtool-write,sudo ethtool -K ens17np0 tx off rx off,校验和卸载功能验证,基本功能测试,硬件校验和卸载测试,无（不修改交换机）。
+TN-IMP-090,L1,L1:ethtool-write,sudo ethtool -L ens17np0 combined 1,TSS 功能开关测试 - 关闭,基本功能测试,TSS 发送侧缩放测试,无（不修改交换机）。
+TN-IMP-091,L1,L1:ethtool-write,sudo ethtool -L ens17np0 combined 1,TSS 功能开关测试 - 开启,基本功能测试,TSS 发送侧缩放测试,无（不修改交换机）。
+TN-IMP-092,L1,L1:ethtool-write,sudo ethtool -L ens17np0 combined 8,TSS 流量分发验证,基本功能测试,TSS 发送侧缩放测试,无（不修改交换机）。
+TN-IMP-093,L1,L1:ethtool-write,sudo ethtool -L ens17np0 combined 1,RSS 功能开关测试 - 关闭,基本功能测试,RSS 接收侧缩放测试,无（不修改交换机）。
+TN-IMP-094,L1,L1:ethtool-write,sudo ethtool -L ens17np0 combined 1,RSS 功能开关测试 - 开启,基本功能测试,RSS 接收侧缩放测试,无（不修改交换机）。
+TN-IMP-095,L1,L1:ethtool-write,sudo ethtool -L ens17np0 combined 8,RSS 流量分发验证,基本功能测试,RSS 接收侧缩放测试,无（不修改交换机）。
+TN-IMP-096,L1,L1:ethtool-write,sudo ethtool -C ens17np0 adaptive-rx off rx-usecs 56,中断聚合功能测试01,基本功能测试,中断功能测试,无（不修改交换机）。
+TN-IMP-097,L1,L1:ethtool-write,sudo ethtool -C ens17np0 adaptive-rx on,中断聚合功能测试02,基本功能测试,中断功能测试,无（不修改交换机）。
+TN-IMP-098,L1,L1:ethtool-write,sudo ethtool -C ens17np0 adaptive-rx off rx-usecs 100,中断聚合功能测试03,基本功能测试,中断功能测试,无（不修改交换机）。
+TN-IMP-099,L1,L1:ethtool-write,sudo ethtool -C ens17np0 adaptive-rx off rx-frames 5,中断聚合功能测试04,基本功能测试,中断功能测试,无（不修改交换机）。
+TN-IMP-100,L1,L1:ethtool-write,sudo ethtool -L ens17np0 combined 1,收发多队列设置测试,基本功能测试,队列功能测试,无（不修改交换机）。
+TN-IMP-101,L1,L1:ethtool-write,sudo ethtool -L ens17np0 combined 63,多队列收发包测试01,基本功能测试,队列功能测试,无（不修改交换机）。
+TN-IMP-102,L1,L1:ethtool-write,sudo ethtool -L ens17np0 combined 8,多队列收发包测试02,基本功能测试,队列功能测试,无（不修改交换机）。
+TN-IMP-103,L1,L1:ethtool-write,sudo ethtool -L ens17np0 combined 8,多队列收发包测试03,基本功能测试,队列功能测试,无（不修改交换机）。
+TN-IMP-104,L1,L1:ip-modify,sudo ip addr add 198.19.42.1/30 dev vx42,多队列收发包测试04,基本功能测试,队列功能测试,不修改交换机配置；确认现有网络允许172.30.1.1↔172.30.1.2的U
+TN-IMP-105,L1,L1:ethtool-write,sudo ethtool -L ens17np0 combined 8,多队列收发包测试05,基本功能测试,队列功能测试,无（不修改交换机）。
+TN-IMP-106,L1,L1:ethtool-write,sudo ethtool -L ens17np0 combined 8,多队列收发包测试06,基本功能测试,队列功能测试,无（不修改交换机）。
+TN-IMP-107,L1,L1:ethtool-write,sudo ethtool -G ens17np0 tx 4096,修改发送环大小测试,基本功能测试,修改发送环大小测试,无（不修改交换机）。
+TN-IMP-108,L1,L1:ethtool-write,sudo ethtool -G ens17np0 tx 16384,TX Ring超过最大值拒绝,基本功能测试,修改发送环大小测试（源表续行）,无（不修改交换机）。
+TN-IMP-109,L1,L1:ethtool-write,sudo ethtool -G ens17np0 tx 0,TX Ring低于最小值拒绝,基本功能测试,修改发送环大小测试（源表续行）,无（不修改交换机）。
+TN-IMP-110,L1,L1:ethtool-write,sudo ethtool -G ens17np0 rx 4096,RX Ring最大值配置,基本功能测试,修改发送环大小测试（源表续行）,无（不修改交换机）。
+TN-IMP-111,L1,L1:ethtool-write,sudo ethtool -G ens17np0 rx 16384,RX Ring超过最大值拒绝,基本功能测试,修改发送环大小测试（源表续行）,无（不修改交换机）。
+TN-IMP-112,L1,L1:ethtool-write,sudo ethtool -G ens17np0 rx 0,RX Ring低于最小值拒绝,基本功能测试,修改发送环大小测试（源表续行）,无（不修改交换机）。
+TN-IMP-113,LX,LX:not-whitelisted,未在白名单： sudo ip link set dev ens17np0 down / ip link show dev ens17np0,网卡逻辑状态测试,基本功能测试,网卡逻辑状态测试,无（不修改交换机）。
+TN-IMP-114,LX,LX:not-whitelisted,未在白名单： sudo ip link set dev ens17np0 down / ip link show dev ens17np0,逻辑UP后的速率与连通性,基本功能测试,网卡逻辑状态测试（源表续行）,无（不修改交换机）。
+TN-IMP-115,L2,L2:link-down,sudo ifconfig ens17np0 down,ifconfig逻辑UP/DOWN循环100次,基本功能测试,网卡逻辑状态测试（源表续行）,无（不修改交换机）。
+TN-IMP-116,L1,L1:title-action,命令只读但标题含动作词：ip link逻辑UP/DOWN切换,ip link逻辑UP/DOWN切换,基本功能测试,网卡逻辑状态测试（源表续行）,无（不修改交换机）。
+TN-IMP-117,L1,L1:title-action,命令只读但标题含动作词：ip link UP后的链路恢复,ip link UP后的链路恢复,基本功能测试,网卡逻辑状态测试（源表续行）,无（不修改交换机）。
+TN-IMP-118,LX,LX:not-whitelisted,未在白名单： sudo ip link set dev ens17np0 down / ip link show dev ens17np0,ip link逻辑UP/DOWN循环100次,基本功能测试,网卡逻辑状态测试（源表续行）,无（不修改交换机）。
+TN-IMP-119,L2,L2:firmware-bios,dd if=/dev/urandom of=/tmp/TN-IMP-119_source.bin bs=1M count,大文件传输,基本功能测试,文件传输测试,无（不修改交换机）。
+TN-IMP-120,L2,L2:firmware-bios,sha256sum /tmp/TN-IMP-120_returned.bin,大文件回传测试,基本功能测试,文件传输测试,无（不修改交换机）。
+TN-IMP-121,LX,LX:not-whitelisted,未在白名单： sudo ip link set dev ens17np0 mtu 1500 / ip link show dev ens17np0,MTU1500 收发包测试,基本功能测试,收发包测试,无（须确认交换机路径已允许1500字节IP MTU；不修改交换机）。
+TN-IMP-122,LX,LX:not-whitelisted,未在白名单： sudo ip link set dev ens17np0 mtu 4200 / ip link show dev ens17np0,MTU4200 收发包测试,基本功能测试,收发包测试,无（前置确认交换机及全路径支持MTU4200；如不支持应记录环境受限，不得降低目
+TN-IMP-123,LX,LX:not-whitelisted,未在白名单： sudo ip link set dev ens17np0 mtu 9000 / ip link show dev ens17np0,MTU9000 收发包测试,基本功能测试,收发包测试,无（执行前确认交换机/链路全路径支持9000字节IP MTU；不擅自修改交换机）
+TN-IMP-124,LX,LX:not-whitelisted,未在白名单： echo 2 / sudo tee /sys/bus/pci/devices/0000:ac:00.0/sriov_n,SRIOV功能测试,基本功能测试,虚拟化功能测试,无（不修改交换机，使用现有CX7 PF数据面链路）。
+TN-IMP-125,LX,LX:not-whitelisted,未在白名单： echo 16 / sudo tee /sys/bus/pci/devices/0000:ac:00.0/sriov_n,SR-IOV PF/VF 最大规格验证测试,基本功能测试,虚拟化功能测试,无（不修改交换机；此项主要验证PF/VF PCIe可枚举规格）。
+TN-IMP-126,LX,LX:not-whitelisted,未在白名单： # GPU03宿主机 / ip -s address show dev ens24np0,物理 PF 口与 SR-IOV VF 口同时使用验证,基本功能测试,PF 与 VF 共存功能测试,无（但交换机端口须允许多个MAC且安全策略放通PF/VF测试流量）。
+TN-IMP-127,LX,LX:not-whitelisted,未在白名单： sudo kubectl describe node gpu03 / sudo kubectl apply -f /home/inspur/test_results/cx,K8s rdma-device-plugin 功能测试,基本功能测试,容器化功能测试,GPU03既有CX7链路；无需交换机更改。
+TN-IMP-128,LX,LX:not-whitelisted,未在白名单： sudo arping -D -c 2 -I ens17np0 172.30.1.21 / sudo kubectl apply -f /home/inspur/test_results/cx,macvlan 容器网络测试,基本功能测试,容器化功能测试,GPU03连接800G交换机eth-0-3/1，使用既有native VLAN1
+TN-IMP-129,L2,L2:switch-config,交换机列要求变更端口/速率：仅在获批准的专用二层端口预配置QinQ透传：S-VLAN=300、C-VLAN=100；镜像/T,QinQ 标签添加功能验证,基本功能测试,QinQ添加/删除测试,仅在获批准的专用二层端口预配置QinQ透传：S-VLAN=300、C-VLAN=
+TN-IMP-130,L2,L2:switch-config,交换机列要求变更端口/速率：在已获批准的专用二层端口透传QinQ；GPU01入站前的镜像/TAP需证明S=300+C=100,QinQ 标签删除功能验证,基本功能测试,QinQ添加/删除测试,在已获批准的专用二层端口透传QinQ；GPU01入站前的镜像/TAP需证明S=3
+TN-IMP-131,L1,L1:title-action,命令只读但标题含动作词：SCTP CRC 卸载开关测试 - 关闭,SCTP CRC 卸载开关测试 - 关闭,基本功能测试,SCTP CRC 卸载测试,无（不修改交换机）。
+TN-IMP-132,L1,L1:title-action,命令只读但标题含动作词：SCTP CRC 卸载开关测试 - 开启,SCTP CRC 卸载开关测试 - 开启,基本功能测试,SCTP CRC 卸载测试,无（不修改交换机）。
+TN-IMP-133,L1,L1:title-action,命令只读但标题含动作词：SCTP CRC 卸载功能验证,SCTP CRC 卸载功能验证,基本功能测试,SCTP CRC 卸载测试,无需交换机变更；确保UDP/IP以外的SCTP（IPv4协议号132）未被ACL
+TN-IMP-134,L1,L1:title-action,命令只读但标题含动作词：测试网卡能否成功配置各个不同vlan id的vlan口（至少覆盖支持的不,测试网卡能否成功配置各个不同vlan id的vlan口（至少覆盖支持的不同位数的vlan id）,基本功能测试,VLAN功能测试,无需交换机变更；本测试不以网络通信证明VLAN标签在线上转发。
+TN-IMP-135,L1,L1:title-action,命令只读但标题含动作词：测试Vlan数目配置,测试Vlan数目配置,基本功能测试,VLAN功能测试,无需交换机配置；此项仅测试本机VLAN子接口数量，不产生带标签业务流量。
+TN-IMP-136,L2,L2:switch-config,交换机列要求变更端口/速率：交换机需事先在GPU01/GPU02对应端口放通802.1Q VLAN1101标签（trunk/,测试Vlan模式下网卡的连通性,基本功能测试,VLAN功能测试,交换机需事先在GPU01/GPU02对应端口放通802.1Q VLAN1101标
+TN-IMP-137,L2,L2:switch-config,交换机列要求变更端口/速率：两端交换机对应端口预先允许802.1Q VLAN1101正常转发；此用例不直接修改交换机。,测试VLAN模式下网卡性能,基本功能测试,VLAN功能测试,两端交换机对应端口预先允许802.1Q VLAN1101正常转发；此用例不直接修
+TN-IMP-138,L1,L1:ip-modify,sudo ip addr add 198.19.42.1/30 dev vx42,配置VXLAN,基本功能测试,VXLAN功能测试,无需更改交换机配置；须确认现有Underlay路径允许双向UDP目的端口4789
+TN-IMP-139,L1,L1:ip-modify,sudo ip addr add 198.19.42.1/30 dev br-vx42,网桥测试,基本功能测试,VXLAN功能测试,无（本机Linux网桥管理，不需要修改交换机）。
+TN-IMP-140,LX,LX:no-command,命令列为空，无法白名单核验,vnet测试,基本功能测试,VXLAN功能测试,无需修改交换机；须保证UDP4789双向放通。此项需要GPU02作为真实VXLA
+TN-IMP-141,LX,LX:no-command,命令列为空，无法白名单核验,虚拟机抓包测试,基本功能测试,VXLAN功能测试,无需更改交换机；已有的VM/VXLAN Overlay链路须正常转发UDP478
+TN-IMP-142,L2,L2:switch-config,交换机列要求变更端口/速率：无交换机变更；须已有UDP4789放通。通过udpcsum参数生成带外层UDP校验和的VXLAN,VXLAN开关checksum offload测试,基本功能测试,VXLAN功能测试,无交换机变更；须已有UDP4789放通。通过udpcsum参数生成带外层UDP校
+TN-IMP-143,L1,L1:title-action,命令只读但标题含动作词：L2NIC 网络功能测试 - MTU 值修改测试,L2NIC 网络功能测试 - MTU 值修改测试,基本功能测试,L2NIC 网络功能测试,无需修改交换机；当前交换机最大帧9600、已知IP MTU9000链路可用。MT
+TN-IMP-144,LX,LX:not-whitelisted,"未在白名单： sudo timeout 20 tcpdump -i ens17np0 -nn -e -c 4 ""a / sudo arping -I ens17np0 -c 4 172.30.1.1",L2NIC 网络功能测试 - 广播报文转发测试,基本功能测试,L2NIC 网络功能测试,不修改交换机；依赖现有同VLAN广播转发策略。
+TN-IMP-145,LX,LX:not-whitelisted,"未在白名单： socat -u UDP4-RECV:39045,ip-add-membership=239.1.1 / printf 'MCAST-1\n'",L2NIC 网络功能测试 - 组播报文转发测试,基本功能测试,L2NIC 网络功能测试,不修改交换机；检查原有IGMP Snooping/Querier及UDP3904
+TN-IMP-146,L2,L2:switch-config,交换机列要求变更端口/速率：无交换机配置命令；需确认两端UDP6081可达。SwitchDev/OVS/VF代表口的建立属于,GENEVE 隧道硬件卸载测试,基本功能测试,L2NIC 网络功能测试,无交换机配置命令；需确认两端UDP6081可达。SwitchDev/OVS/VF
+TN-IMP-147,L1,L1:title-action,命令只读但标题含动作词：GRE 隧道硬件卸载测试,GRE 隧道硬件卸载测试,基本功能测试,L2NIC 网络功能测试,无需交换机变更命令；须确认Underlay允许GRE（IP协议47）。Switc
+TN-IMP-148,L2,L2:switch-config,"交换机列要求变更端口/速率：configure terminal
+ip route 198.18.148.100/32 17",ECMP 硬件负载分担测试,基本功能测试,L2NIC 网络功能测试,configure terminal ip route 198.18.148.1
+TN-IMP-149,L2,L2:switch-config,交换机列要求变更端口/速率：交换机仅人工读取真实QoS映射、ETS/SP策略及各TC队列统计；若需制造拥塞/临时限速，须审批,QoS 硬件队列调度测试,基本功能测试,L2NIC 网络功能测试,交换机仅人工读取真实QoS映射、ETS/SP策略及各TC队列统计；若需制造拥塞/
+TN-IMP-150,LX,LX:not-whitelisted,未在白名单： ip address show dev ens17np0,RoCE v2 部署基础测试,基本功能测试,RDMA 功能测试,无；仅GPU01本机只读查询，不修改网卡/交换机参数。
+TN-IMP-151,LX,LX:not-whitelisted,未在白名单： rping -c -a 172.30.1.2 -I 172.30.1.1 -p 18518 -C 1 / rping -s -a 172.30.1.2 -p 18518 -C 10 -S 4096 -V -,RDMA 功能测试 - rping 测试,基本功能测试,RDMA 功能测试,无；不修改交换机。
+TN-IMP-152,LX,LX:not-whitelisted,未在白名单： ib_write_bw -d mlx5_0 -i 1 -x 3 -p 18521 --tclass  / ib_read_bw -d mlx5_0 -i 1 -x 3 -p 18522 --tclass 1,RDMA 功能测试 - RDMA 协议测试,基本功能测试,RDMA 功能测试,无；不修改交换机。两端均按实际RoCEv2 GID索引执行；perftest控制
+TN-IMP-153,LX,LX:not-whitelisted,未在白名单： rping -c -a 172.30.1.2 -I 172.30.1.1 -p 18524 -C 1 / rping -s -a 172.30.1.2 -p 18524 -C 1 -S 4096 -V -v,RDMA 功能测试 - RDMA cm 建链测试,基本功能测试,RDMA 功能测试,无；不修改交换机。GPU02的-P为持久监听，测试完按Ctrl+C停止。
+TN-IMP-154,LX,LX:not-whitelisted,未在白名单： rdma resource show qp link mlx5_0/1 / ib_write_bw -d mlx5_0 -i 1 -x 3 -p 18525 --tclass ,RDMA 功能测试 - QP 数量测试,基本功能测试,RDMA 功能测试,无；不修改交换机。双端必须逐档使用相同-q/-s/-n和GID参数。
+TN-IMP-155,LX,LX:not-whitelisted,未在白名单： ibv_rc_pingpong -d mlx5_0 -i 1 -g 3 -p 18526 -r 15 / ibv_rc_pingpong -d mlx5_0 -i 1 -g 3 -p 18526 -r 25,RDMA 功能测试 - CQ 深度测试,基本功能测试,RDMA 功能测试,无；不修改交换机。两端rdma-core版本与内部CQ创建逻辑须一致；-c用于数
+TN-IMP-156,L2,L2:switch-config,交换机列要求变更端口/速率：第二轨既有VLAN1002；无交换机更改。,RDMA 功能测试 - 特殊 Verbs 测试,基本功能测试,RDMA 功能测试,第二轨既有VLAN1002；无交换机更改。
+TN-IMP-157,L2,L2:switch-config,交换机列要求变更端口/速率：使用第二轨172.30.2.1/2，无交换机修改；已有业务NFS导出及TCP监听保持。,RDMA 功能测试 - 内核态驱动测试,基本功能测试,RDMA 功能测试,使用第二轨172.30.2.1/2，无交换机修改；已有业务NFS导出及TCP监听
+TN-IMP-158,L2,L2:switch-config,交换机列要求变更端口/速率：无交换机变更；若对比不同配置下性能，需单独记录网卡固件/CPU频率及网络负载，避免将跨条件数据直,RDMA 功能测试 - 原子操作性能测试,基本功能测试,RDMA 功能测试,无交换机变更；若对比不同配置下性能，需单独记录网卡固件/CPU频率及网络负载，避
+TN-IMP-159,LX,LX:not-whitelisted,未在白名单： ib_write_bw -d mlx5_0 -i 1 -x 3 -p 18515 --tclass  / ib_write_bw -d mlx5_0 -i 1 -x 3 -p 18515 --tclass ,RDMA 功能测试 - PFC 优先级流控测试,基本功能测试,RDMA 功能测试,交换机无需新增永久配置；由现场运维在隔离链路制造并解除受控拥塞，导出目标端口PF
+TN-IMP-160,L2,L2:switch-config,交换机列要求变更端口/速率：三阶段依赖交换机/外部业务流量发生器的可控拥塞，不擅自改交换机配置；操作人员负责第2轮注入、第3,RDMA 功能测试 - DCQCN 拥塞控制测试,基本功能测试,RDMA 功能测试,三阶段依赖交换机/外部业务流量发生器的可控拥塞，不擅自改交换机配置；操作人员负责
+TN-IMP-161,L2,L2:switch-config,sudo /usr/bin/ovs-vsctl add-port br-cx7-test ens24np0 -- set,RoCE over VXLAN 硬件卸载测试,基本功能测试,RDMA 功能测试,使用既有第二轨VLAN1002，GPU03端口3/2、GPU04端口4/2，不改
+TN-IMP-162,LX,LX:not-whitelisted,未在白名单： sudo /tmp/cx7_million_qp162_20261021/million_qp162 / sudo rdma resource show,百万级 QP 大规模验证,基本功能测试,RDMA 功能测试,同卡QP及抽样回环，不改变交换机配置。
+TN-IMP-163,L2,L2:switch-config,交换机列要求变更端口/速率：不更改交换机；优先排查已知B3环境阻断及两端CUDA/DMA-BUF编译支持，不强制安装与当前i,GPU 直通场景下 RDMA 功能验证,基本功能测试,GPUDirect RDMA 功能测试,不更改交换机；优先排查已知B3环境阻断及两端CUDA/DMA-BUF编译支持，不
+TN-IMP-164,LX,LX:not-whitelisted,"未在白名单： sudo /usr/bin/dpdk-testpmd -l 48,64-95 -n 8 --sock / set burst 64",DPDK 驱动加载与基础转发性能验证,基本功能测试,DPDK 用户态驱动测试,GPU03第一口→GPU04第一口、GPU04第二口→GPU03第二口使用现有V
+TN-IMP-165,L1,L1:title-action,命令只读但标题含动作词：网卡驱动通过 DKMS 在内核升级后自动重建并正常工作测试,网卡驱动通过 DKMS 在内核升级后自动重建并正常工作测试,基本功能测试,网卡驱动DKMS测试,仅在GPU01经批准进行操作系统内核安装、重启和回滚；GPU02无需命令。当前以
+TN-IMP-166,LX,LX:not-whitelisted,未在白名单： numactl --physcpubind=16-47 --membind=0 /home/insp / numactl --physcpubind=16-47 --membind=0 /home/insp,iperf打流测试-单口单向UDP性能测试,性能测试,物理网口TCP/IP单口单向性能测试,
+TN-IMP-167,L2,L2:switch-config,交换机列要求变更端口/速率：不更改交换机；保持两端网络配置及实际系统栈不变，记录CPU/NUMA等影响结果的条件，不能将TC,iperf打流测试-单口单向TCP性能测试,性能测试,物理网口TCP/IP单口单向性能测试,不更改交换机；保持两端网络配置及实际系统栈不变，记录CPU/NUMA等影响结果的
+TN-IMP-168,LX,LX:not-whitelisted,未在白名单： numactl --physcpubind=24-47 --membind=0 env NICLAB / numactl --physcpubind=16-23 --membind=0 env NICLAB,iperf打流测试-单口双向UDP性能测试,性能测试,物理网口TCP/IP单口双向性能测试,本轮无需修改交换机；使用现有两条独立数据平面，不组bond。
+TN-IMP-169,LX,LX:not-whitelisted,"未在白名单： numactl --physcpubind=32-47,128-143 --membind=0 /h / numactl --physcpubind=16-31 --membind=0 /home/insp",iperf打流测试-单口双向TCP性能测试,性能测试,物理网口TCP/IP单口双向性能测试,本轮无需修改交换机；使用现有两条独立数据平面，不组bond。
+TN-IMP-170,LX,LX:not-whitelisted,未在白名单： numactl --physcpubind=16-47 --membind=0 /home/insp / numactl --physcpubind=64-95 --membind=1 /home/insp,iperf打流测试-多口单向UDP性能测试,性能测试,物理网口TCP/IP多口单向性能测试,不修改交换机及bond；对同一时刻两口的UDP接收统计分别取证。
+TN-IMP-171,LX,LX:not-whitelisted,未在白名单： numactl --physcpubind=16-47 --membind=0 /home/insp / numactl --physcpubind=64-95 --membind=1 /home/insp,iperf打流测试-多口单向TCP性能测试,性能测试,物理网口TCP/IP多口单向性能测试,不修改交换机；独立物理口并发，不使用bond或路由汇聚；并发16条TCP发送流可
+TN-IMP-172,LX,LX:not-whitelisted,未在白名单： numactl --physcpubind=72-95 --membind=1 env NICLAB / numactl --physcpubind=24-47 --membind=0 env NICLAB,iperf打流测试-多口双向UDP性能测试,性能测试,物理网口TCP/IP多口双向性能测试,本轮无需修改交换机；使用现有两条独立数据平面，不组bond。
+TN-IMP-173,LX,LX:not-whitelisted,"未在白名单： numactl --physcpubind=80-95,176-191 --membind=1 /h / numactl --physcpubind=32-47,128-143 --membind=0 /h",iperf打流测试-多口双向TCP性能测试,性能测试,物理网口TCP/IP多口双向性能测试,本轮无需修改交换机；使用现有两条独立数据平面，不组bond。
+TN-IMP-174,LX,LX:not-whitelisted,未在白名单： sudo ptp4l -f /tmp/cx7_latency174_20261022/ptp.cfg / sudo hwstamp_ctl -i ens17np0 -r 1 -t 1,单口单向TCP时延测试,性能测试,物理网口TCP/IP单口单向TCP时延测试,本次不修改交换机；两端PTP为域174的单播时差观测。E2E时差校准依赖往返路径
+TN-IMP-175,LX,LX:not-whitelisted,未在白名单： netperf -c -C -H 172.30.1.2 -L 172.30.1.1 -p 12865 / netserver -L 172.30.1.2 -p 12865,单口单向UDP时延测试,性能测试,物理网口TCP/IP单口单向UDP时延测试,无（不修改交换机）。
+TN-IMP-176,LX,LX:not-whitelisted,未在白名单： numactl --physcpubind=16 --membind=0 /home/inspur/ / numactl --physcpubind=16 --membind=0 /home/inspur/,perftest 读延时测试,性能测试,RoCE 单口单向性能测试,无（沿用现有RoCEv2交换机配置；不修改交换机）。
+TN-IMP-177,LX,LX:not-whitelisted,未在白名单： numactl --physcpubind=16 --membind=0 /home/inspur/ / numactl --physcpubind=16 --membind=0 /home/inspur/,perftest 写延时测试,性能测试,RoCE 单口单向性能测试,无（保持交换机现有RoCEv2配置）。
+TN-IMP-178,LX,LX:not-whitelisted,未在白名单： numactl --cpunodebind=0 --membind=0 /home/inspur/a / numactl --cpunodebind=0 --membind=0 /home/inspur/a,perftest 读入带宽测试,性能测试,RoCE 单口单向性能测试,无（使用已配置的RoCEv2网络，不修改交换机）。
+TN-IMP-179,L1,L1:title-action,命令只读但标题含动作词：perftest 写入带宽测试,perftest 写入带宽测试,性能测试,RoCE 单口单向性能测试,无（使用已配置的RoCEv2网络，不修改交换机）。
+TN-IMP-180,LX,LX:not-whitelisted,未在白名单： numactl --cpunodebind=0 --membind=0 /home/inspur/a / numactl --cpunodebind=0 --membind=0 /home/inspur/a,perftest 发送带宽测试,性能测试,RoCE 单口单向性能测试,无（使用已配置的RoCEv2网络，不修改交换机）。
+TN-IMP-181,LX,LX:not-whitelisted,未在白名单： ib_read_lat -i 1 -x 3 --tclass 104 -a -n 1000 -d m / ib_read_lat -i 1 -x 3 --tclass 104 -a -n 1000 -d m,perftest 读延时测试,性能测试,RoCE 单口双向性能测试,无（沿用RoCEv2交换机配置，不修改网络）。
+TN-IMP-182,LX,LX:not-whitelisted,未在白名单： ib_write_lat -i 1 -x 3 --tclass 104 -a -n 1000 -d  / ib_write_lat -i 1 -x 3 --tclass 104 -a -n 1000 -d ,perftest 写延时测试,性能测试,RoCE 单口双向性能测试,无（沿用RoCEv2交换机配置，不修改网络）。
+TN-IMP-183,LX,LX:not-whitelisted,未在白名单： numactl --physcpubind=16 --membind=0 /home/inspur/ / numactl --physcpubind=16 --membind=0 /home/inspur/,perftest 读入带宽测试,性能测试,RoCE 单口双向性能测试,无（使用现有 RoCEv2 网络，不调整交换机）。
+TN-IMP-184,L1,L1:title-action,命令只读但标题含动作词：perftest 写入带宽测试,perftest 写入带宽测试,性能测试,RoCE 单口双向性能测试,无（使用现有 RoCEv2 网络，不调整交换机）。
+TN-IMP-185,LX,LX:not-whitelisted,未在白名单： numactl --physcpubind=16 --membind=0 /home/inspur/ / numactl --physcpubind=16 --membind=0 /home/inspur/,perftest 发送带宽测试,性能测试,RoCE 单口双向性能测试,无（使用现有 RoCEv2 网络，不调整交换机）。
+TN-IMP-186,LX,LX:not-whitelisted,未在白名单： numactl --physcpubind=16 --membind=0 /home/inspur/ / numactl --physcpubind=64 --membind=1 /home/inspur/,perftest 读延时测试,性能测试,RoCE 多口单向性能测试,无（沿用现有两个独立 RoCEv2 400G 平面，不修改交换机）。
+TN-IMP-187,LX,LX:not-whitelisted,未在白名单： numactl --physcpubind=16 --membind=0 /home/inspur/ / numactl --physcpubind=64 --membind=1 /home/inspur/,perftest 写延时测试,性能测试,RoCE 多口单向性能测试,无（沿用现有两个独立 RoCEv2 400G 平面，不修改交换机）。
+TN-IMP-188,LX,LX:not-whitelisted,未在白名单： numactl --physcpubind=16 --membind=0 /home/inspur/ / numactl --physcpubind=16 --membind=0 /home/inspur/,perftest 读入带宽测试,性能测试,RoCE 多口单向性能测试,无（使用现有双 400G RoCEv2 平面，不调整交换机）。
+TN-IMP-189,L1,L1:title-action,命令只读但标题含动作词：perftest 写入带宽测试,perftest 写入带宽测试,性能测试,RoCE 多口单向性能测试,无（使用现有双 400G RoCEv2 平面，不调整交换机）。
+TN-IMP-190,LX,LX:not-whitelisted,未在白名单： numactl --physcpubind=16 --membind=0 /home/inspur/ / numactl --physcpubind=16 --membind=0 /home/inspur/,perftest 发送带宽测试,性能测试,RoCE 多口单向性能测试,无（使用现有双 400G RoCEv2 平面，不调整交换机）。
+TN-IMP-191,LX,LX:not-whitelisted,未在白名单： ib_read_lat -i 1 -x 3 --tclass 104 -a -n 1000 -d m / ib_read_lat -i 1 -x 3 --tclass 104 -a -n 1000 -d m,perftest 读延时测试,性能测试,RoCE 多口双向性能测试,无（现有双 Rail RoCEv2 配置不变）。
+TN-IMP-192,LX,LX:not-whitelisted,未在白名单： ib_write_lat -i 1 -x 3 --tclass 104 -a -n 1000 -d  / ib_write_lat -i 1 -x 3 --tclass 104 -a -n 1000 -d ,perftest 写延时测试,性能测试,RoCE 多口双向性能测试,无（现有双 Rail RoCEv2 配置不变）。
+TN-IMP-193,LX,LX:not-whitelisted,未在白名单： numactl --physcpubind=16 --membind=0 /home/inspur/ / numactl --physcpubind=16 --membind=0 /home/inspur/,perftest 读入带宽测试,性能测试,RoCE 多口双向性能测试,无（复用两个现有的独立 RoCEv2 平面，不更改交换机）。
+TN-IMP-194,L1,L1:title-action,命令只读但标题含动作词：perftest 写入带宽测试,perftest 写入带宽测试,性能测试,RoCE 多口双向性能测试,无（复用两个现有的独立 RoCEv2 平面，不更改交换机）。
+TN-IMP-195,LX,LX:not-whitelisted,未在白名单： numactl --physcpubind=16 --membind=0 /home/inspur/ / numactl --physcpubind=16 --membind=0 /home/inspur/,perftest 发送带宽测试,性能测试,RoCE 多口双向性能测试,无（复用两个现有的独立 RoCEv2 平面，不更改交换机）。
+TN-IMP-196,LX,LX:not-whitelisted,未在白名单： iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 8 -t / ib_write_bw -d mlx5_0 -i 1 -x 3 -p 18515 --tclass ,物理机物理网口下，iperf TCP 流量与 perftest RDMA 流量并发混流性能测试,混流测试,物理机上RoCE 与 TCP/IP 流量混合运行测试,无（沿用同一 PF 物理口和既有 RoCEv2 QoS；不修改交换机）。
+TN-IMP-197,LX,LX:not-whitelisted,未在白名单： ip -br address show dev ens17np0 / ip -br address show dev ens24np0,物理机 bond 聚合网口下，iperf TCP 流量与 perftest RDMA 流量并发混流性能测试,混流测试,物理机上聚合接口上运行 RoCE 与 TCP 混跑测试,800G交换机10.202.54.91：GPU01 eth-0-5/1、eth-
+TN-IMP-198,LX,LX:not-whitelisted,未在白名单： iperf3 -c 198.18.34.4 -B 198.18.34.3 -p 5201 -P 2  / ib_write_bw -d rocep0s2 -i 1 -x 3 -p 18515 --tclas,网卡 SR-IOV 虚拟功能（VF）端口下，iperf TCP 流量与 perftest RDMA 流量并发混流性能测试,混流测试,SR-IOV VF 上运行 RoCE 与 IP 混跑测试,无（沿用现场已配置的 VF 直通和 RoCEv2 网络，不调整交换机）。
+TN-IMP-199,LX,LX:no-command,命令列为空，无法白名单核验,VF 聚合 bond 口下，iperf TCP 流量与 perftest RDMA 流量并发混流性能测试,混流测试,SR-IOV VF 聚合接口上运行 RoCE 与 IP 混跑测试,800G交换机10.202.54.91：GPU01 eth-0-5/1、eth-
+TN-IMP-200,LX,LX:not-whitelisted,未在白名单： iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 1 -t / iperf3 -s -B 172.30.1.2 -p 5201 -1,物理机 UDP 发包长时间稳定性测试,稳定性测试,物理机 UDP 发包长时间稳定性测试,无（沿用现有 RoCE 网络的物理以太网链路，不修改交换机）。
+TN-IMP-201,LX,LX:not-whitelisted,未在白名单： iperf3 -c 198.18.34.4 -B 198.18.34.3 -p 5201 -P 1  / iperf3 -s -B 198.18.34.4 -p 5201 -1,虚拟空间 UDP 发包稳定性测试,稳定性测试,虚拟空间 UDP 发包稳定性测试,无（须事先准备真实 VF/PF 直通测试 VM 和对应网络，不调整交换机）。
+TN-IMP-202,LX,LX:not-whitelisted,未在白名单： iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 8 -t / iperf3 -s -B 172.30.1.2 -p 5201 -1,物理机 TCP 发包长时间稳定性测试,稳定性测试,物理机 TCP 发包稳定性测试,无（使用现有物理 CX7 RoCE 链路承载普通 TCP，不修改交换机）。
+TN-IMP-203,LX,LX:not-whitelisted,未在白名单： iperf3 -c 198.18.34.4 -B 198.18.34.3 -p 5201 -P 8  / iperf3 -s -B 198.18.34.4 -p 5201 -1,虚拟空间 TCP 发包稳定性测试,稳定性测试,虚拟空间 TCP 发包稳定性测试,无（测试在现有 VM 直通网络上执行，不修改交换机）。
+TN-IMP-204,LX,LX:not-whitelisted,未在白名单： ib_write_bw -d mlx5_0 -i 1 -x 3 -p 18515 --tclass  / ib_read_bw -d mlx5_0 -i 1 -x 3 -p 18516 --tclass 1,RDMA 长时间稳定性测试（write read send）,稳定性测试,RDMA 长时间稳定性测试（write read send）,无（使用现有 CX7 RoCEv2 物理数据平面，不修改交换机）。
+TN-IMP-205,LX,LX:not-whitelisted,未在白名单： ib_write_bw -d rocep0s2 -i 1 -x 3 -p 18515 --tclas / ib_read_bw -d rocep0s2 -i 1 -x 3 -p 18516 --tclass,虚拟空间 RDMA 长时间稳定性测试（write read send）,稳定性测试,虚拟空间 RDMA 长时间稳定性测试（write read send）,无（依赖既有 CX7 VF 直通及 RoCEv2 网络，不修改交换机）。
+TN-IMP-206,LX,LX:not-whitelisted,未在白名单： ip monitor link dev ens17np0,测试网线拔插过程网络建链稳定性测试,稳定性测试,网络稳定性测试,无（现场人工拔插 ens17np0 所对应的物理链路，不修改交换机配置）。
+TN-IMP-207,L2,L2:switch-config,"交换机列要求变更端口/速率：configure terminal
+interface eth-0-5/1
+shutdown
+",网络震荡测试,稳定性测试,网络稳定性测试,configure terminal interface eth-0-5/1 s
+TN-IMP-208,L2,L2:reboot-power,ssh inspur@10.202.54.101 sudo systemctl reboot,reboot 200次测试,稳定性测试,复位稳定性测试,无（不修改交换机；GPU02只承担管理侧外部控制）。
+TN-IMP-209,L2,L2:reboot-power,curl --fail --insecure --user admin https://10.202.54.11/red,power reset 200测试,稳定性测试,复位稳定性测试,无（不修改交换机）；使用GPU01 BMC Redfish而非交换机操作。
+TN-IMP-210,L2,L2:step-power-cycle,步骤含高危动作：1. 先向厂商核实PowerCycle对应真实DC Off/On及遥测采集，检查GPU01的两张,DC cycle 200次测试,稳定性测试,复位稳定性测试,无（不修改交换机）；DC断电需BMC/硬件控制器的电源遥测佐证。
+TN-IMP-211,L2,L2:step-power-cycle,步骤含高危动作：管理员确认PDU所有AC供电回路及来电自启策略,AC cycle 200次测试,稳定性测试,复位稳定性测试,无（交换机不改动）；真实AC循环由专用PDU在全部PSU输入回路执行，保存厂家控
+TN-IMP-212,LX,LX:not-whitelisted,未在白名单： /tmp/niclab_import_v02_20261020/iperf48/install/bi / /tmp/niclab_import_v02_20261020/iperf48/install/bi,测试物理网口iperf网络压力48小时,压力测试,以太网卡压力测试,无（不修改交换机；保持现有物理链路和QoS配置）。
+TN-IMP-213,L1,L1:title-action,命令只读但标题含动作词：跨网卡绑定mode1 iperf压力测试6小时,跨网卡绑定mode1 iperf压力测试6小时,压力测试,绑定网口压力测试,800G交换机10.202.54.91：GPU01 eth-0-5/1、eth-
+TN-IMP-214,L1,L1:title-action,命令只读但标题含动作词：跨网卡绑定mode2 iperf压力测试6小时,跨网卡绑定mode2 iperf压力测试6小时,压力测试,绑定网口压力测试,800G交换机10.202.54.91：GPU01 eth-0-5/1、eth-
+TN-IMP-215,L1,L1:title-action,命令只读但标题含动作词：跨网卡绑定mode4 iperf压力测试6小时,跨网卡绑定mode4 iperf压力测试6小时,压力测试,绑定网口压力测试,800G交换机10.202.54.91：GPU01 eth-0-5/1、eth-
+TN-IMP-216,L1,L1:title-action,命令只读但标题含动作词：跨网卡绑定mode6 iperf压力测试6小时,跨网卡绑定mode6 iperf压力测试6小时,压力测试,绑定网口压力测试,800G交换机10.202.54.91：GPU01 eth-0-5/1、eth-
+TN-IMP-217,LX,LX:not-whitelisted,未在白名单： ib_write_bw -d mlx5_0 -i 1 -x 3 -p 18515 --tclass  / ib_read_bw -d mlx5_0 -i 1 -x 3 -p 18516 --tclass 1,RoCE 压力测试/RDMA卡压力,压力测试,RoCE压力测试/RDMA卡压力,无需修改交换机；保持已验证的RoCEv2/PFC/ECN配置。
+TN-IMP-218,LX,LX:not-whitelisted,未在白名单： sudo mlxfwmanager -d 0000:45:00.0 --query,系统下网卡信息检查,网卡专用工具测试,系统下网卡信息检查,无（只读查询，不修改交换机或固件）。
+TN-IMP-219,LX,LX:not-whitelisted,未在白名单： sudo devlink health show pci/0000:45:00.0 / Mellanox,网卡日志信息导出,网卡专用工具测试,网卡日志信息导出,无（只读日志采集，不修改交换机）。
+TN-IMP-220,L2,L2:step-reboot-power,步骤含高危动作：1. 断电后实测板卡外形、挡板/螺丝固定、相邻器件与线缆净空，留存照片/尺寸记录,结构测试,结构测试,结构测试,无（实验室/现场人工或专业仪器执行，无需改交换机）。
+TN-IMP-221,LX,LX:no-command,命令列为空，无法白名单核验,散热测试,散热测试,散热测试,无（实验室/现场人工或专业仪器执行，无需改交换机）。
+TN-IMP-222,LX,LX:no-command,命令列为空，无法白名单核验,SI测试,SI测试,SI测试,无（实验室/现场人工或专业仪器执行，无需改交换机）。
+TN-IMP-223,LX,LX:no-command,命令列为空，无法白名单核验,EMC（电磁兼容性测试）,EMC,EMC,无（实验室/现场人工或专业仪器执行，无需改交换机）。
+TN-IMP-224,LX,LX:no-command,命令列为空，无法白名单核验,SIV（信号完整性视图）,SIV,SIV,无（实验室/现场人工或专业仪器执行，无需改交换机）。
+TN-IMP-225,LX,LX:no-command,命令列为空，无法白名单核验,Thermal（热测试）,Thermal,Thermal,无（实验室/现场人工或专业仪器执行，无需改交换机）。
+TN-IMP-226,LX,LX:no-command,命令列为空，无法白名单核验,REL（可靠性）,REL,REL,无（实验室/现场人工或专业仪器执行，无需改交换机）。
