@@ -1,0 +1,53 @@
+package com.qa.autotest.application.repository;
+
+import com.qa.autotest.domain.common.PageResult;
+import com.qa.autotest.domain.execution.RunOrigin;
+import com.qa.autotest.domain.execution.RunRecord;
+import com.qa.autotest.domain.execution.RunState;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * 运行记录仓储。所有实现必须带 project_id 条件（run_id 全局唯一，但租户守卫不做例外）。
+ */
+public interface RunRepository {
+
+    RunRecord insert(RunRecord draft, String jobNo, String runRequestId, Long operatorId);
+
+    /**
+     * 带触发来源的创建（PLN-01）：把 trigger_type / plan_id / triggered_by_plan_at 一起落库。
+     *
+     * <p>默认实现退化为手工运行，保证既有内存仓储与测试无需改动即可编译；
+     * JDBC 实现必须覆盖本方法。
+     */
+    default RunRecord insert(RunRecord draft, String jobNo, String runRequestId,
+                             Long operatorId, RunOrigin origin) {
+        return insert(draft, jobNo, runRequestId, operatorId);
+    }
+
+    /**
+     * 读取运行来源，供报告入库时把 PLAN_ID / TRIGGER_TYPE 合并进 metadata。
+     * 默认返回空（内存仓储/旧实现没有来源概念）。
+     */
+    default Optional<RunOrigin> findOrigin(long projectId, String runId) {
+        return Optional.empty();
+    }
+
+    Optional<RunRecord> findByRunId(long projectId, String runId);
+
+    Optional<RunRecord> findByRequestId(long projectId, String requestId);
+
+    int updateState(String runId, RunState from, RunState to,
+                    Instant startedAt, Instant finishedAt,
+                    String failureClass, String failureReason, String failureMessage);
+
+    int updateCounts(String runId, int total, int passed, int failed, String artifactsDir);
+
+    List<RunRecord> findActive();
+
+    PageResult<RunRecord> page(long projectId, RunState state, int page, int size);
+
+    int markAttempt(String runId, int attemptNo, String retryOf);
+}

@@ -3,7 +3,8 @@
 自动化测试平台主仓库。技术内核为 Robot Framework + robotdashboard + RoboScope，
 平台本体采用 Spring Boot + MariaDB + Vue 3。
 
-> 当前阶段：立项评估。代码尚未开写，仓库内主体是评估与架构文档，见 `docs/`。
+> 当前阶段：**G0 立项门已过（有条件）**，`WS-01` monorepo 骨架与 `DOC-01` 待验；业务代码未开写。
+> 进度看 [`docs/plan/WBS-STATUS.md`](docs/plan/WBS-STATUS.md)，门禁纪要在 `docs/plan/G0-评审纪要-20261102.md`。
 
 ## 仓库与远程
 

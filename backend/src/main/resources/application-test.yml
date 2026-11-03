@@ -1,0 +1,14 @@
+# 测试环境：集成测试连 149 本机独立库 robot_it（ADR-0002），与本机开发库互不干扰。
+spring:
+  datasource:
+    url: jdbc:mariadb://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:robot_it}
+    hikari:
+      maximum-pool-size: 2
+  flyway:
+    enabled: true
+    clean-disabled: false
+    locations: filesystem:${DB_MIGRATION_PATH:../db/migration}
+
+logging:
+  level:
+    com.qa.autotest: INFO

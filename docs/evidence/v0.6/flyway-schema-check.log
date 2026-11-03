@@ -1,0 +1,27 @@
+﻿[execution_plan columns]
+id | bigint | null=NO | default=null
+project_id | bigint | null=NO | default=null
+name | varchar(128) | null=NO | default=null
+test_set_id | bigint | null=YES | default=null
+environment_id | bigint | null=YES | default=null
+suite_paths_json | text | null=YES | default=null
+include_tag | varchar(64) | null=YES | default=null
+concurrency | int | null=NO | default=1
+timeout_seconds | int | null=NO | default=3600
+cron | varchar(64) | null=NO | default=null
+timezone | varchar(64) | null=NO | default=Asia/Shanghai
+status | varchar(16) | null=NO | default=enabled
+overlap_policy | varchar(16) | null=NO | default=SKIP
+last_fire_at | datetime(3) | null=YES | default=null
+next_fire_at | datetime(3) | null=YES | default=null
+created_at | datetime(3) | null=NO | default=CURRENT_TIMESTAMP(3)
+created_by | bigint | null=YES | default=null
+updated_at | datetime(3) | null=NO | default=CURRENT_TIMESTAMP(3)
+updated_by | bigint | null=YES | default=null
+[run new columns]
+trigger_type | varchar(16) | null=NO | default=manual
+plan_id | bigint | null=YES | default=null
+triggered_by_plan_at | datetime(3) | null=YES | default=null
+[indexes]
+execution_plan | idx_execution_plan_project_status
+run | idx_run_plan

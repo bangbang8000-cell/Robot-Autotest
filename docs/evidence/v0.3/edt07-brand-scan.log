@@ -1,0 +1,89 @@
+﻿== 品牌扫描（EDT-07） ==
+扫描词：roboscope|viadee|roboflow（大小写不敏感） 白名单：brand-allow.txt
+
+[产品面] 必须 0 命中（白名单除外）
+  ALLOW    packages/editor/src/api/ai.api.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/api/auth.api.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/api/context.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/api/debug.api.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/api/environments.api.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/api/explorer.api.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/api/governance.api.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/api/repos.api.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/components/editor/flow/KeywordDocModal.vue ｜   /* 衍生自 viadee/roboscope v0.16.1（Apache-2.0）；Modified by Robot-Autotest（2026-11-02，EDT-02）�
+  ALLOW    packages/editor/src/components/editor/flow/KeywordPalette.vue ｜   /* 衍生自 viadee/roboscope v0.16.1（Apache-2.0）；Modified by Robot-Autotest（2026-11-02，EDT-02）�
+  ALLOW    packages/editor/src/components/editor/FlowEditor.vue ｜   /* 衍生自 viadee/roboscope v0.16.1（Apache-2.0）；Modified by Robot-Autotest（2026-11-02，EDT-02）�
+  ALLOW    packages/editor/src/components/editor/FlowEditor.vue ｜   ensureRoboScopeHealLibrary,
+  ALLOW    packages/editor/src/components/editor/FlowEditor.vue ｜   removeRoboScopeHealLibraryIfUnused,
+  ALLOW    packages/editor/src/components/editor/FlowEditor.vue ｜   hasRoboScopeHealImport,
+  ALLOW    packages/editor/src/components/editor/FlowEditor.vue ｜   // `RoboScopeHeal` import in Settings, suppress the toggle so we
+  ALLOW    packages/editor/src/components/editor/FlowEditor.vue ｜   if (!hasBrowserLibraryImport(props.form) && !hasRoboScopeHealImport(props.form)) {
+  ALLOW    packages/editor/src/components/editor/FlowEditor.vue ｜     ? ensureRoboScopeHealLibrary(props.form.settings)
+  ALLOW    packages/editor/src/components/editor/FlowEditor.vue ｜     : removeRoboScopeHealLibraryIfUnused(props.form.settings, stillUsed)
+  ALLOW    packages/editor/src/components/editor/RobotEditor.vue ｜   /* 衍生自 viadee/roboscope v0.16.1（Apache-2.0）；Modified by Robot-Autotest（2026-11-02，EDT-02）�
+  ALLOW    packages/editor/src/components/editor/RobotEditor.vue ｜   hasRoboScopeHealImport,
+  ALLOW    packages/editor/src/components/editor/RobotEditor.vue ｜   // `Library    Browser` (or `RoboScopeHeal`) import in Settings,
+  ALLOW    packages/editor/src/components/editor/RobotEditor.vue ｜   if (!hasBrowserLibraryImport(form) && !hasRoboScopeHealImport(form)) {
+  ALLOW    packages/editor/src/composables/useFeatureFlags.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/composables/useKeywordSignatures.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/composables/useRecordingSidecar.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/locales/en-US.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/locales/en-US.ts ｜       "toggleOnHint": "Click to revert every Heal* keyword in this file to its bare Browser-library form and r
+  ALLOW    packages/editor/src/locales/en-US.ts ｜       "toggleOffHint": "Click to promote every Browser keyword (Click, Fill Text, …) to its Heal variant and
+  ALLOW    packages/editor/src/locales/zh-CN.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/locales/zh-CN.ts ｜       "toggleOnHint": "单击可将此文件中的每个 Heal* 关键字还原为其原始的 Browser 库形�
+  ALLOW    packages/editor/src/locales/zh-CN.ts ｜       "toggleOffHint": "单击可将每个 Browser 关键字（Click、Fill Text 等）提升为其 Heal 变�
+  ALLOW    packages/editor/src/stores/debug.store.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/stores/explorer.store.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/stores/repos.store.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/types/domain.types.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/utils/errors.ts ｜  * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜  * their RoboScopeHeal variant (`Heal Click`, `Heal Fill Text`, …).
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜  *   3. Custom-configured `Library    RoboScopeHeal    <args>` rows are
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜  * Browser-library keyword → its RoboScopeHeal variant. Source of
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜  * Returns the index of the bare `Library    RoboScopeHeal` row (no
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜ function findBareRoboScopeHealRow(settings: Settings): number {
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜       s.value === 'RoboScopeHeal' &&
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜  * `RoboScopeHeal`. Used to suppress duplicate adds when the user
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜ function hasAnyRoboScopeHealRow(settings: Settings): boolean {
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜   return settings.some(s => s.key === 'Library' && s.value === 'RoboScopeHeal')
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜  * Ensures `Library    RoboScopeHeal` is present in the form's settings.
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜ export function ensureRoboScopeHealLibrary(settings: Settings): Settings {
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜   if (hasAnyRoboScopeHealRow(settings)) return settings
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜   const newRow: SettingRow = { key: 'Library', value: 'RoboScopeHeal', args: [] }
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜  * Removes the bare `Library    RoboScopeHeal` row when no Heal*
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜  *   - the row carries args (`Library RoboScopeHeal budget=3 …`) — that
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜ export function removeRoboScopeHealLibraryIfUnused(
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜   const idx = findBareRoboScopeHealRow(settings)
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜  * `true` when the file already imports `Library    RoboScopeHeal`
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜ export function hasRoboScopeHealImport(form: RobotForm): boolean {
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜     s => s.key === 'Library' && s.value.trim() === 'RoboScopeHeal',
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜  * `Library    RoboScopeHeal` row based on whether any Heal*
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜     newSettings = ensureRoboScopeHealLibrary(newSettings)
+  ALLOW    packages/editor/src/utils/healToggle.ts ｜     newSettings = removeRoboScopeHealLibraryIfUnused(newSettings, anyHealLeft)
+  ALLOW    packages/editor/dist/editor.js ｜     (n) => n.key === "Library" && n.value === "RoboScopeHeal" && n.args.length === 0
+  ALLOW    packages/editor/dist/editor.js ｜   return e.some((n) => n.key === "Library" && n.value === "RoboScopeHeal");
+  ALLOW    packages/editor/dist/editor.js ｜   const n = { key: "Library", value: "RoboScopeHeal", args: [] };
+  ALLOW    packages/editor/dist/editor.js ｜     (n) => n.key === "Library" && n.value.trim() === "RoboScopeHeal"
+  ALLOW    packages/editor/dist/editor.js ｜       toggleOnHint: "单击可将此文件中的每个 Heal* 关键字还原为其原始的 Browser 库形式�
+  ALLOW    packages/editor/dist/editor.js ｜       toggleOffHint: "单击可将每个 Browser 关键字（Click、Fill Text 等）提升为其 Heal 变体�
+  ALLOW    packages/editor/dist/editor.js ｜       toggleOnHint: "Click to revert every Heal* keyword in this file to its bare Browser-library form and rem
+  ALLOW    packages/editor/dist/editor.js ｜       toggleOffHint: "Click to promote every Browser keyword (Click, Fill Text, …) to its Heal variant and a
+  ALLOW    packages/editor/dist/editor.js.map ｜ {"version":3,"file":"editor.js","sources":["../src/components/ui/BaseButton.vue","../src/types/recorder.types.
+  ALLOW    frontend/dist/assets/EditorView-Xuwjj4Mz.js ｜ `)?Cy(l.value):1;o+=a,s="set"}}if(t.variables.length>0){o>0&&mf(s)&&(o+=1,s=""),o+=1,s="*** Variables ***";for
+  ALLOW    frontend/dist/assets/index-ByzpVO9a.js ｜   */const Ap="10.0.7";function Cp(){typeof __VUE_I18N_FULL_INSTALL__!="boolean"&&(yn().__VUE_I18N_FULL_INSTALL
+  ALLOW    frontend/dist/assets/index-ByzpVO9a.js ｜ ？`},argLabels:{fallback:"参数 {n}",extraPositional:"额外的位置参数",extraNamed:"额外的命名参�
+
+[归属面] 允许保留（版权/许可声明与内部规划文档），逐条登记
+  ATTRIB   packages/editor/LICENSE-roboscope（1 处）
+  ATTRIB   packages/editor/NOTICE.md（5 处）
+  ATTRIB   packages/editor/UPSTREAM.md（7 处）
+  ATTRIB   packages/editor/README.md（2 处）
+  ATTRIB   docs（151 处）
+
+== 汇总 ==
+产品面命中 : 71（放行 71 / 违规 0）
+归属面命中 : 166
+白名单条数 : 6
+
+结论: PASS（产品面含 dist 0 命中）

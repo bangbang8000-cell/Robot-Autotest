@@ -1,0 +1,21 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< com.qa:robot-autotest-backend >--------------------
+[INFO] Building robot-autotest-backend 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- flyway:10.10.0:migrate (default-cli) @ robot-autotest-backend ---
+[INFO] Database: jdbc:mariadb://127.0.0.1/robot_dev (MySQL 8.0)
+[WARNING] Error: 1142-42000: SELECT command denied to user 'robot'@'localhost' for table 'user_variables_by_thread'
+[INFO] Successfully validated 16 migrations (execution time 00:00.170s)
+[INFO] Current version of schema `robot_dev`: 6.2
+[INFO] Migrating schema `robot_dev` to version "6.3 - ci trigger"
+[INFO] Successfully applied 1 migration to schema `robot_dev`, now at version v6.3 (execution time 00:00.676s)
+[WARNING] Error: 1142-42000: SELECT command denied to user 'robot'@'localhost' for table 'user_variables_by_thread'
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  7.846 s
+[INFO] Finished at: 2026-11-03T18:12:39+08:00
+[INFO] ------------------------------------------------------------------------

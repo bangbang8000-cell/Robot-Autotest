@@ -1,0 +1,36 @@
+﻿
+> robot-autotest-frontend@0.1.0 build
+> vue-tsc --noEmit && vite build
+
+[36mvite v6.4.5 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 104 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                                                            [39m[1m[2m  0.41 kB[22m[1m[22m[2m │ gzip:   0.30 kB[22m
+[2mdist/[22m[35massets/index-DNOXi8wQ.css                                             [39m[1m[2m  4.34 kB[22m[1m[22m[2m │ gzip:   1.29 kB[22m
+[2mdist/[22m[35massets/EditorView-IxuYm3ka.css                                        [39m[1m[2m 86.82 kB[22m[1m[22m[2m │ gzip:  13.45 kB[22m
+[2mdist/[22m[36massets/RunsView-BwX6zfaM.js                                           [39m[1m[2m  0.32 kB[22m[1m[22m[2m │ gzip:   0.24 kB[22m
+[2mdist/[22m[36massets/ReportsView-CCR-7zd9.js                                        [39m[1m[2m  0.32 kB[22m[1m[22m[2m │ gzip:   0.25 kB[22m
+[2mdist/[22m[36massets/NotFoundView-CZyooAzM.js                                       [39m[1m[2m  0.41 kB[22m[1m[22m[2m │ gzip:   0.30 kB[22m
+[2mdist/[22m[36massets/ProjectPicker.vue_vue_type_script_setup_true_lang-BilGDlpU.js  [39m[1m[2m  0.68 kB[22m[1m[22m[2m │ gzip:   0.44 kB[22m
+[2mdist/[22m[36massets/OverviewView-DaEX_LHe.js                                       [39m[1m[2m  1.01 kB[22m[1m[22m[2m │ gzip:   0.58 kB[22m
+[2mdist/[22m[36massets/LoginView-CBpjCFxP.js                                          [39m[1m[2m  1.56 kB[22m[1m[22m[2m │ gzip:   0.81 kB[22m
+[2mdist/[22m[36massets/AdminView-iqdCjNIF.js                                          [39m[1m[2m  7.46 kB[22m[1m[22m[2m │ gzip:   2.25 kB[22m
+[2mdist/[22m[36massets/CasesView-CCOk-kyX.js                                          [39m[1m[2m 10.12 kB[22m[1m[22m[2m │ gzip:   3.18 kB[22m
+[2mdist/[22m[36massets/AssetsView-BpYwnOT1.js                                         [39m[1m[2m 14.79 kB[22m[1m[22m[2m │ gzip:   3.66 kB[22m
+[2mdist/[22m[36massets/index-B470cMTC.js                                              [39m[1m[2m180.48 kB[22m[1m[22m[2m │ gzip:  67.42 kB[22m
+[2mdist/[22m[36massets/EditorView-DKOjf0GI.js                                         [39m[1m[33m857.63 kB[39m[22m[2m │ gzip: 265.44 kB[22m
+node.exe : [33m
+所在位置 D:\Program Files\nodejs\npm.ps1:29 字符: 3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([33m:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-m
+anualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+[32m✓ built in 10.22s[39m

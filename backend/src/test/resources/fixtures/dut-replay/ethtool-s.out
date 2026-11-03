@@ -1,0 +1,15 @@
+NIC statistics:
+     rx_packets: 1287645231
+     tx_packets: 1287645231
+     rx_bytes: 1551234567890
+     tx_bytes: 1551234567890
+     rx_errors: 0
+     tx_errors: 0
+     rx_discards: 12
+     tx_discards: 0
+     rx_csum_good: 1287645231
+     tx_csum_good: 1287645231
+     rx_pause_ctrl_phy: 4
+     tx_pause_ctrl_phy: 4
+     rx_out_of_buffer: 0
+     tx_timeout: 0

@@ -1,0 +1,142 @@
+package com.qa.autotest.application.report;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.qa.autotest.domain.report.ExportMode;
+import com.qa.autotest.domain.report.MetadataGate;
+import com.qa.autotest.domain.report.ReportRecord;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Word 导出结构（RPT-05）：十项 metadata、缺失标红、内部版页眉、超长失败消息截断、zip 合法。
+ */
+class DocxExporterTest {
+
+    private static final String RUN_ID = "RPT05-DOCX-001";
+    private static final Instant NOW = Instant.parse("2026-11-03T03:00:00Z");
+
+    private final DocxExporter exporter = new DocxExporter();
+
+    @Test
+    @DisplayName("十项 metadata 全部写入首页表格")
+    void writesAllTenMetadataKeys() throws IOException {
+        byte[] bytes = exporter.render(document(fullMetadata(), ExportMode.EXTERNAL, "PASS", null));
+        String xml = zipEntry(bytes, "word/document.xml");
+
+        for (String key : MetadataGate.REQUIRED) {
+            assertTrue(xml.contains(key), "缺少 metadata 键：" + key);
+            assertTrue(xml.contains("V-" + key), "缺少 metadata 值：" + key);
+        }
+        assertTrue(xml.contains("一、十项 metadata"));
+    }
+
+    @Test
+    @DisplayName("缺失项显示「缺失」并标红，不留空")
+    void missingValueIsMarked() throws IOException {
+        Map<String, String> metadata = fullMetadata();
+        metadata.remove("DUT");
+        byte[] bytes = exporter.render(
+                document(metadata, ExportMode.EXTERNAL, "PASS", null, List.of("DUT")));
+        String xml = zipEntry(bytes, "word/document.xml");
+
+        assertTrue(xml.contains("DUT"));
+        assertTrue(xml.contains(">缺失<") || xml.contains("缺失"), "缺失项必须显式写「缺失」");
+        assertTrue(xml.contains("FF0000"), "缺失项必须标红");
+        assertFalse(xml.contains("V-DUT"), "缺失项不能残留旧值");
+    }
+
+    @Test
+    @DisplayName("内部版页眉含红字标识")
+    void internalHeaderIsRed() throws IOException {
+        byte[] bytes = exporter.render(
+                document(fullMetadata(), ExportMode.INTERNAL, "PASS", null));
+        String header = zipEntry(bytes, "word/header1.xml");
+
+        assertTrue(header.contains(DocxExporter.INTERNAL_HEADER));
+        assertTrue(header.contains("FF0000"), "内部版页眉必须是红色");
+        assertTrue(header.contains("w:color"));
+    }
+
+    @Test
+    @DisplayName("失败消息超过 500 字截断并注明原长度")
+    void longFailureMessageIsTruncated() throws IOException {
+        String failure = "F".repeat(600);
+        byte[] bytes = exporter.render(
+                document(fullMetadata(), ExportMode.INTERNAL, "FAIL", failure));
+        String xml = zipEntry(bytes, "word/document.xml");
+
+        assertTrue(xml.contains("已截断，原长度 600 字符"));
+        assertFalse(xml.contains(failure), "原文 600 字不应完整落盘");
+        assertTrue(xml.contains("F".repeat(DocxExporter.FAILURE_MAX_CHARS).substring(0, 100)));
+    }
+
+    @Test
+    @DisplayName("生成文件是合法 zip，document.xml 含 RUN_ID")
+    void producesValidDocxZip() throws IOException {
+        byte[] bytes = exporter.render(
+                document(fullMetadata(), ExportMode.EXTERNAL, "FAIL", "断言失败：期望 200 实际 500"));
+        assertNotNull(bytes);
+        assertTrue(bytes.length > 0);
+        String xml = zipEntry(bytes, "word/document.xml");
+
+        assertTrue(xml.contains(RUN_ID), "document.xml 必须带 RUN_ID");
+        assertTrue(xml.contains("自动化测试运行报告"));
+        assertTrue(xml.contains("二、套件树"));
+        assertTrue(xml.contains("断言失败"));
+    }
+
+    private static ExportDocument document(Map<String, String> metadata, ExportMode mode,
+                                           String verdict, String failure) {
+        return document(metadata, mode, verdict, failure, List.of());
+    }
+
+    private static ExportDocument document(Map<String, String> metadata, ExportMode mode,
+                                           String verdict, String failure,
+                                           List<String> missing) {
+        ReportRecord report = new ReportRecord(7L, RUN_ID, "finished",
+                missing.isEmpty(), missing, metadata, 1, verdict.equals("FAIL") ? 1 : 0, 0,
+                NOW.minusSeconds(60), NOW);
+        ReportTreeService.TreeCase test = new ReportTreeService.TreeCase(
+                "suites/a.robot.case-ok", "用例-中文校验", verdict, 1234L, failure, List.of());
+        ReportTreeService.TreeSuite suite = new ReportTreeService.TreeSuite(
+                "a.robot", verdict, List.of(), List.of(test));
+        ReportTreeService.TreeSuite root = new ReportTreeService.TreeSuite(
+                RUN_ID, verdict, List.of(suite), List.of());
+        return new ExportDocument(report, root, mode, NOW, "tester");
+    }
+
+    private static Map<String, String> fullMetadata() {
+        Map<String, String> metadata = new LinkedHashMap<>();
+        for (String key : MetadataGate.REQUIRED) {
+            metadata.put(key, "V-" + key);
+        }
+        return metadata;
+    }
+
+    private static String zipEntry(byte[] bytes, String entryName) throws IOException {
+        try (InputStream in = new ByteArrayInputStream(bytes);
+             ZipInputStream zip = new ZipInputStream(in, StandardCharsets.UTF_8)) {
+            ZipEntry entry = zip.getNextEntry();
+            while (entry != null) {
+                if (entryName.equals(entry.getName())) {
+                    return new String(zip.readAllBytes(), StandardCharsets.UTF_8);
+                }
+                entry = zip.getNextEntry();
+            }
+        }
+        throw new AssertionError("docx 内未找到 " + entryName);
+    }
+}

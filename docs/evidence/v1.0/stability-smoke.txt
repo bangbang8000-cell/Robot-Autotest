@@ -1,0 +1,25 @@
+# 3 分钟冒烟，不代替 24h
+# 以下为 scripts/stability-24h.sh 原始摘要（数值未改写）
+# 稳定性压测摘要（stability-smoke）
+# 本文件由 scripts/stability-24h.sh 生成，数值均来自同目录 stability-smoke.csv
+mode=monitor-only
+started_at=2026-11-03 20:01:31 CST
+ended_at=2026-11-03 20:04:31 CST
+elapsed_s=180
+samples=9
+restarts=0
+process_missing_samples=0
+rss_first_mb=5.7
+rss_peak_mb=19.6
+rss_growth=243.9%
+conn_baseline=0
+conn_peak=0
+conn_final=0
+conn_ceiling=16
+conn_leak=无
+conn_note=峰值 0 ≤ 池上限 16；空闲期停留在池上限属正常，不按基线首样本判定
+http_failures=0
+load_triggers_ok=0
+load_triggers_fail=0
+result=MONITOR-ONLY
+judge_hint=PASS 需同时满足：restarts=0、rss_growth<20%、conn_leak=无、无 HTTP/触发失败、样本齐全

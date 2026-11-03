@@ -1,0 +1,8 @@
+[待149实跑] 本机采样先行，149 尚未实跑；Windows + JDK 25，仅反映「100ms 批次 + 内存订阅」的等待上限，不代表生产网络时延。
+命令：mvn -B -f backend/pom.xml test -Djacoco.skip=true -Dtest=LogDeliveryLatencyTest
+采样方式：每周期 publish 8 行 → sleep 100ms（模拟调度器周期）→ flush，共 5 周期 40 个样本。
+
+[log-latency] samples=40 p50=101 p95=101 p99=101 max=101 ms
+
+结论：p95 ≈ 101ms，等于一个 flush 周期；满足 EXE-04「单批推送延迟 ≤ 200ms」的判据。
+说明：本样本不含 WebSocket 网络传输与浏览器渲染耗时，那部分需在 149 上实跑后补测。

@@ -1,0 +1,45 @@
+# NOTICE
+
+本项目（**Robot-Autotest**）包含从 **viadee/roboscope v0.16.1**（Apache License 2.0）衍生的代码，
+按 Apache-2.0 §4(b) / §4(d) 履行声明义务。
+
+## 1. 许可
+
+| 文件 | 内容 |
+|---|---|
+| 根 `LICENSE` | 本项目许可：**Apache License 2.0**（与下方上游原文一致） |
+| 根 `LICENSE-roboscope` | 上游许可原文，**未修改**（与 `packages/editor/LICENSE-roboscope` 字节一致） |
+
+> 根许可选型属法律决策，最终以人工签署的 `docs/release/v0.3-editor/EDT-08-发布检查单.md` 为准。
+
+## 2. 衍生来源
+
+| 项 | 内容 |
+|---|---|
+| 上游项目 | viadee/roboscope |
+| 上游版本 | v0.16.1 |
+| 上游许可 | Apache License 2.0 |
+| 上游地址 | https://github.com/viadee/roboscope |
+| 衍生范围 | 前端编辑器组件闭包（39 文件 / 15,946 行），位于 `packages/editor/src` |
+
+## 3. 修改声明（Apache-2.0 §4(b)）
+
+1. **移除 HTTP 能力**：上游 `src/api/*` 的 8 个模块改为注入式适配缝，包内无任何 HTTP 调用；
+2. **去宿主耦合**：移除 `repoId`、路由跳转与上游 i18n 实例依赖，props 收敛为 `content` / `readonly` / `height`；
+3. **保存链路落地**：内容 → 文件 → 版本（乐观锁 409、行级 diff、回滚、服务端语法校验，EDT-09）；
+4. **品牌清理与中文包合并**：清掉产品名/外链/localStorage 键前缀，编辑器文案并入平台 i18n（EDT-07）；
+5. **文件头统一标注**：所有改写文件带
+   `衍生自 viadee/roboscope v0.16.1（Apache-2.0）` 与 `Modified by Robot-Autotest`。
+
+逐文件明细见 `packages/editor/NOTICE.md`；品牌扫描白名单见根 `brand-allow.txt`。
+
+## 4. 商标
+
+本项目**不使用**上游产品名称、Logo 或视觉标识；上游商标归其权利人所有。
+代码中出现的 `RoboScopeHeal` 仅为 Robot Framework 库名（用户脚本的语法事实），不构成商标使用。
+
+## 5. 分发义务
+
+对外分发本仓库时须同时保留：根 `LICENSE`、根 `LICENSE-roboscope`、本 `NOTICE`、
+`packages/editor/NOTICE.md`，且不得移除任何改写文件的衍生/修改声明。
+不得以「内部使用」为由跳过上述义务。

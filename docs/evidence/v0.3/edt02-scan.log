@@ -1,0 +1,36 @@
+# EDT-02 自检（2026-11-02，Windows）
+
+## 1) 组件不得出现 HTTP / 仓库概念 / 路由跳转
+
+命令：对 packages/editor/src 下全部 .ts/.vue 匹配 axios|fetch(|XMLHttpRequest|repoId|router.push
+
+结果：hits = 0
+
+## 2) RobotEditor props 契约
+
+目标契约：
+
+  content: string
+  readonly?: boolean
+  height?: string
+
+emits：
+
+  save: [content: string]
+  'update:content': [content: string]
+  dirty: [isDirty: boolean]
+
+仓库号与文件路径已改由 setEditorScope({ scopeId, filePath }) 注入，不再走 props。
+
+## 3) 改写文件头计数
+
+匹配 "Modified by Robot-Autotest" 的文件数：headers = 20
+
+覆盖：8 个 api 适配缝（context + ai/environments/explorer/debug/repos/auth/governance）、
+4 个 composables（useFeatureFlags / useRecordingSidecar / useKeywordSignatures）、
+utils/errors、3 个 stores（explorer/repos/debug）、types/domain.types、
+4 个组件（RobotEditor / FlowEditor / KeywordPalette / KeywordDocModal）。
+
+## 4) 构建
+
+见 npm-build-edt02.log：exit 0，82 modules，dist/editor.js 403.94 kB（gzip 81.16 kB），1.94s。

@@ -1,0 +1,8 @@
+﻿# N13 包内 HTTP 扫描（EDT-01）
+# 命令：Select-String -Pattern "axios|fetch\(|XMLHttpRequest"
+# 范围：packages/editor/src (ts,vue) + packages/editor/dist (js,css)
+
+src hits = 0
+dist hits = 0
+
+结论：CLEAN（0 命中）

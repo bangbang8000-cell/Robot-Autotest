@@ -1,0 +1,134 @@
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import * as envsApi from '@/api/environments.api'
+import type { Environment, EnvironmentPackage, EnvironmentVariable, PackageInstallStatus } from '@/types/domain.types'
+import type { EnvCreateRequest, PackageCreateRequest } from '@/types/api.types'
+
+export const useEnvironmentsStore = defineStore('environments', () => {
+  const environments = ref<Environment[]>([])
+  const packages = ref<Record<number, EnvironmentPackage[]>>({})
+  const variables = ref<Record<number, EnvironmentVariable[]>>({})
+  const buildLogs = ref<Record<number, string[]>>({})
+  const loading = ref(false)
+
+  async function fetchEnvironments() {
+    loading.value = true
+    try {
+      environments.value = await envsApi.getEnvironments()
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function addEnvironment(data: EnvCreateRequest): Promise<Environment> {
+    const env = await envsApi.createEnvironment(data)
+    environments.value.push(env)
+    return env
+  }
+
+  async function removeEnvironment(id: number) {
+    await envsApi.deleteEnvironment(id)
+    environments.value = environments.value.filter((e) => e.id !== id)
+  }
+
+  async function setupDefault(): Promise<Environment> {
+    const env = await envsApi.setupDefaultEnvironment()
+    environments.value.push(env)
+    return env
+  }
+
+  async function cloneEnvironment(id: number, newName: string): Promise<Environment> {
+    const env = await envsApi.cloneEnvironment(id, newName)
+    environments.value.push(env)
+    return env
+  }
+
+  async function fetchPackages(envId: number) {
+    const loaded = await envsApi.getPackages(envId)
+    // Deduplicate by package_name (race condition between API + WebSocket)
+    const seen = new Set<string>()
+    packages.value[envId] = loaded.filter(p => {
+      if (seen.has(p.package_name)) return false
+      seen.add(p.package_name)
+      return true
+    })
+  }
+
+  async function installPackage(envId: number, data: PackageCreateRequest) {
+    const pkg = await envsApi.installPackage(envId, data)
+    if (!packages.value[envId]) packages.value[envId] = []
+    // Only push if not already in list (prevents duplicates from race with fetchPackages)
+    if (!packages.value[envId].some(p => p.package_name === pkg.package_name)) {
+      packages.value[envId].push(pkg)
+    }
+  }
+
+  async function uninstallPackage(envId: number, packageName: string) {
+    await envsApi.uninstallPackage(envId, packageName)
+    if (packages.value[envId]) {
+      packages.value[envId] = packages.value[envId].filter((p) => p.package_name !== packageName)
+    }
+  }
+
+  async function fetchVariables(envId: number) {
+    variables.value[envId] = await envsApi.getVariables(envId)
+  }
+
+  async function createVariable(envId: number, data: { key: string; value: string; is_secret: boolean }) {
+    await envsApi.createVariable(envId, data)
+    await fetchVariables(envId)
+  }
+
+  async function updateVariable(envId: number, varId: number, data: { key?: string; value?: string; is_secret?: boolean }) {
+    await envsApi.updateVariable(envId, varId, data)
+    await fetchVariables(envId)
+  }
+
+  async function deleteVariable(envId: number, varId: number) {
+    await envsApi.deleteVariable(envId, varId)
+    variables.value[envId] = (variables.value[envId] || []).filter((v) => v.id !== varId)
+  }
+
+  function updatePackageFromWs(
+    envId: number,
+    packageName: string,
+    status: PackageInstallStatus,
+    extra: Record<string, any>,
+  ) {
+    const pkgs = packages.value[envId]
+    if (!pkgs) return
+    const idx = pkgs.findIndex(p => p.package_name === packageName)
+    if (idx < 0) return
+    pkgs[idx] = {
+      ...pkgs[idx],
+      install_status: status,
+      install_error: extra.error || null,
+      installed_version: extra.installed_version || pkgs[idx].installed_version,
+    }
+  }
+
+  function appendBuildLog(envId: number, line: string, done: boolean) {
+    if (!buildLogs.value[envId]) {
+      buildLogs.value[envId] = []
+    }
+    if (line) {
+      buildLogs.value[envId].push(line)
+    }
+    if (done) {
+      // Refresh environments to pick up final status
+      fetchEnvironments()
+    }
+  }
+
+  function clearBuildLogs(envId: number) {
+    delete buildLogs.value[envId]
+  }
+
+  return {
+    environments, packages, variables, buildLogs, loading,
+    fetchEnvironments, addEnvironment, setupDefault, removeEnvironment, cloneEnvironment,
+    fetchPackages, installPackage, uninstallPackage, fetchVariables, updatePackageFromWs,
+    createVariable, updateVariable, deleteVariable,
+    appendBuildLog, clearBuildLogs,
+  }
+})

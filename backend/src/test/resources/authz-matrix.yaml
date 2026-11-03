@@ -1,0 +1,117 @@
+# HRD-01 权限矩阵（4 角色 × 7 资源 × 4 动作 = 112 格）
+# 期望值依据 PRD §3.1 角色定义手工推导，不从 PermissionMatrix 复制。
+# 实际值由 AuthzMatrixTest 打真实控制器（MockMvc）回填并导出 CSV。
+# expected 取值：ALLOW 允许 / DENY 拒绝 / 无入口（生产无该动作，不发起请求）。
+matrix:
+  - {role: ADMIN, resource: 用户角色, action: READ, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-USER_ROLE-READ}
+  - {role: ADMIN, resource: 用户角色, action: WRITE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-USER_ROLE-WRITE}
+  - {role: ADMIN, resource: 用户角色, action: DELETE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-USER_ROLE-DELETE}
+  - {role: ADMIN, resource: 用户角色, action: MANAGE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-USER_ROLE-MANAGE}
+  - {role: ADMIN, resource: 项目, action: READ, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-PROJECT-READ}
+  - {role: ADMIN, resource: 项目, action: WRITE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-PROJECT-WRITE}
+  - {role: ADMIN, resource: 项目, action: DELETE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-PROJECT-DELETE}
+  - {role: ADMIN, resource: 项目, action: MANAGE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-PROJECT-MANAGE}
+  - {role: ADMIN, resource: 资产, action: READ, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-ASSET-READ}
+  - {role: ADMIN, resource: 资产, action: WRITE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-ASSET-WRITE}
+  - {role: ADMIN, resource: 资产, action: DELETE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-ASSET-DELETE}
+  - {role: ADMIN, resource: 资产, action: MANAGE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-ASSET-MANAGE}
+  - {role: ADMIN, resource: 凭据, action: READ, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-CREDENTIAL-READ}
+  - {role: ADMIN, resource: 凭据, action: WRITE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-CREDENTIAL-WRITE}
+  - {role: ADMIN, resource: 凭据, action: DELETE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-CREDENTIAL-DELETE}
+  - {role: ADMIN, resource: 凭据, action: MANAGE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-CREDENTIAL-MANAGE}
+  - {role: ADMIN, resource: 用例, action: READ, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-CASE-READ}
+  - {role: ADMIN, resource: 用例, action: WRITE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-CASE-WRITE}
+  - {role: ADMIN, resource: 用例, action: DELETE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-CASE-DELETE}
+  - {role: ADMIN, resource: 用例, action: MANAGE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-CASE-MANAGE}
+  - {role: ADMIN, resource: 计划, action: READ, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-PLAN-READ}
+  - {role: ADMIN, resource: 计划, action: WRITE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-PLAN-WRITE}
+  - {role: ADMIN, resource: 计划, action: DELETE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-PLAN-DELETE}
+  - {role: ADMIN, resource: 计划, action: MANAGE, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-PLAN-MANAGE}
+  - {role: ADMIN, resource: 审计, action: READ, expected: ALLOW, reason: "管理员拥有全部资源全部动作（PRD §3.1）", case_id: AUTHZ-ADMIN-AUDIT-READ}
+  - {role: ADMIN, resource: 审计, action: WRITE, expected: N/A, reason: "审计只增不改，无写动作", case_id: AUTHZ-ADMIN-AUDIT-WRITE}
+  - {role: ADMIN, resource: 审计, action: DELETE, expected: N/A, reason: "审计日志不可删除，以保留完整追溯链", case_id: AUTHZ-ADMIN-AUDIT-DELETE}
+  - {role: ADMIN, resource: 审计, action: MANAGE, expected: N/A, reason: "审计只增不改，无管理动作", case_id: AUTHZ-ADMIN-AUDIT-MANAGE}
+  - {role: PM, resource: 用户角色, action: READ, expected: ALLOW, reason: "项目经理可读用户与角色（协作需要）", case_id: AUTHZ-PM-USER_ROLE-READ}
+  - {role: PM, resource: 用户角色, action: WRITE, expected: DENY, reason: "项目经理不具备用户与角色的写权限", case_id: AUTHZ-PM-USER_ROLE-WRITE}
+  - {role: PM, resource: 用户角色, action: DELETE, expected: DENY, reason: "项目经理不具备用户与角色的删权限", case_id: AUTHZ-PM-USER_ROLE-DELETE}
+  - {role: PM, resource: 用户角色, action: MANAGE, expected: DENY, reason: "项目经理不具备用户与角色的管理权限", case_id: AUTHZ-PM-USER_ROLE-MANAGE}
+  - {role: PM, resource: 项目, action: READ, expected: ALLOW, reason: "项目经理可读项目基本信息", case_id: AUTHZ-PM-PROJECT-READ}
+  - {role: PM, resource: 项目, action: WRITE, expected: DENY, reason: "PM 不可新建项目", case_id: AUTHZ-PM-PROJECT-WRITE}
+  - {role: PM, resource: 项目, action: DELETE, expected: DENY, reason: "项目经理不具备项目删权限", case_id: AUTHZ-PM-PROJECT-DELETE}
+  - {role: PM, resource: 项目, action: MANAGE, expected: ALLOW, reason: "PM 可管理自己作为所有者的项目（成员与设置）", case_id: AUTHZ-PM-PROJECT-MANAGE}
+  - {role: PM, resource: 资产, action: READ, expected: ALLOW, reason: "项目经理可读资产台账", case_id: AUTHZ-PM-ASSET-READ}
+  - {role: PM, resource: 资产, action: WRITE, expected: ALLOW, reason: "项目经理可新增资产", case_id: AUTHZ-PM-ASSET-WRITE}
+  - {role: PM, resource: 资产, action: DELETE, expected: ALLOW, reason: "项目经理可删除资产", case_id: AUTHZ-PM-ASSET-DELETE}
+  - {role: PM, resource: 资产, action: MANAGE, expected: ALLOW, reason: "项目经理可修改资产", case_id: AUTHZ-PM-ASSET-MANAGE}
+  - {role: PM, resource: 凭据, action: READ, expected: ALLOW, reason: "PM 可管理项目凭据", case_id: AUTHZ-PM-CREDENTIAL-READ}
+  - {role: PM, resource: 凭据, action: WRITE, expected: ALLOW, reason: "PM 可管理项目凭据", case_id: AUTHZ-PM-CREDENTIAL-WRITE}
+  - {role: PM, resource: 凭据, action: DELETE, expected: ALLOW, reason: "PM 可管理项目凭据", case_id: AUTHZ-PM-CREDENTIAL-DELETE}
+  - {role: PM, resource: 凭据, action: MANAGE, expected: ALLOW, reason: "PM 可管理项目凭据", case_id: AUTHZ-PM-CREDENTIAL-MANAGE}
+  - {role: PM, resource: 用例, action: READ, expected: ALLOW, reason: "项目经理可读用例", case_id: AUTHZ-PM-CASE-READ}
+  - {role: PM, resource: 用例, action: WRITE, expected: ALLOW, reason: "项目经理可写用例", case_id: AUTHZ-PM-CASE-WRITE}
+  - {role: PM, resource: 用例, action: DELETE, expected: ALLOW, reason: "项目经理可删用例", case_id: AUTHZ-PM-CASE-DELETE}
+  - {role: PM, resource: 用例, action: MANAGE, expected: ALLOW, reason: "项目经理可管理用例", case_id: AUTHZ-PM-CASE-MANAGE}
+  - {role: PM, resource: 计划, action: READ, expected: ALLOW, reason: "项目经理可读计划", case_id: AUTHZ-PM-PLAN-READ}
+  - {role: PM, resource: 计划, action: WRITE, expected: ALLOW, reason: "项目经理可写计划", case_id: AUTHZ-PM-PLAN-WRITE}
+  - {role: PM, resource: 计划, action: DELETE, expected: ALLOW, reason: "项目经理可删计划", case_id: AUTHZ-PM-PLAN-DELETE}
+  - {role: PM, resource: 计划, action: MANAGE, expected: ALLOW, reason: "项目经理可管理计划", case_id: AUTHZ-PM-PLAN-MANAGE}
+  - {role: PM, resource: 审计, action: READ, expected: ALLOW, reason: "PM 具备 AUDIT:READ，且本用例项目所有者为 PM", case_id: AUTHZ-PM-AUDIT-READ}
+  - {role: PM, resource: 审计, action: WRITE, expected: N/A, reason: "审计只增不改，无写动作", case_id: AUTHZ-PM-AUDIT-WRITE}
+  - {role: PM, resource: 审计, action: DELETE, expected: N/A, reason: "审计日志不可删除，以保留完整追溯链", case_id: AUTHZ-PM-AUDIT-DELETE}
+  - {role: PM, resource: 审计, action: MANAGE, expected: N/A, reason: "审计只增不改，无管理动作", case_id: AUTHZ-PM-AUDIT-MANAGE}
+  - {role: ENGINEER, resource: 用户角色, action: READ, expected: ALLOW, reason: "测试工程师可读用户与角色（协作需要）", case_id: AUTHZ-ENGINEER-USER_ROLE-READ}
+  - {role: ENGINEER, resource: 用户角色, action: WRITE, expected: DENY, reason: "测试工程师不具备用户与角色的写权限", case_id: AUTHZ-ENGINEER-USER_ROLE-WRITE}
+  - {role: ENGINEER, resource: 用户角色, action: DELETE, expected: DENY, reason: "测试工程师不具备用户与角色的删权限", case_id: AUTHZ-ENGINEER-USER_ROLE-DELETE}
+  - {role: ENGINEER, resource: 用户角色, action: MANAGE, expected: DENY, reason: "测试工程师不具备用户与角色的管理权限", case_id: AUTHZ-ENGINEER-USER_ROLE-MANAGE}
+  - {role: ENGINEER, resource: 项目, action: READ, expected: ALLOW, reason: "测试工程师可读项目基本信息", case_id: AUTHZ-ENGINEER-PROJECT-READ}
+  - {role: ENGINEER, resource: 项目, action: WRITE, expected: DENY, reason: "测试工程师不具备项目写权限", case_id: AUTHZ-ENGINEER-PROJECT-WRITE}
+  - {role: ENGINEER, resource: 项目, action: DELETE, expected: DENY, reason: "测试工程师不具备项目删权限", case_id: AUTHZ-ENGINEER-PROJECT-DELETE}
+  - {role: ENGINEER, resource: 项目, action: MANAGE, expected: DENY, reason: "测试工程师不具备项目管理权限", case_id: AUTHZ-ENGINEER-PROJECT-MANAGE}
+  - {role: ENGINEER, resource: 资产, action: READ, expected: ALLOW, reason: "测试工程师可读资产台账", case_id: AUTHZ-ENGINEER-ASSET-READ}
+  - {role: ENGINEER, resource: 资产, action: WRITE, expected: ALLOW, reason: "测试工程师可新增资产", case_id: AUTHZ-ENGINEER-ASSET-WRITE}
+  - {role: ENGINEER, resource: 资产, action: DELETE, expected: DENY, reason: "资产删除仅 PM 及以上", case_id: AUTHZ-ENGINEER-ASSET-DELETE}
+  - {role: ENGINEER, resource: 资产, action: MANAGE, expected: ALLOW, reason: "测试工程师可修改资产", case_id: AUTHZ-ENGINEER-ASSET-MANAGE}
+  - {role: ENGINEER, resource: 凭据, action: READ, expected: DENY, reason: "工程师仅有 CREDENTIAL:USE 使用权限，不能查看或管理凭据", case_id: AUTHZ-ENGINEER-CREDENTIAL-READ}
+  - {role: ENGINEER, resource: 凭据, action: WRITE, expected: DENY, reason: "工程师仅有 CREDENTIAL:USE 使用权限，不能查看或管理凭据", case_id: AUTHZ-ENGINEER-CREDENTIAL-WRITE}
+  - {role: ENGINEER, resource: 凭据, action: DELETE, expected: DENY, reason: "工程师仅有 CREDENTIAL:USE 使用权限，不能查看或管理凭据", case_id: AUTHZ-ENGINEER-CREDENTIAL-DELETE}
+  - {role: ENGINEER, resource: 凭据, action: MANAGE, expected: DENY, reason: "工程师仅有 CREDENTIAL:USE 使用权限，不能查看或管理凭据", case_id: AUTHZ-ENGINEER-CREDENTIAL-MANAGE}
+  - {role: ENGINEER, resource: 用例, action: READ, expected: ALLOW, reason: "测试工程师可读用例", case_id: AUTHZ-ENGINEER-CASE-READ}
+  - {role: ENGINEER, resource: 用例, action: WRITE, expected: ALLOW, reason: "测试工程师可写用例", case_id: AUTHZ-ENGINEER-CASE-WRITE}
+  - {role: ENGINEER, resource: 用例, action: DELETE, expected: ALLOW, reason: "测试工程师可删用例", case_id: AUTHZ-ENGINEER-CASE-DELETE}
+  - {role: ENGINEER, resource: 用例, action: MANAGE, expected: ALLOW, reason: "测试工程师可管理用例", case_id: AUTHZ-ENGINEER-CASE-MANAGE}
+  - {role: ENGINEER, resource: 计划, action: READ, expected: ALLOW, reason: "测试工程师可读计划", case_id: AUTHZ-ENGINEER-PLAN-READ}
+  - {role: ENGINEER, resource: 计划, action: WRITE, expected: ALLOW, reason: "测试工程师可写计划", case_id: AUTHZ-ENGINEER-PLAN-WRITE}
+  - {role: ENGINEER, resource: 计划, action: DELETE, expected: ALLOW, reason: "计划维护统一走 EXECUTION:UPDATE（见 PlanService 类注释），工程师可删除计划", case_id: AUTHZ-ENGINEER-PLAN-DELETE}
+  - {role: ENGINEER, resource: 计划, action: MANAGE, expected: ALLOW, reason: "测试工程师可管理计划", case_id: AUTHZ-ENGINEER-PLAN-MANAGE}
+  - {role: ENGINEER, resource: 审计, action: READ, expected: DENY, reason: "工程师既无 AUDIT:READ 也不是项目所有者", case_id: AUTHZ-ENGINEER-AUDIT-READ}
+  - {role: ENGINEER, resource: 审计, action: WRITE, expected: N/A, reason: "审计只增不改，无写动作", case_id: AUTHZ-ENGINEER-AUDIT-WRITE}
+  - {role: ENGINEER, resource: 审计, action: DELETE, expected: N/A, reason: "审计日志不可删除，以保留完整追溯链", case_id: AUTHZ-ENGINEER-AUDIT-DELETE}
+  - {role: ENGINEER, resource: 审计, action: MANAGE, expected: N/A, reason: "审计只增不改，无管理动作", case_id: AUTHZ-ENGINEER-AUDIT-MANAGE}
+  - {role: VIEWER, resource: 用户角色, action: READ, expected: DENY, reason: "访客不具备用户与角色的读权限", case_id: AUTHZ-VIEWER-USER_ROLE-READ}
+  - {role: VIEWER, resource: 用户角色, action: WRITE, expected: DENY, reason: "访客不具备用户与角色的写权限", case_id: AUTHZ-VIEWER-USER_ROLE-WRITE}
+  - {role: VIEWER, resource: 用户角色, action: DELETE, expected: DENY, reason: "访客不具备用户与角色的删权限", case_id: AUTHZ-VIEWER-USER_ROLE-DELETE}
+  - {role: VIEWER, resource: 用户角色, action: MANAGE, expected: DENY, reason: "访客不具备用户与角色的管理权限", case_id: AUTHZ-VIEWER-USER_ROLE-MANAGE}
+  - {role: VIEWER, resource: 项目, action: READ, expected: ALLOW, reason: "访客可读项目基本信息", case_id: AUTHZ-VIEWER-PROJECT-READ}
+  - {role: VIEWER, resource: 项目, action: WRITE, expected: DENY, reason: "访客不具备项目写权限", case_id: AUTHZ-VIEWER-PROJECT-WRITE}
+  - {role: VIEWER, resource: 项目, action: DELETE, expected: DENY, reason: "访客不具备项目删权限", case_id: AUTHZ-VIEWER-PROJECT-DELETE}
+  - {role: VIEWER, resource: 项目, action: MANAGE, expected: DENY, reason: "访客不具备项目管理权限", case_id: AUTHZ-VIEWER-PROJECT-MANAGE}
+  - {role: VIEWER, resource: 资产, action: READ, expected: ALLOW, reason: "访客可读资产台账", case_id: AUTHZ-VIEWER-ASSET-READ}
+  - {role: VIEWER, resource: 资产, action: WRITE, expected: DENY, reason: "访客不具备资产写权限", case_id: AUTHZ-VIEWER-ASSET-WRITE}
+  - {role: VIEWER, resource: 资产, action: DELETE, expected: DENY, reason: "资产删除仅 PM 及以上", case_id: AUTHZ-VIEWER-ASSET-DELETE}
+  - {role: VIEWER, resource: 资产, action: MANAGE, expected: DENY, reason: "访客不具备资产管理权限", case_id: AUTHZ-VIEWER-ASSET-MANAGE}
+  - {role: VIEWER, resource: 凭据, action: READ, expected: DENY, reason: "访客不可读凭据", case_id: AUTHZ-VIEWER-CREDENTIAL-READ}
+  - {role: VIEWER, resource: 凭据, action: WRITE, expected: DENY, reason: "访客不可写凭据", case_id: AUTHZ-VIEWER-CREDENTIAL-WRITE}
+  - {role: VIEWER, resource: 凭据, action: DELETE, expected: DENY, reason: "访客不可删凭据", case_id: AUTHZ-VIEWER-CREDENTIAL-DELETE}
+  - {role: VIEWER, resource: 凭据, action: MANAGE, expected: DENY, reason: "访客不可管理凭据", case_id: AUTHZ-VIEWER-CREDENTIAL-MANAGE}
+  - {role: VIEWER, resource: 用例, action: READ, expected: ALLOW, reason: "访客可读用例", case_id: AUTHZ-VIEWER-CASE-READ}
+  - {role: VIEWER, resource: 用例, action: WRITE, expected: DENY, reason: "访客不可维护用例", case_id: AUTHZ-VIEWER-CASE-WRITE}
+  - {role: VIEWER, resource: 用例, action: DELETE, expected: DENY, reason: "访客不可维护用例", case_id: AUTHZ-VIEWER-CASE-DELETE}
+  - {role: VIEWER, resource: 用例, action: MANAGE, expected: DENY, reason: "访客不可维护用例", case_id: AUTHZ-VIEWER-CASE-MANAGE}
+  - {role: VIEWER, resource: 计划, action: READ, expected: ALLOW, reason: "访客可读计划", case_id: AUTHZ-VIEWER-PLAN-READ}
+  - {role: VIEWER, resource: 计划, action: WRITE, expected: DENY, reason: "访客不可维护计划", case_id: AUTHZ-VIEWER-PLAN-WRITE}
+  - {role: VIEWER, resource: 计划, action: DELETE, expected: DENY, reason: "访客不可维护计划", case_id: AUTHZ-VIEWER-PLAN-DELETE}
+  - {role: VIEWER, resource: 计划, action: MANAGE, expected: DENY, reason: "访客不可维护计划", case_id: AUTHZ-VIEWER-PLAN-MANAGE}
+  - {role: VIEWER, resource: 审计, action: READ, expected: DENY, reason: "访客无审计查询权限", case_id: AUTHZ-VIEWER-AUDIT-READ}
+  - {role: VIEWER, resource: 审计, action: WRITE, expected: N/A, reason: "审计只增不改，无写动作", case_id: AUTHZ-VIEWER-AUDIT-WRITE}
+  - {role: VIEWER, resource: 审计, action: DELETE, expected: N/A, reason: "审计日志不可删除，以保留完整追溯链", case_id: AUTHZ-VIEWER-AUDIT-DELETE}
+  - {role: VIEWER, resource: 审计, action: MANAGE, expected: N/A, reason: "审计只增不改，无管理动作", case_id: AUTHZ-VIEWER-AUDIT-MANAGE}

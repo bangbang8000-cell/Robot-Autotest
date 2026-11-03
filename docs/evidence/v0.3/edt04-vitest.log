@@ -1,0 +1,154 @@
+﻿
+ RUN  v3.2.7 E:/workspace/自动化测试/Robot-Autotest/packages/editor
+
+node.exe : stderr | tests/keyword-palette.spec.ts > EDT-04 关键词面板 > 平台接口不可达时降级为「暂无数据」且不崩溃
+所在位置 D:\Program Files\nodejs\npx.ps1:29 字符: 3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (stderr | tests/...达时降级为「暂无数据」且不崩溃:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[intlify] Not found 'flowEditor.palette' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.sort.title' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.filter.title' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.searchKeywords' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+
+stderr | tests/keyword-palette.spec.ts > EDT-04 关键词面板 > 平台接口不可达时降级为「暂无数据」且不崩溃
+[intlify] Not found 'flowEditor.palette' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.sort.title' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.filter.title' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.searchKeywords' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+
+stderr | tests/keyword-palette.spec.ts > EDT-04 关键词面板 > 平台返回的参数元数据驱动插入占位符（Should Be Equal）
+[intlify] Not found 'flowEditor.palette' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.sort.title' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.filter.title' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.searchKeywords' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+
+stderr | tests/keyword-palette.spec.ts > EDT-04 关键词面板 > 平台返回的参数元数据驱动插入占位符（Should Be Equal）
+[intlify] Not found 'flowEditor.palette' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.sort.title' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.filter.title' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.searchKeywords' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+
+stderr | tests/keyword-palette.spec.ts > EDT-04 关键词面板 > 平台返回的参数元数据驱动插入占位符（Should Be Equal）
+[intlify] Not found 'flowEditor.palette' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.sort.title' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.filter.title' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.searchKeywords' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+
+ ✓ tests/keyword-palette.spec.ts (5 tests) 360ms
+stderr | tests/keyword-palette.spec.ts > EDT-04 关键词面板 > 平台返回的参数元数据驱动插入占位符（Should Be Equal）
+[intlify] Not found 'flowEditor.palette' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.sort.title' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.filter.title' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.searchKeywords' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryHint' key in 'zh' locale messages.
+[intlify] Not found 'flowEditor.examplesCategoryBadge' key in 'zh' locale messages.
+
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  00:51:21
+   Duration  4.91s (transform 1.38s, setup 0ms, collect 2.02s, tests 360ms, environment 1.38s, prepare 242ms)
+

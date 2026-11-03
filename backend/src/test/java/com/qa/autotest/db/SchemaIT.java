@@ -1,0 +1,209 @@
+package com.qa.autotest.db;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+/**
+ * 数据库基线集成测试（TC-v0.1-020 ~ 028），必须连真实 MariaDB（ADR-0002：不用 H2）。
+ *
+ * <p><b>默认被 surefire 跳过</b>（{@code @Tag("it")}）；CI 与本地显式打开：
+ * <pre>DB_HOST=127.0.0.1 DB_NAME=robot_it DB_USERNAME=robot DB_PASSWORD=*** \
+ *   mvn -Dgroups=it test -Dtest=SchemaIT</pre>
+ *
+ * <p>库名必须带 {@code _it} 后缀，禁止指向开发库或生产库（会 clean 掉整个 schema）。
+ */
+@Tag("it")
+class SchemaIT {
+
+    private static final String DB_NAME = System.getenv().getOrDefault("DB_NAME", "robot_it");
+    private static final int EXPECTED_TABLES = 38;
+
+    private static Flyway flyway;
+
+    @BeforeAll
+    static void migrateFromScratch() {
+        assertThat(DB_NAME).as("集成测试库名必须以 _it 结尾，防止误清开发库").endsWith("_it");
+        String host = System.getenv().getOrDefault("DB_HOST", "127.0.0.1");
+        String port = System.getenv().getOrDefault("DB_PORT", "3306");
+        String user = System.getenv().getOrDefault("DB_USERNAME", "robot");
+        String password = System.getenv().getOrDefault("DB_PASSWORD", "");
+        String locations = System.getenv().getOrDefault("DB_MIGRATION_PATH", "filesystem:../db/migration");
+
+        flyway = Flyway.configure()
+                .dataSource("jdbc:mariadb://" + host + ":" + port + "/" + DB_NAME, user, password)
+                .locations(locations)
+                .cleanDisabled(false)
+                .load();
+        flyway.clean();
+        flyway.migrate();
+    }
+
+    @Test
+    @DisplayName("TC-v0.1-020 空库迁移后恰好 38 张业务表")
+    void 迁移后表数() throws Exception {
+        assertThat(表名清单()).hasSize(EXPECTED_TABLES);
+    }
+
+    @Test
+    @DisplayName("TC-v0.1-023 每张表都有审计四列")
+    void 审计四列齐全() throws Exception {
+        List<String> 缺列的表 = new ArrayList<>();
+        for (String table : 表名清单()) {
+            List<String> columns = 列名(table);
+            if (!columns.containsAll(List.of("created_at", "created_by", "updated_at", "updated_by"))) {
+                缺列的表.add(table);
+            }
+        }
+        assertThat(缺列的表).as("缺审计四列的表").isEmpty();
+    }
+
+    @Test
+    @DisplayName("TC-v0.1-024 主键名为 id 且为 bigint，时间列为 datetime(3)")
+    void 命名与类型规范() throws Exception {
+        List<String> 违规 = new ArrayList<>();
+        for (String table : 表名清单()) {
+            if (!"id".equals(主键列(table))) {
+                违规.add(table + ": 主键不是 id");
+            }
+            if (!"datetime(3)".equalsIgnoreCase(列类型(table, "created_at"))
+                    || !"datetime(3)".equalsIgnoreCase(列类型(table, "updated_at"))) {
+                违规.add(table + ": 时间列不是 datetime(3)");
+            }
+        }
+        assertThat(违规).isEmpty();
+    }
+
+    @Test
+    @DisplayName("TC-v0.1-028 全表字符集为 utf8mb4")
+    void 字符集() throws Exception {
+        assertThat(字符集清单()).containsOnly("utf8mb4");
+    }
+
+    @Test
+    @DisplayName("TC-v0.1-025 / 026 run_id 与 resource_key 的唯一约束真的生效")
+    void 关键唯一约束() throws Exception {
+        try (Connection conn = 连接(); Statement st = conn.createStatement()) {
+            st.execute("INSERT INTO project(code,name) VALUES ('IT-P','集成测试项目')");
+            st.execute("INSERT INTO test_set(project_id,set_code,name) "
+                    + "SELECT id,'IT-S','集成测试集' FROM project WHERE code='IT-P'");
+            st.execute("INSERT INTO run(run_id,project_id,test_set_id) "
+                    + "SELECT 'IT-RUN-1',p.id,s.id FROM project p JOIN test_set s ON s.project_id=p.id "
+                    + "WHERE p.code='IT-P' AND s.set_code='IT-S'");
+            assertThat(插入重复runId失败()).isTrue();
+
+            st.execute("INSERT INTO execution_job(project_id,job_no) "
+                    + "SELECT id,'IT-JOB-1' FROM project WHERE code='IT-P'");
+            st.execute("INSERT INTO resource_lease(job_id,resource_key) "
+                    + "SELECT id,'GPU-01#mlx5_0' FROM execution_job WHERE job_no='IT-JOB-1'");
+            assertThat(插入重复租约失败()).isTrue();
+        } finally {
+            // 本类用的是专用 kek 库，直接 clean 即可复位，不污染其他库
+            flyway.clean();
+            flyway.migrate();
+        }
+    }
+
+    // ---------------------------------------------------------------- 内部工具
+
+    private Connection 连接() throws Exception {
+        String host = System.getenv().getOrDefault("DB_HOST", "127.0.0.1");
+        String port = System.getenv().getOrDefault("DB_PORT", "3306");
+        String user = System.getenv().getOrDefault("DB_USERNAME", "robot");
+        String password = System.getenv().getOrDefault("DB_PASSWORD", "");
+        return java.sql.DriverManager.getConnection(
+                "jdbc:mariadb://" + host + ":" + port + "/" + DB_NAME, user, password);
+    }
+
+    private List<String> 表名清单() throws Exception {
+        List<String> tables = new ArrayList<>();
+        try (Connection conn = 连接();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(
+                     "SELECT table_name FROM information_schema.tables "
+                             + "WHERE table_schema='" + DB_NAME + "' AND table_name<>'flyway_schema_history' "
+                             + "ORDER BY table_name")) {
+            while (rs.next()) {
+                tables.add(rs.getString(1));
+            }
+        }
+        return tables;
+    }
+
+    private List<String> 列名(String table) throws Exception {
+        List<String> columns = new ArrayList<>();
+        try (Connection conn = 连接();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(
+                     "SELECT column_name FROM information_schema.columns WHERE table_schema='"
+                             + DB_NAME + "' AND table_name='" + table + "'")) {
+            while (rs.next()) {
+                columns.add(rs.getString(1));
+            }
+        }
+        return columns;
+    }
+
+    private String 列类型(String table, String column) throws Exception {
+        try (Connection conn = 连接();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(
+                     "SELECT column_type FROM information_schema.columns WHERE table_schema='"
+                             + DB_NAME + "' AND table_name='" + table + "' AND column_name='" + column + "'")) {
+            return rs.next() ? rs.getString(1) : "";
+        }
+    }
+
+    private String 主键列(String table) throws Exception {
+        try (Connection conn = 连接();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(
+                     "SELECT column_name FROM information_schema.key_column_usage WHERE table_schema='"
+                             + DB_NAME + "' AND table_name='" + table + "' AND constraint_name='PRIMARY'")) {
+            return rs.next() ? rs.getString(1) : "";
+        }
+    }
+
+    private List<String> 字符集清单() throws Exception {
+        List<String> collations = new ArrayList<>();
+        try (Connection conn = 连接();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(
+                     "SELECT DISTINCT table_collation FROM information_schema.tables WHERE table_schema='"
+                             + DB_NAME + "' AND table_name<>'flyway_schema_history'")) {
+            while (rs.next()) {
+                collations.add(rs.getString(1).substring(0, rs.getString(1).indexOf('_')));
+            }
+        }
+        return collations;
+    }
+
+    private boolean 插入重复runId失败() throws Exception {
+        try (Connection conn = 连接(); Statement st = conn.createStatement()) {
+            st.execute("INSERT INTO run(run_id,project_id) "
+                    + "SELECT 'IT-RUN-1',id FROM project WHERE code='IT-P'");
+            return false;
+        } catch (java.sql.SQLException ex) {
+            return ex.getMessage().toLowerCase().contains("duplicate");
+        }
+    }
+
+    private boolean 插入重复租约失败() throws Exception {
+        try (Connection conn = 连接(); Statement st = conn.createStatement()) {
+            st.execute("INSERT INTO resource_lease(job_id,resource_key) "
+                    + "SELECT id,'GPU-01#mlx5_0' FROM execution_job WHERE job_no='IT-JOB-1'");
+            return false;
+        } catch (java.sql.SQLException ex) {
+            return ex.getMessage().toLowerCase().contains("duplicate");
+        }
+    }
+}

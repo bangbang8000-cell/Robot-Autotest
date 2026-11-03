@@ -1,0 +1,27 @@
+[待149执行] 本文件是取消前/后的进程快照采集口径，必须在 149 上真实执行后粘贴输出；下面的命令与判定标准已定，输出未填。
+一、采集步骤（在 149 上，另开一个终端）
+1) 起一个长跑用例（4 套件 / 80 用例的 bench 样本即可）：
+   cd ~/robot-test/gpu-nic-qa
+   ./run_case.sh PERF-IPERF-200G-001        # 或任意 >60s 的用例
+2) 取消前快照：
+   ps -ef | grep -E 'pabot|robot' | grep -v grep > /tmp/ps-before.txt
+   wc -l /tmp/ps-before.txt
+3) 平台侧取消（把 RUN_ID 换成真实值）：
+   curl -s -X POST "http://192.168.110.149:8081/api/execution/runs/<RUN_ID>/cancel?projectId=1" \
+        -H 'Content-Type: application/json' -d '{"reason":"人工取消"}' | tee /tmp/cancel-resp.json
+4) 取消后 5 秒内快照（应只剩 grep 自身，或为空）：
+   ps -ef | grep -E 'pabot|robot' | grep -v grep > /tmp/ps-after.txt
+   wc -l /tmp/ps-after.txt
+5) 状态确认：
+   curl -s "http://192.168.110.149:8081/api/execution/runs/<RUN_ID>?projectId=1" | tee /tmp/run-after.json
+二、判定标准
+- /tmp/ps-before.txt 行数 ≥ 1（证明取消前确有 pabot 进程）；
+- /tmp/ps-after.txt 行数 = 0（证明进程树被杀干净，而不是只杀父进程留下 robot 子进程）；
+- /tmp/run-after.json 中 state=CANCELED、failureClass=CANCELED、failureReason=canceled；
+- resource_lease 中该 run 的租约已释放（Q1 见 lease-conflict-0.sql）。
+三、本机已完成的替代验证（非实网）
+- backend/src/test/java/com/qa/autotest/application/execution/ProcessTreeKillerTest.java：
+  在本机起 `cmd /c ping -n 60 127.0.0.1`，kill 后断言 terminated=true 且 process.isAlive()=false；
+- CancelServiceTest：断言状态 CANCELED、租约释放、历史行 state=released。
+四、待补
+上述 1~5 步尚未在 149 执行，因此本文件不提供「实网已通过」的结论。

@@ -1,0 +1,358 @@
+<script setup lang="ts">
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { ApiError } from '@/api/http'
+import {
+  REPORT_METADATA_KEYS,
+  reportsApi,
+  type ReportCaseNode,
+  type ReportPrintData,
+  type ReportSuiteNode,
+} from '@/api/reports'
+
+const route = useRoute()
+const { t } = useI18n()
+
+const data = ref<ReportPrintData | null>(null)
+const loading = ref(true)
+const error = ref('')
+
+const runId = computed(() => String(route.params.runId ?? ''))
+
+/** 扁平化套件树，保留缩进层级；根节点也算一层。 */
+interface FlatSuite {
+  node: ReportSuiteNode
+  depth: number
+  path: string
+}
+
+const flatSuites = computed<FlatSuite[]>(() => {
+  const out: FlatSuite[] = []
+  function walk(node: ReportSuiteNode, depth: number, path: string): void {
+    out.push({ node, depth, path })
+    for (const child of node.suites ?? []) {
+      walk(child, depth + 1, `${path}/${child.name}`)
+    }
+  }
+  if (data.value?.tree) walk(data.value.tree, 0, data.value.tree.name)
+  return out
+})
+
+/** 失败详情：跨套件收集 FAIL 用例，便于单独出一段可打印清单。 */
+const failedCases = computed(() => {
+  const out: Array<{ path: string; item: ReportCaseNode }> = []
+  for (const flat of flatSuites.value) {
+    for (const item of flat.node.cases ?? []) {
+      if (item.verdict?.toUpperCase() === 'FAIL') {
+        out.push({ path: flat.path, item })
+      }
+    }
+  }
+  return out
+})
+
+function metadataMissing(key: string): boolean {
+  return data.value?.metadataMissing.includes(key) ?? false
+}
+
+function metadataValue(key: string): string {
+  return data.value?.metadata?.[key] || t('reports.print.missing')
+}
+
+function printedAt(): string {
+  return new Date().toLocaleString()
+}
+
+function printPage(): void {
+  window.print()
+}
+
+onMounted(async () => {
+  document.body.classList.add('print-mode')
+  const token = String(route.query.token ?? '')
+  if (!token) {
+    error.value = t('reports.print.invalidToken')
+    loading.value = false
+    return
+  }
+  try {
+    data.value = await reportsApi.printData(runId.value, token)
+  } catch (e) {
+    error.value =
+      e instanceof ApiError
+        ? e.message
+        : t('reports.print.invalidToken')
+  } finally {
+    loading.value = false
+  }
+})
+
+onUnmounted(() => {
+  document.body.classList.remove('print-mode')
+})
+</script>
+
+<template>
+  <div class="print-page">
+    <div class="print-toolbar">
+      <button class="btn" type="button" @click="printPage">
+        {{ t('reports.print.printButton') }}
+      </button>
+      <span v-if="loading" class="muted">{{ t('reports.print.loading') }}</span>
+    </div>
+
+    <div v-if="error" class="print-error">
+      <h1>{{ t('reports.print.title') }}</h1>
+      <p>{{ error }}</p>
+    </div>
+
+    <template v-else-if="data">
+      <p v-if="data.internal" class="print-internal-banner">
+        {{ t('reports.print.internalWarning') }}
+      </p>
+
+      <header class="print-head">
+        <h1>{{ t('reports.print.title') }}</h1>
+        <p class="print-sub">
+          RUN_ID：{{ data.runId }} |
+          {{ data.exportable ? t('reports.print.exportable') : t('reports.print.notExportable') }}
+        </p>
+      </header>
+
+      <section>
+        <h2>{{ t('reports.print.metadataTitle') }}</h2>
+        <table class="print-table">
+          <tbody>
+            <tr v-for="key in REPORT_METADATA_KEYS" :key="key">
+              <th class="print-key">{{ key }}</th>
+              <td :class="metadataMissing(key) ? 'print-missing' : ''">
+                {{ metadataMissing(key) ? t('reports.print.missing') : metadataValue(key) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>{{ t('reports.print.summaryTitle') }}</h2>
+        <p class="print-counts">
+          PASS {{ data.passCount }} FAIL {{ data.failCount }} SKIP {{ data.skipCount }}
+        </p>
+      </section>
+
+      <section>
+        <h2>{{ t('reports.print.treeTitle') }}</h2>
+        <div
+          v-for="flat in flatSuites"
+          :key="flat.path"
+          class="print-suite"
+          :style="{ marginLeft: `${flat.depth * 12}px` }"
+        >
+          <h3>
+            {{ flat.node.name }}
+            <span class="print-status">[{{ flat.node.status }}]</span>
+          </h3>
+          <table v-if="flat.node.cases?.length" class="print-table print-case-table">
+            <thead>
+              <tr>
+                <th>{{ t('reports.print.case') }}</th>
+                <th>{{ t('reports.print.verdict') }}</th>
+                <th>{{ t('reports.print.duration') }}</th>
+                <th>{{ t('reports.print.failureMsg') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in flat.node.cases" :key="item.caseKey">
+                <td>{{ item.name }}</td>
+                <td :class="item.verdict?.toUpperCase() === 'FAIL' ? 'print-missing' : ''">
+                  {{ item.verdict }}
+                </td>
+                <td>{{ item.durationMs }}</td>
+                <td class="print-failure">{{ item.failureMsg ?? '' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2>{{ t('reports.print.failureTitle') }}</h2>
+        <p v-if="!failedCases.length" class="muted">
+          {{ t('reports.print.noFailure') }}
+        </p>
+        <div v-for="failed in failedCases" :key="failed.item.caseKey" class="print-failure-item">
+          <p class="print-failure-title">
+            {{ failed.item.name }}
+            <span class="print-muted">（{{ failed.item.caseKey }}）</span>
+          </p>
+          <p class="print-failure">{{ failed.item.failureMsg }}</p>
+        </div>
+      </section>
+
+      <footer class="print-foot">
+        {{
+          t('reports.print.footer', {
+            runId: data.runId,
+            time: printedAt(),
+          })
+        }}
+      </footer>
+    </template>
+
+    <p v-else-if="loading" class="print-loading">{{ t('reports.print.loading') }}</p>
+  </div>
+</template>
+
+<style scoped>
+.print-page {
+  background: #ffffff;
+  color: #1a1a1a;
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 16mm 14mm;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.print-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.print-internal-banner {
+  color: #c00000;
+  border: 2px solid #c00000;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.print-head h1 {
+  font-size: 22px;
+  margin: 0 0 6px;
+  text-align: center;
+}
+
+.print-sub {
+  text-align: center;
+  color: #444;
+  margin: 0 0 18px;
+}
+
+h2 {
+  font-size: 15px;
+  border-bottom: 1px solid #999;
+  padding-bottom: 4px;
+  margin: 22px 0 10px;
+}
+
+h3 {
+  font-size: 13px;
+  margin: 14px 0 6px;
+}
+
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.print-table th,
+.print-table td {
+  border: 1px solid #999;
+  padding: 4px 6px;
+  vertical-align: top;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.print-key {
+  width: 26%;
+  background: #f2f2f2;
+  text-align: left;
+}
+
+.print-case-table th:nth-child(1) {
+  width: 28%;
+}
+
+.print-case-table th:nth-child(2) {
+  width: 10%;
+}
+
+.print-case-table th:nth-child(3) {
+  width: 12%;
+}
+
+.print-missing {
+  color: #c00000;
+  font-weight: 700;
+}
+
+.print-failure {
+  color: #a00000;
+  white-space: pre-wrap;
+}
+
+.print-failure-item {
+  margin-bottom: 10px;
+  page-break-inside: avoid;
+}
+
+.print-failure-title {
+  font-weight: 700;
+  margin: 0 0 2px;
+}
+
+.print-muted,
+.print-status {
+  color: #666;
+  font-weight: 400;
+}
+
+.print-foot {
+  margin-top: 24px;
+  padding-top: 8px;
+  border-top: 1px solid #999;
+  color: #444;
+  font-size: 10px;
+  text-align: center;
+}
+
+.print-error {
+  text-align: center;
+  padding: 40px 0;
+}
+
+.print-error p {
+  color: #c00000;
+  font-weight: 700;
+}
+
+.print-loading {
+  text-align: center;
+  padding: 40px 0;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  .print-toolbar {
+    display: none;
+  }
+
+  .print-page {
+    padding: 0;
+    max-width: none;
+    font-size: 11px;
+  }
+}
+</style>

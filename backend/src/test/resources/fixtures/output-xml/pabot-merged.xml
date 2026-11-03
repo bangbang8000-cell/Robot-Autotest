@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  pabot 合并产物模拟 fixture（RPT-01）。
+  用途：验证 metadata 递归收集、子套件覆盖父级、旧 <metadata><item> 格式兼容，
+  以及 PASS/FAIL/SKIP 三类计数。
+  结构：
+    Pabot Merged（根，CASE_ID / QA_PROJECT / OPERATOR=qa）
+      ├─ Shard-1（RUN_ID / LINK；含三级嵌套 Sub-Env，提供 DUT / SW_BUILD）
+      │    ├─ 测试：带宽达标（PASS）
+      │    └─ Sub-Env（第 3 层）
+      │         └─ 测试：环境自检（PASS）
+      ├─ Shard-2（OPERATOR=ops 覆盖父级；CASE_KIND）
+      │    └─ 测试：丢包判定（FAIL）
+      └─ Shard-3（旧 <metadata><item> 格式；BASELINE / STARTED_AT）
+           └─ 测试：外部依赖跳过（SKIP）
+  计数期望：PASS=2，FAIL=1，SKIP=1。
+-->
+<robot generator="Robot 7.5.0 (Python 3.14.4 on linux)" rpa="false" schemaversion="7">
+  <suite id="s1" name="Pabot Merged">
+    <meta name="CASE_ID" value="PERF-IPERF-200G-001"/>
+    <meta name="QA_PROJECT" value="gpu-nic-qa"/>
+    <meta name="OPERATOR" value="qa"/>
+    <suite id="s1-s1" name="Shard-1">
+      <meta name="RUN_ID" value="PERF-IPERF-200G-001_20261031_141207"/>
+      <meta name="LINK" value="GPU-01 mlx5_0 -> SW-01 Eth1/1"/>
+      <test id="s1-s1-t1" name="带宽达标">
+        <kw name="Run Iperf" owner="IperfLoad">
+          <msg level="INFO">iperf3 -c 10.202.54.107 -t 10 -P 8</msg>
+          <msg level="INFO">sender 192.5 Gbps / receiver 191.2 Gbps</msg>
+          <status status="PASS" elapsed="9.512"/>
+        </kw>
+        <status status="PASS" elapsed="9.530"/>
+      </test>
+      <suite id="s1-s1-s1" name="Sub-Env">
+        <meta name="DUT" value="GPU-01"/>
+        <meta name="SW_BUILD" value="Ubuntu 24.04.5 / OFED 24.10"/>
+        <test id="s1-s1-s1-t1" name="环境自检">
+          <kw name="Collect Env" owner="Env">
+            <msg level="INFO">nvidia-smi 12.2 / mlx5_core 24.10</msg>
+            <status status="PASS" elapsed="0.182"/>
+          </kw>
+          <status status="PASS" elapsed="0.190"/>
+        </test>
+        <status status="PASS" elapsed="0.195"/>
+      </suite>
+      <status status="PASS" elapsed="9.740"/>
+    </suite>
+    <suite id="s1-s2" name="Shard-2">
+      <meta name="OPERATOR" value="ops"/>
+      <meta name="CASE_KIND" value="perf-throughput"/>
+      <test id="s1-s2-t1" name="丢包判定">
+        <kw name="Check Packet Loss">
+          <msg level="FAIL">packet loss 0.31% 超过阈值 0.1%</msg>
+          <status status="FAIL" elapsed="0.301"/>
+        </kw>
+        <status status="FAIL" elapsed="0.310"/>
+      </test>
+      <status status="FAIL" elapsed="0.320"/>
+    </suite>
+    <suite id="s1-s3" name="Shard-3">
+      <metadata>
+        <item name="BASELINE" value="188~195 Gbps"/>
+        <item name="STARTED_AT" value="2026-10-31T06:12:07Z"/>
+      </metadata>
+      <test id="s1-s3-t1" name="外部依赖跳过">
+        <status status="SKIP" elapsed="0.000"/>
+      </test>
+      <status status="SKIP" elapsed="0.001"/>
+    </suite>
+    <status status="FAIL" elapsed="10.061"/>
+  </suite>
+  <statistics>
+    <total>
+      <stat pass="2" fail="1" skip="1">Tests</stat>
+    </total>
+  </statistics>
+</robot>

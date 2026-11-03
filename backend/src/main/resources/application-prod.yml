@@ -1,0 +1,17 @@
+# 生产环境：149 裸进程部署。口令只从环境变量注入（FR-v0.1-07），此文件不得出现任何凭据。
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 16
+      connection-timeout: 3000
+  flyway:
+    enabled: false
+
+server:
+  port: ${SERVER_PORT:8081}
+
+logging:
+  level:
+    com.qa.autotest: INFO
+  file:
+    name: ${LOG_DIR:../logs}/backend.log

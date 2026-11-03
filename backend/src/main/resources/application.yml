@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: robot-autotest
+  profiles:
+    default: dev
+  datasource:
+    url: jdbc:mariadb://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:robot_dev}
+    # 用户名给默认值、口令不给：缺 DB_PASSWORD 时启动即失败，且报错里带变量名（FR-v0.1-07）
+    username: ${DB_USERNAME:robot}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.mariadb.jdbc.Driver
+    hikari:
+      maximum-pool-size: 8
+      connection-timeout: 5000
+  flyway:
+    # 迁移由 make db-migrate（mvn flyway:migrate）执行，不跟应用启动绑死
+    enabled: false
+    locations: filesystem:${DB_MIGRATION_PATH:../db/migration}
+
+server:
+  port: ${SERVER_PORT:8081}
+
+logging:
+  level:
+    com.qa.autotest: INFO
+
+report:
+  retention:
+    # 破坏性操作默认关闭；测试环境不配置即不会触发任何真实删除（RPT-06）
+    enabled: false
+    cron: "0 3 * * *"
+    max-days: 90
+    max-project-gb: 50
+    keep-recent-runs: 20
+  export:
+    # 打印页前端基址（Vite dev）；无头浏览器从这里加载 /reports/:runId/print?token=...
+    print-base-url: ${REPORT_PRINT_BASE_URL:http://127.0.0.1:5173}
+    # 空 = 按 REPORT_PDF_CHROME → Windows Chrome → Windows Edge → google-chrome → chromium 探测
+    chrome-executable: ${REPORT_PDF_CHROME:}
+    # DEV-PLAN §5：单次打印超时 90 秒
+    timeout-seconds: 90
+
+ci:
+  # 同一项目 API token 每分钟触发上限，超出返回 429（PLN-03）
+  trigger-per-minute: ${CI_TRIGGER_PER_MINUTE:10}
+  trigger-window-seconds: 60
+  writeback:
+    # 默认关闭；开启后还需环境变量 GITHUB_STATUS_TOKEN（令牌只从环境读取，不落配置文件）
+    enabled: ${CI_WRITEBACK_ENABLED:false}
+    api-base-url: ${CI_WRITEBACK_API_BASE_URL:https://api.github.com}
+    # 报告页基址：target_url = 该值 + /reports/{runId}
+    target-base-url: ${CI_WRITEBACK_TARGET_BASE_URL:http://127.0.0.1:5173}
+    context: ${CI_WRITEBACK_CONTEXT:qa-platform/ci}
+    timeout-seconds: 10

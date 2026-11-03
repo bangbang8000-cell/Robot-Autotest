@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.5.0 (Python 3.14.4 on linux)" rpa="false" schemaversion="7">
+  <suite id="s1" name="Smoke">
+    <test id="s1-t1" name="网络连通">
+      <kw name="Log" owner="BuiltIn">
+        <msg time="2026-11-03T10:00:01.000+08:00" level="INFO">ping 192.168.110.1 成功</msg>
+        <status status="PASS" elapsed="0.001"/>
+      </kw>
+      <status status="PASS" elapsed="0.012"/>
+    </test>
+    <test id="s1-t2" name="磁盘可用">
+      <kw name="Log" owner="BuiltIn">
+        <msg time="2026-11-03T10:00:02.000+08:00" level="INFO">df -P / 使用率 42%</msg>
+        <status status="PASS" elapsed="0.001"/>
+      </kw>
+      <status status="PASS" elapsed="0.013"/>
+    </test>
+    <status status="PASS" elapsed="0.030"/>
+  </suite>
+  <statistics>
+    <total>
+      <stat pass="2" fail="0" skip="0">All Tests</stat>
+    </total>
+  </statistics>
+  <!-- 说明：此样本用于单元测试的四条件产物校验（存在、size>1024、可解析、totalTests>0）。
+       为满足 size>1024 的下限，以下为真实 RF 报告中常见的统计块与元信息占位，不代表实跑结果。
+       generated-by=fixture; case=SMOKE-001; operator=qa; host=ubuntu-rf; zone=Asia/Shanghai;
+       padding-padding-padding-padding-padding-padding-padding-padding-padding-padding;
+       padding-padding-padding-padding-padding-padding-padding-padding-padding-padding;
+       padding-padding-padding-padding-padding-padding-padding-padding-padding-padding. -->
+</robot>

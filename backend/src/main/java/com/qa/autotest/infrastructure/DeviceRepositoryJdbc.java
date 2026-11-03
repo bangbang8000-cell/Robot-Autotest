@@ -1,0 +1,254 @@
+package com.qa.autotest.infrastructure;
+
+import com.qa.autotest.application.repository.DeviceRepository;
+import com.qa.autotest.common.tenant.TenantGuard;
+import com.qa.autotest.domain.asset.Device;
+import com.qa.autotest.domain.asset.DevicePort;
+import com.qa.autotest.domain.common.PageResult;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
+
+/** 设备与端口仓储实现；每条 SQL 执行前过 {@link TenantGuard}。 */
+@Repository
+public class DeviceRepositoryJdbc implements DeviceRepository {
+
+    private static final String SELECT = """
+            SELECT id, project_id, name, device_type, model, vendor, serial_no, management_ip,
+                   location, rack_no, domain_tag, status, owner_id, last_checked_at
+              FROM device
+            """;
+
+    private static final RowMapper<Device> MAPPER = (rs, rowNum) -> new Device(
+            rs.getLong("id"), rs.getLong("project_id"), rs.getString("name"),
+            rs.getString("device_type"), rs.getString("model"), rs.getString("vendor"),
+            rs.getString("serial_no"), rs.getString("management_ip"), rs.getString("location"),
+            rs.getString("rack_no"), rs.getString("domain_tag"), rs.getInt("status") == 1,
+            rs.getObject("owner_id") == null ? null : rs.getLong("owner_id"),
+            JdbcSupport.instant(rs.getTimestamp("last_checked_at")));
+
+    private static final RowMapper<DevicePort> PORT_MAPPER = (rs, rowNum) -> new DevicePort(
+            rs.getLong("id"), rs.getLong("device_id"), rs.getString("port_name"),
+            rs.getString("port_type"), rs.getString("protocol"), rs.getString("mac_address"),
+            rs.getObject("speed_gbps") == null ? null : rs.getInt("speed_gbps"),
+            rs.getObject("mtu") == null ? null : rs.getInt("mtu"),
+            rs.getString("ip_address"), rs.getString("port_status"));
+
+    private final JdbcTemplate jdbc;
+
+    public DeviceRepositoryJdbc(JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
+    }
+
+    @Override
+    public PageResult<Device> page(long projectId, String keyword, Integer status, String domain,
+                                   int page, int size) {
+        StringBuilder where = new StringBuilder(" WHERE project_id = ?");
+        List<Object> args = new ArrayList<>();
+        args.add(projectId);
+        if (keyword != null && !keyword.isBlank()) {
+            where.append(" AND (name LIKE ? OR management_ip LIKE ? OR serial_no LIKE ?)");
+            String like = "%" + keyword.trim() + "%";
+            args.add(like);
+            args.add(like);
+            args.add(like);
+        }
+        if (status != null) {
+            where.append(" AND status = ?");
+            args.add(status);
+        }
+        if (domain != null && !domain.isBlank()) {
+            where.append(" AND domain_tag = ?");
+            args.add(domain);
+        }
+        String countSql = "SELECT COUNT(*) FROM device" + where;
+        TenantGuard.requireProjectScope(countSql, "device");
+        Long total = jdbc.queryForObject(countSql, Long.class, args.toArray());
+        args.add(size);
+        args.add((page - 1) * size);
+        String listSql = SELECT + where + " ORDER BY id DESC LIMIT ? OFFSET ?";
+        TenantGuard.requireProjectScope(listSql, "device");
+        List<Device> rows = jdbc.query(listSql, MAPPER, args.toArray());
+        return new PageResult<>(rows, total == null ? 0 : total, page, size);
+    }
+
+    @Override
+    public Optional<Device> find(long projectId, long id) {
+        String sql = SELECT + " WHERE project_id = ? AND id = ?";
+        TenantGuard.requireProjectScope(sql, "device");
+        return JdbcSupport.first(jdbc.query(sql, MAPPER, projectId, id));
+    }
+
+    @Override
+    public long insert(Device device, Long operatorId) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbc.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement("""
+                    INSERT INTO device
+                      (project_id, name, device_type, model, vendor, serial_no, management_ip,
+                       location, rack_no, domain_tag, status, owner_id, created_by, updated_by)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, Statement.RETURN_GENERATED_KEYS);
+            ps.setLong(1, device.projectId());
+            ps.setString(2, device.name());
+            ps.setString(3, device.deviceType());
+            ps.setString(4, device.model());
+            ps.setString(5, device.vendor());
+            ps.setString(6, device.serialNo());
+            ps.setString(7, device.managementIp());
+            ps.setString(8, device.location());
+            ps.setString(9, device.rackNo());
+            ps.setString(10, device.domainTag());
+            ps.setInt(11, device.enabled() ? 1 : 0);
+            ps.setObject(12, device.ownerId(), java.sql.Types.BIGINT);
+            ps.setObject(13, operatorId, java.sql.Types.BIGINT);
+            ps.setObject(14, operatorId, java.sql.Types.BIGINT);
+            return ps;
+        }, keyHolder);
+        return keyHolder.getKey() == null ? 0 : keyHolder.getKey().longValue();
+    }
+
+    @Override
+    public void update(Device device, Long operatorId) {
+        String sql = """
+                UPDATE device SET name = ?, device_type = ?, model = ?, vendor = ?, serial_no = ?,
+                       management_ip = ?, location = ?, rack_no = ?, domain_tag = ?, status = ?,
+                       owner_id = ?, updated_by = ?
+                 WHERE project_id = ? AND id = ?
+                """;
+        TenantGuard.requireProjectScope(sql, "device");
+        jdbc.update(sql, device.name(), device.deviceType(), device.model(), device.vendor(),
+                device.serialNo(), device.managementIp(), device.location(), device.rackNo(),
+                device.domainTag(), device.enabled() ? 1 : 0, device.ownerId(), operatorId,
+                device.projectId(), device.id());
+    }
+
+    @Override
+    public void delete(long projectId, long id) {
+        String delPorts = "DELETE FROM device_port WHERE device_id = ? "
+                + "AND device_id IN (SELECT id FROM device WHERE project_id = ? AND id = ?)";
+        TenantGuard.requireProjectScope(delPorts, "device_port");
+        jdbc.update(delPorts, id, projectId, id);
+        String delDevice = "DELETE FROM device WHERE project_id = ? AND id = ?";
+        TenantGuard.requireProjectScope(delDevice, "device");
+        jdbc.update(delDevice, projectId, id);
+    }
+
+    @Override
+    public boolean serialExists(long projectId, String serialNo, Long excludeId) {
+        if (serialNo == null || serialNo.isBlank()) {
+            return false;
+        }
+        String sql = """
+                SELECT COUNT(*) FROM device WHERE project_id = ? AND serial_no = ? AND id <> ?
+                """;
+        TenantGuard.requireProjectScope(sql, "device");
+        Integer count = jdbc.queryForObject(sql, Integer.class, projectId, serialNo,
+                excludeId == null ? -1L : excludeId);
+        return count != null && count > 0;
+    }
+
+    @Override
+    public List<DevicePort> ports(long projectId, long deviceId) {
+        String sql = """
+                SELECT dp.id, dp.device_id, dp.port_name, dp.port_type, dp.protocol, dp.mac_address,
+                       dp.speed_gbps, dp.mtu, dp.ip_address, dp.port_status
+                  FROM device_port dp JOIN device d ON d.id = dp.device_id
+                 WHERE d.project_id = ? AND dp.device_id = ?
+                 ORDER BY dp.id
+                """;
+        TenantGuard.requireProjectScope(sql, "device_port");
+        return jdbc.query(sql, PORT_MAPPER, projectId, deviceId);
+    }
+
+    @Override
+    public Optional<DevicePort> findPort(long projectId, long portId) {
+        String sql = """
+                SELECT dp.id, dp.device_id, dp.port_name, dp.port_type, dp.protocol, dp.mac_address,
+                       dp.speed_gbps, dp.mtu, dp.ip_address, dp.port_status
+                  FROM device_port dp JOIN device d ON d.id = dp.device_id
+                 WHERE d.project_id = ? AND dp.id = ?
+                """;
+        TenantGuard.requireProjectScope(sql, "device_port");
+        return JdbcSupport.first(jdbc.query(sql, PORT_MAPPER, projectId, portId));
+    }
+
+    @Override
+    public long insertPort(long projectId, DevicePort port, Long operatorId) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbc.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement("""
+                    INSERT INTO device_port
+                      (device_id, port_name, port_type, protocol, mac_address, speed_gbps, mtu,
+                       ip_address, port_status, created_by, updated_by)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, Statement.RETURN_GENERATED_KEYS);
+            ps.setLong(1, port.deviceId());
+            ps.setString(2, port.portName());
+            ps.setString(3, port.portType());
+            ps.setString(4, port.protocol());
+            ps.setString(5, port.macAddress());
+            ps.setObject(6, port.speedGbps(), java.sql.Types.INTEGER);
+            ps.setObject(7, port.mtu(), java.sql.Types.INTEGER);
+            ps.setString(8, port.ipAddress());
+            ps.setString(9, port.portStatus());
+            ps.setObject(10, operatorId, java.sql.Types.BIGINT);
+            ps.setObject(11, operatorId, java.sql.Types.BIGINT);
+            return ps;
+        }, keyHolder);
+        return keyHolder.getKey() == null ? 0 : keyHolder.getKey().longValue();
+    }
+
+    @Override
+    public void updatePort(long projectId, DevicePort port, Long operatorId) {
+        String sql = """
+                UPDATE device_port SET port_name = ?, port_type = ?, protocol = ?, mac_address = ?,
+                       speed_gbps = ?, mtu = ?, ip_address = ?, port_status = ?, updated_by = ?
+                 WHERE id = ? AND device_id IN (SELECT id FROM device WHERE project_id = ?)
+                """;
+        TenantGuard.requireProjectScope(sql, "device_port");
+        jdbc.update(sql, port.portName(), port.portType(), port.protocol(), port.macAddress(),
+                port.speedGbps(), port.mtu(), port.ipAddress(), port.portStatus(), operatorId,
+                port.id(), projectId);
+    }
+
+    @Override
+    public void deletePort(long projectId, long portId) {
+        String sql = """
+                DELETE FROM device_port WHERE id = ?
+                  AND device_id IN (SELECT id FROM device WHERE project_id = ?)
+                """;
+        TenantGuard.requireProjectScope(sql, "device_port");
+        jdbc.update(sql, portId, projectId);
+    }
+
+    @Override
+    public boolean portNameExists(long projectId, long deviceId, String portName, Long excludeId) {
+        String sql = """
+                SELECT COUNT(*) FROM device_port dp JOIN device d ON d.id = dp.device_id
+                 WHERE d.project_id = ? AND dp.device_id = ? AND dp.port_name = ? AND dp.id <> ?
+                """;
+        TenantGuard.requireProjectScope(sql, "device_port");
+        Integer count = jdbc.queryForObject(sql, Integer.class, projectId, deviceId, portName,
+                excludeId == null ? -1L : excludeId);
+        return count != null && count > 0;
+    }
+
+    @Override
+    public List<String> domains(long projectId) {
+        String sql = """
+                SELECT DISTINCT domain_tag FROM device
+                 WHERE project_id = ? AND domain_tag IS NOT NULL ORDER BY domain_tag
+                """;
+        TenantGuard.requireProjectScope(sql, "device");
+        return jdbc.query(sql, (rs, rowNum) -> rs.getString(1), projectId);
+    }
+}

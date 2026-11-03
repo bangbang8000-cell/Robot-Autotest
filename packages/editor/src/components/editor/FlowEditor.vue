@@ -1,0 +1,4233 @@
+﻿<script setup lang="ts">
+  /* 衍生自 viadee/roboscope v0.16.1（Apache-2.0）；Modified by Robot-Autotest（2026-11-02，EDT-02）：去除 HTTP / 仓库耦合，改走 EditorAdapter 适配缝。 */
+import { ref, watch, onMounted, onUnmounted, computed, nextTick, provide } from 'vue'
+import type { Ref } from 'vue'
+import { VueFlow, useVueFlow, Handle as VueFlowHandle, Position as HandlePosition } from '@vue-flow/core'
+import { Background } from '@vue-flow/background'
+import { Controls } from '@vue-flow/controls'
+import { MiniMap } from '@vue-flow/minimap'
+import type { Node, Edge } from '@vue-flow/core'
+import { useI18n } from 'vue-i18n'
+
+import KeywordNode from './flow/KeywordNode.vue'
+import ControlNode from './flow/ControlNode.vue'
+import ControlGroupNode from './flow/ControlGroupNode.vue'
+import StartEndNode from './flow/StartEndNode.vue'
+import KeywordPalette from './flow/KeywordPalette.vue'
+import KeywordAutocompleteInput from './flow/KeywordAutocompleteInput.vue'
+import KeywordDocModal from './flow/KeywordDocModal.vue'
+import { isResourceImport } from './flow/resourcePath'
+import SelectorPicker from '@/components/recorder/SelectorPicker.vue'
+// Story DEBUG-3 — Flow Editor "Run up to here" debug action.
+import DebugPanel from '@/components/debug/DebugPanel.vue'
+import DebugPrereqDialog from '@/components/debug/DebugPrereqDialog.vue'
+import BaseModal from '@/components/ui/BaseModal.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import { useAuthStore } from '@/stores/auth.store'
+import { useDebugStore } from '@/stores/debug.store'
+import { extractErrorDetail } from '@/utils/errors'
+import { collectEnvVarRefs, classifyEnvRefs } from '@/utils/robotEnvVars'
+import { useExplorerStore } from '@/stores/explorer.store'
+import { useEnvironmentsStore } from '@/stores/environments.store'
+import { type RecordedFlow, type SelectorCandidate, type SelectorStrategy } from '@/types/recorder.types'
+import { useKeywordSignatures } from '@/composables/useKeywordSignatures'
+import { useToast } from '@/composables/useToast'
+import { editorScope } from '@/api/context'
+import {
+  getArgLabel,
+  friendlyType,
+  isVariableRef,
+  readBoolValue,
+  writeBoolValue,
+  type FriendlyType,
+} from '@/utils/robotKeywordSignatures'
+import {
+  applySelectorSwap,
+  composeEffectiveSelector,
+  estimateNodeHeight,
+  isCustomSelectorValue,
+  isStepType,
+  robotFormToFlow,
+  robotKeywordsToFlow,
+  updateStepFromNode,
+  computeStepLine,
+  NODE_START_Y,
+  NODE_X,
+  type RobotForm,
+  type RobotStep,
+  type StepType,
+  type RobotTestCase,
+  type RobotKeywordDef,
+  type FlowNodeData,
+} from './flow/flowConverter'
+// Story HEAL-1 — per-step Self-Healing opt-in.
+import {
+  getHealVariant,
+  getBaseKeyword,
+  isHealedKeyword,
+  ensureRoboScopeHealLibrary,
+  removeRoboScopeHealLibraryIfUnused,
+  countHealedSteps,
+  hasBrowserLibraryImport,
+  hasRoboScopeHealImport,
+} from '@/utils/healToggle'
+
+import '@vue-flow/core/dist/style.css'
+import '@vue-flow/core/dist/theme-default.css'
+import '@vue-flow/controls/dist/style.css'
+import '@vue-flow/minimap/dist/style.css'
+
+const props = defineProps<{
+  form: RobotForm
+  /** Story EDITOR-1 — sidecar (`<file>.rbs.json`) carrying recorded
+   *  selector candidates. Null if the file has none, the editor still
+   *  works as before. Persistence is the parent's responsibility:
+   *  FlowEditor only emits `update:sidecar` after a swap. */
+  sidecar?: RecordedFlow | null
+  /** Story DEBUG-3 — true when the parent (RobotEditor → ExplorerView)
+   *  has unsaved buffer changes. The "Run up to here" debug button
+   *  surfaces a save-prompt modal when this is true rather than
+   *  debugging an unsaved buffer (whose line numbers may not match
+   *  what's on disk). Optional / defaults to false (clean buffer). */
+  dirty?: boolean
+}>()
+
+/** 宿主注入的编辑上下文（仓库号 / 文件路径不再走 props） */
+const scope = editorScope()
+
+const emit = defineEmits<{
+  (e: 'update:step', data: FlowNodeData): void
+  (e: 'update:sidecar', sidecar: RecordedFlow): void
+  /** Request the parent (RobotEditor) to push a new empty test case
+   *  onto `form.testCases`. The parent owns the form, FlowEditor only
+   *  triggers and then jumps the selection to the new item. */
+  (e: 'add-test-case'): void
+  /** Same as `add-test-case` but for the keywords list. */
+  (e: 'add-keyword'): void
+  /** Library / Resource import was added or removed. RobotEditor
+   *  hooks this to invalidate the keyword cache and re-fetch the
+   *  palette so the new library's keywords show up immediately.
+   *  `addedLibrary` carries the name of the library just added so
+   *  the parent can verify post-refresh that the env actually
+   *  picked it up — and surface a hint when not (lib not pip-
+   *  installed in the env, the file-side import alone won't make
+   *  it visible). Undefined for removals or the input-panel path
+   *  where verification isn't useful. */
+  (e: 'libraries-changed', addedLibrary?: string): void
+}>()
+
+const { t } = useI18n()
+const toast = useToast()
+
+const nodes = ref([]) as Ref<Node[]> // cast: ref<Node[]> hits TS2589 (UnwrapRef on vue-flow types)
+const edges = ref([]) as Ref<Edge[]>
+
+const { fitView, project } = useVueFlow()
+
+// --- Section tabs: Test Cases vs Keywords ---
+const activeSection = ref<'testcases' | 'keywords'>('testcases')
+
+// Active item within section
+const activeItemIndex = ref(0)
+
+const testCaseNames = computed(() =>
+  props.form.testCases.map((tc, i) => tc.name || `Test Case ${i + 1}`)
+)
+const keywordNames = computed(() =>
+  props.form.keywords.map((kw, i) => kw.name || `Keyword ${i + 1}`)
+)
+
+const hasTestCases = computed(() => props.form.testCases.length > 0)
+const hasKeywords = computed(() => props.form.keywords.length > 0)
+const hasContent = computed(() => hasTestCases.value || hasKeywords.value)
+
+/**
+ * Which section, if any, is currently empty. Drives the contextual
+ * empty-state CTA: a file with only keywords still lets the user
+ * click the Test Cases tab and see "No test cases yet — add one"
+ * with the right button. Without this, the empty state would only
+ * fire when both lists were empty, leaving keyword-only files in a
+ * dead-end blank canvas if the user wanted to add a test case.
+ */
+const emptySection = computed<'testcases' | 'keywords' | null>(() => {
+  if (activeSection.value === 'testcases' && !hasTestCases.value) return 'testcases'
+  if (activeSection.value === 'keywords' && !hasKeywords.value) return 'keywords'
+  return null
+})
+
+// --- Library management ---
+//
+// `form.settings` carries Library / Resource imports as
+// `{ key: 'Library', value: 'Browser', args: [...] }` entries.
+// FlowEditor lets the user add / remove these without leaving the
+// flow tab; RobotEditor's settings watcher picks up the mutation,
+// re-emits the `.robot` text, and re-fetches the keyword cache so
+// the palette updates with whatever keywords the new library
+// exposes (or drops keywords from a removed library).
+
+const librariesPanelOpen = ref(false)
+const libraryInputValue = ref('')
+
+interface LibraryEntry {
+  idx: number          // index into form.settings (so removeLibrary can splice cleanly)
+  kind: 'library' | 'resource'
+  value: string        // library name or resource path
+}
+
+const libraryEntries = computed<LibraryEntry[]>(() => {
+  const out: LibraryEntry[] = []
+  props.form.settings.forEach((s, idx) => {
+    const keyLower = s.key.toLowerCase()
+    if (keyLower === 'library') {
+      out.push({ idx, kind: 'library', value: s.value })
+    } else if (keyLower === 'resource') {
+      out.push({ idx, kind: 'resource', value: s.value })
+    }
+  })
+  return out
+})
+
+// UX D1 — the imports panel splits into separate "Resources" and
+// "Libraries" lists so a `.resource` import never sits under "Libraries"
+// (RF distinguishes the two). Both derive from the same libraryEntries so
+// removeLibrary(idx) still targets the right form.settings row.
+const resourceImportEntries = computed<LibraryEntry[]>(() =>
+  libraryEntries.value.filter(e => e.kind === 'resource'),
+)
+const libraryImportEntries = computed<LibraryEntry[]>(() =>
+  libraryEntries.value.filter(e => e.kind === 'library'),
+)
+
+/** Lower-cased set of imported library names. Always includes
+ *  `'builtin'` because RF auto-imports BuiltIn. Drives the
+ *  KeywordPalette dimming + auto-import logic.
+ */
+const importedLibraryNames = computed<Set<string>>(() => {
+  const s = new Set<string>(['builtin'])
+  for (const e of libraryEntries.value) {
+    if (e.kind === 'library') s.add(e.value.toLowerCase())
+  }
+  return s
+})
+
+// Static suggestion list — same set the Visual Editor uses. Filtered
+// by the user's current input + already-imported libraries.
+const RF_LIBRARY_SUGGESTIONS = [
+  'BuiltIn', 'Collections', 'String', 'OperatingSystem', 'Process',
+  'DateTime', 'XML', 'Dialogs', 'Screenshot', 'Telnet', 'Remote',
+  'SeleniumLibrary', 'Browser', 'RequestsLibrary', 'DatabaseLibrary',
+  'SSHLibrary', 'FTPLibrary', 'ExcelLibrary', 'JSONLibrary',
+  'AppiumLibrary', 'SwingLibrary', 'SikuliLibrary', 'ImapLibrary',
+  'ArchiveLibrary', 'CryptoLibrary', 'RESTinstance',
+]
+
+const librarySuggestions = computed<string[]>(() => {
+  const q = libraryInputValue.value.trim().toLowerCase()
+  const already = new Set(
+    libraryEntries.value
+      .filter(e => e.kind === 'library')
+      .map(e => e.value.toLowerCase()),
+  )
+  return RF_LIBRARY_SUGGESTIONS.filter(name => {
+    if (already.has(name.toLowerCase())) return false
+    if (!q) return true
+    return name.toLowerCase().includes(q)
+  }).slice(0, 8)
+})
+
+// Libs shipped with `robotframework` itself — `Library    X` is enough,
+// no pip install. Skip the install-dialog branch for these.
+const _RF_BUNDLED = new Set([
+  'collections', 'string', 'datetime', 'operatingsystem', 'process', 'xml',
+  'dialogs', 'screenshot', 'telnet', 'remote',
+])
+
+/** Push a Library entry onto form.settings unless an identical one
+ *  already exists. Names containing a `/` or carrying an RF
+ *  resource-file extension are treated as Resource imports instead.
+ *  Emits `libraries-changed` so the parent can refresh the keyword
+ *  cache. */
+function addLibrary(rawName: string): 'library' | 'resource' | false {
+  const name = rawName.trim()
+  if (!name) return false
+  const isResource = isResourceImport(name)
+  const key = isResource ? 'Resource' : 'Library'
+  // Dedupe — RF accepts duplicate Library imports but they're noise.
+  const existing = props.form.settings.find(
+    s => s.key.toLowerCase() === key.toLowerCase()
+      && s.value.trim().toLowerCase() === name.toLowerCase(),
+  )
+  if (existing) return false
+  props.form.settings.push({ key, value: name, args: [] })
+  libraryInputValue.value = ''
+  // Only third-party Library imports trigger the env-introspection
+  // check. Resource imports point at files inside the repo, and
+  // RF-bundled libs (Collections, XML, …) don't need pip install.
+  const skipInstallCheck = isResource || _RF_BUNDLED.has(name.toLowerCase())
+  emit('libraries-changed', skipInstallCheck ? undefined : name)
+  return isResource ? 'resource' : 'library'
+}
+
+/**
+ * UX D2 (ux-flow-editor-resources.md) — surface the otherwise-silent
+ * auto-import. Shows a localized confirmation toast ONLY when an import
+ * was actually added (caller passes `addLibrary`'s return), naming the
+ * file/library. No Undo (decided 2026-06-18 — removal lives in the
+ * Resources/Libraries panel). Never fires for BuiltIn / same-file /
+ * already-imported inserts because those never reach `addLibrary` with
+ * a truthy result.
+ */
+function notifyImportAdded(kind: 'library' | 'resource', name: string): void {
+  toast.success(
+    t(kind === 'resource'
+      ? 'flowEditor.importAdded.resourceTitle'
+      : 'flowEditor.importAdded.libraryTitle'),
+    t('flowEditor.importAdded.message', { name }),
+  )
+}
+
+function confirmAddLibrary(): void {
+  addLibrary(libraryInputValue.value)
+}
+
+/** Remove the settings entry at `idx`. Index comes straight from
+ *  the `LibraryEntry` so the splice targets the right row even when
+ *  multiple Library imports are interleaved with other settings
+ *  (Documentation, Suite Setup, …). */
+function removeLibrary(idx: number): void {
+  if (idx < 0 || idx >= props.form.settings.length) return
+  props.form.settings.splice(idx, 1)
+  emit('libraries-changed')
+}
+
+// --- Variables management (*** Variables ***) ---
+//
+// `form.variables` carries `{ name: '${X}', value: '…' }` entries (a `name`
+// of '#' is a comment line and is hidden here). The Flow Editor lets the user
+// add / edit / remove suite variables inline — the biggest previously-missing
+// piece (you could loop over `${items}` but never define it without leaving
+// the Flow tab). Mutations write straight to `form.variables`; RobotEditor's
+// form watcher re-emits the `.robot` text. Edits commit on blur/Enter (not a
+// continuous v-model into the form) to match the libraries-panel discipline.
+
+const variablesPanelOpen = ref(false)
+const newVarName = ref('')
+const newVarValue = ref('')
+
+interface VariableEntry { idx: number; name: string; value: string }
+
+const variableEntries = computed<VariableEntry[]>(() => {
+  const out: VariableEntry[] = []
+  props.form.variables.forEach((v, idx) => {
+    if (v.name !== '#') out.push({ idx, name: v.name, value: v.value })
+  })
+  return out
+})
+
+/** Normalise a raw variable name to a RF sigil form. Bare `NAME` becomes
+ *  `${NAME}`; an explicit `${}`/`@{}`/`&{}` is kept as-is. */
+function normaliseVarName(raw: string): string {
+  const n = raw.trim()
+  if (!n) return n
+  if (/^[$@&]\{.*\}$/.test(n)) return n
+  return `\${${n}}`
+}
+
+// Code-review hardening (AC-B3 / FE-TPL AC5) — the toolbar panels and the
+// template-table cells mutate `props.form` directly, which fires the deep form
+// watcher. That watcher resets `activeItemIndex` to 0 and clears `selectedNode`
+// UNLESS `suppressFitView` is set. Flag it before any such mutation so editing
+// a variable / suite setting / template cell never yanks the canvas back to the
+// first test case or tears down the selection.
+function keepActiveItemOnRebuild(): void {
+  suppressFitView = true
+}
+
+function addVariable(): void {
+  const name = normaliseVarName(newVarName.value)
+  if (!name) return
+  const exists = props.form.variables.some(
+    (v) => v.name.toLowerCase() === name.toLowerCase(),
+  )
+  if (!exists) {
+    keepActiveItemOnRebuild()
+    props.form.variables.push({ name, value: newVarValue.value.trim() })
+  }
+  newVarName.value = ''
+  newVarValue.value = ''
+}
+
+function updateVariableName(idx: number, raw: string): void {
+  if (idx < 0 || idx >= props.form.variables.length) return
+  const name = normaliseVarName(raw)
+  if (name) { keepActiveItemOnRebuild(); props.form.variables[idx].name = name }
+}
+
+function updateVariableValue(idx: number, value: string): void {
+  if (idx < 0 || idx >= props.form.variables.length) return
+  keepActiveItemOnRebuild()
+  props.form.variables[idx].value = value
+}
+
+function removeVariable(idx: number): void {
+  if (idx < 0 || idx >= props.form.variables.length) return
+  keepActiveItemOnRebuild()
+  props.form.variables.splice(idx, 1)
+}
+
+// --- Story FE-TPL: [Template] data-row table editing ---
+// All edits write straight to the test case's `templateRows` by index; the
+// form watcher rebuilds the graph (the cell input already committed on blur).
+function templateRowsFor(sectionIndex: number): string[][] {
+  const tc = props.form.testCases[sectionIndex]
+  if (!tc) return []
+  if (!tc.templateRows) tc.templateRows = []
+  return tc.templateRows
+}
+
+function updateTemplateCell(sectionIndex: number, row: number, col: number, value: string): void {
+  const rows = templateRowsFor(sectionIndex)
+  if (row < 0 || row >= rows.length) return
+  keepActiveItemOnRebuild()
+  while (rows[row].length <= col) rows[row].push('')
+  rows[row][col] = value
+}
+
+function addTemplateRow(sectionIndex: number): void {
+  const rows = templateRowsFor(sectionIndex)
+  const cols = rows.length ? Math.max(...rows.map((r) => r.length)) : 1
+  rows.push(Array.from({ length: cols }, () => ''))
+  rebuildAndReselect(`tc${sectionIndex}-template-table`)
+}
+
+function removeTemplateRow(sectionIndex: number, row: number): void {
+  const rows = templateRowsFor(sectionIndex)
+  if (row >= 0 && row < rows.length) rows.splice(row, 1)
+  rebuildAndReselect(`tc${sectionIndex}-template-table`)
+}
+
+function addTemplateColumn(sectionIndex: number): void {
+  for (const r of templateRowsFor(sectionIndex)) r.push('')
+  rebuildAndReselect(`tc${sectionIndex}-template-table`)
+}
+
+// Story FE-ENV — read-only summary of %{ENV} references used by the active
+// test case / keyword. Informational only; OS env vars aren't edited here.
+const activeEnvVarRefs = computed(() => {
+  const item = activeSection.value === 'testcases'
+    ? props.form.testCases[activeItemIndex.value]
+    : props.form.keywords[activeItemIndex.value]
+  if (!item) return []
+  const texts: string[] = []
+  for (const s of item.steps) {
+    texts.push(...s.args, s.condition, ...s.loopValues)
+  }
+  return collectEnvVarRefs(texts)
+})
+
+// Story V15.2 — compare %{ENV} refs against the repo's environment KEYS
+// (never values). Display-only: keys reach KeywordNode via provide/inject,
+// never through props.form / node data (deep-watcher reset trap).
+const explorerStore = useExplorerStore()
+const envStore = useEnvironmentsStore()
+const checkedEnvId = computed(() =>
+  scope.scopeId == null ? null : explorerStore.resolveEnvironmentId(scope.scopeId))
+const checkedEnvName = computed(() =>
+  envStore.environments.find((e) => e.id === checkedEnvId.value)?.name ?? '')
+const envVarKeys = computed<Set<string> | null>(() => {
+  const vars = checkedEnvId.value === null ? undefined : envStore.variables[checkedEnvId.value]
+  return vars ? new Set(vars.map((v) => v.key)) : null
+})
+watch([() => scope.scopeId, checkedEnvId], ([, envId]) => {
+  if (envId !== null) envStore.fetchVariables(envId).catch(() => {})
+}, { immediate: true })
+provide('envVarKeys', envVarKeys)
+const classifiedEnvVarRefs = computed(() => classifyEnvRefs(activeEnvVarRefs.value, envVarKeys.value))
+function envRefTitle(name: string, state: string): string | undefined {
+  const env = checkedEnvName.value
+  if (state === 'defined') return t('flowEditor.envVarDefined', { env })
+  if (state === 'default') return t('flowEditor.envVarDefaultUsed', { env })
+  if (state === 'missing') return t('flowEditor.envVarMissing', { env, name })
+  return undefined
+}
+
+// --- Suite-level settings (Suite Setup/Teardown, Force/Default Tags, Doc) ---
+//
+// These live in `form.settings` as `{ key, value, args }` rows. Library /
+// Resource imports get their own panel above; this one covers the remaining
+// suite-wide settings so the whole `*** Settings ***` section is editable in
+// the Flow tab and the "settings = side panels" model is finally complete.
+
+const suiteSettingsPanelOpen = ref(false)
+
+const SUITE_SETTING_KEYS = [
+  'Documentation', 'Metadata', 'Suite Setup', 'Suite Teardown',
+  'Test Setup', 'Test Teardown', 'Force Tags', 'Default Tags', 'Test Timeout',
+] as const
+
+interface SuiteSettingEntry { idx: number; key: string; value: string }
+
+const suiteSettingEntries = computed<SuiteSettingEntry[]>(() => {
+  const out: SuiteSettingEntry[] = []
+  props.form.settings.forEach((s, idx) => {
+    const k = s.key.toLowerCase()
+    if (k === 'library' || k === 'resource' || k === 'variables' || k === '#') return
+    out.push({ idx, key: s.key, value: s.value })
+  })
+  return out
+})
+
+/** Suite-setting keys not yet present — offered as quick-add chips. */
+const availableSuiteSettingKeys = computed<string[]>(() => {
+  const present = new Set(
+    props.form.settings.map((s) => s.key.toLowerCase()),
+  )
+  return SUITE_SETTING_KEYS.filter((k) => !present.has(k.toLowerCase()))
+})
+
+function addSuiteSetting(key: string): void {
+  if (props.form.settings.some((s) => s.key.toLowerCase() === key.toLowerCase())) return
+  keepActiveItemOnRebuild()
+  props.form.settings.push({ key, value: '', args: [] })
+}
+
+function updateSuiteSettingValue(idx: number, value: string): void {
+  if (idx < 0 || idx >= props.form.settings.length) return
+  keepActiveItemOnRebuild()
+  props.form.settings[idx].value = value
+}
+
+function removeSuiteSetting(idx: number): void {
+  if (idx < 0 || idx >= props.form.settings.length) return
+  keepActiveItemOnRebuild()
+  props.form.settings.splice(idx, 1)
+}
+
+/**
+ * Emit `add-test-case` and, after the parent has pushed onto
+ * `form.testCases`, switch to the test-cases section and select the
+ * newly-appended item. The new index is `length - 1` AFTER the push,
+ * which we observe via `nextTick` (Vue propagates the prop change in
+ * the next microtask).
+ */
+async function handleAddTestCase(): Promise<void> {
+  emit('add-test-case')
+  await nextTick()
+  if (props.form.testCases.length > 0) {
+    activeSection.value = 'testcases'
+    activeItemIndex.value = props.form.testCases.length - 1
+  }
+}
+
+/** Mirror of `handleAddTestCase` for the keywords list. */
+async function handleAddKeyword(): Promise<void> {
+  emit('add-keyword')
+  await nextTick()
+  if (props.form.keywords.length > 0) {
+    activeSection.value = 'keywords'
+    activeItemIndex.value = props.form.keywords.length - 1
+  }
+}
+
+// Selected node for editable detail panel
+const selectedNode = ref<Node | null>(null)
+const selectedNodeData = computed<FlowNodeData | null>(() => {
+  if (!selectedNode.value) return null
+  // setting-meta and Start nodes carry different data shapes than
+  // steps (`{kind,label,text,section,sectionIndex}` for setting-meta;
+  // `{label}` only for Start). They're handled by
+  // `selectedSettingMeta` / `selectedStart` below — returning null
+  // here keeps the step-detail-panel template from dereferencing
+  // missing `stepType` / `step` fields and crashing.
+  if (selectedNode.value.type === 'setting-meta') return null
+  if (selectedNode.value.type === 'start') return null
+  // Story FE-TPL — the data table node carries {templateKeyword, templateRows}
+  // not a step; the step detail panel would deref missing fields and crash.
+  if (selectedNode.value.type === 'template-table') return null
+  return selectedNode.value.data as FlowNodeData
+})
+
+/** Truthy when the user clicked the Start node — surfaces a
+ *  section-level settings panel with "+ [X]" buttons for each
+ *  missing setting kind (Documentation, Tags, Setup, Teardown,
+ *  Template, Timeout, Arguments). The panel sits in the same
+ *  detail-panel container as step edits; switching between Start
+ *  clicks and step clicks just swaps the template branch. */
+const selectedStart = computed<boolean>(() =>
+  selectedNode.value?.type === 'start',
+)
+
+/** Kinds the test-case section settings panel may surface. */
+type SettingKind =
+  | 'documentation'
+  | 'tags'
+  | 'arguments'
+  | 'setup'
+  | 'teardown'
+  | 'template'
+  | 'timeout'
+
+const TC_KINDS: SettingKind[] = [
+  'documentation', 'tags', 'setup', 'teardown', 'template', 'timeout',
+]
+const KW_KINDS: SettingKind[] = [
+  'documentation', 'arguments', 'tags', 'setup', 'teardown', 'timeout',
+]
+
+const KIND_LABELS: Record<SettingKind, string> = {
+  documentation: '[Documentation]',
+  tags: '[Tags]',
+  arguments: '[Arguments]',
+  setup: '[Setup]',
+  teardown: '[Teardown]',
+  template: '[Template]',
+  timeout: '[Timeout]',
+}
+
+/** Active section's currently-selected source record (TC or KW). */
+function activeSettingSource(): RobotTestCase | RobotKeywordDef | undefined {
+  return activeSection.value === 'testcases'
+    ? props.form.testCases[activeItemIndex.value]
+    : props.form.keywords[activeItemIndex.value]
+}
+
+/** True iff the kind has no value yet on the active record. Drives
+ *  the "+ [X]" affordance row in the section settings panel; once
+ *  the user adds a value, the side note replaces the button so the
+ *  affordance hides. */
+function canAddSetting(kind: SettingKind): boolean {
+  const source = activeSettingSource()
+  if (!source) return false
+  if (kind === 'tags') return source.tags.length === 0
+  if (kind === 'arguments') {
+    return 'arguments' in source ? source.arguments.length === 0 : false
+  }
+  if (kind === 'template') {
+    return 'template' in source ? !source.template : false
+  }
+  // documentation, setup, teardown, timeout — single-string fields
+  return !source[kind as 'documentation' | 'setup' | 'teardown' | 'timeout']
+}
+
+/** Available kinds for the active record (TC vs KW). */
+const sectionKinds = computed<SettingKind[]>(() =>
+  activeSection.value === 'testcases' ? TC_KINDS : KW_KINDS,
+)
+
+/** Truthy when the user clicked a `[…]` side-note node. Drives a
+ *  kind-aware detail-panel branch with the right input control bound
+ *  to the underlying test case / keyword's setting field. */
+const selectedSettingMeta = computed<{
+  kind: SettingKind
+  section: 'testcase' | 'keyword'
+  sectionIndex: number
+} | null>(() => {
+  if (!selectedNode.value || selectedNode.value.type !== 'setting-meta') return null
+  const d = selectedNode.value.data as {
+    kind: SettingKind
+    section: 'testcase' | 'keyword'
+    sectionIndex: number
+  }
+  return { kind: d.kind, section: d.section, sectionIndex: d.sectionIndex }
+})
+
+function settingTarget(): RobotTestCase | RobotKeywordDef | undefined {
+  if (!selectedSettingMeta.value) return undefined
+  const { section, sectionIndex } = selectedSettingMeta.value
+  return section === 'testcase'
+    ? props.form.testCases[sectionIndex]
+    : props.form.keywords[sectionIndex]
+}
+
+/** Local draft buffer for the side-note edit panel. The input is
+ *  v-modelled into this ref instead of into the underlying form
+ *  field, so each keystroke does NOT mutate `props.form` and the
+ *  deep watcher on `[() => props.form, activeSection]` doesn't fire
+ *  with `selectedNode.value = null` mid-typing. The draft is
+ *  committed back to the form on blur via `commitSettingDraft()`,
+ *  which mirrors the `cloneStep` pattern used by step-arg editing
+ *  (see FlowEditorStepIsolation.spec.ts).
+ *
+ *  When the user clicks a different side note, the watcher below
+ *  reseeds the draft with the new node's current value. */
+const settingDraft = ref('')
+
+function readDraftForCurrentSelection(): string {
+  const target = settingTarget()
+  if (!target || !selectedSettingMeta.value) return ''
+  const kind = selectedSettingMeta.value.kind
+  if (kind === 'tags') return target.tags.join(', ')
+  if (kind === 'arguments') {
+    return 'arguments' in target ? target.arguments.join(', ') : ''
+  }
+  if (kind === 'template') {
+    return 'template' in target ? target.template : ''
+  }
+  return target[kind as 'documentation' | 'setup' | 'teardown' | 'timeout']
+}
+
+watch(
+  () => selectedSettingMeta.value && [
+    selectedSettingMeta.value.section,
+    selectedSettingMeta.value.sectionIndex,
+    selectedSettingMeta.value.kind,
+  ].join('|'),
+  (key) => {
+    // Re-seed draft whenever the user switches to a different side
+    // note. `null` (no selection) leaves the draft alone — the
+    // panel isn't visible anyway.
+    if (key) settingDraft.value = readDraftForCurrentSelection()
+  },
+  { immediate: true },
+)
+
+/** Commit the draft to the form. Tags / Arguments parse the
+ *  comma-separated input back to a string[]; the other kinds are
+ *  single-string fields. After the form mutates, the deep watcher
+ *  fires and would clear the selection — `rebuildAndReselect()`
+ *  sets `suppressFitView` so the panel survives. */
+function commitSettingDraft() {
+  const target = settingTarget()
+  if (!target || !selectedSettingMeta.value) return
+  const value = settingDraft.value
+  const kind = selectedSettingMeta.value.kind
+  if (kind === 'tags') {
+    target.tags = parseListInput(value)
+  } else if (kind === 'arguments' && 'arguments' in target) {
+    target.arguments = parseListInput(value)
+  } else if (kind === 'template' && 'template' in target) {
+    target.template = value
+  } else if (kind === 'documentation' || kind === 'setup' || kind === 'teardown' || kind === 'timeout') {
+    target[kind] = value
+  }
+  rebuildAndReselect()
+}
+
+/** Split a comma- or whitespace-separated input into a clean list,
+ *  trimming each entry and dropping empties. Used for [Tags] and
+ *  [Arguments] which serialize as separator-joined cells in .robot. */
+function parseListInput(raw: string): string[] {
+  return raw
+    .split(/,\s*|\n+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+}
+
+function deleteSettingMeta() {
+  if (!selectedSettingMeta.value) return
+  const target = settingTarget()
+  if (!target) return
+  const kind = selectedSettingMeta.value.kind
+  if (kind === 'tags') target.tags = []
+  else if (kind === 'arguments' && 'arguments' in target) target.arguments = []
+  else if (kind === 'template' && 'template' in target) target.template = ''
+  else if (kind === 'documentation' || kind === 'setup' || kind === 'teardown' || kind === 'timeout') {
+    target[kind] = ''
+  }
+  selectedNode.value = null
+  rebuildAndReselect()
+}
+
+function addSetting(kind: SettingKind) {
+  const target = activeSettingSource()
+  if (!target) return
+  // Seed so the side note renders immediately. Presence on the
+  // underlying field is what flips the side note into existence
+  // (see `settingPresent()` in flowConverter.ts) — empty strings
+  // for text fields fail that check, so we need a single space;
+  // arrays only need length > 0, so an `['']` placeholder works
+  // cleanly and serializes back to nothing on save.
+  //
+  // The user's first keystroke replaces the placeholder. If they
+  // dismiss the panel without typing, deleting all text on the
+  // next interaction (or the auto-clear via parseListInput("") for
+  // chips) drops the side note again.
+  if (kind === 'tags') target.tags = ['']
+  else if (kind === 'arguments' && 'arguments' in target) target.arguments = ['']
+  else if (kind === 'template' && 'template' in target) target.template = ' '
+  else if (kind === 'documentation' || kind === 'setup' || kind === 'teardown' || kind === 'timeout') {
+    target[kind] = ' '
+  }
+  rebuildAndReselect()
+  // Auto-select the freshly-added side node so the user lands
+  // directly in the input.
+  nextTick(() => {
+    const prefix = activeSection.value === 'testcases'
+      ? `tc${activeItemIndex.value}`
+      : `kw${activeItemIndex.value}`
+    const node = nodes.value.find((n) => n.id === `${prefix}-${kind}`)
+    if (node) selectedNode.value = node
+  })
+}
+
+// User-resizable detail-panel width — drag the handle on the left
+// edge to widen / narrow. Lives in component-local state so the
+// chosen width survives selection changes inside this Explorer
+// session, and resets when the user navigates away (component
+// unmounts). Hard caps prevent the user dragging it off-screen.
+const PANEL_MIN_WIDTH = 240
+const PANEL_MAX_WIDTH = 720
+const detailPanelWidth = ref(300)
+const isResizingPanel = ref(false)
+
+function onPanelResizeStart(ev: PointerEvent) {
+  ev.preventDefault()
+  isResizingPanel.value = true
+  const startX = ev.clientX
+  const startWidth = detailPanelWidth.value
+  function onMove(e: PointerEvent) {
+    // Drag handle is on the LEFT edge — moving the pointer left
+    // grows the panel, moving right shrinks it.
+    const delta = startX - e.clientX
+    const next = Math.min(PANEL_MAX_WIDTH, Math.max(PANEL_MIN_WIDTH, startWidth + delta))
+    detailPanelWidth.value = next
+  }
+  function onUp() {
+    isResizingPanel.value = false
+    window.removeEventListener('pointermove', onMove)
+    window.removeEventListener('pointerup', onUp)
+    window.removeEventListener('pointercancel', onUp)
+  }
+  window.addEventListener('pointermove', onMove)
+  window.addEventListener('pointerup', onUp)
+  window.addEventListener('pointercancel', onUp)
+}
+
+// Story EDITOR-2 — keyword signature map (lowercase keyword name → raw
+// libdoc args). Reactive: rebuilds graph automatically when the
+// explorer-store cache resolves after a repo open.
+const { argsByName, getKeywordInfo, getParsedArgs } = useKeywordSignatures()
+
+/**
+ * UX D3 (ux-flow-editor-resources.md) — pre-seed a freshly-inserted
+ * keyword node's `args` with one EMPTY slot per REQUIRED positional
+ * argument from its signature, so the detail panel opens with the
+ * parameters the user must fill already labelled (e.g. a resource
+ * keyword `Open Login Page    [Arguments]    ${url}` shows a "url"
+ * slot instead of a bare "+ add argument"). Mirrors the "add next
+ * positional" picker which also pushes `''`.
+ *
+ * Only REQUIRED positionals are seeded: optionals/varargs/kwargs stay
+ * behind the "+ add argument" picker (seeding them would write
+ * redundant `name=default` cells). Required args always precede
+ * optionals in an RF signature, so we stop at the first non-required
+ * descriptor. No-op when the keyword has no known signature (the slot
+ * count is then driven purely by what the user adds).
+ */
+function prefillRequiredArgs(step: RobotStep): void {
+  if (step.type !== 'keyword' && step.type !== 'assignment') return
+  if (step.args.length > 0) return // never clobber caller-provided args
+  const specs = getParsedArgs(step.keyword)
+  if (!specs) return
+  for (const s of specs) {
+    if (s.kind === 'positional') step.args.push('')
+    else break
+  }
+}
+
+// Library usage histogram for the currently-open file. Walks every
+// keyword / assignment step in test cases AND keyword definitions
+// and tallies which library each step.keyword resolves to. The
+// palette uses this to sort library categories descending so the
+// libs the user is actually working with bubble to the top.
+const libraryUsageCounts = computed<Map<string, number>>(() => {
+  const counts = new Map<string, number>()
+  const tally = (steps: RobotStep[]) => {
+    for (const step of steps) {
+      if (step.type !== 'keyword' && step.type !== 'assignment') continue
+      if (!step.keyword) continue
+      const info = getKeywordInfo(step.keyword)
+      const lib = info?.library
+      if (!lib) continue
+      counts.set(lib, (counts.get(lib) ?? 0) + 1)
+    }
+  }
+  for (const tc of props.form.testCases) tally(tc.steps)
+  for (const kw of props.form.keywords) tally(kw.steps)
+  return counts
+})
+
+// UX D6 — heuristic inputs for the palette's adaptive "what's shown"
+// default: how many Library/Resource imports the open file has, and its
+// total step count. A "sophisticated" file (≥1 import OR ≥5 steps) with an
+// environment defaults the palette to imported-only.
+const fileImportCount = computed(() => libraryEntries.value.length)
+const fileStepCount = computed(() => {
+  let n = 0
+  for (const tc of props.form.testCases) n += tc.steps.length
+  for (const kw of props.form.keywords) n += kw.steps.length
+  return n
+})
+
+function buildGraph() {
+  const sc = props.sidecar ?? null
+  const sig = argsByName.value
+  if (activeSection.value === 'testcases') {
+    const result = robotFormToFlow(props.form, sc, sig)
+    nodes.value = result.nodes
+    edges.value = result.edges
+  } else {
+    const result = robotKeywordsToFlow(props.form, sig)
+    nodes.value = result.nodes
+    edges.value = result.edges
+  }
+}
+
+// Filter nodes/edges for active item only
+const baseVisibleNodes = computed(() => {
+  const prefix = activeSection.value === 'testcases'
+    ? `tc${activeItemIndex.value}-`
+    : `kw${activeItemIndex.value}-`
+  return nodes.value.filter(n => n.id.startsWith(prefix))
+})
+// Inject drop indicator node when dragging
+const visibleNodes = computed(() => {
+  const base = baseVisibleNodes.value
+  if (dropIndicatorIndex.value === null) return base
+  const y = getDropIndicatorY(dropIndicatorIndex.value)
+  const indicatorNode: Node = {
+    id: '__drop-indicator__',
+    type: 'drop-indicator',
+    position: { x: NODE_X - 50, y: y - 2 },
+    data: {},
+    draggable: false,
+    selectable: false,
+  }
+  return [...base, indicatorNode]
+})
+const visibleEdges = computed(() => {
+  const prefix = activeSection.value === 'testcases'
+    ? `tc${activeItemIndex.value}-`
+    : `kw${activeItemIndex.value}-`
+  return edges.value.filter(e => e.id.startsWith(prefix))
+})
+
+// Flag to suppress fitView during inline edits/reorder
+let suppressFitView = false
+
+// Rebuild graph when form, section, or sidecar identity changes.
+// Note: sidecar mutations are NOT deep-watched here — `rebuildAndReselect()`
+// is called explicitly from the swap handler so we don't double-render.
+watch([() => props.form, activeSection], () => {
+  // Story EDITOR-6 — `suppressFitView` originally short-circuited the
+  // entire watcher to avoid double-rebuilds + re-fitting after an
+  // internal step edit. The early return ALSO swallowed the rebuild
+  // when a stuck flag got batched with a real file-switch mutation
+  // (`form` mutates in place when RobotEditor re-parses), so the user
+  // saw the old test case after switching files. Now we rebuild every
+  // time and only the fitView call is conditional.
+  const skipFit = suppressFitView
+  suppressFitView = false
+  if (!skipFit) {
+    activeItemIndex.value = 0
+    selectedNode.value = null
+  }
+  buildGraph()
+  if (!skipFit) {
+    nextTick(() => {
+      fitView({ padding: 0.3 })
+      setTimeout(() => fitView({ padding: 0.3 }), 100)
+    })
+  }
+}, { deep: true })
+
+// Sidecar identity change (file open / refresh) → rebuild without resetting tab/selection.
+watch(() => props.sidecar, () => {
+  buildGraph()
+})
+
+// Story EDITOR-2 — re-render argSpecs once dynamic library signatures
+// resolve (the backend fetch lags the first paint when a repo opens).
+watch(argsByName, () => {
+  buildGraph()
+})
+
+watch(activeItemIndex, () => {
+  selectedNode.value = null
+  // Wait for Vue Flow to render new nodes before fitting
+  nextTick(() => {
+    fitView({ padding: 0.3 })
+    setTimeout(() => fitView({ padding: 0.3 }), 100)
+  })
+})
+
+// Backspace / Delete on a selected node deletes it, mirroring the
+// "x" button on the detail panel. Skip when focus is in any text
+// input — the detail panel inputs (args, condition, loopVar, …) all
+// rely on Backspace to delete characters, and the library autocomplete
+// uses Backspace to retreat through suggestions. `contenteditable`
+// is treated the same way.
+function onWindowKeydown(e: KeyboardEvent) {
+  if (e.key !== 'Backspace' && e.key !== 'Delete') return
+  if (!selectedNode.value || !selectedNodeData.value) return
+  const tgt = e.target as HTMLElement | null
+  if (tgt) {
+    const tag = tgt.tagName
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+    if (tgt.isContentEditable) return
+  }
+  e.preventDefault()
+  deleteStep()
+}
+
+onMounted(() => {
+  // Default to keywords section if no test cases
+  if (!hasTestCases.value && hasKeywords.value) {
+    activeSection.value = 'keywords'
+  }
+  buildGraph()
+  // Multiple fitView attempts to ensure centering after Vue Flow renders
+  setTimeout(() => fitView({ padding: 0.3 }), 200)
+  setTimeout(() => fitView({ padding: 0.3 }), 500)
+  window.addEventListener('keydown', onWindowKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onWindowKeydown)
+})
+
+function onNodeClick(event: { node: Node }) {
+  // The End node is purely visual — never editable.
+  if (event.node.type === 'end') {
+    selectedNode.value = null
+    return
+  }
+  // The Start node represents the test case / keyword as a whole.
+  // Selecting it surfaces the section-level settings panel
+  // (currently only the [Documentation] affordance — the rest of
+  // the `[…]` settings will follow the same pattern).
+  selectedNode.value = event.node
+}
+function onPaneClick() {
+  selectedNode.value = null
+}
+
+// --- Editable step fields ---
+
+// Optional `targetId` overrides the post-rebuild selection lookup.
+// Reorder ops (moveStepUp/Down/drag-drop) move a step to a new array
+// index, but node IDs are position-based — `tc0-step-N` for the step
+// currently at index N — so the OLD id points to a DIFFERENT step
+// after the rebuild. Callers that mutate positions must pass the new
+// id explicitly so the selection follows the *step*, not the slot.
+function rebuildAndReselect(targetId?: string) {
+  const selectedId = targetId ?? selectedNode.value?.id
+  suppressFitView = true
+  buildGraph()
+  if (selectedId) {
+    nextTick(() => {
+      const reselected = nodes.value.find(n => n.id === selectedId)
+      selectedNode.value = reselected || null
+    })
+  }
+}
+
+// Helper: compose the position-based node id for a step at `realIdx`
+// in the currently-active section/item. Mirrors the format used in
+// `flowConverter.ts::stepsToFlow` (`${prefix}-step-${i}`).
+function stepNodeIdAt(realIdx: number): string {
+  const prefix = activeSection.value === 'testcases'
+    ? `tc${activeItemIndex.value}`
+    : `kw${activeItemIndex.value}`
+  return `${prefix}-step-${realIdx}`
+}
+
+function onStepFieldChange() {
+  if (!selectedNodeData.value) return
+  updateStepFromNode(props.form, selectedNodeData.value)
+  rebuildAndReselect()
+  emit('update:step', selectedNodeData.value)
+}
+
+// --- Story EDITOR-1: selector candidate swap ---
+//
+// When the user picks a different selector candidate, we mutate args[0]
+// + the sidecar's active_candidate_index in-memory and emit
+// `update:sidecar` so the parent can fold both writes (`.robot` and
+// `.rbs.json`) into one Save action. We never touch the disk here —
+// that would re-introduce the silent-edit anti-pattern called out in
+// CLAUDE.md (SH-2 invariant: never mutate `.robot` on disk at runtime).
+
+function onSelectorPickerSwap(newIndex: number) {
+  if (!selectedNodeData.value) return
+  const cmd = selectedNodeData.value.recording
+  if (!cmd) return
+  const candidate = cmd.selector_candidates[newIndex]
+  if (!candidate) return
+
+  // If the user has typed a custom selector and is about to overwrite it,
+  // confirm — otherwise the value disappears with no recovery path.
+  if (isCustomSelectorValue(selectedNodeData.value.step, cmd)) {
+    const ok = window.confirm(
+      t('flowEditor.selector.replaceCustomConfirm', {
+        current: selectedNodeData.value.step.args[0] ?? '',
+        next: candidate.value,
+      }),
+    )
+    if (!ok) return
+  }
+
+  if (!applySelectorSwap(selectedNodeData.value.step, cmd, newIndex)) return
+  updateStepFromNode(props.form, selectedNodeData.value)
+  rebuildAndReselect()
+  emit('update:step', selectedNodeData.value)
+  if (props.sidecar) emit('update:sidecar', props.sidecar)
+}
+
+/**
+ * Story EDITOR-CUSTOM-SEL — user edited an existing candidate's
+ * value / strategy in the picker menu. Mutate the sidecar in place
+ * and demote the candidate's quality to `50` + `verified_unique=false`
+ * — user-trusted but never auto-verified, so a real visibility-
+ * checked candidate (gold == 95+) still outranks it on a re-verify
+ * pass. If the edited candidate IS the active one, also push the
+ * new value through to `step.args[0]` so the .robot saves consistent
+ * with what the user just typed.
+ */
+function onSelectorPickerEdit(payload: { index: number; value: string; strategy: SelectorStrategy; effective?: string }) {
+  if (!selectedNodeData.value) return
+  const cmd = selectedNodeData.value.recording
+  if (!cmd) return
+  const cand = cmd.selector_candidates[payload.index]
+  if (!cand) return
+  cand.value = payload.value
+  cand.strategy = payload.strategy
+  cand.quality_score = 50
+  cand.verified_unique = false
+  // Verbatim emit-form override — see SelectorPicker emit payload.
+  // Empty string clears any existing override (back to auto-compose);
+  // non-empty replaces the override; `undefined` (legacy callers
+  // before this field shipped) leaves the field untouched.
+  if (payload.effective !== undefined) {
+    cand.effective_override = payload.effective === '' ? null : payload.effective
+  }
+  if (payload.index === cmd.active_candidate_index) {
+    // Compose via `composeEffectiveSelector` → `effectiveSelectorForCandidate`
+    // → returns override verbatim when set, otherwise composes with
+    // iframe-chain + defensive nth. Same single source of truth as
+    // the swap path and the Python emitter.
+    const composite = composeEffectiveSelector(cmd, cand)
+    if (selectedNodeData.value.step.args.length === 0) {
+      selectedNodeData.value.step.args.push(composite)
+    } else {
+      selectedNodeData.value.step.args[0] = composite
+    }
+    updateStepFromNode(props.form, selectedNodeData.value)
+  }
+  rebuildAndReselect()
+  emit('update:step', selectedNodeData.value)
+  if (props.sidecar) emit('update:sidecar', props.sidecar)
+}
+
+/**
+ * Story EDITOR-CUSTOM-SEL — user added a brand-new candidate via
+ * the picker's "+ Eigener Selektor" row. Append to the candidate
+ * list so the original ranking is preserved, then auto-activate it
+ * (the picker is a "the active one is what the user is committing
+ * to" affordance — adding a new one almost always means "I want to
+ * use this now").
+ */
+function onSelectorPickerAdd(payload: { value: string; strategy: SelectorStrategy; effective?: string }) {
+  if (!selectedNodeData.value) return
+  const cmd = selectedNodeData.value.recording
+  if (!cmd) return
+  const newCand: SelectorCandidate = {
+    strategy: payload.strategy,
+    value: payload.value,
+    quality_score: 50,
+    verified_unique: false,
+    effective_override:
+      payload.effective !== undefined && payload.effective !== ''
+        ? payload.effective
+        : null,
+  }
+  cmd.selector_candidates.push(newCand)
+  const newIndex = cmd.selector_candidates.length - 1
+  cmd.active_candidate_index = newIndex
+  // Same composition as swap / edit. `composeEffectiveSelector`
+  // returns the override verbatim when set, otherwise auto-composes
+  // (iframe-chain + defensive nth), so a user adding a custom value
+  // inside an iframe gets the wrap by default OR overrides it
+  // explicitly via the Effektiv field — both paths land here.
+  const composite = composeEffectiveSelector(cmd, newCand)
+  if (selectedNodeData.value.step.args.length === 0) {
+    selectedNodeData.value.step.args.push(composite)
+  } else {
+    selectedNodeData.value.step.args[0] = composite
+  }
+  updateStepFromNode(props.form, selectedNodeData.value)
+  rebuildAndReselect()
+  emit('update:step', selectedNodeData.value)
+  if (props.sidecar) emit('update:sidecar', props.sidecar)
+}
+
+/** True when the currently-selected step has at least one recorded
+ *  selector candidate that the picker should expose. */
+const selectorPickerVisible = computed(() => {
+  const cmd = selectedNodeData.value?.recording
+  return !!cmd && cmd.selector_candidates.length > 0
+})
+
+/** True when args[0] does not match any of the recorded candidates'
+ *  values — the user has hand-edited the selector to a custom value. */
+const selectorIsCustom = computed(() => {
+  const data = selectedNodeData.value
+  return data?.recording ? isCustomSelectorValue(data.step, data.recording) : false
+})
+
+/**
+ * Story EDITOR-9 — when a slot value starts with `name=`, find the
+ * matching arg spec by name (Robot Framework named-arg form). Falls
+ * back to positional lookup otherwise. Lets the detail panel label a
+ * `namespace=${vars}` slot as `namespace:` even though it sits at a
+ * positional index that would otherwise resolve to a different name.
+ */
+function specForSlot(index: number) {
+  const data = selectedNodeData.value
+  if (!data) return null
+  const value = data.step.args[index] ?? ''
+  const m = /^([A-Za-z_][\w]*)\s*=/.exec(value)
+  if (m && data.argSpecs) {
+    const named = data.argSpecs.find((s) => s.name === m[1])
+    if (named) return { spec: named, viaName: true as const }
+  }
+  return data.argSpecs?.[index] ? { spec: data.argSpecs[index], viaName: false as const } : null
+}
+
+// Story EDITOR-2 — per-arg label + default placeholder for the detail panel.
+function argLabelAt(index: number): string {
+  const r = specForSlot(index)
+  if (r?.viaName) return r.spec.name
+  return getArgLabel(selectedNodeData.value?.argSpecs ?? null, index, t)
+}
+
+// Story EDITOR-4 — keyword input v-model glue for the autocomplete component.
+function onKeywordValueChange(v: string) {
+  if (!selectedNodeData.value) return
+  selectedNodeData.value.step.keyword = v
+}
+
+// Story HEAL-1 — per-step Self-Healing toggle.
+//
+// Mode is `'hidden'` for keywords that don't have a Heal variant (most),
+// `'on'` when the step already uses `Heal *`, `'off'` when it uses the
+// bare form. Only `keyword` and `assignment` step types ever surface
+// the checkbox.
+const selectedStepHealMode = computed<'on' | 'off' | 'hidden'>(() => {
+  const data = selectedNodeData.value
+  if (!data) return 'hidden'
+  if (data.stepType !== 'keyword' && data.stepType !== 'assignment') return 'hidden'
+  const kw = (data.step.keyword ?? '').trim()
+  const isOn = isHealedKeyword(kw)
+  const isOff = getHealVariant(kw) !== null
+  if (!isOn && !isOff) return 'hidden'
+  // Story HEAL-1 refinement — same gate as HEAL-2: a step named
+  // `Click` could be a user-defined keyword, not the Browser
+  // library's. Without an explicit `Library    Browser` /
+  // `RoboScopeHeal` import in Settings, suppress the toggle so we
+  // never offer to rewrite a custom keyword.
+  if (!hasBrowserLibraryImport(props.form) && !hasRoboScopeHealImport(props.form)) {
+    return 'hidden'
+  }
+  return isOn ? 'on' : 'off'
+})
+
+function onStepHealToggle(checked: boolean): void {
+  const data = selectedNodeData.value
+  if (!data) return
+  const currentKw = data.step.keyword.trim()
+  const nextKw = checked
+    ? getHealVariant(currentKw)
+    : getBaseKeyword(currentKw)
+  if (nextKw === null) return
+  data.step.keyword = nextKw
+  // Persist the rewrite via the normal step-edit path BEFORE we read
+  // `countHealedSteps` so the form reflects this step's new state.
+  onStepFieldChange()
+  // Library import: keep settings in sync with whether ANY heal'd
+  // keyword still exists across the file. The helper functions are
+  // idempotent and return the same array reference on no-op, so we
+  // only patch when they actually want to change something.
+  const stillUsed = countHealedSteps(props.form) > 0
+  const next = checked
+    ? ensureRoboScopeHealLibrary(props.form.settings)
+    : removeRoboScopeHealLibraryIfUnused(props.form.settings, stillUsed)
+  if (next !== props.form.settings) {
+    props.form.settings.splice(0, props.form.settings.length, ...next)
+  }
+}
+
+// Story EDITOR-7 — keyword doc modal toggle.
+const docModalOpen = ref(false)
+const docModalKeyword = computed(() => selectedNodeData.value?.step.keyword ?? '')
+const canShowDoc = computed(() => {
+  const data = selectedNodeData.value
+  if (!data) return false
+  if (data.stepType !== 'keyword' && data.stepType !== 'assignment') return false
+  return (data.step.keyword ?? '').trim().length > 0
+})
+function openDocModal() {
+  if (!canShowDoc.value) return
+  docModalOpen.value = true
+}
+
+function argPlaceholderAt(index: number): string {
+  const r = specForSlot(index)
+  // Prefer the bare default value as placeholder — terse, fits the
+  // narrow input. The parameter-name label above carries the context.
+  if (r?.spec.defaultValue != null && r.spec.defaultValue !== '') {
+    return r.spec.defaultValue
+  }
+  return t('flowEditor.argLabels.fallback', { n: index + 1 })
+}
+
+// Story EDITOR-3 / EDITOR-9 — friendly type lookup. Resolves via
+// `specForSlot` so a `name=value` slot uses the named spec's type,
+// not the positional spec at the same index.
+function argTypeAt(index: number): FriendlyType {
+  const r = specForSlot(index)
+  return friendlyType(r?.spec.type ?? null)
+}
+
+function argTooltipAt(index: number): string | undefined {
+  const ft = argTypeAt(index)
+  if (!ft.raw) return undefined
+  return ft.raw + (ft.optional ? t('flowEditor.argTypes.optionalSuffix') : '')
+}
+
+// Per-slot user override that forces the text input even when the
+// inferred control would be checkbox / select / number. Cleared when
+// the selected node changes (different step → different intent).
+// Keyed by `${nodeId}#${slotIndex}` so two slots on different nodes
+// don't share state.
+const textModeOverrides = ref<Set<string>>(new Set())
+function _slotKey(index: number): string {
+  return `${selectedNode.value?.id ?? '?'}#${index}`
+}
+function isTextModeOverridden(index: number): boolean {
+  return textModeOverrides.value.has(_slotKey(index))
+}
+function toggleTextMode(index: number): void {
+  const key = _slotKey(index)
+  const next = new Set(textModeOverrides.value)
+  if (next.has(key)) next.delete(key)
+  else next.add(key)
+  textModeOverrides.value = next
+}
+// Reset the per-slot text-mode overrides when the selection changes
+// — overrides are intent-bound to a specific step, not the panel.
+watch(selectedNode, () => {
+  textModeOverrides.value = new Set()
+})
+
+/**
+ * Story EDITOR-3 — when the user has a Robot Framework variable ref
+ * (`${TRUE}`, `${SELECTED}`) in the slot, fall back to the plain text
+ * input even for typed slots. A naive checkbox would read `${TRUE}` as
+ * falsy and overwrite the variable reference with literal `False` on
+ * the first toggle — silent data loss.
+ *
+ * Three layers of "render as text instead of typed control":
+ *   1. The arg-type itself is `text` (no friendly typing known).
+ *   2. The slot value (or the value-half of a `name=value` slot, like
+ *      `headless=${HEADLESS}`) is a Robot Framework variable
+ *      reference. The detection has to peek INSIDE the named-arg form
+ *      so the recorder's `headless=${HEADLESS}` doesn't get rendered
+ *      as a checkbox that would overwrite the var ref on toggle.
+ *   3. The user explicitly flipped text mode on for this slot via the
+ *      `{}` toggle button (e.g. they want to enter `${HEADLESS}` into
+ *      a slot currently holding `False`).
+ */
+function effectiveControl(index: number): FriendlyType['control'] {
+  if (isTextModeOverridden(index)) return 'text'
+  const ctrl = argTypeAt(index).control
+  if (ctrl === 'text') return ctrl
+  const raw = selectedNodeData.value?.step.args[index] ?? ''
+  // Strip a leading `name=` so `headless=${HEADLESS}` is recognised
+  // as a variable-bearing slot. Without this, `isVariableRef` only
+  // matches bare `${...}` and the recorder's `headless=${HEADLESS}`
+  // gets rendered as a checkbox.
+  const m = /^([A-Za-z_][\w]*)\s*=(.*)$/.exec(raw)
+  const valueHalf = m ? m[2] : raw
+  if (isVariableRef(valueHalf)) return 'text'
+  return ctrl
+}
+
+// Bool control round-trip: value may be 'True', 'true', 'yes', 'on', '1'
+// for truthy or anything else for falsy. We always write 'True' / 'False'.
+//
+// Both helpers must respect the `name=value` form (e.g. `force=True`).
+// Without that:
+//   - `isBoolChecked` would `readBoolValue('force=True')` → false, so a
+//     value the user explicitly set to True renders unchecked.
+//   - `onBoolToggle` would overwrite `force=True` with bare `True`,
+//     dropping the `name=` prefix. After re-render `specForSlot` no
+//     longer finds the spec by name and falls back to the positional
+//     spec at the same index — usually a different, non-bool spec —
+//     so the checkbox disappears and a text input takes its place
+//     mid-edit. Both bugs reported by the user, both fixed here.
+const _NAMED_ARG_RE = /^([A-Za-z_][\w]*)\s*=(.*)$/
+function onBoolToggle(index: number, e: Event) {
+  if (!selectedNodeData.value) return
+  const checked = (e.target as HTMLInputElement).checked
+  const raw = selectedNodeData.value.step.args[index] ?? ''
+  const m = _NAMED_ARG_RE.exec(raw)
+  selectedNodeData.value.step.args[index] = m
+    ? `${m[1]}=${writeBoolValue(checked)}`
+    : writeBoolValue(checked)
+  onStepFieldChange()
+}
+function isBoolChecked(index: number): boolean {
+  const raw = selectedNodeData.value?.step.args[index] ?? ''
+  // Strip a leading `name=` so a named-arg slot is read against its
+  // value half rather than the literal slot string.
+  const m = _NAMED_ARG_RE.exec(raw)
+  const v = m ? m[2] : raw
+  if (v) return readBoolValue(v)
+  // Fall back to the keyword's signature default — covers both bare
+  // empty positional slots and `name=` (no value yet) named slots,
+  // so the checkbox initial state mirrors RF's runtime behaviour.
+  // `specForSlot` resolves named-arg slots by name; falls back to
+  // positional otherwise.
+  const def = specForSlot(index)?.spec.defaultValue
+  return readBoolValue(def ?? '')
+}
+
+// --- Story EDITOR-9: named-parameter picker on "+ Add argument" -------
+
+const addArgPickerOpen = ref(false)
+// Story EDITOR-9b — free-form "custom value" the user types into the picker
+// (a raw cell: a bare value like `5s`/`${VAR}`, or a `name=value` named arg —
+// incl. **kwargs). Replaces the old "append an empty slot" behaviour, which
+// silently became "the next positional parameter".
+const customArgValue = ref('')
+
+interface AddArgOption {
+  name: string
+  defaultValue: string | null
+  isNextPositional: boolean
+}
+
+/**
+ * Build the picker option list from the keyword's signature minus the
+ * names already filled (positionally OR via `name=` form). `*args` /
+ * `**kwargs` slots are excluded — power users reach them via the
+ * "Custom value" fallback (story AC9).
+ */
+const addArgOptions = computed<AddArgOption[]>(() => {
+  const data = selectedNodeData.value
+  if (!data?.argSpecs) return []
+  const args = data.step.args
+  const specNames = new Set(data.argSpecs.map((s) => s.name))
+  const usedNames = new Set<string>()
+  for (let i = 0; i < args.length; i++) {
+    const v = args[i]
+    // Only treat a leading `name=` as a Robot Framework named-arg form
+    // when `name` actually appears in the keyword's signature.
+    // Browser-library selectors carry locator-strategy prefixes
+    // (`xpath=`, `css=`, `text=`, `id=`, `role=`, `nth=`, …) that look
+    // identical to named args at the regex level but are part of the
+    // selector value, not a kwarg name. Without this guard, the picker
+    // sees args[0]=`xpath=//a[…]` and assumes `xpath` is the named arg
+    // sitting in slot 0 — `selector` stays "unused" and the picker
+    // offers to add `selector=` as a phantom second arg, which then
+    // fails at run-time with "expected at least 1 non-named argument".
+    const m = /^([A-Za-z_][\w]*)\s*=/.exec(v)
+    if (m && specNames.has(m[1])) {
+      usedNames.add(m[1])
+    } else {
+      const positional = data.argSpecs[i]
+      if (positional && (positional.kind === 'positional' || positional.kind === 'optional')) {
+        usedNames.add(positional.name)
+      }
+    }
+  }
+  const out: AddArgOption[] = []
+  for (let i = 0; i < data.argSpecs.length; i++) {
+    const s = data.argSpecs[i]
+    if (s.kind !== 'positional' && s.kind !== 'optional') continue
+    if (!s.name || usedNames.has(s.name)) continue
+    out.push({
+      name: s.name,
+      defaultValue: s.defaultValue,
+      isNextPositional: i === args.length,
+    })
+  }
+  return out
+})
+
+// Trigger ref + computed popover position. Story EDITOR-9 originally
+// rendered the picker as a regular descendant of the detail panel,
+// but that panel has `overflow-y: auto`, which clips the popover so
+// the user has to scroll inside the panel just to read the options.
+// We Teleport the popover to <body> and pin it to the trigger button
+// via getBoundingClientRect() so it floats over the canvas instead.
+const addArgTriggerRef = ref<HTMLElement | null>(null)
+const addArgPopoverRef = ref<HTMLElement | null>(null)
+const addArgPickerStyle = ref<{ top: string; left: string; minWidth: string }>({
+  top: '0px',
+  left: '0px',
+  minWidth: '200px',
+})
+
+function recomputeAddArgPickerPosition() {
+  const trigger = addArgTriggerRef.value
+  if (!trigger) return
+  const rect = trigger.getBoundingClientRect()
+  // Clamp to the viewport so the popover (and its custom-value input/Add
+  // button) never overflows the right edge off-screen on a narrow window —
+  // the detail panel sits at the right, so the trigger is often close to it.
+  const width = Math.max(rect.width, 200)
+  const maxLeft = Math.max(8, window.innerWidth - width - 8)
+  // Vertical: open below the trigger, but flip ABOVE when the popover would
+  // overflow the bottom edge (the trigger sits low in the tall detail panel,
+  // so on a short window "below" lands off-screen). Falls back to a clamped
+  // top when neither fully fits (the popover scrolls — max-height: 240px).
+  const ph = addArgPopoverRef.value?.offsetHeight || 240
+  let top = rect.bottom + 4
+  if (top + ph + 8 > window.innerHeight) {
+    const above = rect.top - ph - 4
+    top = above >= 8 ? above : Math.max(8, window.innerHeight - ph - 8)
+  }
+  addArgPickerStyle.value = {
+    top: `${top}px`,
+    left: `${Math.min(rect.left, maxLeft)}px`,
+    minWidth: `${width}px`,
+  }
+}
+
+function toggleAddArgPicker() {
+  addArgPickerOpen.value = !addArgPickerOpen.value
+  if (addArgPickerOpen.value) {
+    // Position before the popover paints so it never flashes at (0,0).
+    nextTick(recomputeAddArgPickerPosition)
+  }
+}
+
+function pickAddArg(opt: AddArgOption) {
+  if (!selectedNodeData.value) return
+  // Next positional → bare value (RF reads positionally, label resolves
+  // by index). Otherwise write a named arg `name=<default>` so RF
+  // doesn't depend on order AND the slot is valid the moment it's
+  // added — `name=` on its own would be syntactically invalid in
+  // `.robot` source, plus a bool checkbox would read it as unchecked
+  // even when the keyword's signature default is True.
+  let value: string
+  if (opt.isNextPositional) {
+    value = ''
+  } else if (opt.defaultValue != null && opt.defaultValue !== '') {
+    value = `${opt.name}=${opt.defaultValue}`
+  } else {
+    value = `${opt.name}=`
+  }
+  selectedNodeData.value.step.args.push(value)
+  updateStepFromNode(props.form, selectedNodeData.value)
+  rebuildAndReselect()
+  addArgPickerOpen.value = false
+}
+
+/** Push the user-typed custom value verbatim. If it's `name=value` matching a
+ *  signature param it renders as that named arg; otherwise it's a bare
+ *  positional/extra value — either way the user controls exactly what lands,
+ *  so there's no "silently became the next parameter" surprise. */
+function confirmCustomArg() {
+  if (!selectedNodeData.value) return
+  const value = customArgValue.value.trim()
+  if (!value) return
+  selectedNodeData.value.step.args.push(value)
+  updateStepFromNode(props.form, selectedNodeData.value)
+  rebuildAndReselect()
+  customArgValue.value = ''
+  addArgPickerOpen.value = false
+}
+
+let addArgDocListenerBound = false
+function onAddArgDocClick(e: MouseEvent) {
+  const t = e.target
+  if (!(t instanceof Element)) return
+  // The popover is Teleported to <body>, so a "click inside the
+  // wrapper" check no longer covers option clicks. Allow either the
+  // wrapper (the trigger) OR the popover itself — both are part of
+  // the picker UX, just no longer the same DOM subtree.
+  if (t.closest('.flow-add-arg-wrap, .flow-add-arg-popover')) return
+  addArgPickerOpen.value = false
+}
+// Keep the popover pinned to the trigger when the surrounding scroll
+// container or window changes shape. Without this the user would see
+// the popover detach from the button as soon as they scroll.
+function onAddArgRecomputeEvent() {
+  if (!addArgPickerOpen.value) return
+  recomputeAddArgPickerPosition()
+}
+function bindAddArgDocClick() {
+  if (addArgDocListenerBound) return
+  document.addEventListener('click', onAddArgDocClick)
+  // `capture: true` so we catch scrolls inside the detail panel
+  // (which has `overflow-y: auto`) — those bubble through capture
+  // phase but not the bubble phase.
+  window.addEventListener('scroll', onAddArgRecomputeEvent, true)
+  window.addEventListener('resize', onAddArgRecomputeEvent)
+  addArgDocListenerBound = true
+}
+function unbindAddArgDocClick() {
+  if (!addArgDocListenerBound) return
+  document.removeEventListener('click', onAddArgDocClick)
+  window.removeEventListener('scroll', onAddArgRecomputeEvent, true)
+  window.removeEventListener('resize', onAddArgRecomputeEvent)
+  addArgDocListenerBound = false
+}
+watch(addArgPickerOpen, (open) => {
+  if (open) bindAddArgDocClick()
+  else { unbindAddArgDocClick(); customArgValue.value = '' }
+})
+onUnmounted(unbindAddArgDocClick)
+function removeArg(index: number) {
+  if (!selectedNodeData.value) return
+  selectedNodeData.value.step.args.splice(index, 1)
+  updateStepFromNode(props.form, selectedNodeData.value)
+  rebuildAndReselect()
+}
+// Adding the first return-variable to a plain keyword step flips its
+// type to 'assignment' so the serializer emits `${var}=  Keyword`
+// instead of just `Keyword`. Removing the last var flips it back —
+// keeps the FlowEditor surface "any keyword can return a value"
+// rather than asking the user to pick the right node type up front.
+function addReturnVar() {
+  if (!selectedNodeData.value) return
+  const step = selectedNodeData.value.step
+  step.returnVars.push('${var}')
+  if (step.type === 'keyword') step.type = 'assignment'
+  updateStepFromNode(props.form, selectedNodeData.value)
+  rebuildAndReselect()
+}
+function removeReturnVar(index: number) {
+  if (!selectedNodeData.value) return
+  const step = selectedNodeData.value.step
+  step.returnVars.splice(index, 1)
+  if (step.returnVars.length === 0 && step.type === 'assignment') {
+    step.type = 'keyword'
+  }
+  updateStepFromNode(props.form, selectedNodeData.value)
+  rebuildAndReselect()
+}
+function addLoopValue() {
+  if (!selectedNodeData.value) return
+  selectedNodeData.value.step.loopValues.push('')
+  updateStepFromNode(props.form, selectedNodeData.value)
+  rebuildAndReselect()
+}
+function removeLoopValue(index: number) {
+  if (!selectedNodeData.value) return
+  selectedNodeData.value.step.loopValues.splice(index, 1)
+  updateStepFromNode(props.form, selectedNodeData.value)
+  rebuildAndReselect()
+}
+/** RETURN values are stored on `step.args` — each cell after the
+ *  `RETURN` keyword in the .robot file is one return value. The
+ *  detail-panel inputs in the `stepType === 'return'` branch
+ *  v-model into this array. New values seed empty so the user
+ *  starts in a clean field. */
+function addReturnValue() {
+  if (!selectedNodeData.value) return
+  selectedNodeData.value.step.args.push('')
+  updateStepFromNode(props.form, selectedNodeData.value)
+  rebuildAndReselect()
+}
+function removeReturnValue(index: number) {
+  if (!selectedNodeData.value) return
+  selectedNodeData.value.step.args.splice(index, 1)
+  updateStepFromNode(props.form, selectedNodeData.value)
+  rebuildAndReselect()
+}
+
+// --- Add node from palette ---
+
+/** A fully-formed blank step of `type` with every field initialised —
+ *  the canonical empty RobotStep shape used when scaffolding control
+ *  blocks (END / EXCEPT). Keeping it in one place stops the three
+ *  insertion paths (palette add, insert-before, drag-drop) from
+ *  drifting out of sync. */
+function makeBlankStep(type: StepType): RobotStep {
+  return {
+    type, keyword: '', args: [], returnVars: [],
+    condition: '', loopVar: '', loopFlavor: '', loopValues: [],
+    exceptPattern: '', exceptVar: '', varScope: '', comment: '',
+  }
+}
+
+/** Trailing steps a freshly-added block starter needs to be VALID
+ *  Robot Framework out of the box. IF/FOR/WHILE just need a matching
+ *  END. TRY is special: a bare `TRY ... END` is a SYNTAX ERROR in RF
+ *  — a TRY must have at least one EXCEPT / ELSE / FINALLY. So we
+ *  scaffold `TRY → EXCEPT → END` (catch-all EXCEPT), which mirrors
+ *  what a user means by "add a try/except" and leaves the block
+ *  runnable immediately. Returns [] for non-block steps. */
+function blockTrailingSteps(type: StepType): RobotStep[] {
+  if (type === 'try') return [makeBlankStep('except'), makeBlankStep('end')]
+  if (type === 'if' || type === 'for' || type === 'while') return [makeBlankStep('end')]
+  return []
+}
+
+function addNodeFromPalette(step: RobotStep, library?: string) {
+  // Auto-import: when the keyword came from a library that isn't in
+  // form.settings yet, prepend a `Library    X` row so RF can
+  // resolve the keyword at runtime. `addLibrary` already dedupes
+  // and emits `libraries-changed` (which refreshes the palette
+  // signatures cache).
+  if (library) {
+    // addLibrary dedupes internally (incl. Resource imports, which
+    // importedLibraryNames doesn't track) and returns the kind it added
+    // or false — drive the D2 import toast off that truthy result.
+    const added = addLibrary(library)
+    if (added) notifyImportAdded(added, library)
+  }
+
+  // UX D3 — open the node with its required arguments already slotted.
+  prefillRequiredArgs(step)
+
+  const list = activeSection.value === 'testcases'
+    ? props.form.testCases[activeItemIndex.value]?.steps
+    : props.form.keywords[activeItemIndex.value]?.steps
+  if (!list) return
+  // When a node is selected, splice the new step in directly after
+  // it — the user's mental model is "extend from where I am" rather
+  // than "always append at the bottom". With no selection, fall
+  // back to the original push-to-end behavior.
+  const insertAt = selectedNodeData.value
+    ? selectedNodeData.value.stepIndex + 1
+    : list.length
+  list.splice(insertAt, 0, step, ...blockTrailingSteps(step.type))
+  // Move selection to the freshly-inserted node so the user can
+  // edit args / chain another insert without a second click.
+  rebuildAndReselect(stepNodeIdAt(insertAt))
+}
+
+// --- Move step up/down ---
+
+function getActiveSteps(): RobotStep[] | null {
+  return activeSection.value === 'testcases'
+    ? props.form.testCases[activeItemIndex.value]?.steps ?? null
+    : props.form.keywords[activeItemIndex.value]?.steps ?? null
+}
+
+function moveStepUp() {
+  if (!selectedNodeData.value) return
+  const steps = getActiveSteps()
+  if (!steps) return
+  const idx = selectedNodeData.value.stepIndex
+  if (idx <= 0) return
+  const temp = steps[idx]
+  steps[idx] = steps[idx - 1]
+  steps[idx - 1] = temp
+  selectedNodeData.value.stepIndex = idx - 1
+  // Pin selection to the moved step's NEW position id so a user can
+  // press Up repeatedly to walk a step to the top of the list.
+  rebuildAndReselect(stepNodeIdAt(idx - 1))
+  emit('update:step', selectedNodeData.value)
+}
+
+function moveStepDown() {
+  if (!selectedNodeData.value) return
+  const steps = getActiveSteps()
+  if (!steps) return
+  const idx = selectedNodeData.value.stepIndex
+  if (idx >= steps.length - 1) return
+  const temp = steps[idx]
+  steps[idx] = steps[idx + 1]
+  steps[idx + 1] = temp
+  selectedNodeData.value.stepIndex = idx + 1
+  rebuildAndReselect(stepNodeIdAt(idx + 1))
+  emit('update:step', selectedNodeData.value)
+}
+
+function deleteStep() {
+  if (!selectedNodeData.value) return
+  const steps = getActiveSteps()
+  if (!steps) return
+  steps.splice(selectedNodeData.value.stepIndex, 1)
+  selectedNode.value = null
+  suppressFitView = true
+  buildGraph()
+}
+
+function insertStepBefore(step: RobotStep) {
+  if (!selectedNodeData.value) return
+  const steps = getActiveSteps()
+  if (!steps) return
+  const idx = selectedNodeData.value.stepIndex
+  steps.splice(idx, 0, step, ...blockTrailingSteps(step.type))
+  buildGraph()
+}
+
+// --- Drop zone indicator for drag-to-position ---
+
+const dropIndicatorIndex = ref<number | null>(null)
+const canvasRef = ref<HTMLElement | null>(null)
+
+/** Get sorted step nodes for current view (excluding start/end) */
+function getStepNodes(): Node[] {
+  return baseVisibleNodes.value
+    .filter(n => n.type !== 'start' && n.type !== 'end')
+    .sort((a, b) => a.position.y - b.position.y)
+}
+
+/** Find insertion index from a flow-coordinate Y position.
+ *
+ * Compares `flowY` against each step node's MIDPOINT (top + height/2)
+ * rather than its top edge. The previous "fixed offset" feel was the
+ * top-edge comparison: anywhere inside a node body resolved to "after
+ * this node", so dropping near the bottom of node N inserted at N+1
+ * — but so did dropping in the upper half of N+1. Whether you wanted
+ * "before this step" or "after the previous step", the cursor had to
+ * be in the narrow gap above the next node's top, which felt like
+ * the indicator only snapped on a fixed grid.
+ *
+ * Heights vary because keyword nodes grow with arg count (one chip
+ * per row, per `estimateNodeHeight`). The midpoint comparison keeps
+ * the indicator anchored to where the user expects.
+ */
+function findInsertIndex(flowY: number): number {
+  const stepNodes = getStepNodes()
+  if (stepNodes.length === 0) return 0
+
+  for (let i = 0; i < stepNodes.length; i++) {
+    const top = stepNodes[i].position.y
+    const data = stepNodes[i].data as FlowNodeData
+    const midpoint = top + estimateNodeHeight(data.step) / 2
+    if (flowY < midpoint) return i
+  }
+  return stepNodes.length
+}
+
+/** Convert mouse event to flow Y coordinate */
+function eventToFlowY(event: DragEvent): number {
+  const el = canvasRef.value
+  if (!el) return 0
+  const rect = el.getBoundingClientRect()
+  const pos = project({ x: event.clientX - rect.left, y: event.clientY - rect.top })
+  return pos.y
+}
+
+/** Get the Y position for the drop indicator line.
+ *
+ * Renders the indicator inside the actual gap between nodes. Without
+ * factoring in `estimateNodeHeight`, the average of two `position.y`
+ * values (TOP edges) is biased toward the previous node — the
+ * indicator visually overlapped the lower part of the previous node
+ * body whenever it had args, instead of sitting in the gap. Using
+ * `prev.bottom + (gap / 2)` puts the line in the geometric middle of
+ * the actual whitespace.
+ */
+function getDropIndicatorY(index: number): number {
+  const stepNodes = getStepNodes()
+  if (stepNodes.length === 0) return NODE_START_Y
+  if (index <= 0) return stepNodes[0].position.y - 25
+  if (index >= stepNodes.length) {
+    const last = stepNodes[stepNodes.length - 1]
+    const lastData = last.data as FlowNodeData
+    return last.position.y + estimateNodeHeight(lastData.step) + 25
+  }
+  const prev = stepNodes[index - 1]
+  const next = stepNodes[index]
+  const prevBottom = prev.position.y + estimateNodeHeight((prev.data as FlowNodeData).step)
+  return (prevBottom + next.position.y) / 2
+}
+
+function makeStepFromDrag(event: DragEvent): RobotStep | null {
+  const keyword = event.dataTransfer?.getData('application/rf-keyword')
+  const control = event.dataTransfer?.getData('application/rf-control')
+  if (keyword) {
+    return {
+      type: 'keyword', keyword, args: [], returnVars: [],
+      condition: '', loopVar: '${item}', loopFlavor: 'IN', loopValues: [],
+      exceptPattern: '', exceptVar: '', varScope: '', comment: '',
+    }
+  }
+  if (control && isStepType(control)) {
+    return {
+      type: control, keyword: '', args: [], returnVars: [],
+      condition: control === 'if' || control === 'while' ? '${condition}' : '',
+      loopVar: control === 'for' ? '${item}' : '',
+      loopFlavor: control === 'for' ? 'IN' : '',
+      loopValues: control === 'for' ? ['@{list}'] : [],
+      exceptPattern: '', exceptVar: '', varScope: '', comment: '',
+    }
+  }
+  return null
+}
+
+function insertStepAt(step: RobotStep, index: number) {
+  const list = getActiveSteps()
+  if (!list) return
+  // Clamp index — skip 'end' type steps when counting
+  let realIndex = 0
+  let counted = 0
+  for (let i = 0; i < list.length; i++) {
+    if (list[i].type === 'end') { realIndex++; continue }
+    if (counted === index) break
+    counted++
+    realIndex++
+  }
+  list.splice(realIndex, 0, step, ...blockTrailingSteps(step.type))
+  suppressFitView = true
+  buildGraph()
+}
+
+function onCanvasDrop(event: DragEvent) {
+  event.preventDefault()
+  dropIndicatorIndex.value = null
+
+  // Check for node reorder drop
+  const reorderIdx = event.dataTransfer?.getData('application/rf-reorder')
+  if (reorderIdx !== undefined && reorderIdx !== '') {
+    const fromIdx = parseInt(reorderIdx, 10)
+    const flowY = eventToFlowY(event)
+    const toIdx = findInsertIndex(flowY)
+    reorderStep(fromIdx, toIdx)
+    return
+  }
+
+  const step = makeStepFromDrag(event)
+  if (!step) return
+
+  // Auto-import: KeywordPalette stamps the source library on the
+  // drag in `application/rf-library`. If the user dragged a keyword
+  // from a not-yet-imported library, prepend the Library row before
+  // inserting the step.
+  const sourceLib = event.dataTransfer?.getData('application/rf-library') || ''
+  if (sourceLib) {
+    const added = addLibrary(sourceLib)
+    if (added) notifyImportAdded(added, sourceLib)
+  }
+
+  // UX D3 — pre-seed required argument slots (same as the palette path).
+  prefillRequiredArgs(step)
+
+  const flowY = eventToFlowY(event)
+  const idx = findInsertIndex(flowY)
+  insertStepAt(step, idx)
+}
+
+function onCanvasDragOver(event: DragEvent) {
+  event.preventDefault()
+  event.dataTransfer!.dropEffect = 'copy'
+  const flowY = eventToFlowY(event)
+  dropIndicatorIndex.value = findInsertIndex(flowY)
+}
+
+function onCanvasDragLeave() {
+  dropIndicatorIndex.value = null
+}
+
+// --- Node reorder via drag handle ---
+
+function onNodeReorderDragStart(event: DragEvent, node: Node) {
+  const data = node.data as FlowNodeData
+  // Map visual step index (excluding 'end' nodes) to real index
+  const steps = getActiveSteps()
+  if (!steps) return
+  let visualIdx = 0
+  for (let i = 0; i < steps.length; i++) {
+    if (steps[i].type === 'end') continue
+    if (i === data.stepIndex) break
+    visualIdx++
+  }
+  event.dataTransfer?.setData('application/rf-reorder', String(visualIdx))
+  event.dataTransfer!.effectAllowed = 'move'
+}
+
+function reorderStep(fromVisualIdx: number, toVisualIdx: number) {
+  const steps = getActiveSteps()
+  if (!steps) return
+
+  // Map visual indices to real indices (skipping 'end' steps)
+  const realIndices: number[] = []
+  for (let i = 0; i < steps.length; i++) {
+    if (steps[i].type !== 'end') realIndices.push(i)
+  }
+
+  if (fromVisualIdx < 0 || fromVisualIdx >= realIndices.length) return
+  const fromReal = realIndices[fromVisualIdx]
+
+  // Adjust toVisualIdx if moving down (account for removed element)
+  let toReal: number
+  if (toVisualIdx >= realIndices.length) {
+    toReal = steps.length
+  } else if (toVisualIdx <= fromVisualIdx) {
+    toReal = realIndices[toVisualIdx]
+  } else {
+    // Moving down — the target shifts by 1 because we remove first
+    toReal = realIndices[toVisualIdx]
+  }
+
+  if (fromReal === toReal || fromReal + 1 === toReal) return
+
+  // Check if this step has an accompanying 'end' step
+  const step = steps[fromReal]
+  const hasEnd = ['if', 'for', 'while', 'try'].includes(step.type) && fromReal + 1 < steps.length && steps[fromReal + 1].type === 'end'
+
+  // Remove
+  const removed = hasEnd ? steps.splice(fromReal, 2) : steps.splice(fromReal, 1)
+
+  // Recalculate insertion point after removal
+  let insertAt: number
+  if (toReal > fromReal) {
+    insertAt = toReal - removed.length
+  } else {
+    insertAt = toReal
+  }
+  insertAt = Math.max(0, Math.min(insertAt, steps.length))
+
+  steps.splice(insertAt, 0, ...removed)
+  suppressFitView = true
+  buildGraph()
+}
+
+// Expose reorder drag start for node components
+function onNodeDragHandleStart(event: DragEvent, nodeId: string) {
+  const node = baseVisibleNodes.value.find(n => n.id === nodeId)
+  if (!node) return
+  onNodeReorderDragStart(event, node)
+}
+
+// ---------------------------------------------------------------------------
+// Story DEBUG-3 — "Run up to here" Flow Editor debug action.
+// ---------------------------------------------------------------------------
+
+const auth = useAuthStore()
+const debug = useDebugStore()
+
+/** True only when every gate from AC1 is open: stepType is one we can
+ *  break on (keyword/assignment/control/return), the user has RUNNER+,
+ *  and the selected node lives in a Test Case (not a Keyword
+ *  definition — RF debug-launch needs `--test`, not a bare keyword). */
+const canDebugSelectedStep = computed<boolean>(() => {
+  const data = selectedNodeData.value
+  if (!data) return false
+  if (data.section !== 'testcase') return false
+  if (!auth.hasMinRole('runner')) return false
+  // Map Flow step types to AC1's allow list. `control` covers the
+  // for/if/while/try/etc. flavours via getNodeType(); we also want
+  // assignment + return to keep parity with the spec.
+  const allowed: Array<RobotStep['type']> = [
+    'keyword', 'assignment', 'return',
+    'if', 'else_if', 'else', 'for', 'while', 'try', 'except', 'finally',
+  ]
+  if (!allowed.includes(data.step.type)) return false
+  // No file context = can't address the breakpoint. The Explorer view
+  // always passes filePath; the only path where it's missing is the
+  // Recorder's flow-preview surface where debug doesn't apply.
+  if (!scope.filePath) return false
+  if (scope.scopeId == null) return false
+  return true
+})
+
+const debugUnsavedHintVisible = ref(false)
+const debugConfirmRestart = ref<{
+  fromLine: number
+  toLine: number
+  payload: { file: string; testName: string; line: number; scopeId: number }
+} | null>(null)
+const debugError = ref<string | null>(null)
+
+function _stepDebugPayload(): {
+  file: string
+  testName: string
+  line: number
+  scopeId: number
+} | null {
+  const data = selectedNodeData.value
+  if (!data || data.section !== 'testcase') return null
+  if (!scope.filePath || scope.scopeId == null) return null
+  const tc: RobotTestCase | undefined = props.form.testCases[data.sectionIndex]
+  if (!tc) return null
+  // Recompute the source line LIVE — `step._lineNumber` was set once at
+  // parse time and goes stale the moment the user inserts/removes a
+  // step elsewhere in the file. The live computation mirrors the
+  // serializer, so it tracks any structural edit.
+  const isResource = scope.filePath?.toLowerCase().endsWith('.resource') ?? false
+  const line = computeStepLine(props.form, isResource, data.sectionIndex, data.stepIndex)
+  if (line === null || line < 1) return null
+  return {
+    file: scope.filePath,
+    testName: tc.name,
+    line,
+    scopeId: scope.scopeId,
+  }
+}
+
+async function onDebugStepClick(): Promise<void> {
+  debugError.value = null
+  // AC1 fourth bullet: dirty buffer surfaces a save-prompt instead of
+  // debugging an out-of-sync file. We surface a small inline modal
+  // and stop — the user saves manually, then re-clicks.
+  if (props.dirty) {
+    debugUnsavedHintVisible.value = true
+    return
+  }
+  const payload = _stepDebugPayload()
+  if (!payload) {
+    debugError.value = t('flowEditor.debug.unresolvedLine')
+    return
+  }
+  // AC6: same-line resume vs different-line restart.
+  const cls = debug.classifyStepClick(payload.file, payload.line)
+  if (cls === 'same') {
+    // Silent resume — show the panel; the store's existing session
+    // metadata is preserved.
+    debugOverlayOpen.value = true
+    return
+  }
+  if (cls === 'different') {
+    debugConfirmRestart.value = {
+      fromLine: debug.breakpointLine ?? 0,
+      toLine: payload.line,
+      payload,
+    }
+    return
+  }
+  await _dispatchDebugStart(payload)
+}
+
+async function _dispatchDebugStart(payload: {
+  file: string
+  testName: string
+  line: number
+  scopeId: number
+}): Promise<void> {
+  try {
+    const resp = await debug.startFromStep({
+      file: payload.file,
+      test_name: payload.testName,
+      line: payload.line,
+      scope_id: payload.scopeId,
+    })
+    if (resp !== null) {
+      debugOverlayOpen.value = true
+    }
+    // resp === null → DEBUG-4 prereq missing; dialog will surface and
+    // `onDebugPrereqInstall` opens the overlay after install + retry.
+  } catch (e: unknown) {
+    debugError.value = extractErrorDetail(e, t('flowEditor.debug.startFailed'))
+  }
+}
+
+async function onDebugPrereqInstall(): Promise<void> {
+  const ok = await debug.installPrereqAndRetry()
+  if (ok && debug.isActive) {
+    debugOverlayOpen.value = true
+  }
+}
+
+function onDebugPrereqCancel(): void {
+  debug.cancelPrereq()
+}
+
+async function onDebugConfirmRestart(): Promise<void> {
+  const cfg = debugConfirmRestart.value
+  if (!cfg) return
+  debugConfirmRestart.value = null
+  // Stop the existing session before starting a new one. Mirrors
+  // Chrome DevTools' "Run to here" semantics.
+  try {
+    await debug.stop()
+  } catch {
+    // Best-effort — even if disconnect fails, start the new session.
+  }
+  await _dispatchDebugStart(cfg.payload)
+}
+
+const debugOverlayOpen = ref(false)
+function onDebugOverlayClose(): void {
+  debugOverlayOpen.value = false
+}
+
+// Provide drag handle start to child nodes via provide/inject would be complex,
+// so we expose it as a data attribute approach
+</script>
+
+<template>
+  <div class="flow-editor">
+    <!-- Section tabs: Test Cases | Keywords. Both tabs are ALWAYS
+         visible (even when one side is empty) so the user can
+         create a test case in a keyword-only file and vice versa
+         via the "+ ..." button below. Previously these were
+         hidden behind v-if="hasTestCases" / v-if="hasKeywords",
+         which dead-ended files that started life with only one
+         section type. -->
+    <div class="flow-section-bar">
+      <div class="flow-section-tabs">
+        <button
+          :class="['flow-section-tab', { active: activeSection === 'testcases' }]"
+          @click="activeSection = 'testcases'"
+        >
+          {{ t('robotEditor.testCasesSection') }} ({{ props.form.testCases.length }})
+        </button>
+        <button
+          :class="['flow-section-tab', { active: activeSection === 'keywords' }]"
+          @click="activeSection = 'keywords'"
+        >
+          {{ t('robotEditor.keywordsSection') }} ({{ props.form.keywords.length }})
+        </button>
+      </div>
+
+      <!-- Item tabs within section. Sit immediately to the right of
+           the section toggle so the test case / keyword names land
+           next to where the palette starts on the line below. -->
+      <div class="flow-item-tabs">
+        <template v-if="activeSection === 'testcases'">
+          <button
+            v-for="(name, i) in testCaseNames" :key="'tc'+i"
+            :class="['flow-item-tab', { active: activeItemIndex === i }]"
+            @click="activeItemIndex = i"
+          >{{ name }}</button>
+          <button
+            type="button"
+            class="flow-item-tab flow-item-tab--add"
+            :title="t('flowEditor.addTestCaseTitle')"
+            data-testid="flow-add-test-case"
+            @click="handleAddTestCase"
+          >+ {{ t('flowEditor.addTestCase') }}</button>
+        </template>
+        <template v-else>
+          <button
+            v-for="(name, i) in keywordNames" :key="'kw'+i"
+            :class="['flow-item-tab', { active: activeItemIndex === i }]"
+            @click="activeItemIndex = i"
+          >{{ name }}</button>
+          <button
+            type="button"
+            class="flow-item-tab flow-item-tab--add"
+            :title="t('flowEditor.addKeywordTitle')"
+            data-testid="flow-add-keyword"
+            @click="handleAddKeyword"
+          >+ {{ t('flowEditor.addKeyword') }}</button>
+        </template>
+      </div>
+
+      <!-- Library quick-manage: chevron toggles an inline panel
+           below the section bar. Add / remove imports without
+           leaving the Flow tab. The keyword palette + signatures
+           refresh automatically (RobotEditor watches `form.settings`
+           Library entries and re-fetches the cache). Aligned to the
+           right edge of the toolbar (margin-left: auto). -->
+      <button
+        type="button"
+        :class="['flow-libs-toggle', { active: librariesPanelOpen }]"
+        :title="t('flowEditor.librariesTitle')"
+        data-testid="flow-libraries-toggle"
+        @click="librariesPanelOpen = !librariesPanelOpen"
+      >
+        📚 {{ t('flowEditor.libraries') }} ({{ libraryEntries.length }})
+        <span aria-hidden="true">{{ librariesPanelOpen ? '▴' : '▾' }}</span>
+      </button>
+      <button
+        type="button"
+        :class="['flow-libs-toggle', { active: variablesPanelOpen }]"
+        :title="t('flowEditor.variablesTitle')"
+        data-testid="flow-variables-toggle"
+        @click="variablesPanelOpen = !variablesPanelOpen"
+      >
+        📦 {{ t('flowEditor.variables') }} ({{ variableEntries.length }})
+        <span aria-hidden="true">{{ variablesPanelOpen ? '▴' : '▾' }}</span>
+      </button>
+      <button
+        type="button"
+        :class="['flow-libs-toggle', { active: suiteSettingsPanelOpen }]"
+        :title="t('flowEditor.suiteSettingsTitle')"
+        data-testid="flow-suite-settings-toggle"
+        @click="suiteSettingsPanelOpen = !suiteSettingsPanelOpen"
+      >
+        ⚙️ {{ t('flowEditor.suiteSettings') }} ({{ suiteSettingEntries.length }})
+        <span aria-hidden="true">{{ suiteSettingsPanelOpen ? '▴' : '▾' }}</span>
+      </button>
+    </div>
+
+    <!-- Library management panel (toggled by the section-bar
+         button above). Shows the file's current Library / Resource
+         imports as removable chips, plus an autocomplete-input to
+         add new ones. Each mutation rewrites `form.settings` and
+         RobotEditor's settings-watcher refreshes the keyword cache
+         + palette automatically. -->
+    <div v-if="librariesPanelOpen" class="flow-libraries">
+      <span v-if="libraryEntries.length === 0" class="flow-libraries__empty">
+        {{ t('flowEditor.librariesNone') }}
+      </span>
+      <!-- D1 — Resources list (separate from Libraries) -->
+      <div v-if="resourceImportEntries.length" class="flow-libraries__group" data-testid="flow-resources-group">
+        <div class="flow-libraries__group-label">{{ t('flowEditor.resourcePanelLabel') }} ({{ resourceImportEntries.length }})</div>
+        <div class="flow-libraries__chips">
+          <span
+            v-for="entry in resourceImportEntries"
+            :key="entry.idx"
+            class="flow-libraries__chip flow-libraries__chip--resource"
+          >
+            <span class="flow-libraries__chip-kind">R</span>
+            <span class="flow-libraries__chip-name" :title="entry.value">{{ entry.value }}</span>
+            <button
+              type="button"
+              class="flow-libraries__chip-remove"
+              :title="t('flowEditor.libraryRemoveTitle', { name: entry.value })"
+              @click="removeLibrary(entry.idx)"
+              data-testid="flow-library-remove"
+            >×</button>
+          </span>
+        </div>
+      </div>
+      <!-- D1 — Libraries list -->
+      <div v-if="libraryImportEntries.length" class="flow-libraries__group" data-testid="flow-libraries-group">
+        <div class="flow-libraries__group-label">{{ t('flowEditor.librariesPanelLabel') }} ({{ libraryImportEntries.length }})</div>
+        <div class="flow-libraries__chips">
+          <span
+            v-for="entry in libraryImportEntries"
+            :key="entry.idx"
+            class="flow-libraries__chip"
+          >
+            <span class="flow-libraries__chip-kind">L</span>
+            <span class="flow-libraries__chip-name" :title="entry.value">{{ entry.value }}</span>
+            <button
+              type="button"
+              class="flow-libraries__chip-remove"
+              :title="t('flowEditor.libraryRemoveTitle', { name: entry.value })"
+              @click="removeLibrary(entry.idx)"
+              data-testid="flow-library-remove"
+            >×</button>
+          </span>
+        </div>
+      </div>
+      <div class="flow-libraries__input-row">
+        <input
+          v-model="libraryInputValue"
+          type="text"
+          class="flow-libraries__input"
+          :placeholder="t('flowEditor.libraryInputPlaceholder')"
+          autocomplete="off"
+          spellcheck="false"
+          data-testid="flow-library-input"
+          @keydown.enter.prevent="confirmAddLibrary"
+        />
+        <button
+          type="button"
+          class="flow-libraries__add"
+          :disabled="!libraryInputValue.trim()"
+          data-testid="flow-library-add"
+          @click="confirmAddLibrary"
+        >+ {{ t('flowEditor.libraryAdd') }}</button>
+      </div>
+      <div v-if="librarySuggestions.length" class="flow-libraries__suggestions">
+        <button
+          v-for="suggestion in librarySuggestions"
+          :key="suggestion"
+          type="button"
+          class="flow-libraries__suggestion"
+          @click="addLibrary(suggestion)"
+        >{{ suggestion }}</button>
+      </div>
+    </div>
+
+    <!-- *** Variables *** panel — define / edit / remove suite variables
+         inline. Edits commit on blur/Enter (change event), never a
+         continuous v-model into the form. -->
+    <div v-if="variablesPanelOpen" class="flow-libraries" data-testid="flow-variables-panel">
+      <div class="flow-vars__rows">
+        <span v-if="variableEntries.length === 0" class="flow-libraries__empty">
+          {{ t('flowEditor.variablesNone') }}
+        </span>
+        <div
+          v-for="entry in variableEntries"
+          :key="entry.idx"
+          class="flow-vars__row"
+        >
+          <input
+            class="flow-vars__name"
+            :value="entry.name"
+            spellcheck="false"
+            autocomplete="off"
+            data-testid="flow-variable-name"
+            @change="updateVariableName(entry.idx, ($event.target as HTMLInputElement).value)"
+          />
+          <input
+            class="flow-vars__value"
+            :value="entry.value"
+            spellcheck="false"
+            autocomplete="off"
+            data-testid="flow-variable-value"
+            @change="updateVariableValue(entry.idx, ($event.target as HTMLInputElement).value)"
+          />
+          <button
+            type="button"
+            class="flow-libraries__chip-remove"
+            :title="t('flowEditor.variableRemoveTitle', { name: entry.name })"
+            data-testid="flow-variable-remove"
+            @click="removeVariable(entry.idx)"
+          >×</button>
+        </div>
+      </div>
+      <div class="flow-libraries__input-row">
+        <input
+          v-model="newVarName"
+          type="text"
+          class="flow-vars__name"
+          :placeholder="t('flowEditor.variableNamePlaceholder')"
+          autocomplete="off"
+          spellcheck="false"
+          data-testid="flow-variable-new-name"
+          @keydown.enter.prevent="addVariable"
+        />
+        <input
+          v-model="newVarValue"
+          type="text"
+          class="flow-vars__value"
+          :placeholder="t('flowEditor.variableValuePlaceholder')"
+          autocomplete="off"
+          spellcheck="false"
+          data-testid="flow-variable-new-value"
+          @keydown.enter.prevent="addVariable"
+        />
+        <button
+          type="button"
+          class="flow-libraries__add"
+          :disabled="!newVarName.trim()"
+          data-testid="flow-variable-add"
+          @click="addVariable"
+        >+ {{ t('flowEditor.variableAdd') }}</button>
+      </div>
+      <!-- Story FE-ENV — read-only summary of %{ENV} refs used here. -->
+      <div
+        v-if="activeEnvVarRefs.length"
+        class="flow-vars__envrefs"
+        data-testid="flow-env-vars"
+      >
+        <span
+          class="flow-vars__envrefs-title"
+          :title="envVarKeys ? t('flowEditor.envVarCheckedAgainst', { env: checkedEnvName }) : undefined"
+        >{{ t('flowEditor.envVarsUsed') }}</span>
+        <span
+          v-for="{ ref, state } in classifiedEnvVarRefs"
+          :key="ref.name"
+          class="flow-libraries__chip"
+          :class="{ 'flow-vars__envref--missing': state === 'missing' }"
+          :data-state="state"
+          :title="envRefTitle(ref.name, state)"
+          data-testid="flow-env-var"
+        >
+          <span class="flow-libraries__chip-name">%{{ '{' }}{{ ref.name }}{{ ref.default !== null ? '=' + ref.default : '' }}{{ '}' }}</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Suite-settings panel — Suite Setup/Teardown, Force/Default Tags,
+         Documentation, Metadata, … the rest of *** Settings ***. -->
+    <div v-if="suiteSettingsPanelOpen" class="flow-libraries" data-testid="flow-suite-settings-panel">
+      <div class="flow-vars__rows">
+        <span v-if="suiteSettingEntries.length === 0" class="flow-libraries__empty">
+          {{ t('flowEditor.suiteSettingsNone') }}
+        </span>
+        <div
+          v-for="entry in suiteSettingEntries"
+          :key="entry.idx"
+          class="flow-vars__row"
+        >
+          <span class="flow-vars__name flow-vars__name--readonly">{{ entry.key }}</span>
+          <input
+            class="flow-vars__value"
+            :value="entry.value"
+            spellcheck="false"
+            autocomplete="off"
+            data-testid="flow-suite-setting-value"
+            @change="updateSuiteSettingValue(entry.idx, ($event.target as HTMLInputElement).value)"
+          />
+          <button
+            type="button"
+            class="flow-libraries__chip-remove"
+            :title="t('flowEditor.suiteSettingRemoveTitle', { name: entry.key })"
+            data-testid="flow-suite-setting-remove"
+            @click="removeSuiteSetting(entry.idx)"
+          >×</button>
+        </div>
+      </div>
+      <div v-if="availableSuiteSettingKeys.length" class="flow-libraries__suggestions">
+        <button
+          v-for="key in availableSuiteSettingKeys"
+          :key="key"
+          type="button"
+          class="flow-libraries__suggestion"
+          data-testid="flow-suite-setting-add"
+          @click="addSuiteSetting(key)"
+        >+ {{ key }}</button>
+      </div>
+    </div>
+
+    <!-- Empty state — fires when the active section is empty,
+         independent of whether the OTHER section has content.
+         A keyword-only file that switches to the Test Cases tab
+         lands here with the right contextual CTA. -->
+    <div v-if="emptySection" class="flow-empty">
+      <p>
+        {{ emptySection === 'testcases'
+          ? t('flowEditor.noTestCasesYet')
+          : t('flowEditor.noKeywordsYet')
+        }}
+      </p>
+      <div class="flow-empty__actions">
+        <button
+          v-if="emptySection === 'testcases'"
+          type="button"
+          class="flow-empty__cta"
+          data-testid="flow-empty-add-test-case"
+          @click="handleAddTestCase"
+        >+ {{ t('flowEditor.addTestCase') }}</button>
+        <button
+          v-if="emptySection === 'keywords'"
+          type="button"
+          class="flow-empty__cta"
+          data-testid="flow-empty-add-keyword"
+          @click="handleAddKeyword"
+        >+ {{ t('flowEditor.addKeyword') }}</button>
+      </div>
+    </div>
+
+    <!-- Vue Flow Canvas + Palette -->
+    <div v-else class="flow-canvas-wrapper">
+      <KeywordPalette
+        :scope-id="scope.scopeId ?? undefined"
+        :file-path="scope.filePath"
+        :imported-libraries="importedLibraryNames"
+        :usage-counts="libraryUsageCounts"
+        :file-import-count="fileImportCount"
+        :file-step-count="fileStepCount"
+        @add-node="addNodeFromPalette"
+      />
+
+      <div ref="canvasRef" class="flow-canvas">
+        <VueFlow
+          @drop="onCanvasDrop"
+          @dragover="onCanvasDragOver"
+          @dragleave="onCanvasDragLeave"
+          :nodes="visibleNodes"
+          :edges="visibleEdges"
+          :default-viewport="{ zoom: 0.9, x: 0, y: 0 }"
+          :min-zoom="0.2"
+          :max-zoom="2"
+          :nodes-draggable="false"
+          fit-view-on-init
+          @node-click="onNodeClick"
+          @pane-click="onPaneClick"
+        >
+          <template #node-keyword="nodeProps">
+            <KeywordNode v-bind="nodeProps" :reorder-enabled="true" :selected="selectedNode?.id === nodeProps.id" @reorder-drag-start="onNodeDragHandleStart($event, nodeProps.id)" />
+          </template>
+          <template #node-assignment="nodeProps">
+            <KeywordNode v-bind="nodeProps" :reorder-enabled="true" :selected="selectedNode?.id === nodeProps.id" @reorder-drag-start="onNodeDragHandleStart($event, nodeProps.id)" />
+          </template>
+          <template #node-control="nodeProps">
+            <ControlNode v-bind="nodeProps" :reorder-enabled="true" :selected="selectedNode?.id === nodeProps.id" @reorder-drag-start="onNodeDragHandleStart($event, nodeProps.id)" />
+          </template>
+          <template #node-control-frame="nodeProps">
+            <ControlGroupNode v-bind="nodeProps" />
+          </template>
+          <template #node-start="nodeProps"><StartEndNode v-bind="nodeProps" type="start" /></template>
+          <template #node-end="nodeProps"><StartEndNode v-bind="nodeProps" type="end" /></template>
+          <template #node-setting-meta="nodeProps">
+            <div
+              class="flow-node-doc-meta"
+              :class="[
+                `flow-node-doc-meta--${nodeProps.data.kind}`,
+                { 'flow-node--selected': selectedNode?.id === nodeProps.id }
+              ]"
+            >
+              <div class="flow-node-doc-meta__body">
+                <span class="flow-node-doc-meta__label">{{ nodeProps.data.label }}</span>
+                <p
+                  v-if="nodeProps.data.text && nodeProps.data.text.trim()"
+                  class="flow-node-doc-meta__text"
+                >{{ nodeProps.data.text }}</p>
+                <p
+                  v-else
+                  class="flow-node-doc-meta__text flow-node-doc-meta__text--empty"
+                >{{ t('flowEditor.settingMeta.emptyHint') }}</p>
+              </div>
+              <!-- Source handle on the RIGHT — outgoing dashed edge
+                   docks here, then enters the Start node on its
+                   LEFT side. -->
+              <VueFlowHandle
+                type="source"
+                :position="HandlePosition.Right"
+                id="right"
+                style="opacity: 0; pointer-events: none;"
+              />
+            </div>
+          </template>
+          <template #node-comment="nodeProps">
+            <div class="flow-node-comment" :class="{ 'flow-node--selected': selectedNode?.id === nodeProps.id }">
+              <div
+                class="flow-drag-handle"
+                draggable="true"
+                @mousedown.stop
+                @dragstart.stop="onNodeDragHandleStart($event, nodeProps.id)"
+              >&#x2630;</div>
+              <span>{{ nodeProps.data.label }}</span>
+            </div>
+          </template>
+          <!-- Story FE-TPL — data-driven [Template] table. -->
+          <template #node-template-table="nodeProps">
+            <div class="flow-node-template" data-testid="flow-template-table">
+              <VueFlowHandle type="target" :position="HandlePosition.Top" />
+              <div class="flow-node-template__head">
+                <span class="flow-node-template__badge">[Template]</span>
+                <span class="flow-node-template__kw">{{ nodeProps.data.templateKeyword || '—' }}</span>
+              </div>
+              <table class="flow-node-template__table">
+                <tbody>
+                  <tr v-for="(row, r) in (nodeProps.data.templateRows as string[][])" :key="r">
+                    <td v-for="(cell, c) in row" :key="c">
+                      <input
+                        class="flow-node-template__cell"
+                        :value="cell"
+                        spellcheck="false"
+                        data-testid="flow-template-cell"
+                        @mousedown.stop
+                        @change="updateTemplateCell(nodeProps.data.sectionIndex, r, c, ($event.target as HTMLInputElement).value)"
+                      />
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        class="flow-node-template__rm"
+                        data-testid="flow-template-remove-row"
+                        :title="t('flowEditor.templateRemoveRow')"
+                        @mousedown.stop
+                        @click.stop="removeTemplateRow(nodeProps.data.sectionIndex, r)"
+                      >×</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="flow-node-template__actions">
+                <button
+                  type="button"
+                  data-testid="flow-template-add-row"
+                  @mousedown.stop
+                  @click.stop="addTemplateRow(nodeProps.data.sectionIndex)"
+                >+ {{ t('flowEditor.templateAddRow') }}</button>
+                <button
+                  type="button"
+                  data-testid="flow-template-add-col"
+                  @mousedown.stop
+                  @click.stop="addTemplateColumn(nodeProps.data.sectionIndex)"
+                >+ {{ t('flowEditor.templateAddColumn') }}</button>
+              </div>
+              <VueFlowHandle type="source" :position="HandlePosition.Bottom" />
+            </div>
+          </template>
+          <template #node-flow-control="nodeProps">
+            <div class="flow-node-flowctrl" :class="{ 'flow-node--selected': selectedNode?.id === nodeProps.id }">
+              <div
+                class="flow-drag-handle"
+                draggable="true"
+                @mousedown.stop
+                @dragstart.stop="onNodeDragHandleStart($event, nodeProps.id)"
+              >&#x2630;</div>
+              <span>{{ nodeProps.data.label }}</span>
+            </div>
+          </template>
+          <template #node-return="nodeProps">
+            <div class="flow-node-return-block" :class="{ 'flow-node--selected': selectedNode?.id === nodeProps.id }">
+              <div
+                class="flow-drag-handle"
+                draggable="true"
+                @mousedown.stop
+                @dragstart.stop="onNodeDragHandleStart($event, nodeProps.id)"
+              >&#x2630;</div>
+              <span class="flow-node-return-label">↵ RETURN</span>
+              <div
+                v-if="nodeProps.data.step?.args?.length"
+                class="flow-node-return-values"
+              >
+                <span
+                  v-for="(arg, i) in nodeProps.data.step.args"
+                  :key="i"
+                  class="flow-node-return-value"
+                >{{ arg }}</span>
+              </div>
+              <span v-else class="flow-node-return-empty">{{ t('flowEditor.returnNoValue') }}</span>
+            </div>
+          </template>
+          <template #node-drop-indicator>
+            <div class="flow-drop-indicator">
+              <div class="flow-drop-dot" />
+              <div class="flow-drop-line" />
+              <div class="flow-drop-dot" />
+            </div>
+          </template>
+
+          <Background />
+          <Controls />
+          <MiniMap />
+        </VueFlow>
+      </div>
+
+      <!-- Editable Node Detail Panel.
+           Drop handlers are mirrored from the canvas so a drag
+           that crosses the panel (it's `position: absolute` over
+           the canvas's top-right) doesn't get rejected with a
+           "no-drop" cursor. Without these, the user couldn't
+           drag a keyword from the palette into the canvas while
+           a step was selected — the panel intercepted the
+           dragover but had no preventDefault. -->
+      <!-- Section-level detail panel (Start node selected). Surfaces
+           the [Documentation] add affordance + a place to land the
+           rest of the [Tags] / [Setup] / [Teardown] etc. settings
+           in follow-up commits. -->
+      <div
+        v-if="selectedStart"
+        class="flow-detail-panel"
+        :class="{ 'flow-detail-panel--resizing': isResizingPanel }"
+        :style="{ width: detailPanelWidth + 'px' }"
+      >
+        <div
+          class="flow-detail-resizer"
+          role="separator"
+          aria-orientation="vertical"
+          :title="t('flowEditor.resizePanelHint')"
+          @pointerdown="onPanelResizeStart"
+        ></div>
+        <div class="flow-detail-header">
+          <h4>{{ activeSection === 'testcases' ? t('flowEditor.testCaseSettings') : t('flowEditor.keywordSettings') }}</h4>
+        </div>
+        <div class="flow-detail-row flow-settings-add-row">
+          <!-- One "+ [X]" button per kind that has no value yet. The
+               existing kinds are already represented by side-note
+               nodes, so showing "+ [X]" only for the missing ones
+               keeps the panel clutter-free. The whole-row hint
+               appears once every kind is filled in. -->
+          <template v-for="kind in sectionKinds" :key="kind">
+            <button
+              v-if="canAddSetting(kind)"
+              type="button"
+              class="flow-btn-add"
+              :title="t(`flowEditor.settingMeta.${kind}.addTitle`)"
+              :data-testid="`flow-add-${kind}`"
+              @click="addSetting(kind)"
+            >+ {{ KIND_LABELS[kind] }}</button>
+          </template>
+          <p
+            v-if="sectionKinds.every((k) => !canAddSetting(k))"
+            class="flow-detail-hint"
+          >{{ t('flowEditor.settingMeta.allPresent') }}</p>
+        </div>
+      </div>
+
+      <div
+        v-else-if="selectedSettingMeta"
+        class="flow-detail-panel"
+        :class="{ 'flow-detail-panel--resizing': isResizingPanel }"
+        :style="{ width: detailPanelWidth + 'px' }"
+      >
+        <div
+          class="flow-detail-resizer"
+          role="separator"
+          aria-orientation="vertical"
+          :title="t('flowEditor.resizePanelHint')"
+          @pointerdown="onPanelResizeStart"
+        ></div>
+        <div class="flow-detail-header">
+          <h4>{{ KIND_LABELS[selectedSettingMeta.kind] }}</h4>
+          <div class="flow-detail-actions">
+            <button
+              class="flow-action-btn flow-action-delete"
+              @click="deleteSettingMeta"
+              :title="t(`flowEditor.settingMeta.${selectedSettingMeta.kind}.removeTitle`)"
+            >&times;</button>
+          </div>
+        </div>
+        <div class="flow-detail-row">
+          <label>{{ t(`flowEditor.settingMeta.${selectedSettingMeta.kind}.label`) }}</label>
+          <textarea
+            v-if="selectedSettingMeta.kind === 'documentation'"
+            v-model="settingDraft"
+            class="flow-input flow-textarea"
+            rows="8"
+            :placeholder="t('flowEditor.settingMeta.documentation.placeholder')"
+            @blur="commitSettingDraft"
+          ></textarea>
+          <input
+            v-else
+            v-model="settingDraft"
+            type="text"
+            class="flow-input"
+            :placeholder="t(`flowEditor.settingMeta.${selectedSettingMeta.kind}.placeholder`)"
+            @blur="commitSettingDraft"
+          />
+        </div>
+        <p class="flow-detail-hint">{{ t(`flowEditor.settingMeta.${selectedSettingMeta.kind}.hint`) }}</p>
+      </div>
+
+      <div
+        v-else-if="selectedNodeData"
+        class="flow-detail-panel"
+        :class="{ 'flow-detail-panel--resizing': isResizingPanel }"
+        :style="{ width: detailPanelWidth + 'px' }"
+        @drop.stop="onCanvasDrop"
+        @dragover.stop.prevent="onCanvasDragOver"
+        @dragleave.stop="onCanvasDragLeave"
+      >
+        <div
+          class="flow-detail-resizer"
+          role="separator"
+          aria-orientation="vertical"
+          :title="t('flowEditor.resizePanelHint')"
+          @pointerdown="onPanelResizeStart"
+        ></div>
+        <div class="flow-detail-header">
+          <h4>{{ selectedNodeData.stepType.toUpperCase().replace('_', ' ') }}</h4>
+          <div class="flow-detail-actions">
+            <button class="flow-action-btn" @click="moveStepUp" title="Move up">&#x2191;</button>
+            <button class="flow-action-btn" @click="moveStepDown" title="Move down">&#x2193;</button>
+            <!-- Story EDITOR-7: keyword documentation popup -->
+            <button
+              v-if="canShowDoc"
+              class="flow-action-btn flow-action-info"
+              :title="t('flowEditor.docModal.button')"
+              data-testid="kw-doc-info-btn"
+              @click="openDocModal"
+            >&#9432;</button>
+            <button class="flow-action-btn flow-action-delete" @click="deleteStep" title="Delete">&times;</button>
+          </div>
+        </div>
+
+        <!-- Story DEBUG-3: "Run up to here" debug action.
+             Standalone row (not inside the icon-action strip) so the
+             button can carry a localized label, since debug-launch is
+             a distinct affordance from move/delete/doc. -->
+        <div v-if="canDebugSelectedStep" class="flow-debug-action-row">
+          <button
+            class="flow-debug-step-btn"
+            :title="t('flowEditor.debug.btnTitle')"
+            data-testid="flow-debug-step-btn"
+            @click="onDebugStepClick"
+          >
+            <span aria-hidden="true">&#9654;</span>
+            {{ t('flowEditor.debug.btnLabel') }}
+          </button>
+          <p v-if="debugError" class="flow-debug-action-error" role="alert">
+            {{ debugError }}
+          </p>
+        </div>
+
+        <!-- Keyword name (Story EDITOR-4: autocompleted from useKeywordSignatures) -->
+        <div v-if="['keyword', 'assignment'].includes(selectedNodeData.stepType)" class="flow-detail-row">
+          <label>{{ t('flowEditor.keyword') }}</label>
+          <KeywordAutocompleteInput
+            :value="selectedNodeData.step.keyword"
+            @update:value="onKeywordValueChange"
+            @select="onStepFieldChange"
+          />
+        </div>
+
+        <!-- Story HEAL-1: Self-Healing per-step toggle. Only rendered
+             when the keyword is one of the 13 supported names (bare or
+             already heal'd). -->
+        <div
+          v-if="selectedStepHealMode !== 'hidden'"
+          class="flow-detail-row flow-detail-row--heal"
+        >
+          <label :for="'heal-toggle-' + selectedNode?.id">
+            {{ t('flowEditor.heal.toggleLabel') }}
+          </label>
+          <div class="flow-heal-toggle">
+            <input
+              :id="'heal-toggle-' + selectedNode?.id"
+              type="checkbox"
+              :checked="selectedStepHealMode === 'on'"
+              data-testid="flow-step-heal-toggle"
+              @change="onStepHealToggle(($event.target as HTMLInputElement).checked)"
+            />
+            <span class="flow-heal-toggle__hint">
+              {{ t('flowEditor.heal.toggleHint') }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Arguments -->
+        <div v-if="['keyword', 'assignment'].includes(selectedNodeData.stepType)" class="flow-detail-row">
+          <label>{{ t('flowEditor.arguments') }}</label>
+          <div v-for="(arg, i) in selectedNodeData.step.args" :key="i" class="flow-arg-row">
+            <!-- Story EDITOR-2: per-arg name label inline with the input,
+                 matches the row layout used by condition / loopVar / etc. -->
+            <span
+              class="flow-arg-name-inline"
+              :title="selectedNodeData.argSpecs?.[i]?.type ?? undefined"
+            >{{ argLabelAt(i) }}:</span>
+            <!-- Story EDITOR-3: friendly type chip (icon + localised label),
+                 raw type in tooltip. Hidden whenever the SelectorPicker
+                 actually replaces the input for this slot, AND hidden
+                 (Story EDITOR-10) when the type bucket is the generic
+                 "unknown" — that chip shows "? Value" which is noise,
+                 not information. The parameter-name label still carries
+                 the title-attribute tooltip with the raw type if any. -->
+            <span
+              v-if="!(i === 0 && selectorPickerVisible && selectedNodeData.recording)
+                    && argTypeAt(i).labelKey !== 'flowEditor.argTypes.unknown'"
+              class="flow-arg-type-chip"
+              :title="argTooltipAt(i)"
+              data-testid="arg-type-chip"
+            >
+              <span class="flow-arg-type-icon">{{ argTypeAt(i).icon }}</span>
+              <span class="flow-arg-type-label">{{ t(argTypeAt(i).labelKey) }}</span>
+              <span v-if="argTypeAt(i).optional" class="flow-arg-type-opt">?</span>
+            </span>
+            <!-- Story EDITOR-1: SelectorPicker for args[0] when we have recorded candidates -->
+            <template v-if="i === 0 && selectorPickerVisible && selectedNodeData.recording">
+              <div class="flow-selector-picker-wrap">
+                <SelectorPicker
+                  :command="selectedNodeData.recording"
+                  @update:active-index="onSelectorPickerSwap"
+                  @update:candidate="onSelectorPickerEdit"
+                  @add:candidate="onSelectorPickerAdd"
+                />
+                <span v-if="selectorIsCustom" class="flow-selector-custom-hint">
+                  {{ t('flowEditor.selector.customValueHint') }}
+                </span>
+              </div>
+            </template>
+            <!-- Story EDITOR-3: typed input control by friendlyType().control,
+                 with `effectiveControl(i)` falling back to `text` for RF
+                 variable refs to preserve `${VAR}` round-tripping. -->
+            <template v-else>
+              <input
+                v-if="effectiveControl(i) === 'checkbox'"
+                type="checkbox"
+                class="flow-input-checkbox"
+                :checked="isBoolChecked(i)"
+                @change="onBoolToggle(i, $event)"
+                :data-testid="`arg-bool-${i}`"
+              />
+              <select
+                v-else-if="effectiveControl(i) === 'select'"
+                v-model="selectedNodeData.step.args[i]"
+                class="flow-input flow-input-sm"
+                :data-testid="`arg-select-${i}`"
+                @change="onStepFieldChange"
+              >
+                <!-- Pre-existing custom value the user typed before
+                     EDITOR-3 landed (or any value not in the choice
+                     list). Render it as an option so it stays visible
+                     and isn't silently overwritten on next pick. -->
+                <option
+                  v-if="selectedNodeData.step.args[i] && !(argTypeAt(i).choices ?? []).includes(selectedNodeData.step.args[i])"
+                  :value="selectedNodeData.step.args[i]"
+                >{{ selectedNodeData.step.args[i] }} ({{ t('flowEditor.argTypes.customValue') }})</option>
+                <option value="" disabled hidden>{{ argPlaceholderAt(i) }}</option>
+                <option
+                  v-for="choice in (argTypeAt(i).choices ?? [])"
+                  :key="choice"
+                  :value="choice"
+                >{{ choice }}</option>
+              </select>
+              <input
+                v-else-if="effectiveControl(i) === 'integer' || effectiveControl(i) === 'number'"
+                v-model="selectedNodeData.step.args[i]"
+                type="number"
+                :step="effectiveControl(i) === 'integer' ? '1' : 'any'"
+                inputmode="decimal"
+                class="flow-input flow-input-sm"
+                :placeholder="argPlaceholderAt(i)"
+                @change="onStepFieldChange"
+              />
+              <input
+                v-else-if="effectiveControl(i) === 'duration'"
+                v-model="selectedNodeData.step.args[i]"
+                class="flow-input flow-input-sm"
+                :placeholder="argPlaceholderAt(i) || t('flowEditor.argTypes.durationHint')"
+                :title="t('flowEditor.argTypes.durationHint')"
+                @change="onStepFieldChange"
+              />
+              <input
+                v-else
+                v-model="selectedNodeData.step.args[i]"
+                class="flow-input flow-input-sm"
+                :placeholder="argPlaceholderAt(i)"
+                @change="onStepFieldChange"
+              />
+              <!-- Story EDITOR-VAR-1 — escape hatch from the typed
+                   control to a free-text input so the user can enter
+                   a Robot Framework variable reference (`${HEADLESS}`)
+                   on a slot whose underlying type is bool/select/number.
+                   Hidden when the underlying type is already plain text
+                   (nothing to toggle to). The button text flips when
+                   the override is active so the user can switch back. -->
+              <button
+                v-if="argTypeAt(i).control !== 'text'"
+                type="button"
+                class="flow-input-toggle"
+                :title="isTextModeOverridden(i)
+                  ? t('flowEditor.argTypes.toggleBackToTyped')
+                  : t('flowEditor.argTypes.toggleToText')"
+                :data-testid="`arg-text-toggle-${i}`"
+                @click="toggleTextMode(i)"
+              >{{ isTextModeOverridden(i) ? '⌨' : '{}' }}</button>
+            </template>
+            <button class="flow-btn-remove" @click="removeArg(i)">&times;</button>
+          </div>
+          <!-- Story EDITOR-9: "+ Add argument" → small picker of unused
+               named parameters; "Custom value" appends an empty positional
+               slot for keywords with no signature.
+               The popover is Teleported to <body> with computed fixed
+               positioning so the detail panel's `overflow-y: auto` can't
+               clip it (it would otherwise force the user to scroll
+               inside the panel just to read the options). -->
+          <div ref="addArgTriggerRef" class="flow-add-arg-wrap">
+            <button class="flow-btn-add" type="button" @click="toggleAddArgPicker">
+              + {{ t('flowEditor.addArg') }}
+              <span v-if="addArgOptions.length > 0" class="flow-add-arg-caret">▾</span>
+            </button>
+            <Teleport to="body">
+            <div
+              v-if="addArgPickerOpen"
+              ref="addArgPopoverRef"
+              class="flow-add-arg-popover"
+              role="listbox"
+              data-testid="add-arg-popover"
+              :style="addArgPickerStyle"
+            >
+              <div v-if="addArgOptions.length === 0" class="flow-add-arg-empty">
+                {{ t('flowEditor.addArgPicker.noUnused') }}
+              </div>
+              <button
+                v-for="opt in addArgOptions"
+                :key="opt.name"
+                type="button"
+                class="flow-add-arg-option"
+                :data-testid="`add-arg-option-${opt.name}`"
+                @click="pickAddArg(opt)"
+              >
+                <span class="flow-add-arg-option-name">{{ opt.name }}</span>
+                <span v-if="opt.defaultValue !== null" class="flow-add-arg-option-default">
+                  = {{ opt.defaultValue }}
+                </span>
+                <span v-if="!opt.isNextPositional" class="flow-add-arg-option-named">
+                  {{ t('flowEditor.addArgPicker.namedHint') }}
+                </span>
+              </button>
+              <!-- Story EDITOR-9b — free-form custom value: type a bare value
+                   or `name=value`; pushed verbatim (no "next parameter" guess). -->
+              <div class="flow-add-arg-custom" data-testid="add-arg-custom">
+                <span class="flow-add-arg-custom-label">{{ t('flowEditor.addArgPicker.customLabel') }}</span>
+                <div class="flow-add-arg-custom-row">
+                  <input
+                    v-model="customArgValue"
+                    type="text"
+                    class="flow-add-arg-custom-input"
+                    :placeholder="t('flowEditor.addArgPicker.customPlaceholder')"
+                    autocomplete="off"
+                    spellcheck="false"
+                    data-testid="add-arg-custom-input"
+                    @keydown.enter.prevent="confirmCustomArg"
+                    @keydown.stop
+                  />
+                  <button
+                    type="button"
+                    class="flow-add-arg-custom-add"
+                    :disabled="!customArgValue.trim()"
+                    data-testid="add-arg-custom-add"
+                    @click="confirmCustomArg"
+                  >{{ t('flowEditor.addArgPicker.customAdd') }}</button>
+                </div>
+              </div>
+            </div>
+            </Teleport>
+          </div>
+        </div>
+
+        <!-- Return variables (any keyword call can be promoted to an
+             assignment by adding a return-variable here). -->
+        <div
+          v-if="['keyword', 'assignment'].includes(selectedNodeData.stepType)"
+          class="flow-detail-row"
+        >
+          <label>{{ t('flowEditor.returnVars') }}</label>
+          <div v-for="(rv, i) in selectedNodeData.step.returnVars" :key="i" class="flow-arg-row">
+            <input
+              v-model="selectedNodeData.step.returnVars[i]"
+              class="flow-input flow-input-sm"
+              @change="onStepFieldChange"
+            />
+            <button class="flow-btn-remove" @click="removeReturnVar(i)">&times;</button>
+          </div>
+          <button class="flow-btn-add" @click="addReturnVar">+ {{ t('flowEditor.addVar') }}</button>
+        </div>
+
+        <!-- RETURN values — the keyword-definition payload that flows
+             out of `*** Keywords ***`. Stored on `step.args` (each cell
+             after `RETURN  ` is one return value). Uses the same row
+             layout the keyword-arguments block uses, minus the type-
+             chip/SelectorPicker complexity since RETURN has no
+             signature to consult. The user can capture each value
+             into a calling-side variable via the call-site keyword's
+             "Return Variables" block above. -->
+        <div v-if="selectedNodeData.stepType === 'return'" class="flow-detail-row">
+          <label>{{ t('flowEditor.returnValues') }}</label>
+          <div v-for="(_, i) in selectedNodeData.step.args" :key="i" class="flow-arg-row">
+            <input
+              v-model="selectedNodeData.step.args[i]"
+              class="flow-input flow-input-sm"
+              :placeholder="t('flowEditor.returnValuePlaceholder')"
+              :data-testid="`return-value-${i}`"
+              @change="onStepFieldChange"
+            />
+            <button class="flow-btn-remove" @click="removeReturnValue(i)">&times;</button>
+          </div>
+          <button
+            type="button"
+            class="flow-btn-add"
+            data-testid="add-return-value"
+            @click="addReturnValue"
+          >+ {{ t('flowEditor.addValue') }}</button>
+        </div>
+
+        <!-- Condition (IF/ELSE IF/WHILE) -->
+        <div v-if="['if', 'else_if', 'while'].includes(selectedNodeData.stepType)" class="flow-detail-row">
+          <label>{{ t('flowEditor.condition') }}</label>
+          <input
+            v-model="selectedNodeData.step.condition"
+            class="flow-input"
+            @change="onStepFieldChange"
+          />
+        </div>
+
+        <!-- FOR loop -->
+        <div v-if="selectedNodeData.stepType === 'for'" class="flow-detail-row">
+          <label>{{ t('flowEditor.loopVar') }}</label>
+          <input v-model="selectedNodeData.step.loopVar" class="flow-input" @change="onStepFieldChange" />
+        </div>
+        <div v-if="selectedNodeData.stepType === 'for'" class="flow-detail-row">
+          <label>{{ t('flowEditor.loopFlavor') }}</label>
+          <select v-model="selectedNodeData.step.loopFlavor" class="flow-input" @change="onStepFieldChange">
+            <option>IN</option>
+            <option>IN RANGE</option>
+            <option>IN ENUMERATE</option>
+            <option>IN ZIP</option>
+          </select>
+        </div>
+        <div v-if="selectedNodeData.stepType === 'for'" class="flow-detail-row">
+          <label>{{ t('flowEditor.loopValues') }}</label>
+          <div v-for="(val, i) in selectedNodeData.step.loopValues" :key="i" class="flow-arg-row">
+            <input v-model="selectedNodeData.step.loopValues[i]" class="flow-input flow-input-sm" @change="onStepFieldChange" />
+            <button class="flow-btn-remove" @click="removeLoopValue(i)">&times;</button>
+          </div>
+          <button class="flow-btn-add" @click="addLoopValue">+ {{ t('flowEditor.addValue') }}</button>
+        </div>
+
+        <!-- EXCEPT -->
+        <div v-if="selectedNodeData.stepType === 'except'" class="flow-detail-row">
+          <label>{{ t('flowEditor.exceptPattern') }}</label>
+          <input v-model="selectedNodeData.step.exceptPattern" class="flow-input" @change="onStepFieldChange" />
+        </div>
+        <div v-if="selectedNodeData.stepType === 'except'" class="flow-detail-row">
+          <label>{{ t('flowEditor.exceptVar') }}</label>
+          <input v-model="selectedNodeData.step.exceptVar" class="flow-input" placeholder="AS ${error}" @change="onStepFieldChange" />
+        </div>
+
+        <!-- VAR -->
+        <div v-if="selectedNodeData.stepType === 'var'" class="flow-detail-row">
+          <label>{{ t('flowEditor.varName') }}</label>
+          <input v-model="selectedNodeData.step.keyword" class="flow-input" @change="onStepFieldChange" />
+        </div>
+        <div v-if="selectedNodeData.stepType === 'var'" class="flow-detail-row">
+          <label>{{ t('flowEditor.varScope') }}</label>
+          <select v-model="selectedNodeData.step.varScope" class="flow-input" @change="onStepFieldChange">
+            <option value="">default</option>
+            <option>LOCAL</option><option>TEST</option><option>TASK</option>
+            <option>SUITE</option><option>GLOBAL</option>
+          </select>
+        </div>
+
+        <!-- Comment -->
+        <div v-if="selectedNodeData.stepType === 'comment'" class="flow-detail-row">
+          <label>{{ t('flowEditor.comment') }}</label>
+          <input v-model="selectedNodeData.step.comment" class="flow-input" @change="onStepFieldChange" />
+        </div>
+      </div>
+    </div>
+    <!-- Story EDITOR-7: keyword documentation modal (teleported to body by BaseModal) -->
+    <KeywordDocModal
+      v-model="docModalOpen"
+      :keyword="docModalKeyword"
+      :scope-id="scope.scopeId ?? undefined"
+    />
+
+    <!-- Story DEBUG-3: dirty-buffer warning. Inline modal — when the
+         user clicks debug on an unsaved buffer, surface this so they
+         save first and re-click. Doesn't auto-save (debug needs the
+         disk file's line numbers; saving is a deliberate user action). -->
+    <BaseModal
+      v-model="debugUnsavedHintVisible"
+      :title="t('flowEditor.debug.unsavedHintTitle')"
+      size="sm"
+      data-testid="flow-debug-unsaved-modal"
+    >
+      <p>{{ t('flowEditor.debug.unsavedHint') }}</p>
+      <template #footer>
+        <BaseButton variant="ghost" @click="debugUnsavedHintVisible = false">
+          {{ t('editor.common.close') }}
+        </BaseButton>
+      </template>
+    </BaseModal>
+
+    <!-- Story DEBUG-3 AC6: confirm modal when the user clicks a
+         different step while a session is paused at another line. -->
+    <BaseModal
+      :model-value="debugConfirmRestart !== null"
+      :title="t('flowEditor.debug.confirmReplaceTitle')"
+      size="sm"
+      data-testid="flow-debug-confirm-modal"
+      @update:model-value="(v) => { if (!v) debugConfirmRestart = null }"
+    >
+      <p v-if="debugConfirmRestart">
+        {{ t('flowEditor.debug.confirmReplace', {
+          lineFrom: debugConfirmRestart.fromLine,
+          lineTo: debugConfirmRestart.toLine,
+        }) }}
+      </p>
+      <template #footer>
+        <BaseButton variant="ghost" @click="debugConfirmRestart = null">
+          {{ t('editor.common.cancel') }}
+        </BaseButton>
+        <BaseButton
+          variant="primary"
+          data-testid="flow-debug-confirm-restart-btn"
+          @click="onDebugConfirmRestart"
+        >
+          {{ t('flowEditor.debug.confirmReplaceConfirm') }}
+        </BaseButton>
+      </template>
+    </BaseModal>
+
+    <!-- Story DEBUG-3 AC5: DebugPanel rendered as modal overlay over
+         the canvas (via fixed-position teleport). `Stop` returns the
+         user to the editor with the canvas state intact. -->
+    <Teleport to="body">
+      <div
+        v-if="debugOverlayOpen"
+        class="flow-debug-overlay"
+        data-testid="flow-debug-overlay"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div class="flow-debug-overlay__inner">
+          <DebugPanel @closed="onDebugOverlayClose" />
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Story DEBUG-4: RobotCode prereq install dialog. -->
+    <DebugPrereqDialog
+      :open="debug.prereqMissing !== null"
+      :package-name="debug.prereqMissing?.packageName ?? 'robotcode'"
+      :installing="debug.installing"
+      :install-error="debug.installError"
+      @install="onDebugPrereqInstall"
+      @cancel="onDebugPrereqCancel"
+    />
+  </div>
+</template>
+
+<style scoped>
+.flow-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 500px;
+}
+
+/* Section bar: Test Cases | Keywords + item tabs */
+.flow-section-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  /* Section tabs + item tabs hug the left; libraries pushes itself
+     to the right edge via `margin-left: auto`. Don't use
+     justify-content: space-between — that would space all three
+     groups evenly and put the names in the middle of the bar. */
+  gap: 8px;
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+  background: var(--color-bg, #F4F7FA);
+  padding: 6px 12px 0;
+}
+.flow-section-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.flow-libs-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  margin-left: auto;
+  padding: 6px 14px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 4px;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+.flow-libs-toggle:hover {
+  border-color: var(--color-primary, #2D63B0);
+  color: var(--color-primary, #2D63B0);
+}
+.flow-libs-toggle.active {
+  background: var(--color-primary, #2D63B0);
+  color: #fff;
+  border-color: var(--color-primary, #2D63B0);
+}
+
+/* Library management panel — opens below the section bar. */
+.flow-libraries {
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+  background: #fff;
+  padding: 10px 12px;
+}
+.flow-libraries__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+/* D1 — labelled Resources / Libraries groups in the imports panel */
+.flow-libraries__group {
+  margin-bottom: 6px;
+}
+.flow-libraries__group-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted, #5A6380);
+  margin-bottom: 4px;
+}
+.flow-libraries__empty {
+  color: var(--color-text-muted, #5A6380);
+  font-size: 12px;
+  font-style: italic;
+}
+.flow-libraries__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px 2px 0;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 4px;
+  background: rgba(45, 99, 176, 0.08);
+  font-size: 12px;
+}
+.flow-libraries__chip--resource {
+  background: rgba(212, 136, 62, 0.10);
+  border-color: var(--color-accent, #D4883E);
+}
+.flow-libraries__chip-kind {
+  display: inline-block;
+  width: 18px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-primary, #2D63B0);
+  background: rgba(45, 99, 176, 0.15);
+  border-right: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 4px 0 0 4px;
+  padding: 2px 0;
+}
+.flow-libraries__chip--resource .flow-libraries__chip-kind {
+  color: var(--color-accent, #D4883E);
+  background: rgba(212, 136, 62, 0.18);
+}
+.flow-libraries__chip-name {
+  padding: 0 4px;
+  font-family: var(--font-mono, monospace);
+}
+.flow-libraries__chip-remove {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted, #5A6380);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.flow-libraries__chip-remove:hover {
+  color: #c0392b;
+}
+.flow-libraries__input-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.flow-libraries__input {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: var(--font-mono, monospace);
+}
+.flow-libraries__input:focus {
+  outline: none;
+  border-color: var(--color-primary, #2D63B0);
+}
+.flow-libraries__add {
+  padding: 4px 12px;
+  border: 1px solid var(--color-primary, #2D63B0);
+  border-radius: 4px;
+  background: var(--color-primary, #2D63B0);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.flow-libraries__add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.flow-libraries__suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.flow-libraries__suggestion {
+  padding: 2px 8px;
+  border: 1px dashed var(--color-border, #e2e8f0);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+.flow-libraries__suggestion:hover {
+  border-color: var(--color-primary, #2D63B0);
+  color: var(--color-primary, #2D63B0);
+}
+/* Variables + suite-settings rows (reuse the .flow-libraries container). */
+.flow-vars__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.flow-vars__row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.flow-vars__name,
+.flow-vars__value {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: var(--font-mono, monospace);
+}
+.flow-vars__name { width: 200px; flex: 0 0 auto; }
+.flow-vars__value { flex: 1 1 auto; min-width: 0; }
+.flow-vars__name--readonly {
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-bg-subtle, #f1f5f9);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+.flow-vars__envrefs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--color-border, #e2e8f0);
+}
+.flow-vars__envref--missing {
+  border-color: var(--color-accent, #D4883E);
+  color: var(--color-accent, #D4883E);
+}
+.flow-vars__envrefs-title {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+/* Story FE-TPL — data-driven template table node. */
+.flow-node-template {
+  background: #fff;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-width: 220px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.flow-node-template__head {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
+}
+.flow-node-template__badge {
+  font-size: 10px; font-weight: 600; color: #fff;
+  background: var(--color-primary, #2D63B0);
+  border-radius: 6px; padding: 0 6px; line-height: 16px;
+}
+.flow-node-template__kw { font-family: var(--font-mono, monospace); font-size: 12px; }
+.flow-node-template__table { border-collapse: collapse; }
+.flow-node-template__cell {
+  width: 84px; padding: 2px 4px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 3px; font-size: 11px; font-family: var(--font-mono, monospace);
+}
+.flow-node-template__rm,
+.flow-node-template__actions button {
+  border: 1px solid var(--color-border, #e2e8f0);
+  background: transparent; border-radius: 4px;
+  font-size: 11px; cursor: pointer; color: var(--color-text-muted);
+}
+.flow-node-template__rm { padding: 0 6px; }
+.flow-node-template__actions { display: flex; gap: 6px; margin-top: 6px; }
+.flow-node-template__actions button { padding: 2px 8px; }
+.flow-node-template__actions button:hover {
+  border-color: var(--color-primary, #2D63B0); color: var(--color-primary, #2D63B0);
+}
+.flow-section-tab {
+  padding: 7px 18px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: #fff;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.flow-section-tab.active {
+  background: var(--color-primary, #2D63B0);
+  color: #fff;
+  border-color: var(--color-primary, #2D63B0);
+}
+.flow-item-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+.flow-item-tab {
+  padding: 5px 14px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 4px;
+  background: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.flow-item-tab.active {
+  background: var(--color-navy, #1A2D50);
+  color: #fff;
+  border-color: var(--color-navy, #1A2D50);
+}
+.flow-item-tab--add {
+  border-style: dashed;
+  color: var(--color-text-muted, #5A6380);
+  font-weight: 500;
+}
+.flow-item-tab--add:hover {
+  border-color: var(--color-primary, #2D63B0);
+  color: var(--color-primary, #2D63B0);
+}
+
+.flow-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 1rem;
+  color: var(--color-text-muted, #5A6380);
+}
+.flow-empty__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.flow-empty__cta {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--color-primary, #2D63B0);
+  border-radius: 4px;
+  background: var(--color-primary, #2D63B0);
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.flow-empty__cta:hover {
+  filter: brightness(1.05);
+}
+.flow-empty__cta--secondary {
+  background: #fff;
+  color: var(--color-primary, #2D63B0);
+}
+
+.flow-canvas-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  overflow: hidden;
+}
+.flow-canvas {
+  flex: 1;
+  position: relative;
+}
+
+/* Editable detail panel — pinned to the right of the canvas, full
+   height minus a 12px gutter top/bottom so the user can see the
+   full form without an inner scrollbar that competed with the
+   browser scroll. The previous max-height: 80% capped it at ~4/5
+   of the canvas which forced internal scrolling on tall forms. */
+.flow-detail-panel {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  bottom: 12px;
+  /* width is set inline via :style — defaults to 300px from
+     `detailPanelWidth` and is updated by the left-edge resizer. */
+  background: #fff;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  overflow-y: auto;
+}
+/* Disable the smooth pointer-events / cursor flicker while the
+   user is actively dragging the resizer. */
+.flow-detail-panel--resizing,
+.flow-detail-panel--resizing * {
+  user-select: none;
+  cursor: ew-resize !important;
+}
+.flow-detail-resizer {
+  position: absolute;
+  left: -3px;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+  z-index: 11;
+  background: transparent;
+  /* Larger invisible hit target than the visible accent below.
+     The accent itself is rendered via ::after so the user has a
+     visual cue of where the resize edge lives. */
+}
+.flow-detail-resizer::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--color-border, #e2e8f0);
+  border-radius: 1px;
+  transition: background 0.15s;
+}
+.flow-detail-resizer:hover::after,
+.flow-detail-panel--resizing .flow-detail-resizer::after {
+  background: var(--color-primary, #2D63B0);
+}
+.flow-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.flow-detail-panel h4 {
+  margin: 0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-primary, #2D63B0);
+}
+.flow-detail-actions {
+  display: flex;
+  gap: 2px;
+}
+.flow-action-btn {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.flow-action-btn:hover {
+  background: var(--color-bg, #F4F7FA);
+}
+.flow-action-delete {
+  color: #c33;
+  border-color: #fcc;
+}
+.flow-action-delete:hover {
+  background: #fee;
+}
+.flow-action-info {
+  color: var(--color-primary, #2D63B0);
+  border-color: rgba(45, 99, 176, 0.4);
+  font-style: italic;
+  font-weight: 700;
+}
+.flow-action-info:hover {
+  background: rgba(45, 99, 176, 0.08);
+}
+.flow-detail-row {
+  margin-bottom: 10px;
+}
+.flow-detail-row label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-text-muted, #5A6380);
+  margin-bottom: 3px;
+}
+.flow-input {
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 5px;
+  font-size: 12px;
+  font-family: monospace;
+  outline: none;
+  box-sizing: border-box;
+}
+.flow-input:focus {
+  border-color: var(--color-primary, #2D63B0);
+}
+.flow-textarea {
+  font-family: var(--font-sans, sans-serif);
+  resize: vertical;
+  line-height: 1.45;
+}
+.flow-detail-hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--color-text-muted, #5A6380);
+  font-style: italic;
+}
+.flow-input-sm {
+  flex: 1;
+}
+.flow-arg-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+  align-items: center;
+}
+.flow-btn-remove {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: #fee;
+  color: #c33;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.flow-btn-add {
+  font-size: 11px;
+  color: var(--color-primary, #2D63B0);
+  background: none;
+  border: 1px dashed var(--color-primary, #2D63B0);
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+  margin-top: 2px;
+}
+.flow-arg-name-inline {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-muted, #5A6380);
+  cursor: default;
+  flex-shrink: 0;
+  min-width: 60px;
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.flow-arg-type-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 5px;
+  background: var(--color-bg, #F4F7FA);
+  border-radius: 9px;
+  font-size: 9px;
+  color: var(--color-text-muted, #5A6380);
+  flex-shrink: 0;
+  cursor: default;
+  user-select: none;
+}
+.flow-arg-type-icon {
+  color: var(--color-primary, #2D63B0);
+  font-weight: 700;
+  font-size: 9px;
+  font-family: var(--font-mono, monospace);
+}
+.flow-arg-type-label {
+  font-size: 9px;
+}
+.flow-arg-type-opt {
+  font-weight: 700;
+  color: var(--color-accent, #D4883E);
+}
+.flow-input-checkbox {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--color-primary, #2D63B0);
+}
+/* Story EDITOR-VAR-1 — toggle between typed control and plain text.
+   Lets the user enter a Robot Framework variable reference on a slot
+   whose inferred type is bool / select / number. */
+.flow-input-toggle {
+  border: 1px solid var(--color-border, #e2e8f0);
+  background: #fff;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--color-text-muted, #5A6380);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.flow-input-toggle:hover {
+  background: rgba(45, 99, 176, 0.10);
+  color: var(--color-primary, #2D63B0);
+  border-color: var(--color-primary, #2D63B0);
+}
+/* Story EDITOR-9 — named-arg picker popover */
+.flow-add-arg-wrap {
+  position: relative;
+  display: inline-block;
+  margin-top: 2px;
+}
+.flow-add-arg-caret {
+  font-size: 10px;
+  margin-left: 2px;
+  opacity: 0.7;
+}
+.flow-add-arg-popover {
+  /* Teleported to <body> and pinned to the trigger via inline
+     `top` / `left` (set in the script). Positioned `fixed` so the
+     detail panel's `overflow-y: auto` can't clip it.
+     `min-width` is also set inline to mirror the trigger width. */
+  position: fixed;
+  max-width: 280px;
+  background: #fff;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
+  padding: 4px 0;
+  z-index: 1000;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.flow-add-arg-option {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-family: monospace;
+  color: var(--color-text, #1A2D50);
+  cursor: pointer;
+}
+.flow-add-arg-option:hover {
+  background: var(--color-bg, #F4F7FA);
+}
+.flow-add-arg-option-name {
+  flex: 0 0 auto;
+  font-weight: 600;
+}
+.flow-add-arg-option-default {
+  flex: 1;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: var(--color-text-muted, #5A6380);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.flow-add-arg-option-named {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-accent, #D4883E);
+  font-family: var(--font-sans, sans-serif);
+  flex-shrink: 0;
+}
+.flow-add-arg-option--custom {
+  border-top: 1px solid var(--color-border, #e2e8f0);
+  margin-top: 2px;
+  font-style: italic;
+  color: var(--color-text-muted, #5A6380);
+  font-family: var(--font-sans, sans-serif);
+  font-size: 11px;
+}
+/* Story EDITOR-9b — free-form custom-value input in the add-arg popover. */
+.flow-add-arg-custom {
+  border-top: 1px solid var(--color-border, #e2e8f0);
+  margin-top: 2px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.flow-add-arg-custom-label {
+  font-size: 10px;
+  color: var(--color-text-muted, #5A6380);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.flow-add-arg-custom-row { display: flex; gap: 6px; }
+.flow-add-arg-custom-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: var(--font-mono, monospace);
+}
+.flow-add-arg-custom-add {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  border: 1px solid var(--color-primary, #2D63B0);
+  border-radius: 4px;
+  background: var(--color-primary, #2D63B0);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+.flow-add-arg-custom-add:disabled { opacity: 0.5; cursor: not-allowed; }
+.flow-add-arg-empty {
+  padding: 6px 10px;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--color-text-muted, #5A6380);
+}
+.flow-selector-picker-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.flow-selector-custom-hint {
+  font-size: 10px;
+  color: var(--color-accent, #D4883E);
+  font-style: italic;
+}
+
+/* Comment/flow-control inline nodes */
+.flow-node-comment {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #f0f0f0;
+  border: 1px dashed #ccc;
+  font-size: 12px;
+  color: #888;
+  font-style: italic;
+  max-width: 280px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.flow-node-flowctrl {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #FFF5F5;
+  border: 2px solid #E53E3E;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* `[Documentation]` side-note attached to a test case / keyword
+   header. Two oversized brackets bracket the doc body, framing it
+   visually as an annotation rather than a step. The connecting
+   edge from this node to the Start node is dashed (set in
+   flowConverter.ts) so the user reads it as "linked metadata".
+   Click to edit in the detail panel. */
+.flow-node-doc-meta {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  gap: 6px;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--color-text-muted, #5A6380) 6%, var(--color-bg-card, #fff));
+  border: 1px dashed var(--color-border, #e2e8f0);
+  border-radius: 6px;
+  font-size: 12px;
+  width: 240px;
+  /* Hard cap on rendered height so a long [Documentation] preview
+     can't grow into the [Tags] / [Setup] node stacked below it. The
+     stacking pitch in flowConverter.ts is 96px; this cap (76px) plus
+     border (2px) + a 18px breathing gap stays inside the pitch. The
+     full text remains readable in the detail panel after a click. */
+  max-height: 76px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.flow-node-doc-meta:hover {
+  border-color: var(--color-primary, #2D63B0);
+  background: color-mix(in srgb, var(--color-primary, #2D63B0) 6%, var(--color-bg-card, #fff));
+}
+.flow-node-doc-meta__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.flow-node-doc-meta__label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted, #5A6380);
+}
+.flow-node-doc-meta__text {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-text, #1A2D50);
+  font-style: italic;
+  /* Cap to 2 visible lines so a long doc doesn't dominate the
+     side margin AND can't push the node taller than the META_PITCH
+     stacking distance set in flowConverter.ts. The full text is
+     still readable in the detail panel after a click. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+/* Single-value kinds (Setup, Teardown, Timeout, Template,
+   Arguments, Tags) are short — render them on one line for a
+   compact look. Documentation keeps the 2-line clamp above. */
+.flow-node-doc-meta--setup .flow-node-doc-meta__text,
+.flow-node-doc-meta--teardown .flow-node-doc-meta__text,
+.flow-node-doc-meta--timeout .flow-node-doc-meta__text,
+.flow-node-doc-meta--template .flow-node-doc-meta__text,
+.flow-node-doc-meta--arguments .flow-node-doc-meta__text,
+.flow-node-doc-meta--tags .flow-node-doc-meta__text {
+  -webkit-line-clamp: 1;
+}
+/* Freshly-added side note (user clicked "+ [X]" but hasn't typed yet).
+   Light-italic placeholder so the empty state reads as "click to
+   edit" rather than as a broken render. */
+.flow-node-doc-meta__text--empty {
+  color: var(--color-text-muted, #5A6380);
+  opacity: 0.7;
+  font-style: italic;
+}
+.flow-node-doc-meta.flow-node--selected {
+  outline: 3px solid var(--color-primary, #2D63B0);
+  outline-offset: 2px;
+  border-color: var(--color-primary, #2D63B0);
+  background: color-mix(in srgb, var(--color-primary, #2D63B0) 10%, var(--color-bg-card, #fff));
+}
+
+/* RETURN node — distinct from BREAK / CONTINUE because it carries
+   payload (the keyword's return values) and reads as the public
+   "result" of a *** Keywords *** definition rather than a control-
+   flow break. Green-tinted background, leading ↵ glyph, each
+   return value rendered as its own value chip so the user can scan
+   them at a glance. */
+.flow-node-return-block {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #F0FDF4;
+  border: 2px solid #22C55E;
+  font-size: 13px;
+  min-width: 200px;
+  max-width: 420px;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+.flow-node-return-label {
+  font-weight: 700;
+  color: #166534;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 12px;
+}
+.flow-node-return-values {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.flow-node-return-value {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #fff;
+  border: 1px solid #BBF7D0;
+  border-radius: 4px;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  color: #166534;
+  word-break: break-word;
+}
+.flow-node-return-empty {
+  font-size: 11px;
+  color: #166534;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* Selected-node highlight — applied on the inline comment / flow-
+   control / return templates as well as bound through the `selected`
+   prop on KeywordNode / ControlNode (their scoped styles mirror
+   this rule). Thicker outline + slight primary-color tint so the
+   active node reads at a glance against the canvas. */
+.flow-node-comment.flow-node--selected,
+.flow-node-flowctrl.flow-node--selected,
+.flow-node-return-block.flow-node--selected {
+  outline: 3px solid var(--color-primary, #2D63B0);
+  outline-offset: 2px;
+  background: color-mix(in srgb, var(--color-primary, #2D63B0) 10%, var(--color-bg-card, #fff));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary, #2D63B0) 18%, transparent);
+}
+
+/* Drag handle on nodes */
+.flow-drag-handle {
+  cursor: grab;
+  color: var(--color-text-muted, #5A6380);
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0.4;
+  padding: 2px;
+  border-radius: 3px;
+  user-select: none;
+  flex-shrink: 0;
+}
+.flow-drag-handle:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.06);
+}
+.flow-drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Drop indicator */
+.flow-drop-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 280px;
+  pointer-events: none;
+}
+.flow-drop-line {
+  flex: 1;
+  height: 3px;
+  background: var(--color-primary, #2D63B0);
+  border-radius: 2px;
+}
+.flow-drop-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--color-primary, #2D63B0);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Story DEBUG-3 — Run-up-to-here action row + overlay. */
+.flow-debug-action-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0 4px 0;
+  border-top: 1px solid var(--color-border, #d6dfeb);
+  margin-top: 6px;
+}
+.flow-debug-step-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--color-primary, #2D63B0);
+  color: var(--color-on-dark, #ffffff);
+  border: 1px solid var(--color-primary, #2D63B0);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+}
+.flow-debug-step-btn:hover { filter: brightness(1.05); }
+.flow-debug-step-btn:focus-visible {
+  outline: 2px solid var(--color-primary, #2D63B0);
+  outline-offset: 2px;
+}
+.flow-debug-action-error {
+  font-size: 12px;
+  color: var(--color-error, #991b1b);
+  margin: 0;
+}
+
+.flow-debug-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  z-index: 1100;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 24px;
+}
+.flow-debug-overlay__inner {
+  width: min(1100px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  background: var(--color-bg, #ffffff);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  padding: 12px;
+}
+
+/* Story HEAL-1 — Self-Healing per-step toggle row. */
+.flow-detail-row--heal .flow-heal-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.flow-detail-row--heal .flow-heal-toggle input[type='checkbox'] {
+  margin: 2px 0 0 0;
+  cursor: pointer;
+}
+.flow-heal-toggle__hint {
+  font-size: 11px;
+  color: var(--color-text-muted, #5A6380);
+  line-height: 1.4;
+}
+</style>

@@ -1,0 +1,10 @@
+# 开发环境：默认激活。只影响日志与池大小，不放任何口令。
+logging:
+  level:
+    com.qa.autotest: DEBUG
+    org.springframework.jdbc.core: DEBUG
+
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 4

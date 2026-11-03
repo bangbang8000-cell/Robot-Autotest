@@ -1,0 +1,750 @@
+﻿/**
+ * 衍生自 viadee/roboscope v0.16.1（Apache-2.0）。
+ * Modified by Robot-Autotest（2026-11-02，EDT-02）。
+ * 修改内容：去除宿主 HTTP / 仓库耦合，改为委托注入的 EditorAdapter。
+ */
+/** Domain types matching backend schemas */
+
+export type Role = 'viewer' | 'runner' | 'editor' | 'admin'
+export type RunStatus = 'pending' | 'running' | 'passed' | 'failed' | 'error' | 'cancelled' | 'timeout'
+export type RunType = 'single' | 'folder' | 'batch' | 'scheduled'
+export type RunnerType = 'subprocess' | 'docker'
+
+export interface User {
+  id: number
+  email: string
+  username: string
+  role: Role
+  is_active: boolean
+  created_at: string
+  last_login_at: string | null
+  /** Phase 4 — optional because older endpoints (login, register) still return UserResponse without them. */
+  teams?: { id: number; name: string }[]
+  default_team_id?: number | null
+  effective_roles_by_repo?: Record<string, Role>
+  first_login_complete?: boolean
+  /** SECURITY-1 — set on the seed admin until they rotate the default password. */
+  password_change_required?: boolean
+}
+
+export interface TokenResponse {
+  access_token: string
+  refresh_token: string
+  token_type: string
+  expires_in: number
+}
+
+export interface Repository {
+  id: number
+  name: string
+  repo_type: 'git' | 'local'
+  git_url: string | null
+  default_branch: string
+  local_path: string
+  last_synced_at: string | null
+  auto_sync: boolean
+  sync_interval_minutes: number
+  pre_run_sync: boolean
+  sync_status: string | null
+  sync_error: string | null
+  created_by: number
+  environment_id: number | null
+  created_at: string
+  updated_at: string
+}
+
+export interface Branch {
+  name: string
+  is_active: boolean
+}
+
+export interface ProjectMember {
+  id: number
+  user_id: number
+  repository_id: number
+  role: 'viewer' | 'runner' | 'editor'
+  username: string
+  email: string
+  created_at: string
+}
+
+export interface TreeNode {
+  name: string
+  path: string
+  type: 'file' | 'directory'
+  extension: string | null
+  children: TreeNode[] | null
+  test_count: number
+}
+
+export interface FileContent {
+  path: string
+  name: string
+  content: string
+  extension: string | null
+  line_count: number
+  is_binary?: boolean
+}
+
+export interface TestCaseInfo {
+  name: string
+  file_path: string
+  suite_name: string
+  tags: string[]
+  documentation: string
+  line_number: number
+}
+
+export interface SearchResult {
+  type: 'testcase' | 'keyword' | 'file'
+  name: string
+  file_path: string
+  line_number: number
+  context: string
+}
+
+export interface ExecutionRun {
+  id: number
+  repository_id: number
+  environment_id: number | null
+  run_type: RunType
+  runner_type: RunnerType
+  status: RunStatus
+  target_path: string
+  branch: string
+  tags_include: string | null
+  tags_exclude: string | null
+  parallel: boolean
+  retry_count: number
+  max_retries: number
+  timeout_seconds: number
+  task_id: string | null
+  started_at: string | null
+  finished_at: string | null
+  duration_seconds: number | null
+  triggered_by: number
+  error_message: string | null
+  created_at: string
+}
+
+export interface RunListResponse {
+  items: ExecutionRun[]
+  total: number
+  page: number
+  page_size: number
+}
+
+export interface Schedule {
+  id: number
+  name: string
+  cron_expression: string
+  repository_id: number
+  environment_id: number | null
+  target_path: string
+  branch: string
+  runner_type: RunnerType
+  tags_include: string | null
+  tags_exclude: string | null
+  is_active: boolean
+  last_run_at: string | null
+  next_run_at: string | null
+  created_by: number
+  created_at: string
+}
+
+export interface Environment {
+  id: number
+  name: string
+  python_version: string
+  venv_path: string | null
+  docker_image: string | null
+  docker_image_built_at: string | null
+  packages_changed_at: string | null
+  docker_image_stale: boolean
+  docker_image_custom?: boolean
+  dockerfile_customized?: boolean
+  docker_build_status: 'building' | 'success' | 'error' | null
+  docker_build_error: string | null
+  docker_build_log: string | null
+  default_runner_type: string
+  max_docker_containers: number
+  is_default: boolean
+  description: string | null
+  index_url: string | null
+  extra_index_url: string | null
+  created_by: number
+  created_at: string
+  updated_at: string
+  python_version_warning: string | null
+  venv_kind?: 'managed' | 'system' | 'external'
+}
+
+export type PackageInstallStatus =
+  | 'pending'
+  | 'installing'
+  | 'initializing'
+  | 'installed'
+  | 'failed'
+
+export interface EnvironmentPackage {
+  id: number
+  environment_id: number
+  package_name: string
+  version: string | null
+  installed_version: string | null
+  install_status: PackageInstallStatus
+  install_error: string | null
+  needs_rfbrowser_init?: boolean
+  rfbrowser_status?: 'ok' | 'needed' | null
+}
+
+export interface EnvironmentVariable {
+  id: number
+  environment_id: number
+  key: string
+  value: string
+  is_secret: boolean
+}
+
+export interface Report {
+  id: number
+  execution_run_id: number | null
+  archive_name: string | null
+  total_tests: number
+  passed_tests: number
+  failed_tests: number
+  skipped_tests: number
+  total_duration_seconds: number
+  created_at: string
+}
+
+export interface TestResult {
+  id: number
+  report_id: number
+  suite_name: string
+  test_name: string
+  // EXEC.4: RF long name (Suite.Sub.Test), computed read-only by the backend.
+  long_name?: string
+  status: string
+  duration_seconds: number
+  error_message: string | null
+  tags: string | null
+  start_time: string | null
+  end_time: string | null
+}
+
+/**
+ * Backend-side `execution.diagnostics.detect_report_diagnostic`
+ * payload. Non-null when the run's error matches a known pattern
+ * with a one-click fix the UI should surface as a banner above the
+ * failed tests (e.g. "Browser binaries missing → rfbrowser init").
+ *
+ * Discriminated by `code` — every code in this union must have a
+ * matching renderer in the banner component AND a localized
+ * title/description string in each locale.
+ */
+export interface RunDiagnosticAction {
+  /** Endpoint to POST when the user clicks the action button. */
+  endpoint: string
+  /** HTTP method — always POST today but kept explicit for clarity. */
+  method: 'POST'
+  /** Domain env_id passed to the action endpoint. */
+  env_id: number
+  /** Action discriminator — used by the banner to label the button. */
+  type: 'rfbrowser_init'
+}
+
+export interface RunDiagnostic {
+  code: 'playwright_browser_missing'
+  action: RunDiagnosticAction
+}
+
+export interface ReportDetail {
+  report: Report
+  test_results: TestResult[]
+  diagnostic?: RunDiagnostic | null
+}
+
+export interface TestHistoryPoint {
+  report_id: number
+  date: string
+  status: string
+  duration_seconds: number
+  error_message: string | null
+}
+
+export interface TestHistory {
+  test_name: string
+  suite_name: string
+  history: TestHistoryPoint[]
+  total_runs: number
+  pass_count: number
+  fail_count: number
+  pass_rate: number
+}
+
+export interface UniqueTest {
+  test_name: string
+  suite_name: string
+  last_status: string
+  run_count: number
+}
+
+export interface OverviewKpi {
+  total_runs: number
+  passed_runs: number
+  failed_runs: number
+  success_rate: number
+  avg_duration_seconds: number
+  total_tests: number
+  flaky_tests: number
+  active_repos: number
+}
+
+export interface SuccessRatePoint {
+  date: string
+  success_rate: number
+  total_runs: number
+}
+
+export interface TrendPoint {
+  date: string
+  passed: number
+  failed: number
+  error: number
+  total: number
+  avg_duration: number
+}
+
+export interface FlakyTest {
+  test_name: string
+  suite_name: string
+  total_runs: number
+  pass_count: number
+  fail_count: number
+  flaky_rate: number
+  last_status: string
+  // Story FLAKY-1 — quarantine state merged in server-side.
+  is_quarantined?: boolean
+  quarantine_id?: number | null
+  repository_id?: number | null
+}
+
+export interface FlakyQuarantineEntry {
+  id: number
+  repository_id: number
+  suite_name: string
+  test_name: string
+  reason: string | null
+  quarantined_by: number
+  quarantined_at: string
+}
+
+export interface AppSetting {
+  id: number
+  key: string
+  value: string
+  value_type: string
+  category: string
+  description: string | null
+}
+
+// --- Docker status types ---
+
+export interface DockerImage {
+  repository: string
+  tag: string
+  size: number
+  created: string
+}
+
+export interface DockerStatus {
+  connected: boolean
+  version?: string
+  api_version?: string
+  os?: string
+  arch?: string
+  default_image: string
+  running_containers?: number
+  images?: DockerImage[]
+  error?: string
+}
+
+// --- Analysis types ---
+
+export type AnalysisStatus = 'pending' | 'running' | 'completed' | 'error'
+
+export interface AnalysisReport {
+  id: number
+  repository_id: number | null
+  status: AnalysisStatus
+  selected_kpis: string[]
+  date_from: string | null
+  date_to: string | null
+  results: Record<string, any> | null
+  error_message: string | null
+  progress: number
+  reports_analyzed: number
+  triggered_by: number
+  started_at: string | null
+  completed_at: string | null
+  created_at: string
+}
+
+export interface KpiMeta {
+  id: string
+  name: string
+  category: string
+  description: string
+}
+
+// --- Deep XML data types ---
+
+export interface XmlMessage {
+  timestamp: string
+  level: string
+  text: string
+}
+
+export interface XmlKeyword {
+  name: string
+  type: string
+  library: string
+  status: string
+  start_time: string
+  end_time: string
+  duration: number
+  doc: string
+  arguments: string[]
+  messages: XmlMessage[]
+  keywords: XmlKeyword[]
+}
+
+export interface XmlTest {
+  name: string
+  status: string
+  start_time: string
+  end_time: string
+  duration: number
+  doc: string
+  tags: string[]
+  error_message: string
+  keywords: XmlKeyword[]
+}
+
+export interface XmlSuite {
+  name: string
+  source: string
+  status: string
+  start_time: string
+  end_time: string
+  duration: number
+  doc: string
+  suites: XmlSuite[]
+  tests: XmlTest[]
+}
+
+export interface XmlReportData {
+  suites: XmlSuite[]
+  statistics: Record<string, unknown>
+  generated: string
+}
+
+// --- Library Check types ---
+
+export interface LibraryCheckItem {
+  library_name: string
+  pypi_package: string | null
+  status: 'installed' | 'missing' | 'builtin'
+  installed_version: string | null
+  files: string[]
+  docker_status: 'installed' | 'missing' | null
+  docker_installed_version: string | null
+}
+
+export interface LibraryCheckResponse {
+  scope_id: number
+  environment_id: number
+  environment_name: string
+  total_libraries: number
+  missing_count: number
+  installed_count: number
+  builtin_count: number
+  libraries: LibraryCheckItem[]
+  docker_image: string | null
+  docker_missing_count: number
+}
+
+// --- AI Generation types ---
+
+export type AiProviderType = 'openai' | 'anthropic' | 'openrouter' | 'ollama' | 'litellm'
+export type AiJobStatus = 'pending' | 'running' | 'completed' | 'failed'
+export type AiJobType = 'generate' | 'reverse' | 'analyze'
+
+export interface AiProvider {
+  id: number
+  name: string
+  provider_type: AiProviderType
+  api_base_url: string | null
+  has_api_key: boolean
+  model_name: string
+  temperature: number
+  max_tokens: number
+  is_default: boolean
+  created_by: number
+  created_at: string
+  updated_at: string
+}
+
+export interface SuggestedPatch {
+  file_path: string
+  unified_diff: string
+}
+
+export interface AiJob {
+  id: number
+  job_type: AiJobType
+  status: AiJobStatus
+  repository_id: number
+  provider_id: number
+  report_id: number | null
+  spec_path: string
+  target_path: string | null
+  result_preview: string | null
+  error_message: string | null
+  token_usage: number | null
+  triggered_by: number
+  started_at: string | null
+  completed_at: string | null
+  created_at: string
+  suggested_patches?: SuggestedPatch[]
+}
+
+export interface DriftResult {
+  spec_file: string
+  target_file: string
+  status: 'in_sync' | 'drifted' | 'missing'
+}
+
+export interface DriftResponse {
+  repository_id: number
+  results: DriftResult[]
+}
+
+export interface ValidateSpecResponse {
+  valid: boolean
+  errors: string[]
+  test_count: number
+}
+
+// --- API Token types ---
+
+export interface ApiToken {
+  id: number
+  name: string
+  prefix: string
+  role: Role
+  user_id: number
+  expires_at: string | null
+  last_used_at: string | null
+  is_active: boolean
+  created_at: string
+}
+
+export interface ApiTokenCreated extends ApiToken {
+  token: string
+}
+
+// --- Webhook types ---
+
+export interface WebhookConfig {
+  id: number
+  name: string
+  url: string
+  has_secret: boolean
+  events: string[]
+  is_active: boolean
+  repository_id: number | null
+  created_by: number
+  last_triggered_at: string | null
+  last_status_code: number | null
+  created_at: string
+}
+
+export interface WebhookDelivery {
+  id: number
+  webhook_id: number
+  event: string
+  status_code: number | null
+  error_message: string | null
+  duration_ms: number | null
+  created_at: string
+}
+
+export interface WebhookTestResult {
+  success: boolean
+  status_code: number | null
+  error: string | null
+}
+
+// Recording
+
+export type RecordingStatus = 'pending' | 'recording' | 'processing' | 'completed' | 'failed' | 'cancelled'
+export type RecordingSource = 'playwright' | 'extension'
+
+export interface RecordingSession {
+  id: number
+  repository_id: number
+  environment_id: number | null
+  status: RecordingStatus
+  source: RecordingSource
+  target_url: string | null
+  target_file_path: string | null
+  target_library: string
+  event_count: number
+  generated_robot: string | null
+  rf_mcp_session_id: string | null
+  started_at: string | null
+  finished_at: string | null
+  duration_seconds: number | null
+  triggered_by: number
+  error_message: string | null
+  created_at: string
+}
+
+export interface RecordingListResponse {
+  items: RecordingSession[]
+  total: number
+  page: number
+  page_size: number
+}
+
+export interface RecordingEvent {
+  event_type: string
+  selector?: string
+  value?: string
+  url?: string
+  tag?: string
+  timestamp?: number
+}
+
+// --- Identity Provider (Phase 4) ---
+
+export type IdpProviderType =
+  | 'oidc_azure_ad'
+  | 'oidc_google'
+  | 'oidc_github'
+  | 'oidc_generic'
+
+export type DryRunStatus = 'passed' | 'warning' | 'failed'
+
+export interface IdpProvider {
+  id: number
+  name: string
+  provider_type: IdpProviderType
+  issuer_url: string
+  client_id: string
+  scopes: string
+  group_claim_name: string
+  is_enabled: boolean
+  last_dry_run_at: string | null
+  last_dry_run_status: 'passed' | 'failed' | null
+  discovery_cached_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface IdpProviderCreate {
+  name: string
+  provider_type: IdpProviderType
+  issuer_url: string
+  client_id: string
+  client_secret: string
+  scopes?: string
+  group_claim_name?: string
+}
+
+export interface IdpProviderUpdate {
+  name?: string
+  provider_type?: IdpProviderType
+  issuer_url?: string
+  client_id?: string
+  client_secret?: string
+  scopes?: string
+  group_claim_name?: string
+  is_enabled?: boolean
+}
+
+export interface DryRunCheckRow {
+  check_name: string
+  status: DryRunStatus
+  detail: string
+}
+
+export interface DryRunProbeResponse {
+  overall_status: 'passed' | 'failed'
+  checks: DryRunCheckRow[]
+  elapsed_ms: number
+}
+
+// --- Phase-4 Teams + Group Mappings + Public SSO ---
+// Mirrors `backend/src/teams/schemas.py` and the `SsoProviderPublic`
+// shape from `backend/src/auth/schemas.py`. These were imported by
+// teams.api / teams.store / sso.store but never defined here, leaving
+// the entire teams admin view broken at type-check (DEVEX-2 surfaced
+// it once `npm run lint` actually ran).
+
+export interface Team {
+  id: number
+  name: string
+  description: string | null
+  external_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface TeamCreate {
+  name: string
+  description?: string | null
+}
+
+export interface TeamUpdate {
+  name?: string | null
+  description?: string | null
+}
+
+export interface TeamMemberDetail {
+  id: number
+  user_id: number
+  email: string
+  role: string
+  source: string
+}
+
+export interface TeamDetail extends Team {
+  members: TeamMemberDetail[]
+}
+
+export interface GroupMapping {
+  id: number
+  idp_id: number
+  team_id: number
+  group_claim_value: string
+  role: string
+  created_at: string
+  updated_at: string
+}
+
+export interface GroupMappingCreate {
+  idp_id: number
+  group_name: string
+  role?: string
+}
+
+/** Public-safe IdP row — only the fields the unauthenticated login
+ *  view needs to render a provider button. */
+export interface SsoProviderPublic {
+  id: number
+  name: string
+  provider_type: string
+}

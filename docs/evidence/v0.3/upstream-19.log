@@ -1,0 +1,80 @@
+# EDT-06 上游编辑器测试接入（19 个）— 证据 2026-11-02
+
+## 1. 判定口径
+
+G3 / PRD FR-v0.3-10 要求「19 个上游编辑器测试原样接入并全绿」，且**断言不许改**。
+本证据回答三件事：**从哪来、有没有改、跑的结果是什么**。
+
+## 2. 来源与「未改」证明
+
+- 上游源码树：`E:\workspace\自动化测试\roboscope-src\rs-0.16.1\frontend\src\tests\components\`
+  （RoboScope v0.16.1，Apache-2.0）
+- 接入位置：`packages/editor/tests/upstream/`
+- 选取口径：上游该目录下 `FlowEditor*.spec.ts` 恰好 **19 个**，与 WBS/PRD 的数字精确吻合。
+  `src/components/editor/**` 下没有 spec，TEST-PLAN §4 的目录描述与实际不符，此处按「数量吻合 + 主题吻合」取这 19 个。
+- `FlowEditorRoundTrip.spec.ts` 用 `join(__dirname, 'fixtures', 'roundtrip')` 读语料，
+  为保持 spec **一个字节都不改**，把 5 个配套语料一并拷到 `tests/upstream/fixtures/roundtrip/`。
+
+逐文件 SHA256 前 16 位比对（源 vs 接入位置），**19/19 相同**：
+
+| 文件 | SHA256(前16) | 结论 |
+|---|---|---|
+| FlowEditorAddArgPicker.spec.ts | 3ABA671040952478 | SAME |
+| FlowEditorBdd.spec.ts | A8AAED864857B3F4 | SAME |
+| FlowEditorBoolControl.spec.ts | 515D86816D3D5B04 | SAME |
+| FlowEditorComputeStepLine.spec.ts | C2E099F0B8B39B6C | SAME |
+| FlowEditorControlStructures.spec.ts | 8A72B03FEF8A0527 | SAME |
+| FlowEditorDropZone.spec.ts | 2EFDF850C03E6113 | SAME |
+| FlowEditorEnvVars.spec.ts | 3DDCF5919FFE6C8C | SAME |
+| FlowEditorHealToggle.spec.ts | 479286D98C0369F6 | SAME |
+| FlowEditorIdMap.spec.ts | E81A7D6E642C1C4F | SAME |
+| FlowEditorParamLabels.spec.ts | 1AA0FAB4E172BA27 | SAME |
+| FlowEditorPrefillArgs.spec.ts | 45656A7FA3F10944 | SAME |
+| FlowEditorReorder.spec.ts | A2D6E680D6290808 | SAME |
+| FlowEditorReturnNode.spec.ts | 93B78EA5AF0FE704 | SAME |
+| FlowEditorRoundTrip.spec.ts | 8E9512C45878A393 | SAME |
+| FlowEditorRoundTripEdgeCases.spec.ts | 9458F9FA40223EA1 | SAME |
+| FlowEditorSectionSwitch.spec.ts | 5082D266D4453C65 | SAME |
+| FlowEditorSelectorPicker.spec.ts | 1F08849876E16335 | SAME |
+| FlowEditorStepIsolation.spec.ts | 039641591517CB39 | SAME |
+| FlowEditorTemplateTable.spec.ts | DFE6A9171EA4E58B | SAME |
+
+复现命令（PowerShell）：
+
+```powershell
+$up = "E:\workspace\自动化测试\roboscope-src\rs-0.16.1\frontend\src\tests\components"
+$us = "E:\workspace\自动化测试\Robot-Autotest\packages\editor\tests\upstream"
+Get-ChildItem "$up\FlowEditor*.spec.ts" | ForEach-Object {
+  $uh = (Get-FileHash $_.FullName -Algorithm SHA256).Hash
+  $lh = (Get-FileHash (Join-Path $us $_.Name) -Algorithm SHA256).Hash
+  "{0}|{1}" -f $_.Name, $(if ($uh -eq $lh) { "SAME" } else { "DIFF" })
+}
+```
+
+## 3. 运行结果
+
+```powershell
+cd packages\editor
+$env:NO_COLOR=1
+npx vitest run --reporter=verbose
+```
+
+原始输出末尾（`20` 个测试文件 = 19 个上游 spec + 本包的 `tests/three-views.spec.ts`）：
+
+```
+ Test Files  20 passed (20)
+      Tests  203 passed (203)
+   Duration  36.73s (transform 8.33s, setup 0ms, collect 21.91s, tests 1.40s, environment 406.34s, prepare 14.04s)
+```
+
+退出码 0。0 failed / 0 skipped。
+
+## 4. 输出里的 `[intlify] Not found 'robotEditor.*'` 是什么
+
+上游组件用 `vue-i18n` 取 `robotEditor.*` 文案，本包尚未合并上游 `zh.ts`（这是 EDT-07 的活）。
+i18n 缺 key 只打印告警、不抛错，且这些 spec 的断言全部是纯函数/状态断言，不读文案，
+所以告警不影响判定。合并中文包后告警会消失，**不要**为了消噪去改这 19 个 spec。
+
+## 5. 结论
+
+19 个上游 spec **一字节未改**、与上游 SHA256 一一相同，接入后 203 个用例全绿。

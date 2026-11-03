@@ -1,0 +1,39 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< com.qa:robot-autotest-backend >--------------------
+[INFO] Building robot-autotest-backend 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- flyway:10.10.0:info (default-cli) @ robot-autotest-backend ---
+[INFO] Database: jdbc:mariadb://127.0.0.1/robot_dev (MySQL 8.0)
+[WARNING] Error: 1142-42000: SELECT command denied to user 'robot'@'localhost' for table 'user_variables_by_thread'
+[INFO] Schema version: 6.3
+[INFO] 
+[INFO] +-----------+---------+-----------------+------+---------------------+---------+----------+
+| Category  | Version | Description     | Type | Installed On        | State   | Undoable |
++-----------+---------+-----------------+------+---------------------+---------+----------+
+| Versioned | 1       | baseline        | SQL  | 2026-11-03 12:10:11 | Success | No       |
+| Versioned | 2.1     | iam fields      | SQL  | 2026-11-03 12:10:11 | Success | No       |
+| Versioned | 2.2     | asset fields    | SQL  | 2026-11-03 12:10:11 | Success | No       |
+| Versioned | 2.3     | case fields     | SQL  | 2026-11-03 12:10:12 | Success | No       |
+| Versioned | 2.4     | audit indexes   | SQL  | 2026-11-03 12:10:12 | Success | No       |
+| Versioned | 2.5     | editor keywords | SQL  | 2026-11-03 12:10:29 | Success | No       |
+| Versioned | 4.1     | lease           | SQL  | 2026-11-03 12:10:29 | Success | No       |
+| Versioned | 4.2     | run artifact    | SQL  | 2026-11-03 12:10:29 | Success | No       |
+| Versioned | 4.3     | failure class   | SQL  | 2026-11-03 12:10:29 | Success | No       |
+| Versioned | 5.1     | report fields   | SQL  | 2026-11-03 16:34:24 | Success | No       |
+| Versioned | 5.3     | report log      | SQL  | 2026-11-03 16:34:25 | Success | No       |
+| Versioned | 5.4     | artifact pin    | SQL  | 2026-11-03 16:34:25 | Success | No       |
+| Versioned | 5.5     | export columns  | SQL  | 2026-11-03 16:34:25 | Success | No       |
+| Versioned | 6.1     | execution plan  | SQL  | 2026-11-03 17:26:52 | Success | No       |
+| Versioned | 6.2     | plan dependency | SQL  | 2026-11-03 17:26:52 | Success | No       |
+| Versioned | 6.3     | ci trigger      | SQL  | 2026-11-03 18:12:53 | Success | No       |
++-----------+---------+-----------------+------+---------------------+---------+----------+
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  6.750 s
+[INFO] Finished at: 2026-11-03T18:13:00+08:00
+[INFO] ------------------------------------------------------------------------

@@ -1,0 +1,36 @@
+﻿== EDT-08 许可合规核对 (2026-11-03 09:12:24) ==
+
+[1] 许可文件校验和（三者必须一致）
+807A8F9B4BA20C0F95632E1B82337B852E4D8116116867DA7D494FFBF4314D09  LICENSE
+807A8F9B4BA20C0F95632E1B82337B852E4D8116116867DA7D494FFBF4314D09  LICENSE-roboscope
+807A8F9B4BA20C0F95632E1B82337B852E4D8116116867DA7D494FFBF4314D09  packages\editor\LICENSE-roboscope
+
+[2] NOTICE 四要素
+viadee/roboscope v0.16.1         命中 2 处
+Apache License 2.0               命中 3 处
+修改声明                             命中 2 处
+商标                               命中 3 处
+
+[3] 改写文件头枚举（同时含衍生声明与 Modified by）
+packages\editor\src\api\ai.api.ts
+packages\editor\src\api\auth.api.ts
+packages\editor\src\api\context.ts
+packages\editor\src\api\debug.api.ts
+packages\editor\src\api\environments.api.ts
+packages\editor\src\api\explorer.api.ts
+packages\editor\src\api\governance.api.ts
+packages\editor\src\api\repos.api.ts
+packages\editor\src\components\editor\flow\KeywordDocModal.vue
+packages\editor\src\components\editor\flow\KeywordPalette.vue
+packages\editor\src\components\editor\FlowEditor.vue
+packages\editor\src\components\editor\RobotEditor.vue
+packages\editor\src\composables\useFeatureFlags.ts
+packages\editor\src\composables\useKeywordSignatures.ts
+packages\editor\src\composables\useRecordingSidecar.ts
+packages\editor\src\stores\debug.store.ts
+packages\editor\src\stores\explorer.store.ts
+packages\editor\src\stores\repos.store.ts
+packages\editor\src\types\domain.types.ts
+packages\editor\src\utils\errors.ts
+
+合计带双声明文件: 20

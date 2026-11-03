@@ -1,0 +1,213 @@
+package com.qa.autotest.application.report;
+
+import com.qa.autotest.application.execution.ExecutionPaths;
+import com.qa.autotest.application.execution.RunArtifact;
+import com.qa.autotest.application.iam.AccessControlService;
+import com.qa.autotest.application.repository.ReportRepository;
+import com.qa.autotest.application.repository.RunArtifactRepository;
+import com.qa.autotest.application.repository.RunRepository;
+import com.qa.autotest.application.repository.CiTriggerRepository;
+import com.qa.autotest.common.BusinessException;
+import com.qa.autotest.common.ErrorCode;
+import com.qa.autotest.domain.ci.CiTriggerRecord;
+import com.qa.autotest.domain.execution.RunOrigin;
+import com.qa.autotest.domain.execution.RunRecord;
+import com.qa.autotest.domain.iam.PermissionAction;
+import com.qa.autotest.domain.iam.PermissionResource;
+import com.qa.autotest.domain.report.GateResult;
+import com.qa.autotest.domain.report.MetadataGate;
+import com.qa.autotest.domain.report.ParsedReport;
+import com.qa.autotest.domain.report.ReportRecord;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * 报告入库编排（RPT-01 + RPT-07）。
+ *
+ * <p>流程：定位 output.xml → StAX 解析 → metadata 十项门禁 → <b>同一事务</b>内写
+ * run.exportable / run.metadata_missing / 计数 / test_result / keyword_result。
+ * 门禁结论在入库时即固化，导出环节不再重新判定（DEV-PLAN §3）。
+ */
+@Service
+public class ReportIngestService {
+
+    private final RunRepository runs;
+    private final RunArtifactRepository artifacts;
+    private final ReportRepository reports;
+    private final AccessControlService access;
+    private final OutputXmlParser parser;
+    private final CiTriggerRepository ciTriggers;
+
+    public ReportIngestService(RunRepository runs,
+                               RunArtifactRepository artifacts,
+                               ReportRepository reports,
+                               AccessControlService access,
+                               OutputXmlParser parser) {
+        this(runs, artifacts, reports, access, parser, null);
+    }
+
+    @Autowired
+    public ReportIngestService(RunRepository runs,
+                               RunArtifactRepository artifacts,
+                               ReportRepository reports,
+                               AccessControlService access,
+                               OutputXmlParser parser,
+                               CiTriggerRepository ciTriggers) {
+        this.runs = runs;
+        this.artifacts = artifacts;
+        this.reports = reports;
+        this.access = access;
+        this.parser = parser;
+        this.ciTriggers = ciTriggers;
+    }
+
+    /**
+     * 解析并入库。
+     *
+     * @param projectId     项目
+     * @param runId         RUN_ID 字符串
+     * @param outputXmlPath 可选显式路径；为空时按 run_artifact → artifacts_dir 顺序推导
+     */
+    @Transactional
+    public ReportRecord parseAndIngest(long projectId, String runId, String outputXmlPath) {
+        if (projectId <= 0) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "projectId 非法");
+        }
+        if (runId == null || runId.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "runId 不能为空");
+        }
+        access.bindProject(projectId);
+        access.require(PermissionResource.EXECUTION, PermissionAction.READ);
+
+        RunRecord run = runs.findByRunId(projectId, runId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "运行不存在: " + runId));
+        Path xml = resolveOutputXml(projectId, run, outputXmlPath);
+        ParsedReport parsed = mergePlanMetadata(projectId, runId, parser.parse(xml));
+        GateResult gate = MetadataGate.check(parsed.metadata());
+        Instant startedAt = parseStartedAt(parsed.metadataValue("STARTED_AT"));
+
+        reports.replace(projectId, run.id(), parsed, gate, startedAt);
+        return reports.find(projectId, runId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "报告入库后读取失败: " + runId));
+    }
+
+    /**
+     * 计划触发元数据注入（PLN-01）。
+     *
+     * <p>平台链路无法在 pabot 命令行里塞 metadata（RUN_ID 之外的键由用例侧写），
+     * 因此计划触发时把 {@code plan_id / trigger_type} 落到 {@code run} 表，
+     * 入库时在这里合并进 metadata，保证 RPT-01 解析结果含 {@code PLAN_ID}、{@code TRIGGER_TYPE}。
+     * 手工运行（无 plan_id）不注入，避免污染既有十项门禁与历史报告。
+     */
+    private ParsedReport mergePlanMetadata(long projectId, String runId, ParsedReport parsed) {
+        RunOrigin origin = runs.findOrigin(projectId, runId).orElse(null);
+        if (origin == null || origin.planId() == null) {
+            return parsed;
+        }
+        java.util.Map<String, String> merged = new java.util.LinkedHashMap<>(parsed.metadata());
+        merged.putIfAbsent("PLAN_ID", Long.toString(origin.planId()));
+        merged.putIfAbsent("TRIGGER_TYPE", origin.triggerType());
+        if (RunOrigin.CI.equals(origin.triggerType()) && ciTriggers != null) {
+            CiTriggerRecord trigger = ciTriggers.findByRunId(projectId, runId).orElse(null);
+            if (trigger != null) {
+                // 40 字符上限：COMMIT_SHA 全量正好 40，BUILD / CI_REF 超长截断（DEV-PLAN §4.1）。
+                merged.putIfAbsent("COMMIT_SHA", fit(trigger.commitSha()));
+                merged.putIfAbsent("BUILD", fit(trigger.build()));
+                merged.putIfAbsent("CI_REF", fit(trigger.ref()));
+            }
+        }
+        return new ParsedReport(parsed.root(), merged, parsed.passCount(), parsed.failCount(),
+                parsed.skipCount());
+    }
+
+    /** metadata 单值上限 40 字符；null 原样返回，交给门禁按缺失处理。 */
+    static String fit(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.length() <= MetadataGate.MAX_VALUE_LENGTH
+                ? value : value.substring(0, MetadataGate.MAX_VALUE_LENGTH);
+    }
+
+    /**
+     * 定位 output.xml。
+     *
+     * <p>优先顺序（按代码现状，不硬编码新目录）：
+     * <ol>
+     *   <li>调用方显式传参 {@code outputXmlPath}；</li>
+     *   <li>{@code run_artifact} 中 kind=output_xml 且文件存在的记录（v0.4 执行链路已登记）；</li>
+     *   <li>{@code run.artifacts_dir} 下的 v0.4 约定位置 {@code shard-0/output.xml} 或 {@code output.xml}；</li>
+     *   <li>都不存在时要求调用方显式传路径，不再猜平台历史目录。</li>
+     * </ol>
+     */
+    private Path resolveOutputXml(long projectId, RunRecord run, String explicitPath) {
+        if (explicitPath != null && !explicitPath.isBlank()) {
+            Path explicit = ExecutionPaths.resolve(explicitPath);
+            requireReadable(explicit, explicitPath);
+            return explicit;
+        }
+        for (RunArtifact artifact : artifacts.list(projectId, run.id())) {
+            if (!"output_xml".equals(artifact.kind()) || artifact.path() == null || artifact.path().isBlank()) {
+                continue;
+            }
+            Path candidate = ExecutionPaths.resolve(artifact.path());
+            if (Files.isRegularFile(candidate)) {
+                return candidate;
+            }
+        }
+        if (run.artifactsDir() != null && !run.artifactsDir().isBlank()) {
+            Path runDir = ExecutionPaths.resolve(run.artifactsDir());
+            Path shard = runDir.resolve("shard-0").resolve("output.xml");
+            if (Files.isRegularFile(shard)) {
+                return shard;
+            }
+            Path direct = runDir.resolve("output.xml");
+            if (Files.isRegularFile(direct)) {
+                return direct;
+            }
+        }
+        throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
+                "未找到 output.xml：run_artifact 未登记且产物目录回退不存在，请通过 outputXmlPath 显式传入");
+    }
+
+    private static void requireReadable(Path path, String raw) {
+        if (!Files.isRegularFile(path) || !Files.isReadable(path)) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
+                    "output.xml 不存在或不可读: " + raw);
+        }
+    }
+
+    /**
+     * metadata.STARTED_AT 解析：支持 ISO Instant（Z 结尾）、带时区偏移与本地时间三种写法。
+     * 解析失败时返回 null，由仓库层保留 run.started_at 原值，不让格式问题阻断入库。
+     */
+    static Instant parseStartedAt(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        String value = raw.trim();
+        try {
+            return Instant.parse(value);
+        } catch (DateTimeParseException ignored) {
+            // 继续尝试其它格式
+        }
+        try {
+            return OffsetDateTime.parse(value).toInstant();
+        } catch (DateTimeParseException ignored) {
+            // 继续尝试本地时间
+        }
+        try {
+            return LocalDateTime.parse(value).atZone(ZoneId.of("Asia/Shanghai")).toInstant();
+        } catch (DateTimeParseException ignored) {
+            return null;
+        }
+    }
+}

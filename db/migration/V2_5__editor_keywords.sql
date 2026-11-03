@@ -1,0 +1,86 @@
+-- =============================================================================
+-- V2_5__editor_keywords.sql  ·  v0.3 编辑器关键词元数据（EDT-04）
+-- 归属 EDT-04 ｜ 门禁 G3 ｜ 对应 FR-v0.3-12 ~ 15
+-- 口径：project_id = 0 为平台级（BuiltIn / 已安装库）；> 0 为项目私有。
+--       args_json 保存 libdoc 参数名数组（JSON），面板据此补 ${} 占位符。
+--       关键词元数据可增删改（FR-v0.3-15），面板按 library 分组、按名称搜索。
+-- =============================================================================
+
+CREATE TABLE `editor_keyword` (
+  id          BIGINT        NOT NULL AUTO_INCREMENT,
+  project_id  BIGINT        NOT NULL DEFAULT 0 COMMENT '0=平台级（库/BuiltIn），>0=项目私有',
+  library     VARCHAR(128)  NOT NULL COMMENT '来源库或分类名',
+  name        VARCHAR(256)  NOT NULL COMMENT '关键词名（RF 大小写不敏感，查询时按库排序）',
+  args_json   VARCHAR(1024) NULL COMMENT '参数名 JSON 数组，如 ["actual","expected","msg=None"]',
+  doc         TEXT          NULL COMMENT '关键词文档（纯文本，面板内联展示）',
+  source      VARCHAR(16)   NOT NULL DEFAULT 'library' COMMENT 'builtin/library/project',
+  created_at  DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  created_by  BIGINT        NULL,
+  updated_at  DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  updated_by  BIGINT        NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_editor_keyword_scope (project_id, library, name),
+  KEY idx_editor_keyword_name (project_id, name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='编辑器关键词元数据（平台级 + 项目私有）';
+
+-- 内置常用关键词（平台级，project_id = 0）。只放演示/入门所需的最小子集，
+-- 其余由宿主在接入 libdoc 后通过 /api/editor/keywords 增补（EDT-04 允许 CRUD）。
+INSERT INTO `editor_keyword` (project_id, library, name, args_json, doc, source) VALUES
+  (0, 'BuiltIn', 'Should Be Equal', '["actual","expected","msg=None","values=True","formatter=str"]',
+   '断言两个值相等；失败时输出 msg。', 'builtin'),
+  (0, 'BuiltIn', 'Should Contain', '["container","item","msg=None","values=True"]',
+   '断言 container 包含 item（字符串或列表）。', 'builtin'),
+  (0, 'BuiltIn', 'Should Be True', '["condition","msg=None"]',
+   '断言 condition 为真。', 'builtin'),
+  (0, 'BuiltIn', 'Should Not Be Empty', '["item","msg=None"]',
+   '断言值非空。', 'builtin'),
+  (0, 'BuiltIn', 'Log', '["message","level=INFO","html=False","console=False","repr=False"]',
+   '写一条日志到 report.html。', 'builtin'),
+  (0, 'BuiltIn', 'Log To Console', '["message","stream=STDOUT","no_newline=False"]',
+   '写一条日志到 stdout（平台看门狗只认这个）。', 'builtin'),
+  (0, 'BuiltIn', 'Sleep', '["time","reason=None"]',
+   '等待指定时间，格式如 1s / 500ms。', 'builtin'),
+  (0, 'BuiltIn', 'Set Variable', '["*values"]',
+   '把参数原样返回，用于赋值。', 'builtin'),
+  (0, 'BuiltIn', 'Set Test Variable', '["name","*values"]',
+   '设置测试级变量。', 'builtin'),
+  (0, 'BuiltIn', 'Set Suite Variable', '["name","*values"]',
+   '设置套件级变量。', 'builtin'),
+  (0, 'BuiltIn', 'Run Keyword If', '["condition","name","*args"]',
+   '条件成立时执行关键字。', 'builtin'),
+  (0, 'BuiltIn', 'Run Keyword And Return Status', '["name","*args"]',
+   '执行关键字并返回布尔状态，不抛失败。', 'builtin'),
+  (0, 'BuiltIn', 'Evaluate', '["expression","modules=None","namespace=None"]',
+   '执行 Python 表达式并返回结果。', 'builtin'),
+  (0, 'BuiltIn', 'Catenate', '["separator=SPACE","*items"]',
+   '拼接多个值。', 'builtin'),
+  (0, 'BuiltIn', 'Get Length', '["item"]',
+   '返回字符串/列表/字典的长度。', 'builtin'),
+  (0, 'BuiltIn', 'Convert To Integer', '["item","base=None"]',
+   '转换为整数。', 'builtin'),
+  (0, 'BuiltIn', 'Convert To String', '["item"]',
+   '转换为字符串。', 'builtin'),
+  (0, 'BuiltIn', 'Fail', '["msg=None","*tags"]',
+   '主动让用例失败。', 'builtin'),
+  (0, 'Collections', 'Create List', '["*items"]',
+   '创建列表。', 'library'),
+  (0, 'Collections', 'Create Dictionary', '["*items"]',
+   '创建字典。', 'library'),
+  (0, 'Collections', 'Append To List', '["list_","*values"]',
+   '向列表追加元素。', 'library'),
+  (0, 'Collections', 'Get From Dictionary', '["dictionary","key"]',
+   '按键取字典值。', 'library'),
+  (0, 'Collections', 'List Should Contain Value', '["list_","value","msg=None"]',
+   '断言列表包含某值。', 'library'),
+  (0, 'String', 'Replace String', '["string","search_for","replace_with","count=-1"]',
+   '字符串替换。', 'library'),
+  (0, 'String', 'Split String', '["string","separator=None","max_split=-1"]',
+   '按分隔符拆分字符串。', 'library'),
+  (0, 'String', 'Convert To Upper Case', '["string"]',
+   '转换为大写。', 'library'),
+  (0, 'OperatingSystem', 'Create File', '["path","content=EMPTY","encoding=UTF-8"]',
+   '创建文件。', 'library'),
+  (0, 'OperatingSystem', 'Remove File', '["path"]',
+   '删除文件。', 'library'),
+  (0, 'OperatingSystem', 'File Should Exist', '["path","msg=None"]',
+   '断言文件存在。', 'library');

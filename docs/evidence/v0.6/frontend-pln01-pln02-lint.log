@@ -1,0 +1,6 @@
+﻿
+> robot-autotest-frontend@0.1.0 lint
+> eslint .
+
+
+[exit code] 0

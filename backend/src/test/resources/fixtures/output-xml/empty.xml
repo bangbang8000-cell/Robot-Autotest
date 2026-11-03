@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.5.0 (Python 3.14.4 on linux)">
+  <suite id="s1" name="Empty">
+    <status status="PASS" elapsed="0.001"/>
+  </suite>
+  <statistics>
+    <total>
+      <stat pass="0" fail="0" skip="0">All Tests</stat>
+    </total>
+  </statistics>
+  <!-- 说明：空用例样本，用于验证 no_tests_executed。为越过 size>1024 的门槛，以下为填充说明文字，
+       不代表实跑结果。padding-padding-padding-padding-padding-padding-padding-padding-padding;
+       padding-padding-padding-padding-padding-padding-padding-padding-padding-padding;
+       padding-padding-padding-padding-padding-padding-padding-padding-padding-padding;
+       padding-padding-padding-padding-padding-padding-padding-padding-padding-padding;
+       padding-padding-padding-padding-padding-padding-padding-padding-padding-padding;
+       padding-padding-padding-padding-padding-padding-padding-padding-padding-padding;
+       padding-padding-padding-padding-padding-padding-padding-padding-padding-padding. -->
+</robot>

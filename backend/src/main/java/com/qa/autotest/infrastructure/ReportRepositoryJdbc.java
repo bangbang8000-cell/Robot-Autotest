@@ -1,0 +1,239 @@
+package com.qa.autotest.infrastructure;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.qa.autotest.application.repository.ReportRepository;
+import com.qa.autotest.common.BusinessException;
+import com.qa.autotest.common.ErrorCode;
+import com.qa.autotest.common.tenant.TenantGuard;
+import com.qa.autotest.domain.common.PageResult;
+import com.qa.autotest.domain.report.CaseNode;
+import com.qa.autotest.domain.report.GateResult;
+import com.qa.autotest.domain.report.KeywordNode;
+import com.qa.autotest.domain.report.ParsedReport;
+import com.qa.autotest.domain.report.ReportRecord;
+import com.qa.autotest.domain.report.SuiteNode;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
+
+/**
+ * 报告仓储 JDBC 实现（RPT-01）。
+ *
+ * <p>租户口径说明：{@code run} 已登记在 {@link TenantGuard} 名单，所有读写都带 project_id 校验；
+ * {@code test_result} / {@code keyword_result} 是 run 的子表、<b>没有 project_id 列</b>，
+ * 因此不对它们单独调用 TenantGuard —— 访问入口统一经 run 的 project_id 校验，
+ * 子表只在该 run 范围内按 run_id 写入（与既有 {@code TestResultWriterJdbc} 口径一致）。
+ */
+@Repository
+public class ReportRepositoryJdbc implements ReportRepository {
+
+    private static final String REPORT_COLUMNS = """
+            SELECT project_id, run_id, run_status, exportable, metadata_missing, metadata_json,
+                   pass_count, fail_count, skip_count, started_at, finished_at
+              FROM run
+            """;
+
+    private static final String UPDATE_RUN = """
+            UPDATE run
+               SET `dut` = ?, `link` = ?, `sw_build` = ?, `baseline` = ?, `operator` = ?,
+                   `case_kind` = ?, `metadata_json` = ?, `metadata_missing` = ?, `exportable` = ?,
+                   `pass_count` = ?, `fail_count` = ?, `skip_count` = ?,
+                   `started_at` = COALESCE(?, `started_at`),
+                   `updated_at` = CURRENT_TIMESTAMP(3)
+             WHERE `project_id` = ? AND `id` = ?
+            """;
+
+    private static final String INSERT_TEST_RESULT = """
+            INSERT INTO test_result (run_id, case_id, case_key, round_no, verdict,
+                                     duration_ms, failure_msg, log_offset, log_span, failure_kind)
+            VALUES (?, NULL, ?, 1, ?, ?, ?, ?, ?, NULL)
+            """;
+
+    private static final String INSERT_KEYWORD_RESULT = """
+            INSERT INTO keyword_result (run_id, test_result_id, parent_id, kw_name,
+                                        kw_status, depth, arg_count, log_offset, log_span)
+            VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)
+            """;
+
+    private final JdbcTemplate jdbc;
+    private final ObjectMapper objectMapper;
+    private final RowMapper<ReportRecord> rowMapper = this::mapRow;
+
+    public ReportRepositoryJdbc(JdbcTemplate jdbc, ObjectMapper objectMapper) {
+        this.jdbc = jdbc;
+        this.objectMapper = objectMapper;
+    }
+
+    @Override
+    public void replace(long projectId, long runDbId, ParsedReport parsed, GateResult gate, Instant startedAt) {
+        TenantGuard.requireProjectScope(UPDATE_RUN, "run");
+        int affected = jdbc.update(UPDATE_RUN,
+                fit(parsed.metadataValue("DUT"), 40),
+                fit(parsed.metadataValue("LINK"), 40),
+                fit(parsed.metadataValue("SW_BUILD"), 40),
+                fit(parsed.metadataValue("BASELINE"), 40),
+                fit(parsed.metadataValue("OPERATOR"), 40),
+                fit(parsed.metadataValue("CASE_KIND"), 20),
+                writeMetadata(parsed.metadata()),
+                gate.missingCsv(),
+                gate.exportable() ? 1 : 0,
+                parsed.passCount(),
+                parsed.failCount(),
+                parsed.skipCount(),
+                startedAt == null ? null : Timestamp.from(startedAt),
+                projectId,
+                runDbId);
+        if (affected == 0) {
+            throw new BusinessException(ErrorCode.NOT_FOUND, "运行记录不存在或不属于当前项目: " + runDbId);
+        }
+
+        // 幂等：重复解析同一 run 时先清空旧结果，避免 test_result / keyword_result 翻倍。
+        jdbc.update("DELETE FROM test_result WHERE run_id = ?", runDbId);
+        jdbc.update("DELETE FROM keyword_result WHERE run_id = ?", runDbId);
+        SuiteNode root = parsed.root();
+        if (root != null) {
+            insertSuite(runDbId, root, "");
+        }
+    }
+
+    @Override
+    public Optional<ReportRecord> find(long projectId, String runId) {
+        String sql = REPORT_COLUMNS + " WHERE project_id = ? AND run_id = ?";
+        TenantGuard.requireProjectScope(sql, "run");
+        return JdbcSupport.first(jdbc.query(sql, rowMapper, projectId, runId));
+    }
+
+    @Override
+    public PageResult<ReportRecord> page(long projectId, int page, int size) {
+        String countSql = "SELECT COUNT(*) FROM run WHERE project_id = ?";
+        TenantGuard.requireProjectScope(countSql, "run");
+        Long total = jdbc.queryForObject(countSql, Long.class, projectId);
+        long totalValue = total == null ? 0L : total;
+
+        String listSql = REPORT_COLUMNS
+                + " WHERE project_id = ? ORDER BY started_at DESC, id DESC LIMIT ? OFFSET ?";
+        TenantGuard.requireProjectScope(listSql, "run");
+        List<ReportRecord> rows = jdbc.query(listSql, rowMapper,
+                projectId, size, (long) (page - 1) * size);
+        return new PageResult<>(rows, totalValue, page, size);
+    }
+
+    private void insertSuite(long runDbId, SuiteNode suite, String parentPath) {
+        String path = parentPath.isEmpty() ? suite.name() : parentPath + "/" + suite.name();
+        for (CaseNode test : suite.cases()) {
+            insertCase(runDbId, path + "." + test.name(), test);
+        }
+        for (SuiteNode child : suite.suites()) {
+            insertSuite(runDbId, child, path);
+        }
+    }
+
+    private void insertCase(long runDbId, String caseKey, CaseNode test) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbc.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(INSERT_TEST_RESULT, Statement.RETURN_GENERATED_KEYS);
+            ps.setLong(1, runDbId);
+            ps.setString(2, fit(caseKey, 160));
+            ps.setString(3, test.status() == null ? "UNKNOWN" : test.status());
+            ps.setLong(4, test.durationMs());
+            ps.setString(5, test.failureMessage());
+            ps.setObject(6, test.logOffset() < 0 ? null : test.logOffset(), Types.BIGINT);
+            ps.setString(7, test.logSpan());
+            return ps;
+        }, keyHolder);
+        Long testResultId = keyHolder.getKey() == null ? null : keyHolder.getKey().longValue();
+        insertKeywords(runDbId, testResultId, null, test.keywords(), 0);
+    }
+
+    private void insertKeywords(long runDbId, Long testResultId, Long parentId,
+                                List<KeywordNode> keywords, int depth) {
+        for (KeywordNode keyword : keywords) {
+            KeyHolder keyHolder = new GeneratedKeyHolder();
+            jdbc.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(INSERT_KEYWORD_RESULT, Statement.RETURN_GENERATED_KEYS);
+                ps.setLong(1, runDbId);
+                ps.setObject(2, testResultId, Types.BIGINT);
+                ps.setObject(3, parentId, Types.BIGINT);
+                ps.setString(4, keyword.name() == null ? "" : fit(keyword.name(), 256));
+                ps.setString(5, keyword.status());
+                ps.setInt(6, depth);
+                ps.setObject(7, keyword.logOffset() < 0 ? null : keyword.logOffset(), Types.BIGINT);
+                ps.setString(8, keyword.logSpan());
+                return ps;
+            }, keyHolder);
+            Long keywordId = keyHolder.getKey() == null ? null : keyHolder.getKey().longValue();
+            insertKeywords(runDbId, testResultId, keywordId, keyword.children(), depth + 1);
+        }
+    }
+
+    private ReportRecord mapRow(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
+        return new ReportRecord(
+                rs.getLong("project_id"),
+                rs.getString("run_id"),
+                rs.getString("run_status"),
+                rs.getInt("exportable") != 0,
+                splitCsv(rs.getString("metadata_missing")),
+                readMetadata(rs.getString("metadata_json")),
+                rs.getInt("pass_count"),
+                rs.getInt("fail_count"),
+                rs.getInt("skip_count"),
+                JdbcSupport.instant(rs.getTimestamp("started_at")),
+                JdbcSupport.instant(rs.getTimestamp("finished_at")));
+    }
+
+    private String writeMetadata(Map<String, String> metadata) {
+        try {
+            return objectMapper.writeValueAsString(metadata == null ? Map.of() : metadata);
+        } catch (JsonProcessingException ex) {
+            return "{}";
+        }
+    }
+
+    private Map<String, String> readMetadata(String json) {
+        if (json == null || json.isBlank()) {
+            return Map.of();
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<LinkedHashMap<String, String>>() {
+            });
+        } catch (JsonProcessingException ex) {
+            return Map.of();
+        }
+    }
+
+    private static List<String> splitCsv(String csv) {
+        if (csv == null || csv.isBlank()) {
+            return List.of();
+        }
+        List<String> values = new ArrayList<>();
+        for (String part : Arrays.asList(csv.split(","))) {
+            String trimmed = part.trim();
+            if (!trimmed.isEmpty()) {
+                values.add(trimmed);
+            }
+        }
+        return List.copyOf(values);
+    }
+
+    private static String fit(String value, int maxLength) {
+        if (value == null) {
+            return null;
+        }
+        return value.length() <= maxLength ? value : value.substring(0, maxLength);
+    }
+}

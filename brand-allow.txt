@@ -1,0 +1,9 @@
+# 品牌扫描白名单（EDT-07）
+# 格式：路径前缀|命中文本|理由
+# 只登记两类：① Apache-2.0 §4(b) 要求的归属声明；② Robot Framework 库名（语法事实）
+packages/editor/src/|衍生自 viadee/roboscope v0.16.1|Apache-2.0 §4(b) 归属声明，必须保留
+packages/editor/src/|RoboScopeHeal|Robot Framework 库名（robotframework-roboscopeheal），是 .robot 语法事实，改名会让用户脚本执行失败
+packages/editor/dist/|衍生自 viadee/roboscope v0.16.1|同上（源码注释随构建进产物）
+packages/editor/dist/|RoboScopeHeal|同上（源码中的库名随构建进产物）
+frontend/dist/|衍生自 viadee/roboscope v0.16.1|同上（宿主产物打包了编辑器）
+frontend/dist/|RoboScopeHeal|同上（宿主产物打包了编辑器）

@@ -1,0 +1,45 @@
+# EDT-03 三视图验收证据（2026-11-02）
+
+## 命令
+
+```
+cd packages/editor
+npm run test        # vitest run
+```
+
+## 结果（原始输出摘录）
+
+```
+ RUN  v3.2.7 E:/workspace/自动化测试/Robot-Autotest/packages/editor
+
+ ✓ tests/three-views.spec.ts (2 tests) 130ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Duration  4.52s (transform 1.23s, setup 0ms, collect 1.92s, tests 130ms, environment 1.47s, prepare 236ms)
+```
+
+退出码 0。
+
+## 两个断言的判定口径
+
+1. **纯函数层**：对同一份样本连续做 3 轮 `parseRobotText` → `serializeRobotForm`，
+   每轮结果的 sha256 与样本原值相等（`三次往返 sha256 不变`）。
+2. **组件层**：挂载 `RobotEditor`（注入空 i18n messages），按 `文本 → 表单 → 流程 → 表单 → 流程`
+   顺序点击三个视图按钮，末次 `update:content` 的 sha256 等于初始内容，且 `dirty` 事件末值为 `false`
+   （即切换视图不产生内容漂移、不误报脏）。
+
+## 顺带修掉的真问题（往返保真的前置）
+
+首轮测试暴露 `serializeRobotForm` 把 `FOR`/`IF`/`TRY` 嵌套块**压平**：
+样本里 `Log    第 ${i} 次`（块内第二层，8 空格缩进）被序列化成 4 空格，
+`robot --dryrun` 仍可能通过，但 AST 不等价。
+
+修复：`RobotStep` 增 `depth`（解析时按行首缩进计层级），序列化时 `emitStep` 按
+`depth + 1` 输出缩进。修后往返**逐字节一致**，sha256 断言转绿。
+
+## 已知噪音（不影响判定）
+
+测试注入的是空 i18n messages，因此每条 `t('robotEditor.*')` 都会打印
+`[intlify] Not found 'robotEditor.xxx' key in 'zh' locale messages` 警告。
+EDT-07 合并中文包后这些警告消失，断言本身与 i18n 无关。

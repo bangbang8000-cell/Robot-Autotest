@@ -1,0 +1,120 @@
+package com.qa.autotest.application.asset;
+
+import com.qa.autotest.application.iam.AccessControlService;
+import com.qa.autotest.application.iam.Audited;
+import com.qa.autotest.application.iam.AuditService;
+import com.qa.autotest.application.repository.CredentialRepository;
+import com.qa.autotest.common.BusinessException;
+import com.qa.autotest.common.ErrorCode;
+import com.qa.autotest.common.security.SecretCipher;
+import com.qa.autotest.common.tenant.TenantContext;
+import com.qa.autotest.domain.asset.Credential;
+import com.qa.autotest.domain.iam.PermissionAction;
+import com.qa.autotest.domain.iam.PermissionResource;
+import java.util.List;
+import org.springframework.stereotype.Service;
+
+/**
+ * 凭据存储（AST-03）：明文只在「写入」与「执行域取用」两个瞬间存在。
+ *
+ * <p>列表接口只回 {@code configured} 与元信息，任何情况下都不回明文 / 密文。
+ */
+@Service
+public class CredentialService {
+
+    private final CredentialRepository credentials;
+    private final SecretCipher cipher;
+    private final AccessControlService access;
+    private final AuditService audit;
+
+    public CredentialService(CredentialRepository credentials, SecretCipher cipher,
+                             AccessControlService access, AuditService audit) {
+        this.credentials = credentials;
+        this.cipher = cipher;
+        this.access = access;
+        this.audit = audit;
+    }
+
+    public List<Credential> list(long projectId) {
+        access.bindProject(projectId);
+        access.require(PermissionResource.CREDENTIAL, PermissionAction.READ);
+        return credentials.list(projectId);
+    }
+
+    @Audited(action = "credential:upsert", resource = "credential")
+    public Credential create(long projectId, String name, String credType, String username,
+                             String secret) {
+        access.bindProject(projectId);
+        access.require(PermissionResource.CREDENTIAL, PermissionAction.CREATE);
+        requireText(name, "凭据名称");
+        if (credentials.nameExists(projectId, name, null)) {
+            throw new BusinessException(ErrorCode.CONFLICT, "凭据名称已存在：" + name);
+        }
+        long id = credentials.insert(projectId, name, credType, username,
+                cipher.encrypt(requireText(secret, "凭据内容")), 1, TenantContext.userId());
+        // 只记「已配置」与目标账号，绝不记 secret / 密文
+        audit.recordChange("credential:upsert", "credential", String.valueOf(id), null,
+                "name=" + name + "; target=" + target(username) + "; configured=true");
+        return credentials.find(projectId, id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "凭据不存在"));
+    }
+
+    /** 更新元信息；{@code secret} 为空表示不轮换密钥内容。 */
+    @Audited(action = "credential:upsert", resource = "credential")
+    public Credential update(long projectId, long id, String name, String username, String secret) {
+        access.bindProject(projectId);
+        access.require(PermissionResource.CREDENTIAL, PermissionAction.UPDATE);
+        Credential existing = credentials.find(projectId, id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "凭据不存在"));
+        requireText(name, "凭据名称");
+        if (credentials.nameExists(projectId, name, id)) {
+            throw new BusinessException(ErrorCode.CONFLICT, "凭据名称已存在：" + name);
+        }
+        String blob = secret == null || secret.isBlank()
+                ? credentials.cipherOf(projectId, id).orElse(null)
+                : cipher.encrypt(secret);
+        credentials.update(projectId, id, name, username, blob, TenantContext.userId());
+        boolean rotate = secret != null && !secret.isBlank();
+        audit.recordChange("credential:upsert", "credential", String.valueOf(id),
+                "name=" + existing.name() + "; target=" + target(existing.username()),
+                "name=" + name + "; target=" + target(username)
+                        + "; configured=true; rotated=" + rotate);
+        return credentials.find(projectId, id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "凭据不存在"));
+    }
+
+    public void delete(long projectId, long id) {
+        access.bindProject(projectId);
+        access.require(PermissionResource.CREDENTIAL, PermissionAction.DELETE);
+        credentials.find(projectId, id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "凭据不存在"));
+        credentials.delete(projectId, id);
+        audit.record("credential.delete", "credential", String.valueOf(id), "");
+    }
+
+    /**
+     * 执行域取用明文（不供 HTTP 接口直接调用）。
+     *
+     * <p>要求 {@code CREDENTIAL:USE} 权限，并落审计；返回值不得写日志。
+     */
+    public String resolveSecret(long projectId, long id) {
+        access.bindProject(projectId);
+        access.require(PermissionResource.CREDENTIAL, PermissionAction.USE);
+        String blob = credentials.cipherOf(projectId, id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "凭据未配置内容"));
+        audit.record("credential.use", "credential", String.valueOf(id), "resolve");
+        return cipher.decrypt(blob);
+    }
+
+    /** 目标账号为空时写「未指定」，避免摘要出现 null。 */
+    private static String target(String username) {
+        return username == null || username.isBlank() ? "未指定" : username;
+    }
+
+    private static String requireText(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, field + "不能为空");
+        }
+        return value;
+    }
+}

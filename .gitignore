@@ -4,6 +4,7 @@ node_modules/
 artifacts/
 logs/
 *.log
+!docs/evidence/**/*.log
 .venv/
 __pycache__/
 .DS_Store

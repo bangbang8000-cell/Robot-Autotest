@@ -93,7 +93,7 @@ emits: {
 
 **验证方式**：改完后 `grep -n "axios\|fetch(\|repoId\|router.push" packages/editor/src` 应为空（或仅注释）。
 
-### 3.2 解析器归属（关键架构决定，ADR-0006）
+### 3.2 解析器归属（关键架构决定，ADR-0007）
 
 `robotTextIO.ts`（774 行）是**解析的唯一真源**，纯 TypeScript，无外部依赖。
 
@@ -296,5 +296,5 @@ bash scripts/brand-scan.sh   # 输出 0（白名单除外）
 | 类别 | 内容 |
 |---|---|
 | 代码 | `packages/editor`（39 文件闭包，15 文件改写）、平台宿主页、`/api/editor/*` 接口、版本表与迁移 |
-| 文档 | `CONVENTIONS-editor.md`、`ADR-0006 解析器归属`、`ADR-0007 移植边界`、许可说明 |
+| 文档 | `CONVENTIONS-editor.md`、`ADR-0007 解析器归属`、`ADR-0008 移植边界`、许可说明 |
 | 证据 | `docs/evidence/v0.3/`：19 测试输出、50 样本往返报告、三视图 sha256 对比、品牌扫描、保存/版本日志、许可检查单 |

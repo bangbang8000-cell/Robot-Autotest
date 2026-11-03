@@ -1,0 +1,36 @@
+﻿
+> robot-autotest-frontend@0.1.0 build
+> vue-tsc --noEmit && vite build
+
+vite v6.4.5 building for production...
+transforming...
+✓ 107 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                              0.41 kB │ gzip:   0.30 kB
+dist/assets/index-DNOXi8wQ.css                                               4.34 kB │ gzip:   1.29 kB
+dist/assets/EditorView-BDGlY9Hd.css                                         86.82 kB │ gzip:  13.45 kB
+dist/assets/RunsView-CE_-H1WI.js                                             0.32 kB │ gzip:   0.24 kB
+dist/assets/ReportsView-38YpNUsC.js                                          0.32 kB │ gzip:   0.25 kB
+dist/assets/NotFoundView-Ciyt8B70.js                                         0.41 kB │ gzip:   0.30 kB
+dist/assets/ProjectPicker.vue_vue_type_script_setup_true_lang-DsMe7IqG.js    0.68 kB │ gzip:   0.44 kB
+dist/assets/OverviewView-DStNdChA.js                                         1.01 kB │ gzip:   0.58 kB
+dist/assets/LoginView-DzeFQWlU.js                                            1.56 kB │ gzip:   0.81 kB
+dist/assets/AdminView-DdMp42P4.js                                            7.46 kB │ gzip:   2.25 kB
+dist/assets/CasesView-BK2_Swqr.js                                           10.12 kB │ gzip:   3.18 kB
+dist/assets/AssetsView-Bos-TkXz.js                                          14.79 kB │ gzip:   3.66 kB
+dist/assets/index-ByzpVO9a.js                                              216.67 kB │ gzip:  79.62 kB
+dist/assets/EditorView-Xuwjj4Mz.js                                         857.76 kB │ gzip: 265.46 kB
+node.exe : 
+所在位置 D:\Program Files\nodejs\npm.ps1:29 字符: 3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-m
+anualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.43s

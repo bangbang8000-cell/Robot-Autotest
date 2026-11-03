@@ -1,0 +1,18 @@
+# window-stats 真实执行（HRD-03）
+# 生成时间：2026-11-03 20:14:38 CST
+# 执行位置：WSL Ubuntu-24.04，MySQL 127.0.0.1:3306 / robot_dev
+# 机器：Linux 5.15.167.4-microsoft-standard-WSL2 x86_64
+
+$ mysql --version
+mysql  Ver 8.0.46-0ubuntu0.24.04.4 for Linux on x86_64 ((Ubuntu))
+
+$ SELECT COUNT(*) FROM run; SELECT COUNT(*) FROM export_record;
+0
+0
+
+$ mysql -h127.0.0.1 -P3306 -urobot robot_dev < scripts/window-stats.sql
+
+MYSQL_EXIT_CODE=0
+
+# 说明：robot_dev 当前 run / export_record 均为空，因此按日查询无数据行；
+# 这是照实输出，不是脚本失败。观察窗统计需在 149 生产库有真实运行后重跑。
