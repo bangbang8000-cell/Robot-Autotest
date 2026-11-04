@@ -202,3 +202,25 @@
 | 用真实口令做测试数据 | 凭据泄露 | 造数脚本只允许 `test-only-pwd` |
 | 拦截器把复杂 SQL 改错 | 查询结果错但不报错 | 联表查询单独一组测试，结果与手写 SQL 比对 |
 | 权限矩阵只测 4 个角色不测「无角色」 | 未分配项目的用户行为未定义 | 补一条「无项目成员身份」用例，期望 403 或空集 |
+
+---
+
+## 12. 增量：OVW-01 总览真实化测试（2026-11-04）
+
+**原则**：总览是「读数」页面，**最危险的缺陷是把数算错还显示得很正常**。因此每条统计都要有外部对照
+（直接 SQL 查库），不接受「接口返回了就算过」。
+
+| ID | 用例 | 层级 | 步骤 | 期望 | 证据 |
+|---|---|---|---|---|---|
+| TC-OVW-01 | 指标与真库逐项一致 | IT（连真库 `robot_it`） | 造 3 设备 / 2 链路 / 2 凭据 / 5 用例（P0 2、P1 3；draft 3、approved 2）→ 调服务 | `cases.total=5`、`byPriority` 两组、`assets` 五项全对 | `ovw01-repo-it.log` |
+| TC-OVW-02 | 空项目不炸、通过率为 null | IT | 新项目零数据调用 | 全部计数 0；`passRateBp == null`；`avgDurationMs == null`；`dailyTrend.size() == 30` | 同上 |
+| TC-OVW-03 | 通过率按用例级算 | IT | 1 个 finished run：`test_result` 3 PASS / 1 FAIL → 调服务 | `casePass=3`、`caseFail=1`、`passRateBp=7500` | 同上 |
+| TC-OVW-04 | 取消/运行中不进分母 | IT | 再加 1 个 canceled run + 1 个 running run | `runs.total=3`、`finished=1`、`canceled=1`、`running=1`、通过率仍 `7500` | 同上 |
+| TC-OVW-05 | 跨项目 403 | IT | 用项目 B 的 id 调服务（无成员关系） | `BusinessException(FORBIDDEN)` | 同上 |
+| TC-OVW-06 | 参数夹边界 | UT | `recent=0/999`、`days=0/999` | 分别按 1/20、1/90 处理，不抛异常 | `OverviewServiceTest` |
+| TC-OVW-07 | 趋势页 `finished` 进分子 | UT | 断言 SQL 常量含 `('finished','failed')` 且不含 `'passed'` | 通过 | `TrendRepositorySqlTest` |
+| TC-OVW-08 | 真实浏览器读数一致 | E2E（CDP） | 登录 → 打开 `/overview` → 截图 + 取接口 JSON | 页面显示 226 / 3 / 2 / 2，与 JSON 逐项相同；执行区显示「还没有执行记录」且**不出现 0%** | `ovw01-overview.png`、`ovw01-api.json` |
+| TC-OVW-09 | 空态引导可见 | E2E | 同上（真实库 run=0） | 执行区与近期执行区各有一句「下一步点哪里」 | 同上 |
+| TC-OVW-10 | 构建三关 | CI 等价 | `mvn -B test` / `npm run lint` / `npx vue-tsc --noEmit` / `npm run build` | 全部 exit 0 | `ovw01-build.log` |
+
+**不做**：并发刷新压测（只读聚合，量级 1e4，无意义）、移动端适配（PRD §6 不做）。

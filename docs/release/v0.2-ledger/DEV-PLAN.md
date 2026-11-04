@@ -244,3 +244,23 @@ npm run test:e2e -- --grep "v0.2 核心场景"   # 1~7 步全过
 | 迁移 | `V2_1`~`V2_4` 及对应 down |
 | 文档 | `CONVENTIONS-backend.md`、`CONVENTIONS-frontend.md`、`ADR-0005 双模模型`、`ADR-0006 租户隔离`、IA 冻结纪要 |
 | 证据 | `docs/evidence/v0.2/`：越权 20 条输出、导入对账、凭据扫描、租户元测试、核心场景录屏 |
+
+---
+
+## 9. 增量：OVW-01 总览真实化（2026-11-04）
+
+**背景**：v0.2 原计划的总览「只有数量统计」，实测是 43 行 ping 占位页。需求见 PRD §3.4（`FR-v0.2-25~30`），
+口径与取舍见 `docs/plan/总览页真实化-评估与设计-20261104.md`。
+
+| 步骤 | 内容 | 产出 | 验收命令 |
+|---:|---|---|---|
+| 1 | 领域模型：`domain/overview/ProjectOverview`（嵌套 record，含 `passRateBp` 整数基点 + `null` 表无样本） | 1 个文件 | `mvn -B -q compile` |
+| 2 | 仓储接口 + JDBC 实现：7 条只读 SQL，全部显式 `project_id` 并过 `TenantGuard` | `OverviewRepository` / `OverviewRepositoryJdbc` | `mvn -Pit test -Dtest=OverviewRepositoryIT` |
+| 3 | 应用服务：`bindProject` + `require(CASE, READ)`，参数夹边界 | `OverviewService` | 同上 |
+| 4 | 接口：`GET /api/projects/{projectId}/overview` | `api/overview/OverviewController` | `curl` 见 TEST-PLAN §12 |
+| 5 | 修 `TrendRepositoryJdbc` 的 `run_status IN ('passed','failed')` → `('finished','failed')` | 1 行 + 1 条单测 | `mvn -B test -Dtest=TrendServiceTest` |
+| 6 | 前端：`api/overview.ts` + 重写 `OverviewView.vue`（四区 + 空态 + 近 30 天 CSS 柱状） | 2 个文件 + i18n | `npm run build` / `lint` / `vue-tsc` |
+| 7 | 证据：真库对照日志 + 浏览器截图 | `docs/evidence/v0.2/ovw01-*.log/.png` | 见 TEST-PLAN §12 |
+
+**依赖**：无新表、无迁移、无外部依赖，不阻塞 G2。
+**不做**：图表库、实时刷新、跨项目聚合、自定义布局（理由见评估文档 §8）。

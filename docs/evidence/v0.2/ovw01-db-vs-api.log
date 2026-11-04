@@ -1,0 +1,77 @@
+# OVW-01 接口读数 vs 直接 SQL 对照
+
+**时间** 2026-11-04 10:01 ｜ **库** `robot_dev` ｜ **项目** `projectId=1`（`demo · 演示项目`）
+**接口** `GET /api/projects/1/overview?recent=8&days=30`（原始返回见 `ovw01-api.json`）
+
+## 一、逐项对照
+
+| # | 指标 | 接口返回 | 直接 SQL | 一致 |
+|---:|---|---:|---:|:--:|
+| 1 | 在用用例数 `cases.total` | 226 | 226 | ✅ |
+| 2 | 优先级 `P2` | 226 | 226 | ✅ |
+| 3 | 评审状态 `draft` | 216 | 216 | ✅ |
+| 4 | 评审状态 `approved` | 10 | 10 | ✅ |
+| 5 | 设备 `assets.devices`（status=1） | 3 | 3 | ✅ |
+| 6 | 端口 `assets.ports` | 0 | 0 | ✅ |
+| 7 | 链路 `assets.links`（status=1） | 2 | 2 | ✅ |
+| 8 | 凭据 `assets.credentials` | 2 | 2 | ✅ |
+| 9 | 环境 `assets.environments` | 0 | 0 | ✅ |
+| 10 | 用例集 `assets.testSets`（active） | 0 | 0 | ✅ |
+| 11 | 运行总数 `runs.total` | 0 | 0 | ✅ |
+| 12 | 通过率 `runs.passRateBp` | `null` | 无完成 run | ✅ 无样本时为 null，不是 0 |
+| 13 | 趋势点数 `dailyTrend` | 30 | — | ✅ 恰好 30，日期连续 |
+
+**10 项计数 + 2 项空值语义 + 1 项点数，全部一致。**
+
+## 二、直接 SQL（可复现）
+
+```sql
+SELECT 'cases_total', COUNT(*) FROM robot_dev.test_case WHERE project_id=1 AND status=1
+UNION ALL SELECT 'devices', COUNT(*) FROM robot_dev.device WHERE project_id=1 AND status=1
+UNION ALL SELECT 'ports', COUNT(*) FROM robot_dev.device_port p
+           JOIN robot_dev.device d ON d.id=p.device_id WHERE d.project_id=1
+UNION ALL SELECT 'links', COUNT(*) FROM robot_dev.link WHERE project_id=1 AND status=1
+UNION ALL SELECT 'credentials', COUNT(*) FROM robot_dev.credential WHERE project_id=1
+UNION ALL SELECT 'environments', COUNT(*) FROM robot_dev.env_profile WHERE project_id=1
+UNION ALL SELECT 'test_sets', COUNT(*) FROM robot_dev.test_set WHERE project_id=1 AND set_status='active'
+UNION ALL SELECT 'runs_total', COUNT(*) FROM robot_dev.run WHERE project_id=1
+UNION ALL SELECT 'cases_draft', COUNT(*) FROM robot_dev.test_case
+           WHERE project_id=1 AND status=1 AND review_status='draft'
+UNION ALL SELECT 'cases_approved', COUNT(*) FROM robot_dev.test_case
+           WHERE project_id=1 AND status=1 AND review_status='approved';
+```
+
+输出：
+
+```
+cases_total	226
+devices	3
+ports	0
+links	2
+credentials	2
+environments	0
+test_sets	0
+runs_total	0
+cases_draft	216
+cases_approved	10
+```
+
+## 三、页面读数（`overview.png`）
+
+截图里的文字与上表逐项相同：
+
+```
+用例 226 在用用例总数 · 优先级 P2 226 · 评审状态 草稿 216 · 已通过 10 · 技术域 Top 未标注 226
+资产 3 设备 · 端口 0 · 链路 2 · 凭据 2 · 环境 / 用例集 0 / 0
+通过率 — 近 30 天 · 用例级 · 还没有执行记录
+执行 0 累计运行次数 · 近 30 天 0 · 完成 0 · 失败 0 · 运行中 0
+```
+
+## 四、顺带发现的两条真实数据问题（不是总览缺陷，是数据本身）
+
+1. **226 条用例的技术域全为空**（`topDomains` 只有「未标注 226」）：导入时 `domain_tag` 未映射台账列，
+   而台账里也没有明确的技术域列（`一级分类` 落到了 `category`）。这是 v0.2 导入口径的遗留，
+   总览把它如实显示出来，比藏起来好。
+2. **226 条优先级全是 `P2`**：台账无优先级列（已在 `WBS-STATUS.md` 口径变更 ⑤ 中定案）。
+
+这两条说明总览的价值：**它让「数据质量问题」在首页就能被看见**，而不是等写报告时才发现。

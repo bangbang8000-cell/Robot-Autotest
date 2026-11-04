@@ -1,0 +1,241 @@
+{
+    "code": 0,
+    "codeName": "OK",
+    "message": "OK",
+    "data": {
+        "projectId": 1,
+        "generatedAt": "2026-11-04T02:01:37.438122352Z",
+        "windowDays": 30,
+        "cases": {
+            "total": 226,
+            "byPriority": [
+                {
+                    "key": "P2",
+                    "count": 226
+                }
+            ],
+            "byReviewStatus": [
+                {
+                    "key": "draft",
+                    "count": 216
+                },
+                {
+                    "key": "approved",
+                    "count": 10
+                }
+            ],
+            "topDomains": [
+                {
+                    "key": "\u672a\u6807\u6ce8",
+                    "count": 226
+                }
+            ]
+        },
+        "assets": {
+            "devices": 3,
+            "ports": 0,
+            "links": 2,
+            "credentials": 2,
+            "environments": 0,
+            "testSets": 0
+        },
+        "runs": {
+            "total": 0,
+            "inWindow": 0,
+            "running": 0,
+            "finished": 0,
+            "failed": 0,
+            "canceled": 0,
+            "casePass": 0,
+            "caseFail": 0,
+            "caseSkip": 0,
+            "passRateBp": null,
+            "avgDurationMs": null,
+            "lastRunAt": null
+        },
+        "recentRuns": [],
+        "dailyTrend": [
+            {
+                "date": "2026-10-06",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-07",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-08",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-09",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-10",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-11",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-12",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-13",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-14",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-15",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-16",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-17",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-18",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-19",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-20",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-21",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-22",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-23",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-24",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-25",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-26",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-27",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-28",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-29",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-30",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-10-31",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-11-01",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-11-02",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-11-03",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            },
+            {
+                "date": "2026-11-04",
+                "finished": 0,
+                "failed": 0,
+                "canceled": 0
+            }
+        ]
+    },
+    "success": true
+}
