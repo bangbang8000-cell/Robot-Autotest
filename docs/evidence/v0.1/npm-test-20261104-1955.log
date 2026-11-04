@@ -1,0 +1,19 @@
+
+> robot-autotest-frontend@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 /home/evergreen/robot-autotest/frontend
+
+(node:177612) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:177610) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/composables/useSelection.spec.ts (8 tests) 7ms
+ ✓ src/utils/format.spec.ts (8 tests) 35ms
+
+ Test Files  2 passed (2)
+      Tests  16 passed (16)
+   Start at  19:54:56
+   Duration  1.30s (transform 160ms, setup 37ms, collect 288ms, tests 42ms, environment 908ms, prepare 390ms)
+
