@@ -1,0 +1,27 @@
+# NAM-01 产品命名统一 · 验证记录
+# 日期: 2026-11-04  |  执行: 学徒  |  环境: 前端 5173 (Vite dev) + 后端 8082
+
+## 1. 语言包取值
+frontend/src/locales/zh-CN.ts:3:    title: 'AIDC自动化测试',
+frontend/src/locales/en-US.ts:3:    title: 'AIDC AutoTest',
+
+## 2. 静态标题（服务端首屏兜底）
+6:    <title>AIDC AutoTest</title>
+
+## 3. 浏览器标签页跟随语言（CDP 真实浏览器）
+   zh-CN: title = AIDC自动化测试
+   en-US: title = AIDC AutoTest
+
+## 4. 界面品牌位正文（document.body.innerText 前 120 字）
+   zh: AIDC自动化测试 总览 资产 用例 执行 报告 管理 审计日志 v0.2 台账版 ...
+   en: AIDC AutoTest Overview Assets Test Cases Runs Reports Admin Audit Log v0.2 ledger edition ...
+
+## 5. 工程标识零变更（只改显示层）
+   ^ 以上为空 = pom/package.json/Java 包名均未改动
+
+## 6. 本次改动文件
+ M README.md
+ M frontend/index.html
+ M frontend/src/App.vue
+ M frontend/src/locales/en-US.ts
+ M frontend/src/locales/zh-CN.ts

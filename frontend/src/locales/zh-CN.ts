@@ -1,6 +1,6 @@
 export default {
   app: {
-    title: '自动化测试平台',
+    title: 'AIDC自动化测试',
     subtitle: 'v0.2 台账版',
     logout: '退出登录',
   },

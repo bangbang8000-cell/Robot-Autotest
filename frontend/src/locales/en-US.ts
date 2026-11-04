@@ -1,6 +1,6 @@
 export default {
   app: {
-    title: 'Robot Autotest Platform',
+    title: 'AIDC AutoTest',
     subtitle: 'v0.2 ledger edition',
     logout: 'Sign out',
   },

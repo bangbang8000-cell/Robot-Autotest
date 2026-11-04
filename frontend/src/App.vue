@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
@@ -26,6 +26,16 @@ const isStandalone = computed(
   () => isLogin.value || Boolean((route.meta as Record<string, unknown>).print),
 )
 const displayName = computed(() => auth.user?.displayName || auth.user?.username || '')
+
+// 浏览器标签页标题跟随语言（NAM-01）：index.html 只能写一个静态标题，
+// 不在这里同步的话，英文界面标签页仍写着中文产品名。
+watch(
+  () => localeStore.locale,
+  () => {
+    document.title = t('app.title')
+  },
+  { immediate: true },
+)
 
 async function logout(): Promise<void> {
   await auth.logout()
