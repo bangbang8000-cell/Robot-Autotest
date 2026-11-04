@@ -1,0 +1,68 @@
+package com.qa.autotest.application.iam;
+
+import com.qa.autotest.application.repository.UserPreferenceRepository;
+import com.qa.autotest.common.BusinessException;
+import com.qa.autotest.common.ErrorCode;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.stereotype.Service;
+
+/**
+ * 用户偏好（UX-01）。
+ *
+ * <p><b>这是一张白名单表，不是通用 KV 存储。</b>键与值都必须在 {@link #ALLOWED} 内：
+ * 否则它会变成"任何登录用户都能往数据库写任意字符串"的口子，而且值会随
+ * {@code GET /users/me/preferences} 原样回吐给前端。
+ *
+ * <p>主题偏好的作用是<b>换设备后一致</b>：本机选择先落 localStorage（首帧要用），
+ * 登录后再以服务端为准覆盖。所以这里不做"合并"，服务端就是权威。
+ */
+@Service
+public class UserPreferenceService {
+
+    /** 允许的键与取值。新增偏好项要同时改这里与前端常量。 */
+    private static final Map<String, Set<String>> ALLOWED = Map.of(
+            "theme", Set.of("system", "light", "dark"),
+            "locale", Set.of("zh-CN", "en-US"));
+
+    /** 单次提交的键数上限：偏好项就几项，超过说明调用方写错了。 */
+    private static final int MAX_KEYS_PER_REQUEST = 10;
+
+    private final UserPreferenceRepository repository;
+
+    public UserPreferenceService(UserPreferenceRepository repository) {
+        this.repository = repository;
+    }
+
+    public Map<String, String> get(long userId) {
+        return repository.findAll(userId);
+    }
+
+    /**
+     * 全量校验通过后才写入：不留下"一半新一半旧"的状态。
+     * 空 Map 视为无操作（幂等），不报错——前端在用户没改任何东西时可能发空请求。
+     */
+    public Map<String, String> put(long userId, Map<String, String> values) {
+        if (values == null || values.isEmpty()) {
+            return repository.findAll(userId);
+        }
+        if (values.size() > MAX_KEYS_PER_REQUEST) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
+                    "偏好项过多：" + values.size() + "，单次上限 " + MAX_KEYS_PER_REQUEST);
+        }
+        values.forEach(UserPreferenceService::validate);
+        values.forEach((key, value) -> repository.upsert(userId, key, value));
+        return repository.findAll(userId);
+    }
+
+    private static void validate(String key, String value) {
+        Set<String> allowedValues = ALLOWED.get(key);
+        if (allowedValues == null) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "不支持的偏好键：" + key);
+        }
+        if (value == null || !allowedValues.contains(value)) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
+                    "偏好值非法：" + key + "=" + value);
+        }
+    }
+}

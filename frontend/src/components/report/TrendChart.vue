@@ -31,7 +31,11 @@ const PAD_RIGHT = 20
 const PAD_TOP = 20
 const PAD_BOTTOM = 40
 
-const COLORS = ['#7cc6fe', '#b9a6ff', '#7ee2b8', '#ffb86b']
+// 系列色走语义 token：亮/暗两套主题的图表色必须各自够读（浅蓝浅绿在白底上几乎看不见）。
+// SVG 的 stroke/fill 是 presentation attribute，var() 在那里能不能解析取决于浏览器，
+// 所以模板统一用 :style 绑定（style 里的 var() 一定生效）。
+const COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)']
+const DEVIATED_COLOR = 'var(--warn)'
 
 const allPoints = computed(() => props.series.flatMap((item) => item.points))
 
@@ -162,7 +166,7 @@ function clickPoint(id: string): void {
         <polyline
           v-if="line.points.length > 1"
           :points="line.points.map((point) => `${point.px},${point.py}`).join(' ')"
-          :stroke="line.color"
+          :style="{ stroke: line.color }"
           stroke-width="2"
           fill="none"
         />
@@ -172,7 +176,7 @@ function clickPoint(id: string): void {
           :cx="point.px"
           :cy="point.py"
           :r="point.id === currentId ? 6 : 4.5"
-          :fill="point.deviated ? '#f0b429' : line.color"
+          :style="{ fill: point.deviated ? DEVIATED_COLOR : line.color }"
           :class="{ clickable, deviated: point.deviated, current: point.id === currentId }"
           @click="clickPoint(point.id)"
         >
@@ -216,7 +220,7 @@ function clickPoint(id: string): void {
 }
 
 .grid-line {
-  stroke: #22303f;
+  stroke: var(--border);
   stroke-width: 1;
 }
 
@@ -241,7 +245,7 @@ function clickPoint(id: string): void {
 }
 
 .deviated {
-  stroke: #f0b429;
+  stroke: var(--warn);
   stroke-width: 1.5;
 }
 
@@ -272,6 +276,6 @@ function clickPoint(id: string): void {
 }
 
 .legend-dot-warn {
-  background: #f0b429;
+  background: var(--warn);
 }
 </style>

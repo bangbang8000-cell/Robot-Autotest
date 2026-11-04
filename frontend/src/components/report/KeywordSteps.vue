@@ -43,7 +43,7 @@ function verdictClass(status: string): string {
 
 .kw-children {
   margin-left: 16px;
-  border-left: 1px dashed #2b3a4b;
+  border-left: 1px dashed var(--border-strong);
   padding-left: 8px;
 }
 </style>

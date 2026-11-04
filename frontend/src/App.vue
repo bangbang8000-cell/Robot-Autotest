@@ -4,12 +4,28 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
 import { useAuthStore } from '@/stores/auth'
+import { useTheme, type ThemeMode } from '@/composables/useTheme'
+import { preferenceApi } from '@/api/preferences'
 
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const localeStore = useLocaleStore()
 const auth = useAuthStore()
+const theme = useTheme()
+
+// index.html 的内联脚本已设过 data-theme（防闪）；这里再跑一次是兜底：
+// 万一内联脚本被 CSP 拦掉，或 localStorage 里的值与当前 mode 不一致，也需要纠正。
+theme.init()
+
+const THEME_ICONS: Record<ThemeMode, string> = {
+  system: '◐',
+  light: '☀',
+  dark: '☾',
+}
+
+const themeIcon = computed(() => THEME_ICONS[theme.mode.value])
+const themeLabel = computed(() => t('theme.switchTo', { mode: t(`theme.${theme.mode.value}`) }))
 
 const menus = [
   { name: 'overview', path: '/overview' },
@@ -42,6 +58,23 @@ async function logout(): Promise<void> {
   await router.replace('/login')
 }
 
+/**
+ * 切主题：本机立刻生效并落 localStorage；登录态下再同步服务端（跨设备一致）。
+ * 服务端同步失败**不能**回滚本地主题——那样用户点了没反应，会以为功能坏了。
+ * 下次登录会以服务端为准，本地这次的选择自然会被纠正。
+ */
+async function toggleTheme(): Promise<void> {
+  const next = theme.cycle()
+  if (!auth.authenticated) {
+    return
+  }
+  try {
+    await preferenceApi.put({ theme: next })
+  } catch {
+    // 静默：主题是纯展示偏好，同步失败不影响本次使用
+  }
+}
+
 onMounted(async () => {
   if (!auth.authenticated) return
   try {
@@ -50,6 +83,14 @@ onMounted(async () => {
     // 令牌失效（401）或后端不可达：回登录页，避免半登录态继续发请求
     auth.clear()
     await router.replace('/login')
+    return
+  }
+  // 偏好单独兜住：它失败不该把人踢下线（否则后端少一个接口就登不进来了）
+  try {
+    const prefs = await preferenceApi.get()
+    theme.applyRemote(prefs.theme)
+  } catch {
+    // 用本地值继续
   }
 })
 </script>
@@ -76,6 +117,15 @@ onMounted(async () => {
         <span class="app-header-title">{{ t('app.subtitle') }}</span>
         <div class="app-header-right">
           <span v-if="displayName" class="muted">{{ displayName }}</span>
+          <button
+            class="btn btn-ghost theme-btn"
+            type="button"
+            :title="themeLabel"
+            :aria-label="themeLabel"
+            @click="toggleTheme"
+          >
+            {{ themeIcon }}
+          </button>
           <select
             class="app-lang"
             :value="localeStore.locale"

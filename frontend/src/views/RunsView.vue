@@ -315,8 +315,8 @@ onBeforeUnmount(() => {
   margin: 0;
   padding: 12px;
   border-radius: 8px;
-  background: #11161d;
-  color: #d8e1ea;
+  background: var(--surface-2);
+  color: var(--text);
   font-family: 'Cascadia Code', Consolas, monospace;
   font-size: 12px;
   line-height: 1.6;
@@ -329,10 +329,10 @@ onBeforeUnmount(() => {
 }
 
 .level-warn {
-  color: #f0b429;
+  color: var(--warn);
 }
 
 .level-error {
-  color: #ef5350;
+  color: var(--fail);
 }
 </style>

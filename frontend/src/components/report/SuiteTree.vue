@@ -86,7 +86,7 @@ function verdictClass(verdict: string): string {
 <style scoped>
 .suite.nested {
   margin-left: 18px;
-  border-left: 1px dashed #2b3a4b;
+  border-left: 1px dashed var(--border-strong);
   padding-left: 10px;
 }
 
@@ -144,7 +144,7 @@ function verdictClass(verdict: string): string {
 .steps {
   margin: 4px 0 8px 20px;
   padding: 8px 10px;
-  background: #141f2b;
+  background: var(--surface-2);
   border-radius: 6px;
 }
 </style>

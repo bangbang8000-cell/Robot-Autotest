@@ -4,6 +4,12 @@ export default {
     subtitle: 'v0.2 台账版',
     logout: '退出登录',
   },
+  theme: {
+    system: '跟随系统',
+    light: '亮色',
+    dark: '暗色',
+    switchTo: '切换主题（当前：{mode}）',
+  },
   menu: {
     overview: '总览',
     assets: '资产',

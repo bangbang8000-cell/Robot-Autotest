@@ -29,10 +29,10 @@ class SchemaIT {
 
     /**
      * 业务表总数。v0.1 设计为 38 张；后续版本新增 6 张（editor_keyword / case_requirement /
-     * export_record / ci_trigger / execution_plan_dependency / schedule_dependency），实测 44。
+     * export_record / ci_trigger / execution_plan_dependency / schedule_dependency），实测 45（2026-11-04 加 user_preference，UX-01）。
      * 这个值随迁移演进更新，不是「越多越好」。
      */
-    private static final int EXPECTED_TABLES = 44;
+    private static final int EXPECTED_TABLES = 45;
 
     /**
      * append-only 表：按设计只增不改，没有「更新人/更新时间」这回事。

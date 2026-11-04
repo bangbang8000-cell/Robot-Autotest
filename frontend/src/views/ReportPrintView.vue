@@ -205,6 +205,12 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/*
+ * 打印/导出专用页：由无头浏览器直接打开生成 PDF，必须永远是白底黑字 + 红色失败标记，
+ * **不能**跟随亮/暗主题（跟随了会出现暗底 PDF，打印出来是黑纸）。
+ * 所以整个样式块刻意写死色值，显式豁免色值检查，不是漏改。
+ */
+/* color-check: ignore-start 打印页必须固定白底黑字，与主题无关 */
 .print-page {
   background: #ffffff;
   color: #1a1a1a;
@@ -355,4 +361,5 @@ h3 {
     font-size: 11px;
   }
 }
+/* color-check: ignore-end */
 </style>

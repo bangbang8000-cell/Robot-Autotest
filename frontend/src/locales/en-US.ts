@@ -4,6 +4,12 @@ export default {
     subtitle: 'v0.2 ledger edition',
     logout: 'Sign out',
   },
+  theme: {
+    system: 'System',
+    light: 'Light',
+    dark: 'Dark',
+    switchTo: 'Switch theme (current: {mode})',
+  },
   menu: {
     overview: 'Overview',
     assets: 'Assets',

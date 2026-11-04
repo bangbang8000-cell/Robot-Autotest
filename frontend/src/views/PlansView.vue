@@ -496,15 +496,15 @@ void load()
 }
 
 .badge-on {
-  color: #1b7f3b;
-  background: #e7f6ec;
-  border-color: #bfe8cb;
+  color: var(--ok);
+  background: var(--ok-soft);
+  border-color: var(--ok-border);
 }
 
 .badge-paused {
-  color: #8a5a00;
-  background: #fff4dc;
-  border-color: #f0d59a;
+  color: var(--warn);
+  background: var(--warn-soft);
+  border-color: var(--warn-border);
 }
 
 .form-card {
@@ -539,12 +539,12 @@ void load()
 .preview-time {
   padding: 2px 8px;
   border-radius: 6px;
-  background: #f2f5f9;
+  background: var(--surface-2);
   font-size: 12px;
 }
 
 .deps {
-  border: 1px solid #dde3ea;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px 12px;
 }
@@ -578,7 +578,7 @@ void load()
 }
 
 .facts dt {
-  color: #6b7785;
+  color: var(--text-muted);
 }
 
 .facts dd {

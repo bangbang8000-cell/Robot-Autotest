@@ -281,7 +281,7 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 1rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
 }
 
 .editor-host__title {
@@ -290,7 +290,7 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
 }
 
 .editor-host__path {
-  color: #6b7280;
+  color: var(--text-muted);
   font-family: ui-monospace, monospace;
   font-size: 0.85rem;
 }
@@ -298,8 +298,8 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
 .editor-host__version {
   padding: 0.1rem 0.45rem;
   border-radius: 999px;
-  background: #eef2ff;
-  color: #3730a3;
+  background: var(--accent-soft);
+  color: var(--accent);
   font-size: 0.8rem;
 }
 
@@ -307,21 +307,21 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
   margin-left: auto;
   padding: 0.1rem 0.5rem;
   border-radius: 999px;
-  background: #ecfdf5;
-  color: #047857;
+  background: var(--ok-soft);
+  color: var(--ok);
   font-size: 0.8rem;
 }
 
 .editor-host__role[data-readonly='true'] {
-  background: #fff7e6;
-  color: #7a4e00;
+  background: var(--warn-soft);
+  color: var(--warn);
 }
 
 .editor-host__btn {
   padding: 0.25rem 0.7rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-strong);
   border-radius: 6px;
-  background: #fff;
+  background: var(--panel);
   font-size: 0.85rem;
   cursor: pointer;
 }
@@ -332,9 +332,9 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
 }
 
 .editor-host__btn--primary {
-  border-color: #2563eb;
-  background: #2563eb;
-  color: #fff;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-contrast);
 }
 
 .editor-host__btn--small {
@@ -356,18 +356,18 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
 }
 
 .editor-host__notice[data-level='info'] {
-  color: #065f46;
-  background: #ecfdf5;
+  color: var(--ok);
+  background: var(--ok-soft);
 }
 
 .editor-host__notice[data-level='warn'] {
-  color: #7a4e00;
-  background: #fff7e6;
+  color: var(--warn);
+  background: var(--warn-soft);
 }
 
 .editor-host__notice[data-level='error'],
 .editor-host__error {
-  color: #b91c1c;
+  color: var(--fail);
 }
 
 .editor-host__versions {
@@ -378,10 +378,10 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
   max-height: 60%;
   overflow: auto;
   padding: 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-strong);
   border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 8px 24px rgb(15 23 42 / 12%);
+  background: var(--panel);
+  box-shadow: var(--shadow);
   font-size: 0.8rem;
 }
 
@@ -401,17 +401,17 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
   align-items: center;
   gap: 0.5rem;
   padding: 0.25rem 0;
-  border-bottom: 1px dashed #e5e7eb;
+  border-bottom: 1px dashed var(--border);
 }
 
 .version-row__no {
   min-width: 2.5rem;
   font-family: ui-monospace, monospace;
-  color: #3730a3;
+  color: var(--accent);
 }
 
 .version-row__time {
-  color: #6b7280;
+  color: var(--text-muted);
   white-space: nowrap;
 }
 
@@ -428,7 +428,7 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgb(15 23 42 / 35%);
+  background: var(--overlay);
 }
 
 .editor-host__modal-body {
@@ -437,7 +437,7 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
   width: min(72rem, 92%);
   max-height: 84%;
   border-radius: 10px;
-  background: #fff;
+  background: var(--panel);
   overflow: hidden;
 }
 
@@ -446,7 +446,7 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
 }
 
 .editor-host__modal-bar h3 {
@@ -468,17 +468,17 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
 }
 
 .diff__line[data-op='ADD'] {
-  background: #e8f7ee;
-  color: #065f46;
+  background: var(--ok-soft);
+  color: var(--ok);
 }
 
 .diff__line[data-op='REMOVE'] {
-  background: #fdecec;
-  color: #991b1b;
+  background: var(--fail-soft);
+  color: var(--fail);
 }
 
 .editor-host__versions-empty {
   margin: 0;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 </style>

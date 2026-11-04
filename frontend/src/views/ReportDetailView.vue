@@ -768,12 +768,12 @@ watch(granularity, () => {
 }
 
 .trend-deviated {
-  color: #f0b429;
+  color: var(--warn);
 }
 
 .pass-rate-block {
   margin-top: 18px;
-  border-top: 1px solid #22303f;
+  border-top: 1px solid var(--border);
   padding-top: 10px;
 }
 
@@ -784,12 +784,12 @@ watch(granularity, () => {
 
 .segmented .active {
   color: var(--text);
-  border-color: #7cc6fe;
+  border-color: var(--accent);
 }
 
 .log-panel {
   margin-top: 14px;
-  border-top: 1px solid #22303f;
+  border-top: 1px solid var(--border);
   padding-top: 10px;
 }
 
@@ -799,8 +799,8 @@ watch(granularity, () => {
   margin: 0;
   padding: 12px;
   border-radius: 8px;
-  background: #11161d;
-  color: #d8e1ea;
+  background: var(--surface-2);
+  color: var(--text);
   font-family: 'Cascadia Code', Consolas, monospace;
   font-size: 12px;
   line-height: 1.6;
@@ -813,16 +813,16 @@ watch(granularity, () => {
 }
 
 .level-warn {
-  color: #f0b429;
+  color: var(--warn);
 }
 
 .level-error,
 .level-fail {
-  color: #ef5350;
+  color: var(--fail);
 }
 
 .change-both-fail {
-  color: #f0b429;
+  color: var(--warn);
 }
 
 .change-pass_to_fail {
@@ -853,7 +853,7 @@ watch(granularity, () => {
   }
 
   .compare-table tr {
-    border-bottom: 1px solid #22303f;
+    border-bottom: 1px solid var(--border);
     padding: 6px 0;
   }
 
