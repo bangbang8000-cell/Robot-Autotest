@@ -32,12 +32,31 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 THEME_CSS = ROOT / "frontend" / "src" / "styles" / "theme.css"
+ACCENT_TS = ROOT / "frontend" / "src" / "composables" / "useAccent.ts"
 
 BLOCK_RE = re.compile(r"([^{}]+)\{([^{}]*)\}", re.S)
 DECL_RE = re.compile(r"(--[\w-]+)\s*:\s*([^;]+);")
 VAR_RE = re.compile(r"^var\(\s*(--[\w-]+)\s*\)$")
 ACCENT_RE = re.compile(r"""data-accent\s*=\s*['"]([^'"]+)['"]""")
 THEME_RE = re.compile(r"""data-theme\s*=\s*['"](light|dark)['"]""")
+ACCENT_LIST_RE = re.compile(r"export const ACCENTS\s*=\s*\[([^\]]*)\]")
+
+
+def read_accent_names() -> list[str]:
+    """从 useAccent.ts 读六预设清单（唯一真源）。
+
+    换色板时最容易出的事不是色值算错，而是「清单本身有多份、改漏一处」：
+    2026-11-05 把 blue/cyan/indigo/violet/teal/fuchsia 换成
+    crimson/blue/gold/orange/violet/jade 时，theme.css / useAccent.ts / index.html /
+    UserPreferenceService.java / 本文件 四处各有一份清单，靠脑子同步必漏。
+    现在本文件不再持清单，只认 useAccent.ts；其余各处由 check_accent_presets.py 比对。
+    """
+    if not ACCENT_TS.is_file():
+        return []
+    match = ACCENT_LIST_RE.search(ACCENT_TS.read_text(encoding="utf-8"))
+    if not match:
+        return []
+    return re.findall(r"['\"]([\w-]+)['\"]", match.group(1))
 
 # (前景, 背景, 阈值, 说明)
 CHECKS: list[tuple[str, str, float, str]] = [
@@ -70,7 +89,7 @@ def parse_theme(path: Path) -> tuple[dict[str, str], dict[tuple[str, str], dict[
     groups 的键是 **(主题, 强调色)**，值是该组合下生效的完整变量表。
 
     为什么要分组（D15）：早期版本把所有含 `data-theme` 的块 `update` 进同一份表，
-    后出现的 `[data-accent='teal'][data-theme='dark']` 会把默认暗色的 `--accent` 覆盖掉。
+    后出现的 `[data-accent='jade'][data-theme='dark']` 会把默认暗色的 `--accent` 覆盖掉。
     结果是"默认态"根本没被测，但脚本仍打印全 PASS —— 典型的假绿。分组后
     每个 (主题 × 强调色) 各自独立合成，变体块无法污染默认块。
     """
@@ -162,7 +181,7 @@ def contrast(fg: str, bg: str) -> float | None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="检查两套主题的 token 对比度")
     parser.add_argument("--theme", choices=["dark", "light"], help="只检查一套主题")
-    parser.add_argument("--accent", help="只检查某个强调色分组（default / blue / teal ...）")
+    parser.add_argument("--accent", help="只检查某个强调色分组（default / blue / jade ...）")
     args = parser.parse_args()
 
     if not THEME_CSS.is_file():
@@ -182,8 +201,15 @@ def main() -> int:
               file=sys.stderr)
         return 2
 
-    # 六预设 × 两主题必须逐组存在：只写了 dark 或漏了 teal，分组数仍可能凑够 14。
-    required = {"blue", "cyan", "indigo", "violet", "teal", "fuchsia"}
+    # 六预设 × 两主题必须逐组存在：只写了 dark 或漏了一个色，分组数仍可能凑够 14。
+    # 清单不再硬编码在这里 —— 2026-11-05 换色板时发现「六预设」在 4 个地方各有一份
+    # （useAccent.ts / index.html / UserPreferenceService.java / 本文件），改一轮漏一处就直接
+    # 假红或假绿。现在以 useAccent.ts 为准，其余三处由 tools/check_accent_presets.py 比对。
+    required = read_accent_names()
+    if not required:
+        print(f"[FAIL] 没能从 {ACCENT_TS} 解析出 ACCENTS（解析规则失效，不是没有强调色）",
+              file=sys.stderr)
+        return 2
     missing = [
         f"{theme_name}/{name}"
         for theme_name in ("light", "dark")

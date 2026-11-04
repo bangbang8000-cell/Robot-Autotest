@@ -1,0 +1,42 @@
+  [FAIL] index.html 的 var ACCENTS 与真源不一致：['crimson', 'blue', 'gold', 'orange', 'violet', 'jade', 'teal'] ≠ ['crimson', 'blue', 'gold', 'orange', 'violet', 'jade']（顺序也要一致，面板按顺序渲染；不一致会让首帧闪一下默认色）
+[FAIL] 六预设清单有 1 处不一致
+  [FAIL] 后端白名单与真源不一致：UserPreferenceService=['blue', 'crimson', 'gold', 'orange', 'teal', 'violet'] ≠ ['blue', 'crimson', 'gold', 'jade', 'orange', 'violet']
+[FAIL] 六预设清单有 1 处不一致
+  [FAIL] theme.css 里 data-accent='jade' 出现 1 次，应为 2（light + dark）
+  [FAIL] theme.css 里有真源没有的变体块：['jade-x']
+[FAIL] 六预设清单有 2 处不一致
+  [FAIL] zh-CN 的 appearance.presets 键与真源不一致：['blue', 'crimson', 'gold', 'orange', 'violet'] ≠ ['blue', 'crimson', 'gold', 'jade', 'orange', 'violet']
+[FAIL] 六预设清单有 1 处不一致
+  [FAIL] LEGACY 映射两侧不一致：useAccent.ts={'cyan': 'blue', 'indigo': 'blue', 'teal': 'jade', 'fuchsia': 'violet'} index.html={'cyan': 'blue', 'indigo': 'blue', 'teal': 'blue', 'fuchsia': 'violet'}（旧键名归一漏一处，升级用户就会被打回默认蓝）
+[FAIL] 六预设清单有 1 处不一致
+  [INFO] 真源 useAccent.ts ACCENTS = ['crimson', 'blue', 'gold', 'orange', 'violet', 'jade']（6 个）
+  [INFO] theme.css 变体块 12 个 / --preset-* 6 个；dialog 6 键；zh/en presets 6/6 键
+[PASS] 六预设清单七处一致（6 个预设）
+  [INFO] 真源 useAccent.ts ACCENTS = ['crimson', 'blue', 'gold', 'orange', 'violet', 'jade']（6 个）
+  [INFO] theme.css 变体块 12 个 / --preset-* 6 个；dialog 6 键；zh/en presets 6/6 键
+[SELFTEST][OK] 首帧脚本清单漂移：已拦
+  [INFO] 真源 useAccent.ts ACCENTS = ['crimson', 'blue', 'gold', 'orange', 'violet', 'jade']（6 个）
+  [INFO] theme.css 变体块 12 个 / --preset-* 6 个；dialog 6 键；zh/en presets 6/6 键
+[PASS] 六预设清单七处一致（6 个预设）
+  [INFO] 真源 useAccent.ts ACCENTS = ['crimson', 'blue', 'gold', 'orange', 'violet', 'jade']（6 个）
+  [INFO] theme.css 变体块 12 个 / --preset-* 6 个；dialog 6 键；zh/en presets 6/6 键
+[SELFTEST][OK] 后端白名单漂移：已拦
+  [INFO] 真源 useAccent.ts ACCENTS = ['crimson', 'blue', 'gold', 'orange', 'violet', 'jade']（6 个）
+  [INFO] theme.css 变体块 12 个 / --preset-* 6 个；dialog 6 键；zh/en presets 6/6 键
+[PASS] 六预设清单七处一致（6 个预设）
+  [INFO] 真源 useAccent.ts ACCENTS = ['crimson', 'blue', 'gold', 'orange', 'violet', 'jade']（6 个）
+  [INFO] theme.css 变体块 12 个 / --preset-* 6 个；dialog 6 键；zh/en presets 6/6 键
+[SELFTEST][OK] 变体块缺失：已拦
+  [INFO] 真源 useAccent.ts ACCENTS = ['crimson', 'blue', 'gold', 'orange', 'violet', 'jade']（6 个）
+  [INFO] theme.css 变体块 12 个 / --preset-* 6 个；dialog 6 键；zh/en presets 6/6 键
+[PASS] 六预设清单七处一致（6 个预设）
+  [INFO] 真源 useAccent.ts ACCENTS = ['crimson', 'blue', 'gold', 'orange', 'violet', 'jade']（6 个）
+  [INFO] theme.css 变体块 12 个 / --preset-* 6 个；dialog 6 键；zh/en presets 5/6 键
+[SELFTEST][OK] 中文预设名缺失：已拦
+  [INFO] 真源 useAccent.ts ACCENTS = ['crimson', 'blue', 'gold', 'orange', 'violet', 'jade']（6 个）
+  [INFO] theme.css 变体块 12 个 / --preset-* 6 个；dialog 6 键；zh/en presets 6/6 键
+[PASS] 六预设清单七处一致（6 个预设）
+  [INFO] 真源 useAccent.ts ACCENTS = ['crimson', 'blue', 'gold', 'orange', 'violet', 'jade']（6 个）
+  [INFO] theme.css 变体块 12 个 / --preset-* 6 个；dialog 6 键；zh/en presets 6/6 键
+[SELFTEST][OK] LEGACY 映射漂移：已拦
+[SELFTEST] 通过：五类漂移均可被拦截

@@ -49,6 +49,8 @@ echo "[lint]   - tools/check_styleguide_tokens.py（styleguide ↔ theme.css 对
 python3 tools/check_styleguide_tokens.py
 echo "[lint]   - tools/gen_accent_tokens.py --check（六预设 WCAG 派生）"
 python3 tools/gen_accent_tokens.py --check
+echo "[lint]   - tools/check_accent_presets.py（六预设清单七处一致）"
+python3 tools/check_accent_presets.py
 echo "[lint]   - tools/subset_font.py --check（打包字体子集预算）"
 python3 tools/subset_font.py --check
 

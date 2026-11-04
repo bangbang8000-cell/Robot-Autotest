@@ -9,11 +9,18 @@
        * 首帧防闪（FR-v0.2-31 / NFR-v0.2-07，UX-04 补强调色）。
        *
        * 这段必须内联在 <head> 里同步执行，不能挪进 main.ts：Vue 挂载是异步的，
-       * 等它跑完再设 data-theme/data-accent，暗色用户会先看到一帧白屏，选了品红的用户
+       * 等它跑完再设 data-theme/data-accent，暗色用户会先看到一帧白屏，选了土豪金的用户
        * 会先看到一帧蓝。逻辑与 useTheme.ts / useAccent.ts 的读取保持一致，改一处要改三处。
+       *
+       * 下面两张表必须与 composables/useAccent.ts 的 ACCENTS / LEGACY_ALIAS 完全一致
+       * （内联脚本不能 import）。useAccent.spec.ts 有一条用例直接解析这段源码比对，
+       * 只改一边会被测出来 —— 别指望注释提醒。
        */
       (function () {
-        var ACCENTS = ['blue', 'cyan', 'indigo', 'violet', 'teal', 'fuchsia'];
+        // prettier-ignore
+        var ACCENTS = ['crimson', 'blue', 'gold', 'orange', 'violet', 'jade'];
+        // prettier-ignore
+        var LEGACY = { cyan: 'blue', indigo: 'blue', teal: 'jade', fuchsia: 'violet' };
         try {
           var saved = localStorage.getItem('theme');
           var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -22,6 +29,10 @@
           document.documentElement.setAttribute('data-theme', theme);
           document.documentElement.style.colorScheme = theme;
           var savedAccent = localStorage.getItem('accent');
+          // 旧键名先归一，否则改版前的用户会先闪一帧默认蓝再被 useAccent 纠正
+          if (ACCENTS.indexOf(savedAccent) < 0 && LEGACY[savedAccent]) {
+            savedAccent = LEGACY[savedAccent];
+          }
           document.documentElement.setAttribute(
             'data-accent',
             ACCENTS.indexOf(savedAccent) >= 0 ? savedAccent : 'blue'

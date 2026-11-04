@@ -35,12 +35,12 @@ const THEME_ICONS: Record<ThemeMode, IconName> = {
  * 但也确实让「这个名字到底有没有定义」无法机检。静态表两者都解决。
  */
 const SWATCH_VARS: Record<AccentName, string> = {
+  crimson: 'var(--preset-crimson)',
   blue: 'var(--preset-blue)',
-  cyan: 'var(--preset-cyan)',
-  indigo: 'var(--preset-indigo)',
+  gold: 'var(--preset-gold)',
+  orange: 'var(--preset-orange)',
   violet: 'var(--preset-violet)',
-  teal: 'var(--preset-teal)',
-  fuchsia: 'var(--preset-fuchsia)',
+  jade: 'var(--preset-jade)',
 }
 
 function close(): void {

@@ -2,9 +2,9 @@
 /**
  * UX-04 步骤 5 自建组件：状态徽标。
  *
- * 库里没有符合测试工具语义的状态组件，且 teal/fuchsia 强调色与 PASS/FAIL 状态色共现时
- * 有色觉辨识风险（评审已接受）。这里的缓解是**图标 + 文字双编码**：不靠颜色单独表意，
- * 任何强调色下都能读出状态。
+ * 库里没有符合测试工具语义的状态组件。何况六预设里 crimson/gold/blue/jade 四个
+ * 分别与 fail/warn/info/ok 同色相（见 theme.css §4 注释），色觉障碍用户更容易混淆。
+ * 这里的缓解是**图标 + 文字双编码**：不靠颜色单独表意，任何强调色下都能读出状态。
  */
 import { computed } from 'vue'
 import AppIcon from './AppIcon.vue'

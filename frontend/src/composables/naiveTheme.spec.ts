@@ -56,9 +56,9 @@ describe('naiveTheme 对接层', () => {
   })
 
   it('换强调色 → 库主题同步换色（12 套运行时主题的基础）', () => {
-    const changed = buildThemeOverrides({ ...sample, accent: 'fuchsia-token' })
-    expect(changed.common?.primaryColor).toBe('fuchsia-token')
-    expect(changed.common?.infoColor).toBe('fuchsia-token')
+    const changed = buildThemeOverrides({ ...sample, accent: 'crimson-token' })
+    expect(changed.common?.primaryColor).toBe('crimson-token')
+    expect(changed.common?.infoColor).toBe('crimson-token')
     expect(changed.common?.bodyColor).toBe('bg-token')
   })
 

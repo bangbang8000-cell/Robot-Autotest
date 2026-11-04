@@ -39,7 +39,7 @@
 
 ## 三、实现范围（主仓 `frontend/`）
 
-- 六预设强调色（blue / cyan / indigo / violet / teal / fuchsia）× 亮暗 = **12 套运行时主题**；`useAccent.ts` 三层持久化 + 首帧防闪。
+- 六预设强调色（**2026-11-05 大师定名**：新年红 crimson / 科技蓝 blue / 土豪金 gold / 活力橙 orange / 魅力紫 violet / 翡翠绿 jade）× 亮暗 = **12 套运行时主题**；`useAccent.ts` 三层持久化 + 首帧防闪 + 旧键名归一（cyan/indigo→blue、teal→jade、fuchsia→violet）。
 - `naiveTheme.ts` 单向派生 `GlobalThemeOverrides`。
 - `AppIcon.vue` + `iconMap.ts`：显式映射、stroke 1.5、尺寸 16 / 20 / 24。
 - 打包字体子集：Noto Sans SC 中文子集 + 拉丁片、JetBrains Mono 拉丁片；`unicode-range` 分包、`font-display: swap`。
@@ -60,20 +60,21 @@
 | 前端构建 `npm run build` | 通过 | 通过 | `fe-build.log`（截断 40 行） |
 | 前端 lint `npm run lint` | 通过 | 通过 | `lint-sh.log`（内含该步骤） |
 | 后端单测 `mvn -B test` | **476 / 476** | 全过 | `backend-mvn-unit.log` |
-| 后端集成 `DB_NAME=robot_it mvn -B -Pit test` | **27 / 27**（新增 2 条强调色偏好用例） | 全过 | `backend-mvn-it.log` |
+| 后端集成 `DB_NAME=robot_it mvn -B -Pit test` | **28 / 28**（强调色偏好 2 条 + 旧键名被拒 1 条） | 全过 | `backend-mvn-it.log` |
 | 编辑器包 `npm test` | **23 文件 / 215 用例全过** | 全过 | 命令见 §九，未落日志（19s，`23 passed` / `215 passed`） |
-| `check_contrast.py` | 14 组（2 主题 × 默认与 6 预设）共 280 项全部达标 | 计划判据 96 项 | `check-contrast.log` |
+| `check_contrast.py` | 14 组（2 主题 × 默认与 6 预设）共 280 项全部达标 | 美术计划 v1.3 判据 280 项 | `check-contrast.log` |
 | `check_i18n.py` | zh / en 516 / 516 键相等，0 硬编码中文，0 同值漏译 | 键集相等 | `check-i18n.log` |
-| `check_tokens.py` | 96 个 token 定义 / 208 处不同引用，0 悬空，px 白名单 0 违规 | 0 悬空 | `check-tokens.log` |
+| `check_tokens.py` | 96 个 token 定义 / 207 处不同引用，0 悬空，px 白名单 0 违规 | 0 悬空 | `check-tokens.log` |
 | `check_colors.py` | 0 处组件硬编码色值 | 零硬编码 | `check-colors.log` |
 | `check_states.py` | 8 类元素三态齐备 | 三态齐备 | `check-states.log` |
 | `check_styleguide_tokens.py` | styleguide 20 个语义名全部在 theme.css 96 个定义中；`--self-test` PASS | 全部有定义 | `check-styleguide.log`、`styleguide-selftest.log` |
 | `check_icons.py` | 图标表 41 个名字；静态引用 5 处全部有定义；动态表达式 7 处跳过（计数上报）；`--self-test` 三类问题均可拦 | 0 未定义 | `check-icons.log`、`icons-selftest.log` |
 | `gen_accent_tokens.py --check` | 10 / 10 派生组达标（blue 亮暗沿用 UX-01b 基准） | 10 组达标 | `accent-tokens.log` |
-| `subset_font.py --check` | 界面汉字 892 字，3 个 woff2 合计 157,077 B gzip（13,327 / 122,554 / 21,196 B） | 预算 800 KiB | `font-subset.log` |
-| `check_bundle_budget.py` | 图标 chunk 4,207 B gzip；vendor chunk 102,792 B gzip；字体 157,077 B；生产产物无 `__STYLEGUIDE_DEV_ONLY__` 泄漏；`--self-test` 三类违规均能拦截 | 图标 ≤ 15 KiB，组件库 ≤ 200 KiB，字体 ≤ 800 KiB | `bundle-budget.log`、`bundle-selftest.log` |
-| `bash scripts/lint.sh` | PASS（含 secret-scan / eslint / mvn compile / 全部 9 条静态守门） | PASS | `lint-sh.log` |
-| Vite 产物关键 chunk | `lucide-cp-iW6qZ.js` 19.62 kB / gzip 4.23 kB；`vue-kPrVatBb.js` 85.18 kB / gzip 33.52 kB；`index-zkBAsIkY.js` 312.43 kB / gzip 103.23 kB | 分包达标 | `fe-build.log`（截断 40 行内含） |
+| `check_accent_presets.py` | 六预设清单 7 处一致（useAccent.ts / index.html / Java 白名单 / theme.css 变体块与 --preset-* / AppearanceDialog / zh-CN / en-US）；`--self-test` 五类漂移均可拦 | 7 处一致 | `check-accent-presets.log`、`accent-presets-selftest.log` |
+| `subset_font.py --check` | 界面汉字 909 字，3 个 woff2 合计 161,709 B gzip（13,327 / 127,186 / 21,196 B）；**cmap 覆盖断言 909 / 909** | 预算 800 KiB | `font-subset.log` |
+| `check_bundle_budget.py` | 图标 chunk 4,207 B gzip；vendor chunk 102,978 B gzip；字体 161,709 B；生产产物无 `__STYLEGUIDE_DEV_ONLY__` 泄漏；`--self-test` 三类违规均能拦截 | 图标 ≤ 15 KiB，组件库 ≤ 200 KiB，字体 ≤ 800 KiB | `bundle-budget.log`、`bundle-selftest.log` |
+| `bash scripts/lint.sh` | PASS（含 secret-scan / eslint / mvn compile / 全部 12 条静态守门） | PASS | `lint-sh.log` |
+| Vite 产物关键 chunk | `lucide-cp-iW6qZ.js` 19.62 kB / gzip 4.23 kB；`vue-kPrVatBb.js` 85.18 kB / gzip 33.52 kB；`index-HRuzbFSQ.js` 312.73 kB / gzip 103.40 kB | 分包达标 | `fe-build.log`（截断 40 行内含） |
 
 ## 五、本次实跑 rc 与日志自检
 
@@ -83,7 +84,7 @@
 | 日志文件 | 复现命令 | rc | 非空 | 末尾字样判定 |
 | --- | --- | --- | --- | --- |
 | `fe-build.log` | `npm run build`（tail -40 截断） | 0 | 是 | 否，末尾为 `✓ built in 8.13s`，不含四字样 |
-| `fe-test.log` | `npm run test` | 0 | 是 | 否，末尾为 `Duration 1.20s`，含 `6 passed` 与 `32 passed` 英文通过字样 |
+| `fe-test.log` | `npm run test` | 0 | 是 | 否，末尾为 `Duration 1.20s`，含 `6 passed` 与 `35 passed` 英文通过字样（本轮新增 3 条强调色用例） |
 | `lint-sh.log` | `bash scripts/lint.sh` | 0 | 是 | 是，末尾 `[lint] PASS` |
 | `check-contrast.log` | `python3 tools/check_contrast.py` | 0 | 是 | 是，`[PASS] 14 组共 280 项对比度全部达标` |
 | `check-i18n.log` | `python3 tools/check_i18n.py` | 0 | 是 | 是，`[RESULT] 通过：...` |
@@ -93,16 +94,18 @@
 | `check-styleguide.log` | `python3 tools/check_styleguide_tokens.py` | 0 | 是 | 是，`[PASS] styleguide 清单 20 个语义名` |
 | `styleguide-selftest.log` | `python3 tools/check_styleguide_tokens.py --self-test` | 0 | 是 | 是，`[PASS] 自检：悬空变量名与短清单都被拦截` |
 | `accent-tokens.log` | `python3 tools/gen_accent_tokens.py --check` | 0 | 是 | 是，`=== 结果：10/10 组达标 ===` |
-| `font-subset.log` | `python3 tools/subset_font.py --check` | 0 | 是 | 是，`[PASS] 字体子集 892 字 / 157077 B gzip` |
+| `check-accent-presets.log` | `python3 tools/check_accent_presets.py` | 0 | 是 | 是，`[PASS] 六预设清单七处一致（6 个预设）` |
+| `accent-presets-selftest.log` | `python3 tools/check_accent_presets.py --self-test` | 0 | 是 | 是，`[SELFTEST] 通过：五类漂移均可被拦截` |
+| `font-subset.log` | `python3 tools/subset_font.py --check` | 0 | 是 | 是，`[PASS] 字体子集 909 字 / 161709 B gzip` |
 | `bundle-budget.log` | `python3 tools/check_bundle_budget.py` | 0 | 是 | 是，`[PASS] 构建产物体积守门通过` |
 | `bundle-selftest.log` | `python3 tools/check_bundle_budget.py --self-test` | 0 | 是 | 是，`[SELFTEST] 通过：图标 / 字体 / styleguide 三类违规均可被拦截` |
 | `backend-mvn-unit.log` | `mvn -B test`（backend/） | 0 | 是 | 是，`Tests run: 476, Failures: 0` + `BUILD SUCCESS` |
-| `backend-mvn-it.log` | `DB_NAME=robot_it mvn -B -Pit test` | 0 | 是 | 是，`Tests run: 27, Failures: 0` + `BUILD SUCCESS` |
+| `backend-mvn-it.log` | `DB_NAME=robot_it mvn -B -Pit test` | 0 | 是 | 是，`Tests run: 28, Failures: 0` + `BUILD SUCCESS` |
 | `editor-vitest.log` | `npm test`（packages/editor/） | 0 | 是 | 是，`Test Files 23 passed` / `Tests 215 passed` |
 | `check-icons.log` | `python3 tools/check_icons.py` | 0 | 是 | 是，`[PASS] 图标名对账通过` |
 | `icons-selftest.log` | `python3 tools/check_icons.py --self-test` | 0 | 是 | 是，`[SELFTEST] 通过：三类问题均可拦截` |
 
-**19 条命令 rc 全部为 0**（`run-all.sh` 一轮跑完并逐条打印 rc），日志全部非空。末尾字样自检有 2 条例外，见第六节，未改写日志内容以凑字样。
+**21 条命令 rc 全部为 0**（`run-all.sh` 一轮跑完并逐条打印 rc），日志全部非空。末尾字样自检有 2 条例外，见第六节，未改写日志内容以凑字样。
 
 > **rc 读数的坑**：不要在 `wsl.exe -d Ubuntu-24.04 bash -lc '... echo rc=$?'` 里取 `$?` ——
 > 多层引号会把 `$?` 在外层先展开，实测**恒为 0**，连真失败都会显示 0。
@@ -112,16 +115,18 @@
 
 以下为本次真实跑出的日志与第四节评审口径数据比对结果，**不改成一致**：
 
-1. **`check_tokens.py` 引用数不一致**。评审口径写「96 个 token 定义 / 208 处不同引用」；本次 `check-tokens.log` 实测为「扫描 31 个文件：96 个 token 定义，**213 处不同引用**」。定义数 96 一致，不同引用数相差 5；另实测「px 字面量 370 处全部在白名单内（37 个取值）」，对应口径「px 白名单 0 违规」，结论一致但脚本给出了更细的计数。
-2. **`lint.sh` 静态守门条数口径**。评审口径写「全部 9 条静态守门」；本次 `lint-sh.log` 显示实际调用 10 次 `tools/*.py`：9 条 UX 系列守门，外加 1 条 CAS-03 的 `check_import_header.py` 台账表头对账（第 365 行 `[PASS] 必需列齐，表头可定位`）。可解释为 9 条 UX 守门 + 1 条台账对账，非漏跑。
+1. **`check_tokens.py` 计数与历史记录有出入，以本轮日志为准**。本轮实测「扫描 31 个文件：96 个 token 定义，**207 处不同引用**」+「px 字面量 **365 处**全部在白名单内（37 个取值）」。同一项在过去两版记录里分别写过 208 与 213（不同轮次的口径），本轮不追平旧数：代码在这两轮里删过死 CSS、改过 `SWATCH_VARS`，计数本就会变。三轮唯一稳定的是「96 个定义、0 悬空、px 全在白名单」，这三个才是判据。
+2. **`lint.sh` 静态守门条数已随本轮扩容**。v1 记录写「9 条」，上一轮实测 10 次调用；本轮新增 `check_accent_presets.py` 后又多一条，现为 **12 条守门 + 1 条 CAS-03 台账对账 = 13 次调用**（`check_colors / contrast / i18n / states / tokens / import_header / bundle_budget / styleguide_tokens / accent_tokens / accent_presets / subset_font / icons`）。条数本身不是判据，判据是 `lint.sh` 末尾 `[lint] PASS`。
 3. **`fe-build.log` 末尾不含 PASS / 通过 / 全过 / 结果字样**。因 `tail -40` 截断且 vite 成功输出以 `✓ built in 8.13s` 收尾；以 rc=0 判定通过，未追加人为标记。
-4. **`fe-test.log` 末尾不含四个中文 / PASS 字样**。vitest 以 `Duration` 行收尾，通过证据在倒数第 4、5 行的 `Test Files 6 passed (6)` 与 `Tests 32 passed (32)`；同为英文通过字样，非中文四字样。
+4. **`fe-test.log` 末尾不含四个中文 / PASS 字样**。vitest 以 `Duration` 行收尾，通过证据在倒数第 4、5 行的 `Test Files 6 passed (6)` 与 `Tests 35 passed (35)`；同为英文通过字样，非中文四字样。
 5. **`bundle-budget.log` 第 4 项（styleguide 无泄漏）本轮由「未触发」升级为「已反向验证」**。原实现只说「产物里没找到标记」，而没找到有两种解释：真的没泄漏，或标记被改名/删掉——后者会让这项检查永远绿。本轮给守门加了**正向校验**：标记字符串必须仍存在于 `frontend/src/views/StyleguideView.vue`（该文件由 router 的 `import.meta.env.DEV` 条件挂载引用），`--dist` 侧再 grep 为零，两侧都成立才判「无泄漏」。破坏性验证：把该源文件的标记串临时改成 `no-marker`，脚本按预期 `[FAIL] styleguide 标记约定失效…` 且 `returncode=1`，恢复后转 PASS。因此 `[PASS]` 行不再带「N 项未触发」的尾巴。
+6. **`subset_font.py --check` 原来是假绿，本轮已修（真缺陷）**。原 `--check` 只校验三个 woff2 的gzip 总预算与 `font-display`，**不校验字体里到底有没有这些字**。换色板把「蓝/青/靛/紫/青绿/品红」改成「新年红/科技蓝/土豪金/活力橙/魅力紫/翡翠绿」后，界面汉字从 892 涨到 909，而字体文件没重新生成：预算仍达标、`lint.sh` 全绿，但「橙、紫、翠、翡、豪、魅、金、科、土」等 **33 个字**不在子集里，浏览器会静默回落系统字体，页面看着「还行」但字形前后不一致。修法是让 `--check` 用 fontTools 读 cmap 逐字比对：先实测 `[FAIL] 有 33 个字不在中文字体子集里（改了文案但没重新生成子集？）`，重新生成后 `909 / 909` PASS，总量 157,077 → **161,709 B gzip**（仍占 800 KiB 预算的 19.7%）。
 
-其余各节数据（516 / 516 键、280 项、20 与 96 语义名、10 / 10 组、892 字与 157,077 B、4,207 B 与 102,792 B、三个 woff2 分项、Vite 三个关键 chunk 体积）与本次日志一致。
+其余各节数据（516 / 516 键、280 项、20 与 96 语义名、10 / 10 组、909 字与 161,709 B、4,207 B 与 102,978 B、七处清单一致、三个 woff2 分项、Vite 三个关键 chunk 体积）与本次日志一致。
 
 ## 七、踩坑留痕
 
+- **字体子集是生成物，不是源码**。改任何中文文案（含 i18n 值、注释外的界面文字）都可能引入新字，必须重跑 `python3 tools/subset_font.py`；`--check` 现在比对 cmap，不重跑就直接红并打印缺哪些字。
 - `manualChunks` 只分 lucide 时把 vue runtime 一起拉进图标 chunk，达 37.8 KiB gzip 超预算；显式把 vue 分到独立 chunk 后降到 4.23 KiB（见 `fe-build.log` 中独立的 `vue-kPrVatBb.js`）。
 - 守门原按「内容含 lucide」把整个主包当图标 chunk 造成假红；改为按文件名认定独立 chunk。
 - **图标名拼错是静默失败**：`EmptyState` 用了 `icon="shield"`，而 `iconMap.ts` 里只有 `audit`。
@@ -151,8 +156,8 @@
 「新增偏好项要同时改这里与前端常量」——注释说对了，没人执行。
 
 **修法**：
-1. `ALLOWED` 增 `accent → {blue, cyan, indigo, violet, teal, fuchsia}`，与前端
-   `useAccent.ts#ACCENTS` 对齐；
+1. `ALLOWED` 增 `accent` 键，取值与前端 `useAccent.ts#ACCENTS` 对齐
+   （2026-11-05 换版后为 `{crimson, blue, gold, orange, violet, jade}`，旧键名不再接受）；
 2. `UserPreferenceIT` 增两条：六预设逐个写入→读回、`accent=purple` 被拒且不落库（`backend-mvn-it.log` 27/27）；
 3. 类注释补一段「偏好类缺陷都是这个形态：不报错、只是不同步」，把坑留在代码里。
 

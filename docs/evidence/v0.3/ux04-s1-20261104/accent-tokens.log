@@ -1,13 +1,13 @@
 === 候选主色对比度实测（阈值 ≥ 4.5:1） ===
-  cyan     light #0e7490  text/accent=5.36  accent/panel=5.36  accent/soft=4.67  PASS
-  cyan     dark  #22d3ee  text/accent=10.37  accent/panel=8.48  accent/soft=7.21  PASS
-  indigo   light #4338ca  text/accent=7.90  accent/panel=7.90  accent/soft=6.71  PASS
-  indigo   dark  #818cf8  text/accent=6.28  accent/panel=5.14  accent/soft=4.77  PASS
+  crimson  light #c81e1e  text/accent=5.74  accent/panel=5.74  accent/soft=4.86  PASS
+  crimson  dark  #ff6b6b  text/accent=6.75  accent/panel=5.52  accent/soft=5.25  PASS
+  gold     light #8a6300  text/accent=5.43  accent/panel=5.43  accent/soft=4.73  PASS
+  gold     dark  #f5c542  text/accent=11.55  accent/panel=9.45  accent/soft=7.86  PASS
+  orange   light #ad4a05  text/accent=5.59  accent/panel=5.59  accent/soft=4.85  PASS
+  orange   dark  #fb923c  text/accent=8.28  accent/panel=6.77  accent/soft=6.09  PASS
   violet   light #6d28d9  text/accent=7.10  accent/panel=7.10  accent/soft=6.04  PASS
   violet   dark  #a78bfa  text/accent=6.89  accent/panel=5.63  accent/soft=5.15  PASS
-  teal     light #0f766e  text/accent=5.47  accent/panel=5.47  accent/soft=4.75  PASS
-  teal     dark  #2dd4bf  text/accent=10.07  accent/panel=8.23  accent/soft=7.06  PASS
-  fuchsia  light #a21caf  text/accent=6.32  accent/panel=6.32  accent/soft=5.36  PASS
-  fuchsia  dark  #e879f9  text/accent=7.62  accent/panel=6.23  accent/soft=5.66  PASS
+  jade     light #0d7a4f  text/accent=5.37  accent/panel=5.37  accent/soft=4.68  PASS
+  jade     dark  #34d399  text/accent=9.75  accent/panel=7.97  accent/soft=6.87  PASS
 
 === 结果：10/10 组达标 ===

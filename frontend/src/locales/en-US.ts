@@ -16,16 +16,17 @@ export default {
     open: 'Appearance',
     theme: 'Theme',
     accent: 'Accent color',
-    accentHint: 'All six accents pass contrast checks in both light and dark themes',
+    accentHint:
+      'All six accents pass contrast checks in both themes; gold is deepened in light mode for legibility',
     confirmTitle: 'Please confirm',
     confirm: 'Confirm',
     presets: {
-      blue: 'Blue',
-      cyan: 'Cyan',
-      indigo: 'Indigo',
+      crimson: 'Crimson',
+      blue: 'Tech Blue',
+      gold: 'Gold',
+      orange: 'Vivid Orange',
       violet: 'Violet',
-      teal: 'Teal',
-      fuchsia: 'Fuchsia',
+      jade: 'Jade',
     },
   },
   styleguide: {

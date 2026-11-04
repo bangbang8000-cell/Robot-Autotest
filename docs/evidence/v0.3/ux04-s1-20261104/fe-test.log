@@ -5,27 +5,27 @@
 
  RUN  v3.2.7 /home/evergreen/robot-autotest/frontend
 
-(node:269181) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(node:279920) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:269187) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(node:279899) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:269180) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(node:279907) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:269194) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(node:279896) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:269188) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(node:279914) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:269198) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(node:279895) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
 (Use `node --trace-warnings ...` to show where the warning was created)
- ✓ src/composables/useConfirm.spec.ts (3 tests) 5ms
- ✓ src/composables/useSelection.spec.ts (8 tests) 13ms
- ✓ src/composables/useBatchAction.spec.ts (5 tests) 18ms
- ✓ src/composables/useAccent.spec.ts (5 tests) 12ms
- ✓ src/composables/naiveTheme.spec.ts (3 tests) 9ms
- ✓ src/utils/format.spec.ts (8 tests) 41ms
+ ✓ src/composables/useSelection.spec.ts (8 tests) 11ms
+ ✓ src/composables/useBatchAction.spec.ts (5 tests) 11ms
+ ✓ src/composables/useConfirm.spec.ts (3 tests) 4ms
+ ✓ src/composables/useAccent.spec.ts (8 tests) 14ms
+ ✓ src/composables/naiveTheme.spec.ts (3 tests) 3ms
+ ✓ src/utils/format.spec.ts (8 tests) 34ms
 
  Test Files  6 passed (6)
-      Tests  32 passed (32)
-   Start at  00:31:34
-   Duration  1.15s (transform 406ms, setup 71ms, collect 1.09s, tests 98ms, environment 1.84s, prepare 822ms)
+      Tests  35 passed (35)
+   Start at  00:51:05
+   Duration  934ms (transform 320ms, setup 46ms, collect 790ms, tests 77ms, environment 1.73s, prepare 852ms)
 

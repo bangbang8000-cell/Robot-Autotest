@@ -27,11 +27,16 @@ public class UserPreferenceService {
      * {@code PUT {accent:"violet"}}，后端 400，前端按"偏好同步失败不回滚"的约定静默吞掉，
      * 于是表现出「本机有效、换设备丢」的假象，日志里什么都没有。偏好类缺陷都是这个形态：
      * 不报错、只是不同步。加键时必须同步补 {@code UserPreferenceIT} 的用例。
+     *
+     * <p>accent 取值 2026-11-05 换版（新年红/科技蓝/土豪金/活力橙/魅力紫/翡翠绿）。
+     * 首版键名 cyan/indigo/teal/fuchsia 不再接受：前端 {@code useAccent.normalizeAccent}
+     * 会把库里的旧值归一成新值并在下一次写入时覆盖，所以服务端不需要为兼容留旧值。
+     * 保留旧值反而会让"六预设"的定义在两侧不一致，是更坏的长期债。
      */
     private static final Map<String, Set<String>> ALLOWED = Map.of(
             "theme", Set.of("system", "light", "dark"),
             "locale", Set.of("zh-CN", "en-US"),
-            "accent", Set.of("blue", "cyan", "indigo", "violet", "teal", "fuchsia"));
+            "accent", Set.of("crimson", "blue", "gold", "orange", "violet", "jade"));
 
     /** 单次提交的键数上限：偏好项就几项，超过说明调用方写错了。 */
     private static final int MAX_KEYS_PER_REQUEST = 10;

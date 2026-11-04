@@ -100,15 +100,15 @@ class UserPreferenceIT {
     @Test
     @DisplayName("强调色偏好（UX-04）：六个预设值可存取，theme 不受影响")
     void 强调色偏好可存取() {
-        for (String accent : new String[]{"blue", "cyan", "indigo", "violet", "teal", "fuchsia"}) {
+        for (String accent : new String[]{"crimson", "blue", "gold", "orange", "violet", "jade"}) {
             service.put(userId, Map.of("accent", accent));
             assertThat(service.get(userId)).containsEntry("accent", accent);
         }
 
-        service.put(userId, Map.of("theme", "light", "accent", "fuchsia"));
+        service.put(userId, Map.of("theme", "light", "accent", "gold"));
         assertThat(service.get(userId))
                 .containsEntry("theme", "light")
-                .containsEntry("accent", "fuchsia");
+                .containsEntry("accent", "gold");
     }
 
     @Test
@@ -117,6 +117,23 @@ class UserPreferenceIT {
         assertThatThrownBy(() -> service.put(userId, Map.of("accent", "purple")))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("偏好值非法");
+
+        assertThat(service.get(userId)).as("被拒的写入不能落库").isEmpty();
+    }
+
+    @Test
+    @DisplayName("首版旧键名不再被接受（2026-11-05 换版后刻意收紧，归一责任在前端）")
+    void 旧键名被拒() {
+        // 前端 useAccent.normalizeAccent 会在读取时把 cyan/indigo → blue、teal → jade、
+        // fuchsia → violet，并在下一次切换时把新值写回，所以这里拒绝旧名不会让老用户丢色。
+        // 这条用例的作用是：如果哪天有人为了"兼容"把旧名加回白名单，这里会红，
+        // 逼他先想清楚两侧"六预设"的定义是否已经不一致。
+        for (String legacy : new String[]{"cyan", "indigo", "teal", "fuchsia"}) {
+            assertThatThrownBy(() -> service.put(userId, Map.of("accent", legacy)))
+                    .as("旧键名 %s 应被拒", legacy)
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("偏好值非法");
+        }
 
         assertThat(service.get(userId)).as("被拒的写入不能落库").isEmpty();
     }

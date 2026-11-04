@@ -57,13 +57,15 @@
   --violet-300: #b9a6ff;
 
   /* UX-04 六预设的「色板展示色」：外观面板里六枚色块不能自己写 hex（色值守门只允许本文件），
-     所以把展示色也收进 primitives。取的是各预设在暗色下的主色，亮/暗底上均可辨。 */
+     所以把展示色也收进 primitives。取的是各预设在**暗色**下的主色，亮/暗底上均可辨。
+     注意 gold 特殊：亮色主题的实际 accent 是深金 #8a6300（白底上金必须压深才过 4.5:1），
+     但色板展示仍用暗色亮金，否则面板里的「土豪金」会变成一块土褐色。 */
+  --preset-crimson: #ff6b6b;
   --preset-blue: #3fa7ff;
-  --preset-cyan: #22d3ee;
-  --preset-indigo: #818cf8;
+  --preset-gold: #f5c542;
+  --preset-orange: #fb923c;
   --preset-violet: #a78bfa;
-  --preset-teal: #2dd4bf;
-  --preset-fuchsia: #e879f9;
+  --preset-jade: #34d399;
 
   /* 状态色对比度下限由 check_contrast.py 校验，改值前先跑一遍 */
 }
@@ -230,7 +232,15 @@
 /* ============ 4. 强调色变体（data-accent） ============ */
 
 /*
- * UX-04 强调色六预设（blue/cyan/indigo/violet/teal/fuchsia）× 亮/暗 = 12 套运行时主题。
+ * UX-04 强调色六预设 × 亮/暗 = 12 套运行时主题。
+ *
+ *   新年红 crimson ｜ 科技蓝 blue ｜ 土豪金 gold ｜ 活力橙 orange ｜ 魅力紫 violet ｜ 翡翠绿 jade
+ *
+ * 2026-11-05 按大师定名替换首版色板（blue/cyan/indigo/violet/teal/fuchsia）。
+ * 旧键名不再作为 `data-accent` 合法值，但 `useAccent.ts` 的 LEGACY_ALIAS 会把
+ * cyan/indigo → blue、teal → jade、fuchsia → violet，避免已选过色的用户升级后
+ * 被打回默认蓝。`index.html` 内联脚本持有一份同样的映射（它不能 import，
+ * 两处必须同步，`useAccent.spec.ts` 有一条用例直接比对两边内容）。
  *
  * 机制约定：`<html data-accent="...">`，缺省等同 blue。变体块**只允许覆盖 accent 三态、
  * accent-soft/contrast、surface-selected 与 focus-ring**，其余 semantic token 继承所在主题，
@@ -241,8 +251,14 @@
  * 改色板请改脚本重新生成，不要直接改这里。`check_contrast.py` 按 (主题 × 强调色) 分组判定，
  * 分组数与判定项下限都设了硬断言，防止「变体块覆盖默认值」的 D15 假绿。
  *
+ * 与状态色的关系（这版色板有 3/6 与状态色同色相，务必看完再调）：
+ *   crimson↔--fail(红)、gold↔--warn(黄)、blue↔--info(蓝)、jade↔--ok(绿) 都是同色相。
+ *   同类共存在真实界面里是常态，靠**用法纪律**而非色相隔离：
+ *   强调色只进交互态（按钮填充/链接/焦点环/选中行底），状态色只进结果标记
+ *   （StatusTag、状态图标、表格行左边框）。见 components/StatusTag.vue 顶部注释。
+ *
  * 坑（D15）：`check_contrast.py` 原来把所有含 data-theme 的块 `update` 进同一份变量表，
- * 变体块会**覆盖**默认值 —— 后面再补 teal/fuchsia 时，变体值会顶掉默认值，算出来仍然
+ * 变体块会**覆盖**默认值 —— 后面再补 violet/jade 时，变体值会顶掉默认值，算出来仍然
  * "全 PASS"，但真实默认态没人验（假绿）。所以解析器必须按 (主题 × 强调色) 分组。
  */
 
@@ -268,44 +284,64 @@
 
 /* ↓ 以下 10 块由 `python3 tools/gen_accent_tokens.py --write <file>` 生成，勿手改。 */
 
-:root[data-accent='cyan'][data-theme='light'] {
-  --accent: #0e7490;
-  --accent-hover: #0c667f;
-  --accent-active: #0b586d;
-  --accent-soft: #e7f1f4;
+:root[data-accent='crimson'][data-theme='light'] {
+  --accent: #c81e1e;
+  --accent-hover: #b01a1a;
+  --accent-active: #981717;
+  --accent-soft: #fae8e8;
   --accent-contrast: #ffffff;
-  --surface-selected: #e7f1f4;
-  --focus-ring: #0e7490;
+  --surface-selected: #fae8e8;
+  --focus-ring: #c81e1e;
 }
 
-:root[data-accent='cyan'][data-theme='dark'] {
-  --accent: #22d3ee;
-  --accent-hover: #3dd8f0;
-  --accent-active: #57def2;
-  --accent-soft: #123541;
+:root[data-accent='crimson'][data-theme='dark'] {
+  --accent: #ff6b6b;
+  --accent-hover: #ff7d7d;
+  --accent-active: #ff8f8f;
+  --accent-soft: #35242c;
   --accent-contrast: #06131f;
-  --surface-selected: #123541;
-  --focus-ring: #22d3ee;
+  --surface-selected: #35242c;
+  --focus-ring: #ff6b6b;
 }
 
-:root[data-accent='indigo'][data-theme='light'] {
-  --accent: #4338ca;
-  --accent-hover: #3b31b2;
-  --accent-active: #332b9a;
-  --accent-soft: #ecebfa;
+:root[data-accent='gold'][data-theme='light'] {
+  --accent: #8a6300;
+  --accent-hover: #795700;
+  --accent-active: #694b00;
+  --accent-soft: #f3efe6;
   --accent-contrast: #ffffff;
-  --surface-selected: #ecebfa;
-  --focus-ring: #4338ca;
+  --surface-selected: #f3efe6;
+  --focus-ring: #8a6300;
 }
 
-:root[data-accent='indigo'][data-theme='dark'] {
-  --accent: #818cf8;
-  --accent-hover: #909af9;
-  --accent-active: #9fa8fa;
-  --accent-soft: #212a43;
+:root[data-accent='gold'][data-theme='dark'] {
+  --accent: #f5c542;
+  --accent-hover: #f6cc59;
+  --accent-active: #f7d36f;
+  --accent-soft: #343325;
   --accent-contrast: #06131f;
-  --surface-selected: #212a43;
-  --focus-ring: #818cf8;
+  --surface-selected: #343325;
+  --focus-ring: #f5c542;
+}
+
+:root[data-accent='orange'][data-theme='light'] {
+  --accent: #ad4a05;
+  --accent-hover: #984104;
+  --accent-active: #833804;
+  --accent-soft: #f7ede6;
+  --accent-contrast: #ffffff;
+  --surface-selected: #f7ede6;
+  --focus-ring: #ad4a05;
+}
+
+:root[data-accent='orange'][data-theme='dark'] {
+  --accent: #fb923c;
+  --accent-hover: #fb9f53;
+  --accent-active: #fcac6b;
+  --accent-soft: #352b24;
+  --accent-contrast: #06131f;
+  --surface-selected: #352b24;
+  --focus-ring: #fb923c;
 }
 
 :root[data-accent='violet'][data-theme='light'] {
@@ -328,42 +364,22 @@
   --focus-ring: #a78bfa;
 }
 
-:root[data-accent='teal'][data-theme='light'] {
-  --accent: #0f766e;
-  --accent-hover: #0d6861;
-  --accent-active: #0b5a54;
-  --accent-soft: #e7f1f0;
+:root[data-accent='jade'][data-theme='light'] {
+  --accent: #0d7a4f;
+  --accent-hover: #0b6b46;
+  --accent-active: #0a5d3c;
+  --accent-soft: #e7f2ed;
   --accent-contrast: #ffffff;
-  --surface-selected: #e7f1f0;
-  --focus-ring: #0f766e;
+  --surface-selected: #e7f2ed;
+  --focus-ring: #0d7a4f;
 }
 
-:root[data-accent='teal'][data-theme='dark'] {
-  --accent: #2dd4bf;
-  --accent-hover: #46d9c7;
-  --accent-active: #5fdece;
-  --accent-soft: #143539;
+:root[data-accent='jade'][data-theme='dark'] {
+  --accent: #34d399;
+  --accent-hover: #4cd8a5;
+  --accent-active: #65deb1;
+  --accent-soft: #153533;
   --accent-contrast: #06131f;
-  --surface-selected: #143539;
-  --focus-ring: #2dd4bf;
-}
-
-:root[data-accent='fuchsia'][data-theme='light'] {
-  --accent: #a21caf;
-  --accent-hover: #8f199a;
-  --accent-active: #7b1585;
-  --accent-soft: #f6e8f7;
-  --accent-contrast: #ffffff;
-  --surface-selected: #f6e8f7;
-  --focus-ring: #a21caf;
-}
-
-:root[data-accent='fuchsia'][data-theme='dark'] {
-  --accent: #e879f9;
-  --accent-hover: #eb89fa;
-  --accent-active: #ee99fa;
-  --accent-soft: #322743;
-  --accent-contrast: #06131f;
-  --surface-selected: #322743;
-  --focus-ring: #e879f9;
+  --surface-selected: #153533;
+  --focus-ring: #34d399;
 }

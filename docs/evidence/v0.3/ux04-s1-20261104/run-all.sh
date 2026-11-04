@@ -47,6 +47,11 @@ python3 tools/check_icons.py --self-test > "$OUT/icons-selftest.log" 2>&1
 printf '%-26s rc=%s\n' 'icons-selftest' "$?"
 python3 tools/gen_accent_tokens.py --check > "$OUT/accent-tokens.log" 2>&1
 printf '%-26s rc=%s\n' 'accent-tokens' "$?"
+# 六预设清单七处一致（2026-11-05 换色板后新增：清单分散在 ts/html/java/css/vue/locales）
+python3 tools/check_accent_presets.py > "$OUT/check-accent-presets.log" 2>&1
+printf '%-26s rc=%s\n' 'check-accent-presets' "$?"
+python3 tools/check_accent_presets.py --self-test > "$OUT/accent-presets-selftest.log" 2>&1
+printf '%-26s rc=%s\n' 'accent-presets-selftest' "$?"
 python3 tools/subset_font.py --check > "$OUT/font-subset.log" 2>&1
 printf '%-26s rc=%s\n' 'font-subset' "$?"
 python3 tools/check_bundle_budget.py > "$OUT/bundle-budget.log" 2>&1

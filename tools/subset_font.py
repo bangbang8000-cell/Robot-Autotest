@@ -149,6 +149,27 @@ def gzip_size(path: Path) -> int:
     return len(gzip.compress(path.read_bytes(), compresslevel=9))
 
 
+def glyph_codepoints(path: Path) -> set[int]:
+    """读 woff2 的实际 cmap，返回字体真正包含的码位集合。
+
+    为什么必须读 cmap 而不是只看文件大小：`--check` 原来只比 gzip 预算，
+    改了文案（比如把六预设从「蓝/青/靛/紫/青绿/品红」换成「新年红/科技蓝/土豪金/
+    活力橙/魅力紫/翡翠绿」）而忘了重新生成子集时，**字数涨了、预算仍达标、lint 全绿**，
+    但新字根本不在字体里，浏览器静默回落系统字体 —— 页面看着"还行"，字体却前后不一致。
+    这类问题只有比对 cmap 才能发现。
+
+    fontTools 缺失时明确报错（退出码 2），不允许"读不了就跳过"。
+    """
+    try:
+        from fontTools.ttLib import TTFont  # noqa: PLC0415 - 可选依赖，失败要给明确提示
+    except ImportError:  # pragma: no cover
+        raise SystemExit(
+            "[FAIL] 需要 fonttools 才能校验字体覆盖：python3 -m pip install fonttools brotli"
+        )
+    with TTFont(path) as font:
+        return set(font.getBestCmap())
+
+
 def report(chars: set[str]) -> int:
     paths = [
         FONTS_DIR / "noto-sans-sc-latin.woff2",
@@ -164,6 +185,22 @@ def report(chars: set[str]) -> int:
         raw, gz = path.stat().st_size, gzip_size(path)
         total += gz
         print(f"  {path.name:36s} {raw:9d} B  gzip {gz:9d} B")
+
+    # 覆盖断言：源码里出现的每个汉字，中文字体里必须真有这个字形。
+    ui_font = FONTS_DIR / "noto-sans-sc-ui.woff2"
+    covered = glyph_codepoints(ui_font)
+    missing = sorted(c for c in chars if ord(c) not in covered)
+    print(f"  中文字体 cmap 覆盖 {len([c for c in chars if ord(c) in covered])} / {len(chars)} 字")
+    if missing:
+        print(
+            f"[FAIL] 有 {len(missing)} 个字不在中文字体子集里（改了文案但没重新生成子集？）："
+            + "".join(missing[:40])
+            + ("..." if len(missing) > 40 else ""),
+            file=sys.stderr,
+        )
+        print("       修复：python3 tools/subset_font.py", file=sys.stderr)
+        return 1
+
     print(f"  {'合计（gzip）':36s} {'':9s}   {total:9d} B  / 预算 {FONT_BUDGET} B")
     css = FONTS_CSS.read_text(encoding="utf-8") if FONTS_CSS.is_file() else ""
     if css.count("font-display: swap") < 3:
