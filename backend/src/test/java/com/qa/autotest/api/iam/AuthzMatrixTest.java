@@ -21,6 +21,7 @@ import com.qa.autotest.application.iam.ProjectService;
 import com.qa.autotest.application.iam.UserService;
 import com.qa.autotest.application.execution.ExecutionProperties;
 import com.qa.autotest.application.plan.PlanService;
+import com.qa.autotest.application.repository.ProjectAssetRepository;
 import com.qa.autotest.application.repository.AuditRepository;
 import com.qa.autotest.application.repository.CredentialRepository;
 import com.qa.autotest.application.repository.DeviceRepository;
@@ -207,10 +208,11 @@ class AuthzMatrixTest {
                 new PasswordPolicy());
         ProjectService projectService = new ProjectService(projectRepository(), userRepository(),
                 access, audit);
-        DeviceService deviceService = new DeviceService(deviceRepository(), access, audit);
+        DeviceService deviceService = new DeviceService(deviceRepository(), stub(ProjectAssetRepository.class, (name, args) -> UNHANDLED),
+                access, audit);
         CredentialService credentialService = new CredentialService(credentialRepository(),
                 SecretCipher.fromBase64Key(Base64.getEncoder().encodeToString(new byte[32])),
-                access, audit);
+                stub(ProjectAssetRepository.class, (name, args) -> UNHANDLED), access, audit);
         TestCaseService caseService = new TestCaseService(caseRepository(), access, audit);
         PlanService planService = new PlanService(planRepository(), testSetRepository(), access,
                 audit, null, new ExecutionProperties(), Clock.systemUTC());

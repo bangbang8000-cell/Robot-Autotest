@@ -1,0 +1,10 @@
+[lint] 密文扫描
+[secret-scan] 扫描明文口令赋值…
+[secret-scan] PASS（无命中，双向自检已过）
+[lint] frontend: npm run lint
+
+> robot-autotest-frontend@0.1.0 lint
+> eslint .
+
+[lint] backend: mvn -B -DskipTests compile
+[lint] PASS

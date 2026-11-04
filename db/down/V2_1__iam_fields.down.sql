@@ -6,7 +6,12 @@ ALTER TABLE `api_token` DROP COLUMN token_kind;
 ALTER TABLE `project_label` DROP COLUMN description;
 ALTER TABLE `project_setting` DROP COLUMN description;
 
+-- 外键 fk_project_member_user(user_id) 会绑定到 idx_project_member_user，
+-- 直接删索引报 ERROR 1553；先摘外键、删索引、再把外键挂回（InnoDB 自动重建所需索引）。
+ALTER TABLE `project_member` DROP FOREIGN KEY fk_project_member_user;
 ALTER TABLE `project_member` DROP INDEX idx_project_member_user;
+ALTER TABLE `project_member` ADD CONSTRAINT fk_project_member_user
+  FOREIGN KEY (user_id) REFERENCES `app_user` (id);
 ALTER TABLE `project_member` DROP COLUMN joined_at;
 
 ALTER TABLE `project` DROP INDEX idx_project_owner;

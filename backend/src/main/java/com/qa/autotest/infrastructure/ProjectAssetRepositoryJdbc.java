@@ -1,6 +1,8 @@
 package com.qa.autotest.infrastructure;
 
 import com.qa.autotest.application.repository.ProjectAssetRepository;
+import com.qa.autotest.common.BusinessException;
+import com.qa.autotest.common.ErrorCode;
 import com.qa.autotest.common.tenant.TenantGuard;
 import java.util.List;
 import java.util.Locale;
@@ -61,6 +63,37 @@ public class ProjectAssetRepositoryJdbc implements ProjectAssetRepository {
                 """;
         TenantGuard.requireProjectScope(sql, "project_asset");
         return jdbc.update(sql, projectId, AssetScopeSql.normalize(assetType), assetId) > 0;
+    }
+
+    @Override
+    public int referenceCount(String assetType, long assetId) {
+        String sql = "SELECT COUNT(DISTINCT project_id) FROM project_asset "
+                + "WHERE asset_type = ? AND asset_id = ? AND project_id IS NOT NULL";
+        TenantGuard.requireProjectScope(sql, "project_asset");
+        Integer count = jdbc.queryForObject(sql, Integer.class,
+                AssetScopeSql.normalize(assetType), assetId);
+        return count == null ? 0 : count;
+    }
+
+    @Override
+    public void prepareHardDelete(String assetType, long assetId) {
+        String type = AssetScopeSql.normalize(assetType);
+        Optional<AssetScope> scope = scopeOf(type, assetId);
+        if (scope.isEmpty()) {
+            return; // 资产不存在，交给上层 find 抛 404
+        }
+        if (scope.get().platform()) {
+            int refs = referenceCount(type, assetId);
+            String hint = refs > 0
+                    ? "平台共享资产被 " + refs + " 个项目引用，不可硬删；请先在各项目解除引用"
+                    : "平台共享资产不可从项目路径硬删；请先转回私有资产";
+            throw new BusinessException(ErrorCode.CONFLICT, hint);
+        }
+        // V7_3 给所有存量私有资产回填了「本项目引用自己」，删本体前必须清掉
+        String sql = "DELETE FROM project_asset "
+                + "WHERE asset_type = ? AND asset_id = ? AND project_id IS NOT NULL";
+        TenantGuard.requireProjectScope(sql, "project_asset");
+        jdbc.update(sql, type, assetId);
     }
 
     /** 大小写统一由仓储负责，服务层不用重复写 toUpperCase。 */

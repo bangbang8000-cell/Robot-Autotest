@@ -29,4 +29,14 @@ public interface ProjectAssetRepository {
 
     /** 只删引用，不动物资本体；返回是否真的删除了一行。 */
     boolean removeReference(long projectId, String assetType, long assetId);
+
+    /** 该资产被多少个项目引用（删除保护提示用）。 */
+    int referenceCount(String assetType, long assetId);
+
+    /**
+     * 硬删前置校验（FR-v0.2-51）：平台共享资产一律不允许从项目路径硬删，
+     * 被引用时返回 409 并带引用项目数；私有资产先清掉 V7_3 回填的自引用，
+     * 避免删掉本体后 {@code project_asset} 留下幽灵行。
+     */
+    void prepareHardDelete(String assetType, long assetId);
 }

@@ -79,14 +79,21 @@ class MigrationFileTest {
         }
 
         String down = read("down/V5_1__report_fields.down.sql");
-        for (String token : List.of("DROP COLUMN IF EXISTS `case_key`",
-                "DROP COLUMN IF EXISTS `failure_kind`",
-                "DROP COLUMN IF EXISTS `arg_count`",
-                "DROP COLUMN IF EXISTS `log_span`",
-                "DROP COLUMN IF EXISTS `exportable`",
-                "DROP COLUMN IF EXISTS `metadata_missing`")) {
+        // 2026-11-04 G1 #4 现场复跑：目标库（MySQL 8 / MariaDB）不支持条件化 DROP，
+        // 原断言把 `DROP COLUMN IF EXISTS` 写成了规范，恰恰是 ERROR 1064 的根因。
+        // 改为「直接 DROP 必须存在」+「条件化 DROP 一律不得出现」双向守门。
+        for (String token : List.of("DROP COLUMN `case_key`",
+                "DROP COLUMN `failure_kind`",
+                "DROP COLUMN `arg_count`",
+                "DROP COLUMN `log_span`",
+                "DROP COLUMN `exportable`",
+                "DROP COLUMN `metadata_missing`")) {
             assertTrue(down.contains(token), "V5_1 down 缺少 " + token);
         }
+        // 忽略注释行：脚本头会引用这个不兼容写法作为说明，不能算命中
+        assertTrue(down.lines().noneMatch(line -> !line.stripLeading().startsWith("--")
+                        && line.contains("DROP COLUMN IF EXISTS")),
+                "down 脚本不得使用目标库不支持的 DROP COLUMN IF EXISTS（G1 #4 现场 ERROR 1064）");
     }
 
     private static String read(String relative) throws IOException {

@@ -3,6 +3,7 @@ package com.qa.autotest.application.asset;
 import com.qa.autotest.application.iam.AccessControlService;
 import com.qa.autotest.application.iam.Audited;
 import com.qa.autotest.application.iam.AuditService;
+import com.qa.autotest.application.repository.ProjectAssetRepository;
 import com.qa.autotest.application.repository.CredentialRepository;
 import com.qa.autotest.common.BusinessException;
 import com.qa.autotest.common.ErrorCode;
@@ -24,13 +25,16 @@ public class CredentialService {
 
     private final CredentialRepository credentials;
     private final SecretCipher cipher;
+    private final ProjectAssetRepository projectAssets;
     private final AccessControlService access;
     private final AuditService audit;
 
     public CredentialService(CredentialRepository credentials, SecretCipher cipher,
+                             ProjectAssetRepository projectAssets,
                              AccessControlService access, AuditService audit) {
         this.credentials = credentials;
         this.cipher = cipher;
+        this.projectAssets = projectAssets;
         this.access = access;
         this.audit = audit;
     }
@@ -89,6 +93,8 @@ public class CredentialService {
         access.require(PermissionResource.CREDENTIAL, PermissionAction.DELETE);
         Credential existing = credentials.find(projectId, id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "凭据不存在"));
+        // FR-v0.2-51：被引用不可硬删（409），必须先于归属校验，否则平台资产会先落 403
+        projectAssets.prepareHardDelete("CREDENTIAL", id);
         requireOwned(existing, projectId);
         credentials.delete(projectId, id);
         audit.record("credential.delete", "credential", String.valueOf(id), "");

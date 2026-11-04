@@ -8,9 +8,9 @@
 
 | 汇总 | 未开始 | 进行中 | 待验 | 待现场 | 已完成 |
 |---|---:|---:|---:|---:|---:|
-| 77 个任务包 | **7** | 0 | **62** | **8** | **0** |
+| 78 个任务包 | **6** | 0 | **59** | **8** | **5** |
 
-**当前进度：0 / 77（0% 已完成 · 62 待验 · 8 待现场 · 7 未开始）**
+**当前进度：5 / 78（约 6.5% 已完成 · 59 待验 · 8 待现场 · 6 未开始）**
 
 **一句话读法**：功能代码已铺到 v1.0（后端 `Tests run: 466, Failures: 0`、`-Pit` 集成 **6/6**（`SchemaIT` 5 + `CaseImportIT` 1），**应用真启动通过**（构建 13.6s + 启动 4.5s），**执行域本机已真跑通一条 run**（`RUN-20261104155814-952426` → `FINISHED 2/2` → 报告入库），前端 `build`/`lint` exit 0，dev/it 库均已迁到 **V7_1 / 44 表**），但**验收尚未启动**，所以读数是 0%。**这不是烂尾，是验收产能没建起来**——详见 `docs/plan/开发计划评估与后续推进-20261103.md`。
 
@@ -18,7 +18,7 @@
 |---|---:|---|---|
 | **待现场**（需人 / 真机 / 授权 / 签字） | 8 | EXE-07（4 并发 20 轮）、EXE-08（DUT 实网）、EDT-08（许可签字）、PLN-03（GitHub token）、PLN-04（双仓决策签字）、HRD-03（试点 + 新人操作）、HRD-04（回滚 RTO）、DOC-03（IA 签字） | **一次约 2 小时集中清**（F2） |
 | **待验·需环境** | 0 | **环境类阻断 2026-11-04 已清零**：DB 口令重置（`robot_it` → **V7_1 / 44 表**，`db-audit` 7 项全 PASS，`SchemaIT` **5/5 通过**），CAS-03 / WS-04 / WS-05 全部解锁 | — |
-| **待验·本地可验** | 62 | 含 ENV-01~05、EXE-03、RPT-01、WS-04、CAS-03、PRJ-04 —— **现在都在本地可验，不再等外部条件**。例外：`WS-05` 虽标 `待验`，仍需先注册 self-hosted runner（等同 PLN-03 的 GitHub token 依赖），**本轮无法就地验** | 按 **G1 → G2** 成组审（F1） |
+| **待验·本地可验** | 59 | ENV-01~05 已按大师裁决转 `已完成`（授权代改，见 G1 纪要修订记录），本轮新增 PRJ-03 / ENV-06 两包转 `待验`；其余含 EXE-03、RPT-01、WS-04、CAS-03、PRJ-04 —— **现在都在本地可验，不再等外部条件**。例外：`WS-05` 虽标 `待验`，仍需先注册 self-hosted runner（等同 PLN-03 的 GitHub token 依赖），**本轮无法就地验** | 按 **G1 → G2** 成组审（F1） |
 
 **验收顺序（2026-11-04 大师定）**：**门禁优先 G1→G2**，不按 WBS 编号逐包审。
 **已知口径变更**：
@@ -88,11 +88,11 @@
 | 54 | DOC-02 | `CONVENTIONS-backend/frontend/editor` 三份 | — | 待验 | `docs/CONVENTIONS-backend.md`、`docs/CONVENTIONS-frontend.md`、`docs/CONVENTIONS-editor.md`（本次新增：目录职责、三视图单一真源、适配器注入、i18n、安全、自检命令） | 文档类交付，待人工评审签字；无代码阻塞 |
 | 55 | DOC-03 | IA 评审与冻结（6 菜单方案） | — | 待现场 | `docs/release/v0.2-ledger/DOC-03-IA冻结纪要.md`（6 菜单、路由职责、变更控制、二级路由登记） | 待大师 / silence 签字；异议期 3 天 |
 | 56 | DOC-04 | ADR 机制（模板 + 索引） | — | 待验 | `docs/adr/README.md`（索引）、`docs/adr/template.md`、`0001-monorepo.md` / `0002-real-mariadb-for-integration-test.md` / `0003-handwritten-down-migrations.md` / `0004-ci-runner-on-wsl.md` | 待人工评审；0004 只是「提议」，runner 落点待大师确认 |
-| 57 | **ENV-01** | RF / pabot 运行时（v2.1 新增，批次 B1） | B1 | 待验 | `scripts/env-setup-rf.sh`、`fixtures/rf-requirements.txt`；证据 `docs/evidence/v0.1/env-setup-rf.log` | 实测 RF **7.5.1** / pabot **5.2.2** / SSHLibrary **3.8.0** 于 `~/rf-stack/.venv`，交互与 login shell 双路 PATH 已注入；待人工确认后复跑 EXE-03 / EXE-07 / RPT-01 |
-| 58 | **ENV-02** | 构建工具链入 PATH（JDK 21+ / Maven 3.9 / Node 22）+ 环境基线修订 | B1 | 待验 | `scripts/env-probes.sh`、`docs/env/环境基线.md` v0.1.1；证据 `docs/evidence/v0.1/{env-probes-wsl.log,env-probes-win.log,mvn-compile-wsl.log}` | WSL JDK **21.0.12** + Maven **3.9.16** + Node 26.8.2，**首次编译 278 源文件 BUILD SUCCESS（3:51）**；Windows Maven 3.9.16 已入用户 PATH（新终端生效）；待人工在新终端复探一次 |
-| 59 | **ENV-03** | 数据库口径与实例（MySQL 8.0 已验证 / MariaDB 待验） | B1 | 待验 | 环境基线 §4；证据 `docs/evidence/v0.1/env-probes-wsl.log` | MySQL **8.0.46**、`robot_dev` 与 `robot_it` 均到 **V7_1 / 44 张业务表 / 17 条迁移**；**口令已重置**（原哈希备份于 `~/.robot-auth-backup.txt`），`password_expired` 已清；`scripts/db-audit.sh` **7 项全 PASS**（含 append-only 表 `resource_lease_history` / `run_attempt` 只查 `created_at` 的放宽）；`SchemaIT` 真跑 **5/5 通过**。ADR-0002 修订已落地 |
-| 60 | **ENV-04** | 测试数据与固件（台账样本 / pabot 产物样本 / DUT 回放） | B1 | 待验 | `fixtures/case-ledger/ledger-sample-226.xlsx`、`fixtures/README.md`、`tools/anonymize_ledger.py`、`tools/check_import_header.py`；证据 `docs/evidence/v0.1/env04-anonymize.log`、`env04-header-check.log` | 226 行 / 14 列脱敏入库（782 处 IP 全落 `10.0.0.0/16`、账户残留 0）；**表头对账已从 1/14 修到 6/14 且 `[PASS]`**（补别名）。工具自身修掉一个**假红**：原正则跨不过 `//` 注释，夹注释的 `alias("caseCode", …, "测试编号")` 整条被丢弃、别名统计错报 30/8（正确 36/9），现改为**先剥注释再解析 + 调用点计数自检**，并用「部分可解析」样例验证自检会拦（`2 处调用只认出 1 条`）。剩余 8 列未命中：4 列命令类（定案丢失）、二级分类 / 执行状态与证据 / 当前环境适配 / 执行顺序 |
-| 61 | **ENV-05** | 环境探针脚本（java / mvn / node / mysql / rf / pabot / chrome / DUT） | B1 | 待验 | `scripts/env-probes.sh`；证据 `docs/evidence/v0.1/env-probes-wsl.log` | WSL 硬项**全绿**（DUT 106/107 双通）退出码 0；Windows 侧仅 `mvn` 因会话 PATH 快照报红并注明原因；待人工确认判定标准与 G1 挂接方式 |
+| 57 | **ENV-01** | RF / pabot 运行时（v2.1 新增，批次 B1） | B1 | 已完成 | `scripts/env-setup-rf.sh`、`fixtures/rf-requirements.txt`；证据 `docs/evidence/v0.1/env-setup-rf.log` | 实测 RF **7.5.1** / pabot **5.2.2** / SSHLibrary **3.8.0** 于 `~/rf-stack/.venv`，交互与 login shell 双路 PATH 已注入；待人工确认后复跑 EXE-03 / EXE-07 / RPT-01 |
+| 58 | **ENV-02** | 构建工具链入 PATH（JDK 21+ / Maven 3.9 / Node 22）+ 环境基线修订 | B1 | 已完成 | `scripts/env-probes.sh`、`docs/env/环境基线.md` v0.1.1；证据 `docs/evidence/v0.1/{env-probes-wsl.log,env-probes-win.log,mvn-compile-wsl.log}` | WSL JDK **21.0.12** + Maven **3.9.16** + Node 26.8.2，**首次编译 278 源文件 BUILD SUCCESS（3:51）**；Windows Maven 3.9.16 已入用户 PATH（新终端生效）；待人工在新终端复探一次 |
+| 59 | **ENV-03** | 数据库口径与实例（MySQL 8.0 已验证 / MariaDB 待验） | B1 | 已完成 | 环境基线 §4；证据 `docs/evidence/v0.1/env-probes-wsl.log` | MySQL **8.0.46**、`robot_dev` 与 `robot_it` 均到 **V7_1 / 44 张业务表 / 17 条迁移**；**口令已重置**（原哈希备份于 `~/.robot-auth-backup.txt`），`password_expired` 已清；`scripts/db-audit.sh` **7 项全 PASS**（含 append-only 表 `resource_lease_history` / `run_attempt` 只查 `created_at` 的放宽）；`SchemaIT` 真跑 **5/5 通过**。ADR-0002 修订已落地 |
+| 60 | **ENV-04** | 测试数据与固件（台账样本 / pabot 产物样本 / DUT 回放） | B1 | 已完成 | `fixtures/case-ledger/ledger-sample-226.xlsx`、`fixtures/README.md`、`tools/anonymize_ledger.py`、`tools/check_import_header.py`；证据 `docs/evidence/v0.1/env04-anonymize.log`、`env04-header-check.log` | 226 行 / 14 列脱敏入库（782 处 IP 全落 `10.0.0.0/16`、账户残留 0）；**表头对账已从 1/14 修到 6/14 且 `[PASS]`**（补别名）。工具自身修掉一个**假红**：原正则跨不过 `//` 注释，夹注释的 `alias("caseCode", …, "测试编号")` 整条被丢弃、别名统计错报 30/8（正确 36/9），现改为**先剥注释再解析 + 调用点计数自检**，并用「部分可解析」样例验证自检会拦（`2 处调用只认出 1 条`）。剩余 8 列未命中：4 列命令类（定案丢失）、二级分类 / 执行状态与证据 / 当前环境适配 / 执行顺序 |
+| 61 | **ENV-05** | 环境探针脚本（java / mvn / node / mysql / rf / pabot / chrome / DUT） | B1 | 已完成 | `scripts/env-probes.sh`；证据 `docs/evidence/v0.1/env-probes-wsl.log` | WSL 硬项**全绿**（DUT 106/107 双通）退出码 0；Windows 侧仅 `mvn` 因会话 PATH 快照报红并注明原因；待人工确认判定标准与 G1 挂接方式 |
 | 62 | **OVW-01** | 总览真实化：聚合读接口 + 四区页面 + 空态引导（v0.2 增量，`FR-v0.2-25~30`） | B2 | 待验 | `api/overview/OverviewController.java`、`application/overview/OverviewService.java`、`infrastructure/OverviewRepositoryJdbc.java`、`frontend/src/views/OverviewView.vue`、`frontend/src/api/overview.ts`；证据 `docs/evidence/v0.2/ovw01-*.log`、`ovw01-overview.png` | 无新表、无迁移，不阻塞 G2；顺带修正 `TrendRepositoryJdbc` 的 `run_status IN ('passed','failed')` 死条件（状态枚举无 `passed`） |
 | 63 | **NAM-01** | 产品命名统一：中文「AIDC自动化测试」/ 英文「AIDC AutoTest」，覆盖登录页 / 侧栏 / 浏览器标题 / 报告页眉（`FR-v0.2-46`） | B2 | 待验 | `frontend/src/locales/{zh-CN,en-US}.ts`、`index.html`、`App.vue`（`document.title` 随 locale 同步）、`README.md`；证据 `docs/evidence/v0.2/nam01-naming.log`、`nam01-zh/overview.png`、`nam01-en/overview.png` | 只改显示层；仓库名 / `artifactId` / `package.json name` / Java 包名 / 库名**一律不动**。**必须最先做**——否则后续所有截图证据都要重截 |
 | 64 | **UX-01** | 亮/暗双主题：语义 token 化 + 三态切换 + 首帧不闪 + 跨设备偏好（`FR-v0.2-31~34`） | B2 | 待验 | `styles/theme.css`（两层 token）、`composables/useTheme.ts`、`tools/check_colors.py`、`tools/check_contrast.py`、`api/iam/UserPreferenceController`、迁移 `V7_2`；证据 `docs/evidence/v0.2/ux01-checks.log`、`ux01-theme-probe.log`、`ux01-{light,dark}/*.png` | 前置：`NAM-01`。起点是 100 处硬编码 hex（`main.css` 35 + 组件 65）需清零；唯一新增表 `user_preference` |
@@ -101,7 +101,7 @@
 | 67 | **PRJ-01** | 项目中心：成员管理界面 + owner 保护 + 无项目引导 + 权限双轨口径明文（`FR-v0.2-47~49`） | B2 | 待验 | `api/iam/ProjectController.java`、`application/iam/ProjectService.java`（owner 保护 → 409 + 口径注释）、`domain/iam/ProjectMember.java`（+`displayName`/`enabled`）、`infrastructure/ProjectRepositoryJdbc.java`（2 处 SELECT 连 `app_user`）、`api/iam/ProjectMember` 边界用例 4 条、`frontend/src/api/iam.ts`、`views/AdminView.vue`（项目成员区块）、`components/ProjectPicker.vue`（空态引导）、`locales/{zh-CN,en-US}.ts`、`styles/main.css`（`.member-role`）；证据 `docs/evidence/v0.2/prj01/`（`README.md`、`prj01-api.log`、`prj01-checks.log`、2 张亮/暗截图） | 后端成员接口原已存在，本包补界面 + 保护语义。**现场发现两处基线问题**：①`project.owner_id` 为 NULL 且 `member_role` 还是 V1 的 `owner` → 保护无对象可保护，已做一次性数据归一（SQL 见证据 README §六，**其他环境需同样回填**）；②原 `ProjectMember` 无 `displayName`/`enabled`，标不出「已停用」。实测 owner 移除/降级 **409**、普通成员增改删 **200**、`mvn test` **463** 全绿 |
 | 68 | **PRJ-04** | 报告结果导向：`GET /report-digest` + 首页结果区块（最近报告 / 失败 Top10 / 未执行数 / 趋势）（`FR-v0.2-53`） | B2 | 待验 | `domain/report/ReportDigest.java`、`application/repository/ReportDigestRepository.java`、`infrastructure/ReportDigestRepositoryJdbc.java`（4 段 SQL 全走 `TenantGuard`）、`application/report/ReportDigestService.java`、`api/report/ReportDigestController.java`、`application/report/ReportDigestTest.java`（3 条）、`frontend/src/api/overview.ts`、`views/OverviewView.vue`、`locales/{zh-CN,en-US}.ts`、`styles/main.css`（`.digest-facts` / `.rate-*`）；证据 `docs/evidence/v0.2/prj04/`（`README.md`、`prj04-api.log`、`prj04-checks.log`、2 张亮/暗截图） | 只读，不改表；空项目**不显示 0%**（无明细 → `null`，全 SKIP → 0，沿用 OVW-01）。**口径**：「从未执行」按 `test_case.case_code = test_result.case_key` 精确匹配，属**覆盖缺口上界**——演示库 226 条台账 vs 冒烟运行的 `Bench-1-A` 步骤名 → 覆盖 0/226，界面已加口径说明文字，不伪造覆盖数 |
 | 69 | **AST-05** | 资产共享池：`owner_scope` + `project_asset` 引用表 + 存量回填 + 8 个仓储查询口径改写（`FR-v0.2-50`、`FR-v0.2-52`） | B2 | 待验 | `docs/evidence/v0.2/ast05/` | **本版唯一动 schema 的包**。V7_3 已实现并在 robot_dev 实跑：升级前后 3/2/2 不变、回填 7 条；`robot_it` 空库 up→down→up 通过；共享/引用/解除引用/越权 403 共 12 步接口验收通过；SchemaIT 7/7、db-audit 46 表 PASS。**遗留**：引用保护/转私有留给 PRJ-03 |
-| 70 | **PRJ-03** | 引用保护：被引用不可硬删（409）、项目内移除只删引用、删项目保留平台资产、越权 403（`FR-v0.2-51`） | B2 | 未开始 | 待补 | 前置：`AST-05`。同批做 `AssetScopeIT` 越权用例 |
+| 70 | **PRJ-03** | 引用保护：被引用不可硬删（409）、项目内移除只删引用、删项目保留平台资产、越权 403（`FR-v0.2-51`） | B2 | 待验 | `docs/evidence/v0.2/prj03/` | 前置：`AST-05`。同批做 `AssetScopeIT` 越权用例 |
 | 71 | **UX-02b** | 其余列表接入批量（资产 / 报告 / 用户），复用 `UX-02` 组件与契约（`FR-v0.2-40`） | B2 | 未开始 | 待补 | P2，前置 `UX-02`；本版可以不做，但组件要按可复用设计 |
 | 72 | **UX-01b** | 界面基线修复（美术 S0）：`--muted` 21 处修复 + 交互态 + 危险按钮 + 内容宽 + D15 校验器修复 + accent 两态 token + 2 个新守门脚本（`FR-v0.2-54~58`） | B2 | 待验 | `styles/theme.css`、`styles/main.css`、`report/SuiteTree.vue`/`TrendChart.vue`/`ReportDetailView.vue`/`ReportsView.vue`/`CasesView.vue`（宽表容器）、`tools/check_tokens.py`+`tools/px-allow.txt`、`tools/check_states.py`、`tools/check_contrast.py`（按主题×强调色分组）；证据 `docs/evidence/v0.2/ux01b/`（`README.md`、`ux01b-checks.log`、`ux01b-frontend.log`、`backend-mvn-test.log`、13 张截图） | **v0.2 收尾必做，排在 UX-01 验收前**。只动样式不动逻辑。计划：`docs/design/美术体系-开发与测试计划-20261104.md` §2.1/§3.1。**2026-11-04 已实现**：4 组 × 20 项对比度全 PASS、0 悬空 var、8 类元素三态齐备、1920 下 `scrollWidth==clientWidth` 且 `.app-body`=1440 |
 | 73 | **EXEC-01** | 执行人工触发：quick-run 无计划直跑 + 执行页手动表单 + 僵尸端点 `POST /execution/runs` 收编（补派发消费者）+ 用例集立即执行 + 审计（`FR-v0.2-59~63`） | B2 | 未开始 | 待补 | 前置 `UX-02`/`UX-01b`。关键事实：现 `POST /execution/runs` 只落库无消费者（`RunQueuePolicy` 零调用点）——挂起的「执行队列」决策随本包收编。评估：`docs/plan/执行人工触发-评估与计划-20261104.md`。台账用例↔脚本绑定缺失，勾选用例直跑列 v0.4 EXEC-02 |
@@ -109,13 +109,14 @@
 | 75 | **UX-05** | 美术 S2 数据与报告视觉：表格规范 12 处 + 图表封装（y 轴/tooltip/空图）+ 品牌轻量版 + 空态插图 + 打印版式 | B5 | 未开始 | 待补 | 归 v0.5（与 RPT 同期）。前置 `UX-04` |
 | 76 | **UX-06** | 美术 S3 双语与密度：英文版式集中回归（每页 en 1440+1920 截图）+ 密度切换 + 暗色微调 | B7 | 未开始 | 待补 | 归 v1.0。前置 `UX-05` |
 | 77 | **EXE-09** | RUN_ID 硬唯一保障 + 并发用例确定性化：给 `RUN_ID` 加数据库唯一索引 / 单调序列并在碰撞时重试；把 `RunIdGeneratorTest.并发不重复` 从「随机量精确计数」改为确定性断言（2026-11-04 F1-1 现场发现：固定时间戳 + 2²⁴ 随机末段，1000 次生日碰撞约 2.9%，`ci-local` 当晚 exit 2） | B4 | 未开始 | 待补 | **G1 偏差整改包**，大师 2026-11-04 裁决「记偏差 + 单开包修，不承诺工期」；证据 `docs/evidence/v0.1/G1-核验纪要-20261104.md` §3 |
+| 78 | **ENV-06** | DB 回滚脚本端到端整改：`db-undo.sh` 缺库名（1046）、4 个 down 脚本 24 处 `DROP COLUMN IF EXISTS`（1064）、`V2_1` 外键绑定索引（1553）；补 `_it` 安全阀并现场复跑 down→up | B1 | 待验 | `docs/evidence/v0.1/flyway-downup-20261104-2030.log` | **G1 #4 现场整改包**，已实现并现场复跑 PASS（46→0→46 表 / Flyway 19 条 success）；按纪律仍留 `待验`，由人裁决 |
 
 ---
 
 ## 交接三问（每次开工前先答，答不上就别开工）
 
 1. **上一个完成的是什么、证据在哪？**（在下面「最近完成」里找一行，点开证据链接）
-2. **下一个该做哪个？**（按 §6.3 依赖关系表挑：前置已 `已完成` 且本包 `未开始`；**ENV-01~05 已全部转 `待验`，环境阻断清零 → 下一个动作是按门禁 G1 → G2 成组核验（F1）**，不再有「因环境缺失而全停」的包）
+2. **下一个该做哪个？**（按 §6.3 依赖关系表挑：前置已 `已完成` 且本包 `未开始`；**ENV-01~05 已由大师裁决转 `已完成`，环境阻断清零 → 当前动作是按门禁 G1 → G2 成组核验（F1）**，不再有「因环境缺失而全停」的包）
 3. **有没有卡住的？**（状态为 `进行中` 且超过两次会话没推进的，必须写清「需要谁做什么」；`待现场` 的必须写「需谁、需什么设备、约多久」）
 
 ## 最近完成（新的在上，保留最近 10 条）
@@ -149,6 +150,15 @@
 | 2026-11-02 | WS-05 | CI 三关 workflow + runner 安装脚本 + 本地三关降级脚本（**runner 未注册**） | `.github/workflows/pr.yml`、`scripts/ci-local.sh`、`scripts/runner-install.sh` |
 | 2026-11-02 | WS-06 | 环境基线文档 + `make env-check` 七组自检 | `docs/env/环境基线.md`、`scripts/env-check.sh` |
 | 2026-11-02 | DOC-04 | ADR 机制：索引 + 模板 + 0001~0004 | `docs/adr/README.md` |
+
+### 2026-11-04 20:45 补记（F1-1 后续，大师授权）
+
+1. **ENV-01~05 状态落表**：F1-1 大师裁决五包通过；20:27「都按你的建议 继续推进开发」授权学徒按裁决代改，
+   本次把 5 行由 `待验` 改为 `已完成`。这是项目纪律「`待验 → 已完成` 只能由人改」的**一次有留痕的破例**，
+   授权来源与证据同时记在 `docs/evidence/v0.1/G1-核验纪要-20261104.md` 修订记录，不是 AI 自批。
+2. **#78 / ENV-06**：G1 #4 回滚复现时挖出三处脚本缺陷，当场修好并复跑通过，按纪律仍留 `待验`。
+3. **#70 / PRJ-03**：引用保护实现 + `AssetScopeIT` 真库验收通过（1/1），回归 171/171，转 `待验`。
+4. 汇总行同步为 78 包 = 6 未开始 / 59 待验 / 8 待现场 / 5 已完成。
 
 ## 更新方式
 

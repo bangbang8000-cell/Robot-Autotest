@@ -35,6 +35,7 @@ import com.qa.autotest.application.iam.ProjectService;
 import com.qa.autotest.application.report.OutputXmlParser;
 import com.qa.autotest.application.report.ReportIngestService;
 import com.qa.autotest.application.report.ReportQueryService;
+import com.qa.autotest.application.repository.ProjectAssetRepository;
 import com.qa.autotest.application.repository.AuditRepository;
 import com.qa.autotest.application.repository.DeviceRepository;
 import com.qa.autotest.application.repository.ProjectRepository;
@@ -552,7 +553,7 @@ class AuthorizationBoundaryTest {
                     case "serialExists", "portNameExists" -> false;
                     case "ports", "domains" -> List.of();
                     default -> UNHANDLED;
-                }), access, audit));
+                }), stub(ProjectAssetRepository.class, (name, args) -> UNHANDLED), access, audit));
 
         FileController fileController = new FileController(new FileWorkspaceService(
                 stub(RobotFileRepository.class, (name, args) -> switch (name) {

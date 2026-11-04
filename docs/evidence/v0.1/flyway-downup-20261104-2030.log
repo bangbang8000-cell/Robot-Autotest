@@ -1,0 +1,84 @@
+=== G1 #4 down-up 复跑 2026-11-04 20:33:28 CST ===
+[backup] 走查前备份 -> /home/evergreen/backups/robot_it-before-g1downup-20261104-2030.sql
+mysqldump: [Warning] Using a password on the command line interface can be insecure.
+BACKUP_EXIT=0  BYTES=80315
+--- STEP1 db-reset + migrate（干净库）---
+[db-reset] 重建库 robot_it
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-migrate] robot@127.0.0.1:3306/robot_it
+[db-migrate] 完成；当前业务表数：
+mysql: [Warning] Using a password on the command line interface can be insecure.
+46
+RESET1_EXIT=0
+mysql: [Warning] Using a password on the command line interface can be insecure.
+mysql: [Warning] Using a password on the command line interface can be insecure.
+TABLES_AFTER_MIGRATE1=46  HISTORY_SUCCESS=19
+--- STEP2 db-undo.sh（修复后：显式选库 + _it 安全阀）---
+[db-undo] target=robot@127.0.0.1:3306/robot_it
+[db-undo] 执行 V7_3__asset_pool.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V7_2__user_preference.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V7_1__audit_summary.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V6_3__ci_trigger.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V6_2__plan_dependency.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V6_1__execution_plan.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V5_5__export_columns.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V5_4__artifact_pin.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V5_3__report_log.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V5_1__report_fields.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V4_3__failure_class.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V4_2__run_artifact.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V4_1__lease.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V2_5__editor_keywords.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V2_4__audit_indexes.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V2_3__case_fields.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V2_2__asset_fields.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V2_1__iam_fields.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V1__baseline.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 完成；剩余表（应只有 flyway_schema_history）：
+mysql: [Warning] Using a password on the command line interface can be insecure.
+flyway_schema_history
+DB_UNDO_EXIT=0
+mysql: [Warning] Using a password on the command line interface can be insecure.
+TABLES_AFTER_UNDO=0（期望 0）
+--- STEP3 db-reset + migrate（重建 up）---
+[db-reset] 重建库 robot_it
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-migrate] robot@127.0.0.1:3306/robot_it
+[db-migrate] 完成；当前业务表数：
+mysql: [Warning] Using a password on the command line interface can be insecure.
+46
+RESET2_EXIT=0
+mysql: [Warning] Using a password on the command line interface can be insecure.
+mysql: [Warning] Using a password on the command line interface can be insecure.
+TABLES_AFTER_UP=46  HISTORY_SUCCESS=19
+--- STEP4 抽样表与最新版本校验 ---
+mysql: [Warning] Using a password on the command line interface can be insecure.
+project_asset
+device
+7.3	asset pool	1
+7.2	user preference	1
+7.1	audit summary	1
+--- 安全阀负向验证：对非 _it 库必须拒绝（不得真跑 down）---
+[db-undo] 拒绝执行：DB_NAME=robot_dev 不以 _it 结尾（只允许回滚集成测试库）
+SAFETY_VALVE_NEGATIVE_EXIT=1
+--- 判定 ---
+VERDICT=PASS  G1#4 down→up 现场复现通过

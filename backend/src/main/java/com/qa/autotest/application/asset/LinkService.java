@@ -2,6 +2,7 @@ package com.qa.autotest.application.asset;
 
 import com.qa.autotest.application.iam.AccessControlService;
 import com.qa.autotest.application.iam.AuditService;
+import com.qa.autotest.application.repository.ProjectAssetRepository;
 import com.qa.autotest.application.repository.DeviceRepository;
 import com.qa.autotest.application.repository.LinkRepository;
 import com.qa.autotest.common.BusinessException;
@@ -25,13 +26,16 @@ public class LinkService {
 
     private final LinkRepository links;
     private final DeviceRepository devices;
+    private final ProjectAssetRepository projectAssets;
     private final AccessControlService access;
     private final AuditService audit;
 
     public LinkService(LinkRepository links, DeviceRepository devices,
+                       ProjectAssetRepository projectAssets,
                        AccessControlService access, AuditService audit) {
         this.links = links;
         this.devices = devices;
+        this.projectAssets = projectAssets;
         this.access = access;
         this.audit = audit;
     }
@@ -46,7 +50,7 @@ public class LinkService {
         access.bindProject(projectId);
         access.require(PermissionResource.ASSET, PermissionAction.READ);
         return links.find(projectId, id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "链路不存在"));
+                .orElseThrow(() -> assetNotFound("LINK", id, "链路不存在"));
     }
 
     public Link create(long projectId, LinkCommand command) {
@@ -70,11 +74,22 @@ public class LinkService {
         return get(projectId, id);
     }
 
+    /** 无引用项目读平台资产返回 403 而不是 404，避免用状态码探测别的项目有什么资产。 */
+    private BusinessException assetNotFound(String type, long id, String message) {
+        boolean platform = projectAssets.scopeOf(type, id)
+                .map(ProjectAssetRepository.AssetScope::platform).orElse(false);
+        return platform
+                ? new BusinessException(ErrorCode.FORBIDDEN, "无权访问该平台共享资产")
+                : new BusinessException(ErrorCode.NOT_FOUND, message);
+    }
+
     public void delete(long projectId, long id) {
         access.bindProject(projectId);
         access.require(PermissionResource.ASSET, PermissionAction.DELETE);
         Link existing = links.find(projectId, id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "链路不存在"));
+        // FR-v0.2-51：被引用不可硬删（409），必须先于归属校验，否则平台资产会先落 403
+        projectAssets.prepareHardDelete("LINK", id);
         requireOwned(existing, projectId);
         links.delete(projectId, id);
         audit.record("link.delete", "link", String.valueOf(id), "");

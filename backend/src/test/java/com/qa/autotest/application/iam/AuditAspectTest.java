@@ -7,6 +7,7 @@ import com.qa.autotest.application.execution.ExecutionProperties;
 import com.qa.autotest.application.execution.LeaseService;
 import com.qa.autotest.application.plan.PlanCommand;
 import com.qa.autotest.application.plan.PlanService;
+import com.qa.autotest.application.repository.ProjectAssetRepository;
 import com.qa.autotest.application.repository.AuditRepository;
 import com.qa.autotest.application.repository.CredentialRepository;
 import com.qa.autotest.application.repository.PlanRepository;
@@ -137,7 +138,7 @@ class AuditAspectTest {
         projectService = new ProjectService(projectRepository(), userRepository(), access, audit);
         credentialService = new CredentialService(credentialRepository(),
                 SecretCipher.fromBase64Key(Base64.getEncoder().encodeToString(new byte[32])),
-                access, audit);
+                stub(ProjectAssetRepository.class, (name, args) -> UNHANDLED), access, audit);
         caseService = new TestCaseService(caseRepository(), access, audit);
         setService = new TestSetService(setRepository(), caseRepository(), access, audit);
         planService = new PlanService(planRepository(), setRepository(), access, audit, null,

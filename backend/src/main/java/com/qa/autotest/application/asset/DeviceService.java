@@ -2,6 +2,7 @@ package com.qa.autotest.application.asset;
 
 import com.qa.autotest.application.iam.AccessControlService;
 import com.qa.autotest.application.iam.AuditService;
+import com.qa.autotest.application.repository.ProjectAssetRepository;
 import com.qa.autotest.application.repository.DeviceRepository;
 import com.qa.autotest.common.BusinessException;
 import com.qa.autotest.common.ErrorCode;
@@ -30,11 +31,14 @@ public class DeviceService {
     }
 
     private final DeviceRepository devices;
+    private final ProjectAssetRepository projectAssets;
     private final AccessControlService access;
     private final AuditService audit;
 
-    public DeviceService(DeviceRepository devices, AccessControlService access, AuditService audit) {
+    public DeviceService(DeviceRepository devices, ProjectAssetRepository projectAssets,
+                         AccessControlService access, AuditService audit) {
         this.devices = devices;
+        this.projectAssets = projectAssets;
         this.access = access;
         this.audit = audit;
     }
@@ -50,7 +54,7 @@ public class DeviceService {
         access.bindProject(projectId);
         access.require(PermissionResource.ASSET, PermissionAction.READ);
         return devices.find(projectId, id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "设备不存在"));
+                .orElseThrow(() -> assetNotFound("DEVICE", id, "设备不存在"));
     }
 
     public List<String> domains(long projectId) {
@@ -88,11 +92,22 @@ public class DeviceService {
         return get(projectId, id);
     }
 
+    /** 无引用项目读平台资产返回 403 而不是 404，避免用状态码探测别的项目有什么资产。 */
+    private BusinessException assetNotFound(String type, long id, String message) {
+        boolean platform = projectAssets.scopeOf(type, id)
+                .map(ProjectAssetRepository.AssetScope::platform).orElse(false);
+        return platform
+                ? new BusinessException(ErrorCode.FORBIDDEN, "无权访问该平台共享资产")
+                : new BusinessException(ErrorCode.NOT_FOUND, message);
+    }
+
     public void delete(long projectId, long id) {
         access.bindProject(projectId);
         access.require(PermissionResource.ASSET, PermissionAction.DELETE);
         Device existing = devices.find(projectId, id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "设备不存在"));
+        // FR-v0.2-51：被引用不可硬删（409），必须先于归属校验，否则平台资产会先落 403
+        projectAssets.prepareHardDelete("DEVICE", id);
         requireOwned(existing, projectId);
         devices.delete(projectId, id);
         audit.record("device.delete", "device", String.valueOf(id), "");
