@@ -168,13 +168,14 @@ function turnPage(next: number): void {
   void load()
 }
 
+// immediate 同 CasesView：projectId 初值即目标值时 watch 不会触发，页面会永远空着
 watch([projectId], () => {
   page.value = 1
   selected.value = null
   disconnect()
   logLines.value = []
   void load()
-})
+}, { immediate: true })
 
 watch([stateFilter], () => {
   page.value = 1

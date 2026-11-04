@@ -126,13 +126,14 @@ async function load(): Promise<void> {
   }
 }
 
+// immediate 同 CasesView：projectId 初值即目标值时 watch 不会触发，页面会永远空着
 watch([projectId, tab], () => {
   page.value = 1
   expandedDeviceId.value = null
   ports.value = []
   showForm.value = false
   void load()
-})
+}, { immediate: true })
 
 watch([keyword, domainFilter], () => {
   page.value = 1

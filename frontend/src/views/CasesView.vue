@@ -85,13 +85,16 @@ async function load(): Promise<void> {
   }
 }
 
+// immediate 不能省：projectId 来自 localStorage，进入页面时通常「一开始就是目标值」，
+// 不加 immediate 时 watch 不触发，load() 永远不执行 —— 页面会一直显示「暂无数据」，
+// 而用户看不出是没请求还是真没数据。ReportsView 一直是这么写的，这三页此前漏了。
 watch([projectId], () => {
   page.value = 1
   showForm.value = false
   showImport.value = false
   preview.value = null
   void load()
-})
+}, { immediate: true })
 
 watch([keyword, priority, reviewStatus, domain], () => {
   page.value = 1
