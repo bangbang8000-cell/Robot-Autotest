@@ -1,4 +1,7 @@
-# Robot-Autotest 自动化测试平台
+# AIDC自动化测试 · AIDC AutoTest
+
+> 产品对外名称：中文 **AIDC自动化测试**，英文 **AIDC AutoTest**。
+> 仓库名 `Robot-Autotest`、Maven `artifactId`、npm `name`、Java 包名与数据库名为**工程标识，保持不变**（改名只作用于显示层，见 `docs/plan/多项目与体验基线-评估与设计-20261104.md` §5.5）。
 
 面向 GPU、智能网卡与基础设施的一体化自动化测试平台：把「设备台账 → 用例编写 → 并发执行 → 报告交付 → 定时/CI 自动化」收在同一个系统里，并用 metadata 门禁保证每一份对外报告都能追溯。
 

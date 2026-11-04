@@ -8,9 +8,9 @@
 
 | 汇总 | 未开始 | 进行中 | 待验 | 待现场 | 已完成 |
 |---|---:|---:|---:|---:|---:|
-| 62 个任务包 | **0** | 0 | **54** | **8** | 0 |
+| 71 个任务包 | **0** | 0 | **55** | **8** | **8** |
 
-**当前进度：0 / 62（0% 已完成 · 54 待验 · 8 待现场 · 0 未开始）**
+**当前进度：0 / 71（0% 已完成 · 55 待验 · 8 待现场 · 8 未开始）**
 
 **一句话读法**：功能代码已铺到 v1.0（后端 `Tests run: 453, Failures: 0`、`-Pit` 集成 **6/6**（`SchemaIT` 5 + `CaseImportIT` 1），**应用真启动通过**（构建 13.6s + 启动 4.5s），前端 `build`/`lint` exit 0，dev/it 库均已迁到 **V7_1 / 44 表**），但**验收尚未启动**，所以读数是 0%。**这不是烂尾，是验收产能没建起来**——详见 `docs/plan/开发计划评估与后续推进-20261103.md`。
 
@@ -94,6 +94,15 @@
 | 60 | **ENV-04** | 测试数据与固件（台账样本 / pabot 产物样本 / DUT 回放） | B1 | 待验 | `fixtures/case-ledger/ledger-sample-226.xlsx`、`fixtures/README.md`、`tools/anonymize_ledger.py`、`tools/check_import_header.py`；证据 `docs/evidence/v0.1/env04-anonymize.log`、`env04-header-check.log` | 226 行 / 14 列脱敏入库（782 处 IP 全落 `10.0.0.0/16`、账户残留 0）；**表头对账已从 1/14 修到 6/14 且 `[PASS]`**（补别名）。工具自身修掉一个**假红**：原正则跨不过 `//` 注释，夹注释的 `alias("caseCode", …, "测试编号")` 整条被丢弃、别名统计错报 30/8（正确 36/9），现改为**先剥注释再解析 + 调用点计数自检**，并用「部分可解析」样例验证自检会拦（`2 处调用只认出 1 条`）。剩余 8 列未命中：4 列命令类（定案丢失）、二级分类 / 执行状态与证据 / 当前环境适配 / 执行顺序 |
 | 61 | **ENV-05** | 环境探针脚本（java / mvn / node / mysql / rf / pabot / chrome / DUT） | B1 | 待验 | `scripts/env-probes.sh`；证据 `docs/evidence/v0.1/env-probes-wsl.log` | WSL 硬项**全绿**（DUT 106/107 双通）退出码 0；Windows 侧仅 `mvn` 因会话 PATH 快照报红并注明原因；待人工确认判定标准与 G1 挂接方式 |
 | 62 | **OVW-01** | 总览真实化：聚合读接口 + 四区页面 + 空态引导（v0.2 增量，`FR-v0.2-25~30`） | B2 | 待验 | `api/overview/OverviewController.java`、`application/overview/OverviewService.java`、`infrastructure/OverviewRepositoryJdbc.java`、`frontend/src/views/OverviewView.vue`、`frontend/src/api/overview.ts`；证据 `docs/evidence/v0.2/ovw01-*.log`、`ovw01-overview.png` | 无新表、无迁移，不阻塞 G2；顺带修正 `TrendRepositoryJdbc` 的 `run_status IN ('passed','failed')` 死条件（状态枚举无 `passed`） |
+| 63 | **NAM-01** | 产品命名统一：中文「AIDC自动化测试」/ 英文「AIDC AutoTest」，覆盖登录页 / 侧栏 / 浏览器标题 / 报告页眉（`FR-v0.2-46`） | B2 | 待验 | `frontend/src/locales/{zh-CN,en-US}.ts`、`index.html`、`App.vue`（`document.title` 随 locale 同步）、`README.md`；证据 `docs/evidence/v0.2/nam01-naming.log`、`nam01-zh/overview.png`、`nam01-en/overview.png` | 只改显示层；仓库名 / `artifactId` / `package.json name` / Java 包名 / 库名**一律不动**。**必须最先做**——否则后续所有截图证据都要重截 |
+| 64 | **UX-01** | 亮/暗双主题：语义 token 化 + 三态切换 + 首帧不闪 + 跨设备偏好（`FR-v0.2-31~34`） | B2 | 未开始 | 待补 | 前置：`NAM-01`。起点是 100 处硬编码 hex（`main.css` 35 + 组件 65）需清零；唯一新增表 `user_preference` |
+| 65 | **UX-03** | 国际化一致：24 处硬编码中文清零 + 枚举映射 + 服务端错误按 `ErrorCode.name` 本地化（`FR-v0.2-41~45`） | B2 | 未开始 | 待补 | 已知边界：服务端 213 处中文 `detail` 本包不处理，只做「主文案本地化 + 详情折叠」；彻底解需 `UX-03b` |
+| 66 | **UX-02** | 列表批量：通用选择组件 + 用例批量六动作 + 部分成功契约 + 逐条审计（`FR-v0.2-35~39`） | B2 | 未开始 | 待补 | 契约硬规则：部分失败返回 **200**、逐条独立事务、单次上限 200；资产/报告/用户走 `UX-02b` |
+| 67 | **PRJ-01** | 项目中心：成员管理界面 + owner 保护 + 无项目引导 + 权限双轨口径明文（`FR-v0.2-47~49`） | B2 | 未开始 | 待补 | 后端成员接口已存在（`ProjectController` 72~95），本包主要是补界面；`owner` 被移除需 409 |
+| 68 | **PRJ-04** | 报告结果导向：`GET /report-digest` + 首页结果区块（最近报告 / 失败 Top10 / 未执行数 / 趋势）（`FR-v0.2-53`） | B2 | 未开始 | 待补 | 只读，不改表；空项目**不显示 0%** |
+| 69 | **AST-05** | 资产共享池：`owner_scope` + `project_asset` 引用表 + 存量回填 + 8 个仓储查询口径改写（`FR-v0.2-50`、`FR-v0.2-52`） | B2 | 未开始 | 待补 | **本版唯一动 schema 的包**。最大风险是漏回填导致「升级后资产全空」→ 必须做升级前后逐项快照比对；down 只回滚结构不回滚引用数据 |
+| 70 | **PRJ-03** | 引用保护：被引用不可硬删（409）、项目内移除只删引用、删项目保留平台资产、越权 403（`FR-v0.2-51`） | B2 | 未开始 | 待补 | 前置：`AST-05`。同批做 `AssetScopeIT` 越权用例 |
+| 71 | **UX-02b** | 其余列表接入批量（资产 / 报告 / 用户），复用 `UX-02` 组件与契约（`FR-v0.2-40`） | B2 | 未开始 | 待补 | P2，前置 `UX-02`；本版可以不做，但组件要按可复用设计 |
 
 ---
 
@@ -107,6 +116,8 @@
 
 | 日期 | WBS | 一句话结果 | 证据 |
 |---|---|---|---|
+| 2026-11-04 | NAM-01 | **产品改名落地**：中文「AIDC自动化测试」/ 英文「AIDC AutoTest」，登录页与侧栏品牌位、浏览器标签页（随语言切换）全部生效；顺带修掉 `index.html` 静态标题不随语言变的问题。**工程标识零改动**（pom / package.json / Java 包名 / 库名均未动） | `docs/evidence/v0.2/nam01-naming.log`、`nam01-zh/overview.png`、`nam01-en/overview.png` |
+| 2026-11-04 | 计划（新增 9 包） | **v0.2 增 9 个包**（`NAM-01`、`UX-01~03`、`PRJ-01`/`PRJ-03`/`PRJ-04`、`AST-05`、`UX-02b`）：双主题、列表批量、中英一致与命名、项目中心与资产共享池。四项决策经向导确认（跟随系统 / 资产池+引用 / 用例优先 / 并入 v0.2）。已完成评估 + PRD `FR-v0.2-31~53` + 开发计划 §10 + 测试计划 §13，**代码未动** | `docs/plan/多项目与体验基线-评估与设计-20261104.md`、`docs/release/v0.2-ledger/{PRD,DEV-PLAN,TEST-PLAN}.md` |
 | 2026-11-04 | OVW-01（新增） | **总览从 43 行 ping 占位页改成真总览**：一次聚合接口返回用例数 / 资产数 / 执行统计 / 近期执行 / 近 30 天趋势；读数与直接 SQL **13 项逐项一致**（226 用例、3 设备、2 链路、2 凭据、0 运行）；空项目 `passRateBp=null` 而不是 0；跨项目 403。顺带修掉 `TrendRepositoryJdbc` 把状态写成 `IN ('passed','failed')` 的死条件（枚举里没有 `passed`，`finished` 的 run 全被漏算） | `docs/plan/总览页真实化-评估与设计-20261104.md`、`docs/evidence/v0.2/{ovw01-db-vs-api.log, ovw01-api.json, ovw01-repo-it.log, ovw01-mvn-test.log, ovw01-frontend.log, frontend-ovw01/overview.png}` |
 | 2026-11-04 | CAS-01/02/03（前端） | **前端首次真跑通**：登录 → 6 页逐页核对，抓到一个会让验收误判的缺陷——用例 / 资产 / 执行三页的 `watch` 缺 `immediate`，`projectId` 初值即目标值时 `load()` 从不执行，页面永远「暂无数据」且**不发任何请求**。修后 `/api/projects/1/cases` 与 `/devices` 正常发出，226 条台账渲染为 23 页、3 台设备正常显示 | `frontend/src/views/{Cases,Assets,Runs}View.vue`、提交 `c79dbb5`、`docs/env/环境基线.md` §10 |
 | 2026-11-04 | G1 判据 | 后端**真启动**通过（此前 450+ 单测从未起过 Spring 上下文）：空目录 → 构建 13.6s → 启动 4.5s；顺带抓到一个真缺陷 —— 未匹配路径返回 **500 而非 404**，已修并用真启动复验；G1 第三条（ArchUnit 拦故意跨层）经查**早已满足**，未重做 | `docs/evidence/v0.1/g1-boot-check.md`、`g1-jar-boot.log`、`scripts/boot-check.sh`、`GlobalExceptionHandlerTest` |

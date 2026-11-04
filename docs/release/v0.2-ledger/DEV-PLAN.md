@@ -264,3 +264,130 @@ npm run test:e2e -- --grep "v0.2 核心场景"   # 1~7 步全过
 
 **依赖**：无新表、无迁移、无外部依赖，不阻塞 G2。
 **不做**：图表库、实时刷新、跨项目聚合、自定义布局（理由见评估文档 §8）。
+
+---
+
+## 10. 增量：多项目中心与体验基线（2026-11-04）
+
+**背景**：大师 2026-11-04 提出四项需求（双主题 / 列表批量 / 中英一致 / 项目中心与资产解耦）并追加产品命名。
+需求见 PRD §3.5~§3.8（`FR-v0.2-31~53`），口径、schema 与取舍见
+`docs/plan/多项目与体验基线-评估与设计-20261104.md`。
+**四项决策已定**：跟随系统+手动覆盖 / 资产共享池+项目引用 / 用例优先+通用组件 / 并入 v0.2 增量。
+
+**八个实施包 + 一个复用包**（`UX-02b`，P2，本版可不做），可逐个独立验收。除 `AST-05` 外均不动表结构；`AST-05` 是唯一需要迁移与回填的包，单独作为一个可回滚批次。
+
+### 10.1 施工顺序与依赖
+
+```
+NAM-01 ──► UX-01 ──► UX-03 ──► UX-02 ──► PRJ-01 ──► PRJ-04 ──► AST-05 ──► PRJ-03
+（改名最先，否则后面所有截图作废）        （依赖后端成员接口，已存在）  （读接口）（唯一动 schema）（跟随 AST-05）
+```
+
+**为什么 `NAM-01` 必须最先做**：它只改 3 处文案，5 分钟完成；但后续每个包都要交截图证据。
+改名放最后，前面所有截图都要重截一遍——这是纯粹的白工。
+
+### 10.2 NAM-01 产品命名统一
+
+| 步骤 | 内容 | 产出 | 验收命令 |
+|---:|---|---|---|
+| 1 | `zh-CN.ts` `app.title` → `AIDC自动化测试`；`en-US.ts` → `AIDC AutoTest` | 2 个文件 | `grep -n "AIDC" frontend/src/locales/*.ts` |
+| 2 | `index.html` 静态标题改中性值；`App.vue` 监听 locale/route 用 `document.title` 同步 | 2 个文件 | 切英文后标签页显示 `AIDC AutoTest` |
+| 3 | 报告页眉 / 打印页 / 导出物页眉改用 `t('app.title')` | 3 个文件 | 导出 PDF 抬头为当前语言名 |
+
+**不做什么**：仓库名、`artifactId`、`package.json name`、Java 包名、数据库名**一律不动**（理由见评估文档 §5.5）。
+
+### 10.3 UX-01 主题双轨
+
+| 步骤 | 内容 | 产出 | 验收命令 |
+|---:|---|---|---|
+| 1 | 新建 `styles/theme.css`：primitives + semantic 两层，`:root[data-theme=light/dark]` 两套值 | 1 个文件 | `mvn` 无关；`npm run build` |
+| 2 | `main.css` 全量替换 35 处 hex 为 `var(--*)` | 1 个文件 | `python tools/check_colors.py` |
+| 3 | `views/` + `components/` 65 处 hex 替换（状态底色、边框、告警条） | 约 15 个文件 | 同上，命中数 = 0 |
+| 4 | `composables/useTheme.ts`：三态 + `matchMedia` 监听 + 落 localStorage | 1 个文件 | 手动三态切换 + OS 切换跟随 |
+| 5 | `index.html` 内联防闪烁脚本（挂载前设 `data-theme`） | 1 个文件 | 硬刷新首帧截图 |
+| 6 | 侧栏主题按钮 + `user_preference` 迁移与读写（登录后覆盖本地） | 3 个文件 + 1 迁移 | `mvn -Pit test -Dtest=UserPreferenceIT` |
+
+**回滚点**：步骤 3 之后若亮色出现大面积对比度问题，可只回滚 `theme.css` 的亮色值，不影响结构。
+
+### 10.4 UX-03 国际化与错误本地化
+
+| 步骤 | 内容 | 产出 | 验收命令 |
+|---:|---|---|---|
+| 1 | `EditorView.vue` 24 处硬编码中文抽键（含 `'可编辑'/'只读'/'地址缺少…'`） | 1 个 vue + 2 个语言包 | `python tools/check_i18n.py` |
+| 2 | 其余页面残留中文（`OverviewView` 未标注已处理，`ReportDetailView` 10 处）清理 | 约 4 个 vue | 同上 |
+| 3 | 新建 `utils/statusLabels.ts`：reviewStatus / runStatus / priority / triggerType / memberRole 五组映射 | 1 个文件 | 中文界面无裸 `draft`/`approved` |
+| 4 | 错误本地化：`http.ts` 按 `ErrorCode.name` 取 `error.<NAME>`，原文进 `detail` 折叠 | 1 个 ts + 2 个语言包 | 英文界面报错主文案为英文 |
+| 5 | `formatDuration` / `formatBytes` / `Intl.DateTimeFormat` 统一出口 | 1 个文件 | 中英切换格式随之变 |
+| 6 | `tools/check_i18n.py` 三项检查（键相等 / 模板中文 / 同值漏译） | 1 个脚本 | 故意删 en 键时报错退出 1 |
+
+**已知边界（写在这里免得扯皮）**：服务端 `detail` 仍是中文（213 处业务异常），本包只做「主文案本地化 + 详情折叠」。
+彻底解决需服务端错误结构化，单列 `UX-03b`，不在本包。
+
+### 10.5 UX-02 列表批量（用例优先）
+
+| 步骤 | 内容 | 产出 | 验收命令 |
+|---:|---|---|---|
+| 1 | `composables/useSelection.ts`：id 集合、本页全选、半选、跨页保留、清空 | 1 个文件 + 单测 | `npm run test`（新增 vitest） |
+| 2 | `components/SelectionBar.vue`：计数、动作插槽、回执、失败保留 | 1 个 vue | 视觉走查 |
+| 3 | 后端 `POST /cases/batch`：action 六种 + 逐条结果 + 每条审计 + 200 上限 | `CaseController` / `TestCaseService` | `mvn -Pit test -Dtest=CaseBatchIT` |
+| 4 | `CasesView.vue` 接入：勾选列、批量条、状态前置提示、失败重试 | 1 个 vue + 1 个 api | 浏览器操作截图 |
+| 5 | 批量审计带 `batch` 标识（复用 `AuditService.record`） | 1 个文件 | SQL 查同批次 3 条 |
+| 6 | `UX-02b` 预留：组件文档 + 其余列表接入清单（不在本包实现） | 1 段注释/文档 | 代码评审 |
+
+**契约硬规则**（实现时不许简化）：部分成功返回 **200**、逐条独立事务、单条失败不影响其他、
+`ids` 为空或 >200 或 action 未知才 400。
+
+### 10.6 PRJ-01 项目中心（成员与角色）
+
+| 步骤 | 内容 | 产出 | 验收命令 |
+|---:|---|---|---|
+| 1 | `api/iam.ts` 补 `members` / `addMember` / `updateMember` / `removeMember` | 1 个文件 | 类型检查通过 |
+| 2 | `AdminView.vue` 新增「项目成员」区块：选项目 → 表格 → 增改删 | 1 个 vue + 语言包 | 浏览器操作 |
+| 3 | `owner` 保护：移除/降级 `owner` 返回 409；停用用户标「已停用」 | 后端 1 处 + 前端展示 | 接口 409 + 截图 |
+| 4 | 无项目引导：`ProjectPicker` 空态 + 各页统一提示「联系管理员加入项目」 | 2 个文件 | 新用户账号登录截图 |
+
+**权限口径落地**：`effectiveRole` 的「全局 admin → 项目成员角色 → 全局最高角色」写进类注释与 PRD §3.8，
+前端成员表显示的是 `member_role`（项目内），不显示全局角色，避免用户混淆。
+
+### 10.7 PRJ-04 报告结果导向
+
+| 步骤 | 内容 | 产出 | 验收命令 |
+|---:|---|---|---|
+| 1 | `GET /api/projects/{id}/report-digest?days=30`：最近 5 份报告 / 失败 Top10 / 未执行用例数 / 通过率趋势 | Controller + Service + Repository | `mvn -Pit test -Dtest=ReportDigestIT` |
+| 2 | 总览页补「报告结果」区块（在 OVW-01 四区之后） | 1 个 vue | 浏览器截图 |
+| 3 | 空态：无报告时给「去执行页建计划」引导，**不显示 0%** | 1 个 vue + 语言包 | 空库截图 |
+| 4 | 与真库 SQL 逐项对照并留证 | 1 份 log | `docs/evidence/v0.2/prj04-db-vs-api.log` |
+
+### 10.8 AST-05 资产共享池（唯一动 schema）
+
+| 步骤 | 内容 | 产出 | 验收命令 |
+|---:|---|---|---|
+| 1 | 迁移：三表 `owner_scope` + `project_id` 可空 + 新建 `project_asset` | 1 个迁移 + 1 个 down | `mvn -Pit test -Dtest=SchemaIT` |
+| 2 | **存量回填**：每个存量资产按原 `project_id` 插 `project_asset`（升级后视图不变） | 迁移内 SQL 或独立脚本 | 升级前后各项目资产数逐项相等 |
+| 3 | `AssetScopeSql` 常量：项目可见资产的统一 WHERE（私有 OR 平台+有引用） | 1 个文件 | 架构测试：资产仓储不得自拼条件 |
+| 4 | `DeviceRepositoryJdbc` / `LinkRepositoryJdbc` / `CredentialRepositoryJdbc` 改查询口径 | 3 个文件（约 31 处 `project_id`） | `mvn -Pit test` 全绿 |
+| 5 | 接口：`POST /assets/{type}/{id}/share`（转平台）/ `POST /projects/{id}/assets/{type}/{id}`（引用） | 2 个端点 | 一台设备被 3 项目引用仅 1 条 device |
+| 6 | 唯一键调整：`uk_device_project_name` 不再适用平台级；平台级用 `uk_device_serial` | 迁移 | 同名不同项目可共存 |
+| 7 | 解耦不退化断言：`test_case` 无 `device_id` 类列 | 1 条 Schema 测试 | `mvn -Pit test -Dtest=SchemaIT` |
+
+**升级风险与对策**：本包是唯一会改线上数据的包。回填 SQL 必须在**同一事务**内完成，且先跑
+「升级前资产数快照 → 升级 → 升级后可见数比对」，两列不相等即中止。down 迁移只回滚结构，
+**不回滚 `project_asset` 数据**（宁可留冗余引用，不制造「资产消失」）。
+
+### 10.9 PRJ-03 引用保护与跨项目视图
+
+| 步骤 | 内容 | 产出 | 验收命令 |
+|---:|---|---|---|
+| 1 | 删除前置校验：被引用 → 409 并返回引用项目数 | Service | 接口 409 |
+| 2 | 项目内「移除资产」只删 `project_asset`，不动物资本体 | 1 个端点 | 移除后资产仍在 |
+| 3 | 删项目级联删引用、保留平台资产 | Repository | 删项目后 device 仍在 |
+| 4 | 越权用例：无引用项目读平台资产 → 403（不是 404，避免探测） | 测试 | `mvn -Pit test -Dtest=AssetScopeIT` |
+
+### 10.10 完成判定
+
+上述各包独立验收，**不需要等全部做完**。合并判据：
+
+1. 各包在 `WBS-STATUS.md` 由 `未开始` → `待验`，附证据路径；
+2. 全量 `mvn -B test` + `-Pit` 绿；`npm run lint` / `vue-tsc` / `build` 三项 exit 0；
+3. 评估文档 §9 的 A-01~A-21 逐条给出证据；
+4. `待验 → 已完成` **只能由人改**（流程纪律，AI 不自批）。
