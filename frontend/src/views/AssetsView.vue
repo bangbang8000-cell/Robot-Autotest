@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import {
   credentialApi,
   deviceApi,
@@ -21,11 +22,27 @@ import { useSelection } from '@/composables/useSelection'
 import { confirmAction } from '@/composables/useConfirm'
 
 type Tab = 'devices' | 'links' | 'credentials'
+const TABS: Tab[] = ['devices', 'links', 'credentials']
 
 const { t } = useI18n()
 const auth = useAuthStore()
+const route = useRoute()
+const router = useRouter()
 
-const tab = ref<Tab>('devices')
+/**
+ * 页签与 URL 的 `?tab=` 双向同步（两级菜单的资产子项即锚在这三个值上）。
+ *
+ * 不做同步会出两个问题：① 从菜单点「凭据」进入只能停在默认的设备页；
+ * ② 三个子项共用一个 path，菜单无法判断该点亮哪一个，结果一个都不亮。
+ * 直接访问 `/assets` 时补默认值，保证「恰好一个选中」这个不变量始终成立。
+ */
+function tabFromQuery(): Tab {
+  const raw = route.query.tab
+  const value = Array.isArray(raw) ? raw[0] : raw
+  return TABS.includes(value as Tab) ? (value as Tab) : 'devices'
+}
+
+const tab = ref<Tab>(tabFromQuery())
 const keyword = ref('')
 const page = ref(1)
 const size = 10
@@ -181,6 +198,26 @@ watch([keyword, domainFilter], () => {
   page.value = 1
   void load()
 })
+
+// 页签 → URL（用 replace，避免每次切页签都往浏览器历史里塞一条）
+watch(tab, (next) => {
+  if (tabFromQuery() === next) return
+  void router.replace({ query: { ...route.query, tab: next } })
+})
+
+// URL → 页签（菜单子项、浏览器前进后退、外部深链都走这条）
+watch(
+  () => route.query.tab,
+  () => {
+    const next = tabFromQuery()
+    if (next !== tab.value) tab.value = next
+  },
+)
+
+// 首次进入若是裸 `/assets`，把默认页签写回 URL，菜单的「设备」子项才会点亮
+if (route.query.tab !== tab.value) {
+  void router.replace({ query: { ...route.query, tab: tab.value } })
+}
 
 function turnPage(next: number): void {
   if (next < 1 || next > pageCount.value) return

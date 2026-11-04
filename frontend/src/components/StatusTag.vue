@@ -9,8 +9,7 @@
 import { computed } from 'vue'
 import AppIcon from './AppIcon.vue'
 import type { IconName } from './iconMap'
-
-type StatusTone = 'ok' | 'fail' | 'warn' | 'info' | 'neutral'
+import type { StatusTone } from '@/utils/statusLabels'
 
 const props = withDefaults(
   defineProps<{

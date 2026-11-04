@@ -37,6 +37,9 @@ export default {
     tokenValue: 'Computed value',
     library: 'Component library (Naive UI)',
     custom: 'In-house components',
+    nav: 'Navigation (two levels)',
+    navHint:
+      'Groups collapse; the current page is marked three ways (accent bar, tinted background, accent text), not by color alone',
     i18n: 'Bilingual',
     sampleButton: 'Primary button',
     sampleGhost: 'Secondary button',
@@ -94,12 +97,15 @@ export default {
     },
   },
   menu: {
+    label: 'Main navigation',
     overview: 'Overview',
     assets: 'Assets',
     cases: 'Test Cases',
     runs: 'Runs',
+    runsList: 'Run history',
     reports: 'Reports',
     admin: 'Admin',
+    adminUsers: 'Users & projects',
   },
   overview: {
     subtitle: 'What this project has, and how it has been running',

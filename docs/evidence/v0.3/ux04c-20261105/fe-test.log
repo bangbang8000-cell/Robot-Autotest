@@ -1,0 +1,34 @@
+
+> robot-autotest-frontend@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 /home/evergreen/robot-autotest/frontend
+
+(node:300359) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:300335) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:300348) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:300334) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:300341) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:300353) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:300333) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/composables/useSelection.spec.ts (8 tests) 19ms
+ ✓ src/composables/useBatchAction.spec.ts (5 tests) 17ms
+ ✓ src/composables/useConfirm.spec.ts (3 tests) 6ms
+ ✓ src/composables/useAccent.spec.ts (8 tests) 22ms
+ ✓ src/composables/naiveTheme.spec.ts (3 tests) 7ms
+ ✓ src/config/navigation.spec.ts (12 tests) 16ms
+ ✓ src/utils/format.spec.ts (8 tests) 38ms
+
+ Test Files  7 passed (7)
+      Tests  47 passed (47)
+   Start at  07:56:02
+   Duration  1.41s (transform 849ms, setup 161ms, collect 1.84s, tests 125ms, environment 3.66s, prepare 1.14s)
+

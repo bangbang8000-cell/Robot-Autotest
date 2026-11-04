@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import {
+  NButton,
+  NDataTable,
+  NDatePicker,
+  NPagination,
+  NSelect,
+  type DataTableColumns,
+} from 'naive-ui'
 import { auditApi, type AuditEntry } from '@/api/audit'
 import { useAuthStore } from '@/stores/auth'
 import ErrorLineView from '@/components/ErrorLine.vue'
+import EmptyState from '@/components/EmptyState.vue'
+import AppIcon from '@/components/AppIcon.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { formatDateTime } from '@/utils/format'
 
@@ -42,8 +52,48 @@ const filter = reactive({
   to: '',
 })
 
+const projectOptions = computed(() => [
+  { label: t('audit.allProjects'), value: '' },
+  ...auth.projects.map((p) => ({ label: `${p.code} · ${p.name}`, value: String(p.id) })),
+])
+
+const actionOptions = computed(() => [
+  { label: t('audit.allActions'), value: '' },
+  ...ACTIONS.map((a) => ({ label: a, value: a })),
+])
+
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / size)))
 
+/**
+ * 列定义（UX-04b 逐页迁移）：表格改由 `NDataTable` 渲染，宽表靠 `scroll-x` 横滚，
+ * 与原先 `.table-scroll` 的行为一致。空值统一显示 `—`，避免审计表里出现成片空白格子。
+ */
+const columns = computed<DataTableColumns<AuditEntry>>(() => [
+  {
+    title: t('audit.time'),
+    key: 'occurredAt',
+    width: 170,
+    render: (row) => formatDateTime(row.occurredAt),
+  },
+  { title: t('audit.operator'), key: 'operator', width: 120, render: (row) => row.operator ?? '—' },
+  { title: t('audit.action'), key: 'action', width: 160 },
+  { title: t('audit.resourceType'), key: 'resourceType', width: 120 },
+  {
+    title: t('audit.resourceId'),
+    key: 'resourceId',
+    width: 110,
+    render: (row) => row.resourceId ?? '—',
+  },
+  {
+    title: t('audit.summary'),
+    key: 'summary',
+    minWidth: 280,
+    // 摘要可能很长：单行省略 + 悬停看全文，避免撑高整行
+    ellipsis: { tooltip: true },
+    render: (row) => row.summary || '—',
+  },
+  { title: t('audit.ip'), key: 'ip', width: 130, render: (row) => row.ip ?? '—' },
+])
 
 function params(nextPage = page.value) {
   return {
@@ -115,67 +165,64 @@ onMounted(() => {
 
     <section class="card wide-card">
       <div class="toolbar">
-        <select v-model="filter.projectId" class="input">
-          <option value="">{{ t('audit.allProjects') }}</option>
-          <option v-for="p in auth.projects" :key="p.id" :value="String(p.id)">
-            {{ p.code }} · {{ p.name }}
-          </option>
-        </select>
-        <select v-model="filter.action" class="input">
-          <option value="">{{ t('audit.allActions') }}</option>
-          <option v-for="a in ACTIONS" :key="a" :value="a">{{ a }}</option>
-        </select>
-        <input v-model="filter.from" class="input" type="date" :aria-label="t('audit.from')" />
-        <input v-model="filter.to" class="input" type="date" :aria-label="t('audit.to')" />
-        <button class="btn" type="button" :disabled="loading" @click="search">
-          {{ t('audit.query') }}
-        </button>
-        <button class="btn btn-ghost" type="button" @click="exportCsv">
+        <NSelect
+          v-model:value="filter.projectId"
+          :options="projectOptions"
+          style="width: 200px"
+          :aria-label="t('audit.allProjects')"
+        />
+        <NSelect
+          v-model:value="filter.action"
+          :options="actionOptions"
+          style="width: 180px"
+          :aria-label="t('audit.action')"
+        />
+        <NDatePicker
+          v-model:formatted-value="filter.from"
+          type="date"
+          value-format="yyyy-MM-dd"
+          clearable
+          style="width: 180px"
+          :placeholder="t('audit.from')"
+        />
+        <NDatePicker
+          v-model:formatted-value="filter.to"
+          type="date"
+          value-format="yyyy-MM-dd"
+          clearable
+          style="width: 180px"
+          :placeholder="t('audit.to')"
+        />
+        <NButton type="primary" :loading="loading" @click="search">{{ t('audit.query') }}</NButton>
+        <NButton quaternary @click="exportCsv">
+          <template #icon><AppIcon name="download" :size="16" /></template>
           {{ t('audit.export') }}
-        </button>
+        </NButton>
       </div>
 
-      <p v-if="loading" class="muted">{{ t('common.loading') }}</p>
-      <table v-if="rows.length" class="table">
-        <thead>
-          <tr>
-            <th>{{ t('audit.time') }}</th>
-            <th>{{ t('audit.operator') }}</th>
-            <th>{{ t('audit.action') }}</th>
-            <th>{{ t('audit.resourceType') }}</th>
-            <th>{{ t('audit.resourceId') }}</th>
-            <th>{{ t('audit.summary') }}</th>
-            <th>{{ t('audit.ip') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in rows" :key="row.id">
-            <td>{{ formatDateTime(row.occurredAt) }}</td>
-            <td>{{ row.operator ?? '—' }}</td>
-            <td>{{ row.action }}</td>
-            <td>{{ row.resourceType }}</td>
-            <td>{{ row.resourceId ?? '—' }}</td>
-            <td class="audit-summary">{{ row.summary || '—' }}</td>
-            <td>{{ row.ip ?? '—' }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <EmptyState v-if="!loading && total === 0" :title="t('audit.empty')" icon="audit" />
+      <NDataTable
+        :columns="columns"
+        :data="rows"
+        :loading="loading"
+        :row-key="(row: AuditEntry) => row.id"
+        :scroll-x="1000"
+        :bordered="false"
+        size="small"
+        class="audit-table"
+      >
+        <template #empty>
+          <EmptyState :title="t('audit.empty')" icon="audit" />
+        </template>
+      </NDataTable>
 
-      <div v-if="total > 0" class="pager">
-        <button class="btn btn-ghost" type="button" :disabled="page <= 1" @click="turnPage(page - 1)">
-          {{ t('common.prev') }}
-        </button>
-        <span class="muted">{{ t('common.pageInfo', { page, total: pageCount }) }}</span>
-        <button
-          class="btn btn-ghost"
-          type="button"
-          :disabled="page >= pageCount"
-          @click="turnPage(page + 1)"
-        >
-          {{ t('common.next') }}
-        </button>
-      </div>
+      <NPagination
+        v-if="total > 0"
+        class="pager"
+        :page="page"
+        :page-count="pageCount"
+        :page-slot="7"
+        @update:page="turnPage"
+      />
     </section>
   </div>
 </template>

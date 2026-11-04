@@ -80,3 +80,34 @@ export function triggerTypeLabel(value: string | null | undefined): string {
 export function memberRoleLabel(value: string | null | undefined): string {
   return lookup('memberRole', value)
 }
+
+/**
+ * 状态徽标的语义色档（与 `StatusTag` 的 tone 一一对应）。
+ *
+ * 定义放在 util 而不是组件里，是因为「状态值 → 色档」属于显示契约，
+ * 表格列、概览卡片、徽标都要用同一套；各页各写一个 `x === 'paused' ? 'neutral' : 'ok'`
+ * 迟早会漂。`StatusTag` 反向 import 这个类型，不引入环（util 不依赖组件）。
+ */
+export type StatusTone = 'ok' | 'fail' | 'warn' | 'info' | 'neutral'
+
+/**
+ * 运行状态 → 色档。
+ *
+ * `running` 用 info（进行中不是"成功"也不是"告警"）；`queued/preparing` 用 warn
+ * 表示"还没真的跑起来"，避免排队中的任务看起来已经完成。
+ */
+export function runStatusTone(value: string | null | undefined): StatusTone {
+  switch ((value ?? '').toLowerCase()) {
+    case 'finished':
+      return 'ok'
+    case 'failed':
+      return 'fail'
+    case 'running':
+      return 'info'
+    case 'queued':
+    case 'preparing':
+      return 'warn'
+    default:
+      return 'neutral'
+  }
+}

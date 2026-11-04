@@ -59,4 +59,9 @@ python3 tools/subset_font.py --check
 echo "[lint]   - tools/check_icons.py（图标名 ↔ iconMap.ts 对账）"
 python3 tools/check_icons.py
 
+# 模板组件 ↔ import 对账：漏 import 的组件不会报错，只会静默渲染空白。
+# 2026-11-05 三个视图的空态就这么白过一轮（构建/单测/lint 全绿）。
+echo "[lint]   - tools/check_component_imports.py（模板组件 ↔ import 对账）"
+python3 tools/check_component_imports.py
+
 echo "[lint] PASS"

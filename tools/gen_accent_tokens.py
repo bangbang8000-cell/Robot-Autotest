@@ -20,9 +20,9 @@
 蓝（blue）是 UX-01b 时代人工微调过的基准，保留原值不重新生成，见 theme.css §4 注释。
 
 「土豪金」是两个主题里唯一必须分头取极值的色相——金色在白底上天然对比不足：
-亮色只能在 #8a6300 这一档深金上过 4.5:1（观感偏古铜金），暗色才用 #f5c542 的亮金。
-外观面板的色板取的是**暗色主色**，所以面板里看到的是亮眼金黄，与实际选中后的
-亮色主题观感不同 —— 这是 WCAG 与「土豪金」不可兼得处的取舍，不要为了好看把亮色改浅。
+亮色只能在 #8f6500 这一档深金上过 4.5:1（观感偏古铜金），暗色才用 #ffd24a 的亮金。
+亮色这一档已经是亮度上限（4.71 对 soft），再浅一档就掉到 4.43，不要为了好看把亮色改浅；
+要让选中的金色「看得出是金」，靠的是 SOFT_OVERRIDE 里那块手调的金色 tint。
 
 用法
 ----
@@ -58,10 +58,12 @@ CANDIDATES: dict[str, dict[str, list[str]]] = {
         "light": ["#c81e1e", "#c62828", "#b91c1c", "#bd2130", "#a81c1c", "#d02020"],
         "dark": ["#ff6b6b", "#f87171", "#ff7a7a", "#ef5350", "#ff8f8f"],
     },
-    # 土豪金：亮色受 4.5:1 约束只能用暗金，暗色才能用亮金（见模块 docstring）
+    # 土豪金：亮色受 4.5:1 约束只能用暗金，暗色才能用亮金（见模块 docstring）。
+    # #8f6500 是 2026-11-05 优化后的亮色主色：亮度已顶到 WCAG 上限（acc/panel 5.21、
+    # acc/soft 4.71），比原 #8a6300 更亮更暖，白底上不再像古铜；再浅一档就掉到 4.43。
     "gold": {
-        "light": ["#8a6300", "#7c5a00", "#6f5200", "#806000", "#96700a", "#a07400"],
-        "dark": ["#f5c542", "#ffd24a", "#f0b429", "#e8b73a", "#ffdf6b"],
+        "light": ["#8f6500", "#8a6300", "#7c5a00", "#6f5200", "#806000", "#a07400"],
+        "dark": ["#ffd24a", "#f5c542", "#ffd966", "#f0b429", "#e8b73a"],
     },
     # 活力橙：亮色 #ad4a05 已压到接近棕橙，再浅 soft 对比度就掉到 4.4
     "orange": {
@@ -82,6 +84,20 @@ CANDIDATES: dict[str, dict[str, list[str]]] = {
     },
 }
 
+# soft（选中行 / 菜单选中底 / 徽标底）的唯一例外。
+#
+# 机制上用「accent × 比例 + 底白」派生 soft，五套色都适用；但金色是唯一失效的：
+# 它的 accent 被 WCAG 钉在浅金档（L 约 30%），与白 10% 混合得到 #f3efe6 —— 一块
+# 几乎无彩的米灰，选中行看起来像「灰色背景」而不是金色。反过来把 soft 手调成
+# 更高明度的金色 tint（#fdf3d6）不但更像金，accent/soft 还从 4.73 升到 4.91，
+# 于是 accent 也能顺势提亮到 #8f6500。
+#
+# 这两条覆盖值不豁免任何判据：仍走 judge() 的三项 ≥4.5，改错会直接 FAIL。
+SOFT_OVERRIDE: dict[tuple[str, str], str] = {
+    ("gold", "light"): "#fdf3d6",
+    ("gold", "dark"): "#3a3222",
+}
+
 
 def to_rgb(value: str) -> tuple[int, int, int]:
     return tuple(int(value[i : i + 2], 16) for i in (1, 3, 5))  # type: ignore[return-value]
@@ -93,14 +109,14 @@ def blend(a: str, b: str, ratio: float) -> str:
     return "#" + "".join(f"{round(x * ratio + y * (1 - ratio)):02x}" for x, y in zip(ra, rb))
 
 
-def derive(accent: str, theme: str) -> dict[str, str]:
+def derive(accent: str, theme: str, soft_override: str | None = None) -> dict[str, str]:
     if theme == "light":
-        soft = blend(accent, "#ffffff", 0.10)
+        soft = soft_override or blend(accent, "#ffffff", 0.10)
         hover = blend(accent, "#000000", 0.88)
         active = blend(accent, "#000000", 0.76)
         on_accent = LIGHT_TEXT
     else:
-        soft = blend(accent, DARK_BASE, 0.16)
+        soft = soft_override or blend(accent, DARK_BASE, 0.16)
         hover = blend(accent, "#ffffff", 0.88)
         active = blend(accent, "#ffffff", 0.76)
         on_accent = DARK_TEXT
@@ -126,7 +142,7 @@ def judge(values: dict[str, str], theme: str) -> dict[str, float | None]:
 def pick(name: str, theme: str) -> tuple[dict[str, str] | None, list[str]]:
     log: list[str] = []
     for candidate in CANDIDATES[name][theme]:
-        values = derive(candidate, theme)
+        values = derive(candidate, theme, SOFT_OVERRIDE.get((name, theme)))
         ratios = judge(values, theme)
         ok = all(r is not None and r >= 4.5 for r in ratios.values())
         log.append(

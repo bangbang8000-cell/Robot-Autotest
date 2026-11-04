@@ -1,0 +1,114 @@
+=== 候选主色对比度实测（阈值 ≥ 4.5:1） ===
+  crimson  light #c81e1e  text/accent=5.74  accent/panel=5.74  accent/soft=4.86  PASS
+  crimson  dark  #ff6b6b  text/accent=6.75  accent/panel=5.52  accent/soft=5.25  PASS
+  gold     light #8f6500  text/accent=5.21  accent/panel=5.21  accent/soft=4.71  PASS
+  gold     dark  #ffd24a  text/accent=13.00  accent/panel=10.63  accent/soft=8.78  PASS
+  orange   light #ad4a05  text/accent=5.59  accent/panel=5.59  accent/soft=4.85  PASS
+  orange   dark  #fb923c  text/accent=8.28  accent/panel=6.77  accent/soft=6.09  PASS
+  violet   light #6d28d9  text/accent=7.10  accent/panel=7.10  accent/soft=6.04  PASS
+  violet   dark  #a78bfa  text/accent=6.89  accent/panel=5.63  accent/soft=5.15  PASS
+  jade     light #0d7a4f  text/accent=5.37  accent/panel=5.37  accent/soft=4.68  PASS
+  jade     dark  #34d399  text/accent=9.75  accent/panel=7.97  accent/soft=6.87  PASS
+
+=== 结果：10/10 组达标 ===
+
+:root[data-accent='crimson'][data-theme='light'] {
+  --accent: #c81e1e;
+  --accent-hover: #b01a1a;
+  --accent-active: #981717;
+  --accent-soft: #fae8e8;
+  --accent-contrast: #ffffff;
+  --surface-selected: #fae8e8;
+  --focus-ring: #c81e1e;
+}
+
+:root[data-accent='crimson'][data-theme='dark'] {
+  --accent: #ff6b6b;
+  --accent-hover: #ff7d7d;
+  --accent-active: #ff8f8f;
+  --accent-soft: #35242c;
+  --accent-contrast: #06131f;
+  --surface-selected: #35242c;
+  --focus-ring: #ff6b6b;
+}
+
+:root[data-accent='gold'][data-theme='light'] {
+  --accent: #8f6500;
+  --accent-hover: #7e5900;
+  --accent-active: #6d4d00;
+  --accent-soft: #fdf3d6;
+  --accent-contrast: #ffffff;
+  --surface-selected: #fdf3d6;
+  --focus-ring: #8f6500;
+}
+
+:root[data-accent='gold'][data-theme='dark'] {
+  --accent: #ffd24a;
+  --accent-hover: #ffd760;
+  --accent-active: #ffdd75;
+  --accent-soft: #3a3222;
+  --accent-contrast: #06131f;
+  --surface-selected: #3a3222;
+  --focus-ring: #ffd24a;
+}
+
+:root[data-accent='orange'][data-theme='light'] {
+  --accent: #ad4a05;
+  --accent-hover: #984104;
+  --accent-active: #833804;
+  --accent-soft: #f7ede6;
+  --accent-contrast: #ffffff;
+  --surface-selected: #f7ede6;
+  --focus-ring: #ad4a05;
+}
+
+:root[data-accent='orange'][data-theme='dark'] {
+  --accent: #fb923c;
+  --accent-hover: #fb9f53;
+  --accent-active: #fcac6b;
+  --accent-soft: #352b24;
+  --accent-contrast: #06131f;
+  --surface-selected: #352b24;
+  --focus-ring: #fb923c;
+}
+
+:root[data-accent='violet'][data-theme='light'] {
+  --accent: #6d28d9;
+  --accent-hover: #6023bf;
+  --accent-active: #531ea5;
+  --accent-soft: #f0eafb;
+  --accent-contrast: #ffffff;
+  --surface-selected: #f0eafb;
+  --focus-ring: #6d28d9;
+}
+
+:root[data-accent='violet'][data-theme='dark'] {
+  --accent: #a78bfa;
+  --accent-hover: #b299fb;
+  --accent-active: #bca7fb;
+  --accent-soft: #272a43;
+  --accent-contrast: #06131f;
+  --surface-selected: #272a43;
+  --focus-ring: #a78bfa;
+}
+
+:root[data-accent='jade'][data-theme='light'] {
+  --accent: #0d7a4f;
+  --accent-hover: #0b6b46;
+  --accent-active: #0a5d3c;
+  --accent-soft: #e7f2ed;
+  --accent-contrast: #ffffff;
+  --surface-selected: #e7f2ed;
+  --focus-ring: #0d7a4f;
+}
+
+:root[data-accent='jade'][data-theme='dark'] {
+  --accent: #34d399;
+  --accent-hover: #4cd8a5;
+  --accent-active: #65deb1;
+  --accent-soft: #153533;
+  --accent-contrast: #06131f;
+  --surface-selected: #153533;
+  --focus-ring: #34d399;
+}
+

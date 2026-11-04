@@ -1,0 +1,40 @@
+dist/assets/StatusTag-BkZKYVEF.css                                           0.73 kB │ gzip:   0.30 kB
+dist/assets/PlansView-BmY0IFRS.css                                           1.42 kB │ gzip:   0.51 kB
+dist/assets/ReportPrintView-CHqipGbz.css                                     2.05 kB │ gzip:   0.66 kB
+dist/assets/ReportDetailView-C6fb1cun.css                                    3.93 kB │ gzip:   1.11 kB
+dist/assets/index-BlwF9w29.css                                              19.73 kB │ gzip:   4.76 kB
+dist/assets/EditorView-EUMMeTD4.css                                         87.04 kB │ gzip:  13.44 kB
+dist/assets/NotFoundView-nmV4W-6g.js                                         0.48 kB │ gzip:   0.33 kB
+dist/assets/useBatchAction-MJhmH5my.js                                       0.56 kB │ gzip:   0.39 kB
+dist/assets/errors-CrkzR0DZ.js                                               0.58 kB │ gzip:   0.35 kB
+dist/assets/StatusTag-CVOC6YTj.js                                            0.60 kB │ gzip:   0.42 kB
+dist/assets/EmptyState-CO4sVpTF.js                                           0.64 kB │ gzip:   0.41 kB
+dist/assets/statusLabels-CKHoS1un.js                                         0.71 kB │ gzip:   0.41 kB
+dist/assets/ErrorLine-DOXfGfXa.js                                            0.74 kB │ gzip:   0.44 kB
+dist/assets/ProjectPicker.vue_vue_type_script_setup_true_lang-ChIrdmsr.js    0.82 kB │ gzip:   0.49 kB
+dist/assets/format-BIRyWSOU.js                                               1.12 kB │ gzip:   0.60 kB
+dist/assets/cases-BivZ8HD9.js                                                1.21 kB │ gzip:   0.42 kB
+dist/assets/reports-BQGsftSF.js                                              1.27 kB │ gzip:   0.52 kB
+dist/assets/LoginView-BTifEdoD.js                                            1.68 kB │ gzip:   0.86 kB
+dist/assets/useSelection-B6aAGQko.js                                         2.10 kB │ gzip:   0.98 kB
+dist/assets/ReportPrintView-D0i8QkZO.js                                      4.62 kB │ gzip:   1.81 kB
+dist/assets/ReportsView-CJDQwbxt.js                                          5.48 kB │ gzip:   2.14 kB
+dist/assets/RunsView-Dkb3P42v.js                                             6.40 kB │ gzip:   2.66 kB
+dist/assets/PlansView-9RJ2rVcG.js                                           11.99 kB │ gzip:   3.58 kB
+dist/assets/CasesView-DsJv6IkN.js                                           12.51 kB │ gzip:   3.92 kB
+dist/assets/OverviewView-Cv8NBmra.js                                        12.72 kB │ gzip:   3.46 kB
+dist/assets/AdminView-DXwC9kup.js                                           13.47 kB │ gzip:   3.91 kB
+dist/assets/AssetsView-DbauOEWe.js                                          17.62 kB │ gzip:   4.51 kB
+dist/assets/lucide-BIQeSVnG.js                                              19.62 kB │ gzip:   4.23 kB
+dist/assets/ReportDetailView-D2MuXd2E.js                                    21.08 kB │ gzip:   6.70 kB
+dist/assets/vue-C2C8qLWc.js                                                 85.18 kB │ gzip:  33.52 kB
+dist/assets/AuditView-CpGEL78c.js                                          171.25 kB │ gzip:  38.93 kB
+dist/assets/index-D8FR6wsu.js                                              318.56 kB │ gzip: 105.52 kB
+dist/assets/DataTable-BavKHHpH.js                                          324.85 kB │ gzip:  92.05 kB
+dist/assets/EditorView-BsDVFrPo.js                                         857.93 kB │ gzip: 265.23 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 8.43s

@@ -13,6 +13,16 @@ import AppIcon from '@/components/AppIcon.vue'
 import AppearanceDialog from '@/components/AppearanceDialog.vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import type { IconName } from '@/components/iconMap'
+import {
+  activeGroupKey,
+  isGroup,
+  isNodeActive,
+  leafTarget,
+  visibleNav,
+  type NavGroup,
+  type NavLeaf,
+  type NavNode,
+} from '@/config/navigation'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -38,14 +48,55 @@ const themeIcon = computed<IconName>(() => THEME_ICONS[theme.mode.value])
 const themeLabel = computed(() => t('theme.switchTo', { mode: t(`theme.${theme.mode.value}`) }))
 const appearanceOpen = ref(false)
 
-const menus: { name: string; path: string; icon: IconName }[] = [
-  { name: 'overview', path: '/overview', icon: 'dashboard' },
-  { name: 'assets', path: '/assets', icon: 'boxes' },
-  { name: 'cases', path: '/cases', icon: 'cases' },
-  { name: 'runs', path: '/runs', icon: 'runs' },
-  { name: 'reports', path: '/reports', icon: 'reports' },
-  { name: 'admin', path: '/admin', icon: 'admin' },
-]
+// 两级导航：结构在 config/navigation.ts，这里只管「按权限过滤 + 展开态」。
+const nav = computed<NavNode[]>(() => visibleNav(auth.isAdmin))
+
+// 展开态落 localStorage：默认全展开（新分组直接可见，不用先点一下才知道里面有什么），
+// 只记住用户手动折叠过的分组。刷新后保持手型，切到某分组的子页时自动展开该组。
+const NAV_EXPANDED_KEY = 'robot.nav.expanded'
+const expanded = ref<Record<string, boolean>>(loadExpanded())
+
+function loadExpanded(): Record<string, boolean> {
+  try {
+    const raw = localStorage.getItem(NAV_EXPANDED_KEY)
+    const parsed: unknown = raw ? JSON.parse(raw) : {}
+    return parsed && typeof parsed === 'object' ? (parsed as Record<string, boolean>) : {}
+  } catch {
+    return {}
+  }
+}
+
+function isExpanded(group: NavGroup): boolean {
+  return expanded.value[group.key] !== false
+}
+
+function toggleGroup(group: NavGroup): void {
+  expanded.value = { ...expanded.value, [group.key]: !isExpanded(group) }
+  try {
+    localStorage.setItem(NAV_EXPANDED_KEY, JSON.stringify(expanded.value))
+  } catch {
+    // 隐私模式写不进：不影响本次会话的展开/收起
+  }
+}
+
+function childrenOf(node: NavNode): NavLeaf[] {
+  return isGroup(node) ? node.children : []
+}
+
+function isActive(node: NavNode): boolean {
+  return isNodeActive(node, route)
+}
+
+watch(
+  () => route.fullPath,
+  () => {
+    const key = activeGroupKey(route)
+    if (key && expanded.value[key] === false) {
+      expanded.value = { ...expanded.value, [key]: true }
+    }
+  },
+  { immediate: true },
+)
 
 const isLogin = computed(() => route.path === '/login')
 // 打印页（RPT-05）必须无侧边栏/导航：由无头浏览器直接访问，样式要 A4 友好。
@@ -115,16 +166,50 @@ onMounted(async () => {
     <div v-else class="app-shell">
       <aside class="app-side">
         <div class="app-brand">{{ t('app.title') }}</div>
-        <nav class="app-nav">
-          <RouterLink v-for="m in menus" :key="m.name" :to="m.path" class="app-nav-item">
-            <AppIcon :name="m.icon" :size="16" />
-            <span>{{ t(`menu.${m.name}`) }}</span>
-          </RouterLink>
-          <!-- 审计查询页挂在「管理」下的子入口；非管理员不显示（不新增一级菜单） -->
-          <RouterLink v-if="auth.isAdmin" to="/admin/audit" class="app-nav-item app-nav-sub">
-            <AppIcon name="audit" :size="16" />
-            <span>{{ t('audit.title') }}</span>
-          </RouterLink>
+        <nav class="app-nav" :aria-label="t('menu.label')">
+          <template v-for="node in nav" :key="node.key">
+            <RouterLink
+              v-if="!isGroup(node)"
+              :to="leafTarget(node)"
+              class="app-nav-item"
+              :class="{ active: isActive(node) }"
+              :aria-current="isActive(node) ? 'page' : undefined"
+            >
+              <AppIcon :name="node.icon" :size="16" />
+              <span>{{ t(node.labelKey) }}</span>
+            </RouterLink>
+
+            <div v-else class="app-nav-group">
+              <button
+                type="button"
+                class="app-nav-item app-nav-group-head"
+                :class="{ 'has-active': isActive(node) }"
+                :aria-expanded="isExpanded(node)"
+                @click="toggleGroup(node)"
+              >
+                <AppIcon :name="node.icon" :size="16" />
+                <span>{{ t(node.labelKey) }}</span>
+                <AppIcon
+                  class="app-nav-chevron"
+                  :name="isExpanded(node) ? 'chevronDown' : 'chevronRight'"
+                  :size="16"
+                />
+              </button>
+              <div v-show="isExpanded(node)" class="app-nav-children">
+                <RouterLink
+                  v-for="child in childrenOf(node)"
+                  :key="child.key"
+                  :to="leafTarget(child)"
+                  class="app-nav-item app-nav-sub"
+                  :class="{ active: isActive(child) }"
+                  :aria-current="isActive(child) ? 'page' : undefined"
+                >
+                  <AppIcon :name="child.icon" :size="16" />
+                  <span>{{ t(child.labelKey) }}</span>
+                </RouterLink>
+              </div>
+            </div>
+          </template>
         </nav>
       </aside>
 

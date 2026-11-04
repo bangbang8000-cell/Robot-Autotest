@@ -58,11 +58,11 @@
 
   /* UX-04 六预设的「色板展示色」：外观面板里六枚色块不能自己写 hex（色值守门只允许本文件），
      所以把展示色也收进 primitives。取的是各预设在**暗色**下的主色，亮/暗底上均可辨。
-     注意 gold 特殊：亮色主题的实际 accent 是深金 #8a6300（白底上金必须压深才过 4.5:1），
-     但色板展示仍用暗色亮金，否则面板里的「土豪金」会变成一块土褐色。 */
+     注意 gold 特殊：亮色主题的实际 accent 是深金 #8f6500（白底上金必须压深才过 4.5:1，
+     这已是亮度上限），但色板展示仍用暗色亮金，否则面板里的「土豪金」会变成一块土褐色。 */
   --preset-crimson: #ff6b6b;
   --preset-blue: #3fa7ff;
-  --preset-gold: #f5c542;
+  --preset-gold: #ffd24a;
   --preset-orange: #fb923c;
   --preset-violet: #a78bfa;
   --preset-jade: #34d399;
@@ -305,23 +305,23 @@
 }
 
 :root[data-accent='gold'][data-theme='light'] {
-  --accent: #8a6300;
-  --accent-hover: #795700;
-  --accent-active: #694b00;
-  --accent-soft: #f3efe6;
+  --accent: #8f6500;
+  --accent-hover: #7e5900;
+  --accent-active: #6d4d00;
+  --accent-soft: #fdf3d6;
   --accent-contrast: #ffffff;
-  --surface-selected: #f3efe6;
-  --focus-ring: #8a6300;
+  --surface-selected: #fdf3d6;
+  --focus-ring: #8f6500;
 }
 
 :root[data-accent='gold'][data-theme='dark'] {
-  --accent: #f5c542;
-  --accent-hover: #f6cc59;
-  --accent-active: #f7d36f;
-  --accent-soft: #343325;
+  --accent: #ffd24a;
+  --accent-hover: #ffd760;
+  --accent-active: #ffdd75;
+  --accent-soft: #3a3222;
   --accent-contrast: #06131f;
-  --surface-selected: #343325;
-  --focus-ring: #f5c542;
+  --surface-selected: #3a3222;
+  --focus-ring: #ffd24a;
 }
 
 :root[data-accent='orange'][data-theme='light'] {

@@ -1,0 +1,126 @@
+/**
+ * 两级菜单的结构与选中判定（#81 UX-04c）。
+ *
+ * 这些断言保护的是「菜单与路由不脱钩」这件事：菜单是纯配置，一旦某个叶子路径写错
+ * 或者被路由删掉，界面上点进去就是 404，构建期不会报错。所以这里既测判定逻辑，
+ * 也把每个叶子拿去路由表里解析一遍。
+ */
+import { describe, expect, it } from 'vitest'
+import router from '@/router'
+import {
+  NAVIGATION,
+  activeGroupKey,
+  filterNav,
+  isGroup,
+  isGroupActive,
+  isLeafActive,
+  isNodeActive,
+  leafTarget,
+  visibleNav,
+  type NavGroup,
+  type NavLeaf,
+} from '@/config/navigation'
+
+function leaves(): NavLeaf[] {
+  return NAVIGATION.flatMap((node) => (isGroup(node) ? node.children : [node]))
+}
+
+function groups(): NavGroup[] {
+  return NAVIGATION.filter(isGroup) as NavGroup[]
+}
+
+describe('navigation 结构', () => {
+  it('每个叶子的 path 都能被路由表解析到真实页面（菜单不指向 404）', () => {
+    for (const leaf of leaves()) {
+      const resolved = router.resolve(leafTarget(leaf))
+      const matchedName = resolved.matched.at(-1)?.name
+      expect(matchedName, `叶子 ${leaf.key} 的 ${leaf.path} 没有命中路由`).toBeTruthy()
+      expect(matchedName).not.toBe('not-found')
+    }
+  })
+
+  it('分组至少两个子项——不允许出现只有一个子项的折叠组', () => {
+    for (const group of groups()) {
+      expect(group.children.length, `分组 ${group.key} 子项过少`).toBeGreaterThanOrEqual(2)
+    }
+  })
+
+  it('叶子 key 全局唯一', () => {
+    const keys = leaves().map((leaf) => leaf.key)
+    expect(new Set(keys).size).toBe(keys.length)
+  })
+})
+
+describe('权限过滤', () => {
+  it('非管理员看不到审计子项，但「管理」分组仍在（项目成员归 PM/所有者用）', () => {
+    const admin = visibleNav(false).find((node) => node.key === 'admin') as NavGroup
+    expect(admin).toBeTruthy()
+    expect(admin.children.map((child) => child.key)).toEqual(['admin-users'])
+  })
+
+  it('管理员能看到管理分组下的两个子项', () => {
+    const admin = visibleNav(true).find((node) => node.key === 'admin') as NavGroup
+    expect(admin.children.map((child) => child.key)).toEqual(['admin-users', 'admin-audit'])
+  })
+
+  it('过滤后子项归零的分组整组去掉，不留空折叠组', () => {
+    const onlyAudit: NavGroup = {
+      key: 'tmp',
+      labelKey: 'tmp',
+      icon: 'admin',
+      children: [
+        {
+          key: 'tmp-audit',
+          labelKey: 'audit.title',
+          icon: 'audit',
+          path: '/admin/audit',
+          adminOnly: true,
+        },
+      ],
+    }
+    expect(filterNav([onlyAudit], false)).toHaveLength(0)
+    expect(filterNav([onlyAudit], true)).toHaveLength(1)
+  })
+})
+
+describe('选中判定', () => {
+  const assets = groups().find((group) => group.key === 'assets') as NavGroup
+
+  it('资产三子项按 ?tab= 精确区分，且恰好一个选中', () => {
+    for (const tab of ['devices', 'links', 'credentials']) {
+      const route = { path: '/assets', query: { tab } }
+      const active = assets.children.filter((child) => isLeafActive(child, route))
+      expect(active).toHaveLength(1)
+      expect(active[0].key).toBe(`assets-${tab}`)
+    }
+  })
+
+  it('裸 /assets（无 tab）不点亮任何子项，由视图补默认页签后恢复', () => {
+    const route = { path: '/assets', query: {} }
+    expect(assets.children.some((child) => isLeafActive(child, route))).toBe(false)
+  })
+
+  it('报告详情仍点亮「报告」', () => {
+    const reports = NAVIGATION.find((node) => node.key === 'reports') as NavLeaf
+    expect(isLeafActive(reports, { path: '/reports/RUN-001/print' })).toBe(true)
+    expect(isLeafActive(reports, { path: '/reports/RUN-001' })).toBe(true)
+  })
+
+  it('前缀匹配落在路径分段边界：/reportsX 不误点亮', () => {
+    const reports = NAVIGATION.find((node) => node.key === 'reports') as NavLeaf
+    expect(isLeafActive(reports, { path: '/reportsX' })).toBe(false)
+  })
+
+  it('编辑器与只读查看器点亮「用例」', () => {
+    const cases = NAVIGATION.find((node) => node.key === 'cases') as NavLeaf
+    expect(isLeafActive(cases, { path: '/editor/12' })).toBe(true)
+    expect(isLeafActive(cases, { path: '/viewer/12' })).toBe(true)
+  })
+
+  it('分组在有子项选中时算选中，并成为自动展开目标', () => {
+    const route = { path: '/plans' }
+    expect(isGroupActive(groups().find((g) => g.key === 'runs')!, route)).toBe(true)
+    expect(activeGroupKey(route)).toBe('runs')
+    expect(isNodeActive(NAVIGATION[0], route)).toBe(false)
+  })
+})

@@ -24,6 +24,7 @@ import { useTheme } from '@/composables/useTheme'
 import { useAccent } from '@/composables/useAccent'
 import { confirmAction } from '@/composables/useConfirm'
 import StatusTag from '@/components/StatusTag.vue'
+import AppIcon from '@/components/AppIcon.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import InlineAlert from '@/components/InlineAlert.vue'
 import FormField from '@/components/FormField.vue'
@@ -165,6 +166,55 @@ function openConfirm(): void {
     </section>
 
     <section class="sg-section">
+      <h2>{{ t('styleguide.nav') }}</h2>
+      <p class="muted">{{ t('styleguide.navHint') }}</p>
+      <!--
+        静态预览（不是真的路由导航）：这里要同时展示「选中 / 未选中 / 展开 / 收起」四态，
+        真组件只会有一个选中项，摆不出来。用的是与侧边栏完全相同的 class，
+        所以间距、缩进竖线、强调色竖条都是真实样式，不是仿的。
+      -->
+      <div class="sg-nav-preview">
+        <aside class="app-side">
+          <div class="app-brand">{{ t('app.title') }}</div>
+          <nav class="app-nav">
+            <a class="app-nav-item">
+              <AppIcon name="dashboard" :size="16" />
+              <span>{{ t('menu.overview') }}</span>
+            </a>
+            <div class="app-nav-group">
+              <button type="button" class="app-nav-item app-nav-group-head has-active" aria-expanded="true">
+                <AppIcon name="boxes" :size="16" />
+                <span>{{ t('menu.assets') }}</span>
+                <AppIcon class="app-nav-chevron" name="chevronDown" :size="16" />
+              </button>
+              <div class="app-nav-children">
+                <a class="app-nav-item app-nav-sub active">
+                  <AppIcon name="device" :size="16" />
+                  <span>{{ t('assets.tabs.devices') }}</span>
+                </a>
+                <a class="app-nav-item app-nav-sub">
+                  <AppIcon name="link" :size="16" />
+                  <span>{{ t('assets.tabs.links') }}</span>
+                </a>
+                <a class="app-nav-item app-nav-sub">
+                  <AppIcon name="credential" :size="16" />
+                  <span>{{ t('assets.tabs.credentials') }}</span>
+                </a>
+              </div>
+            </div>
+            <div class="app-nav-group">
+              <button type="button" class="app-nav-item app-nav-group-head" aria-expanded="false">
+                <AppIcon name="runs" :size="16" />
+                <span>{{ t('menu.runs') }}</span>
+                <AppIcon class="app-nav-chevron" name="chevronRight" :size="16" />
+              </button>
+            </div>
+          </nav>
+        </aside>
+      </div>
+    </section>
+
+    <section class="sg-section">
       <h2>{{ t('styleguide.i18n') }}</h2>
       <table class="sg-table">
         <thead>
@@ -197,7 +247,6 @@ function openConfirm(): void {
   margin: 0;
   font-size: var(--font-size-xl);
 }
-
 .sg-head p {
   color: var(--text-muted);
   font-size: var(--font-size-sm);
@@ -245,5 +294,13 @@ function openConfirm(): void {
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   vertical-align: middle;
+}
+
+/* 侧边栏预览：只裁出 200px 宽的那一条，外边加一圈边框让它像「真的一块侧栏」 */
+.sg-nav-preview {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 </style>

@@ -1,0 +1,19 @@
+ docs/plan/WBS-STATUS.md                         |  18 +-
+ frontend/src/App.vue                            | 121 +++++++++++--
+ frontend/src/assets/fonts/noto-sans-sc-ui.woff2 | Bin 127128 -> 129532 bytes
+ frontend/src/components/StatusTag.vue           |   3 +-
+ frontend/src/locales/en-US.ts                   |   6 +
+ frontend/src/locales/zh-CN.ts                   |   5 +
+ frontend/src/styles/main.css                    |  63 ++++++-
+ frontend/src/styles/theme.css                   |  30 ++--
+ frontend/src/utils/statusLabels.ts              |  31 ++++
+ frontend/src/views/AdminView.vue                |   1 +
+ frontend/src/views/AssetsView.vue               |  39 ++++-
+ frontend/src/views/AuditView.vue                | 163 +++++++++++-------
+ frontend/src/views/CasesView.vue                |   1 +
+ frontend/src/views/ReportsView.vue              | 216 +++++++++++++-----------
+ frontend/src/views/StyleguideView.vue           |  59 ++++++-
+ scripts/lint.sh                                 |   5 +
+ tools/check_bundle_budget.py                    |  33 ++++
+ tools/gen_accent_tokens.py                      |  36 ++--
+ 18 files changed, 619 insertions(+), 211 deletions(-)

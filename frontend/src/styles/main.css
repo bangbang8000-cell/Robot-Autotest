@@ -44,6 +44,7 @@ body {
 
 .app-nav-item {
   /* UX-04：菜单图标与文字同排，用间距 token 而不是各写各的 margin */
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -54,13 +55,60 @@ body {
   font-size: 14px;
 }
 
-.app-nav-item.router-link-active {
-  color: var(--text);
-  background: var(--panel);
+/*
+ * 选中态用强调色三重编码（竖条 + 底色 + 文字色），不只是换底色：
+ * 只换底色时六套强调色里有几套在暗色下与 hover 几乎分不出来。
+ * accent / accent-soft 的 4.5:1 由 `gen_accent_tokens.py` 保证，换色不用重算。
+ */
+.app-nav-item.active {
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+
+.app-nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform: translateY(-50%);
+}
+
+/* 分组标题：不可导航，仅折叠/展开；当前路由落在本组时标题也跟随强调色 */
+.app-nav-group-head {
+  width: 100%;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.app-nav-group-head.has-active {
+  color: var(--accent);
+}
+
+.app-nav-chevron {
+  margin-left: auto;
+  opacity: 0.65;
+}
+
+/* 子项容器用一条竖线表达层级，比纯缩进更容易看出「这两项属于上面那组」 */
+.app-nav-children {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 2px 12px;
+  padding-left: 6px;
+  border-left: 1px solid var(--border);
 }
 
 .app-nav-sub {
-  padding-left: 24px;
+  padding: 6px 10px;
   font-size: 13px;
 }
 
@@ -796,9 +844,14 @@ textarea:focus-visible {
   transition: background-color 120ms ease, color 120ms ease;
 }
 
-.app-nav-item:hover {
+/* 排除选中项：否则悬停会把强调色底与文字色盖回中性色，看起来像丢选中 */
+.app-nav-item:hover:not(.active) {
   color: var(--text);
   background: var(--surface-hover);
+}
+
+.app-nav-item.active:hover {
+  background: color-mix(in srgb, var(--accent) 18%, var(--accent-soft));
 }
 
 /* ---- 表格行：悬停与键盘聚焦 ---- */

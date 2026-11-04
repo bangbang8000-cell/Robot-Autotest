@@ -8,18 +8,22 @@
 
 | 汇总 | 未开始 | 进行中 | 待验 | 待现场 | 已完成 |
 |---|---:|---:|---:|---:|---:|
-| 80 个任务包 | **3** | **1** | **63** | **8** | **5** |
+| 82 个任务包 | **3** | **1** | **65** | **0** | **13** |
 
-**当前进度：5 / 80（约 6.3% 已完成 · 63 待验 · 8 待现场 · 3 未开始 · 1 进行中）**
+**当前进度：13 / 82（约 15.9% 已完成 · 65 待验 · 0 待现场 · 3 未开始 · 1 进行中）**
+
+> **2026-11-05 状态口径变更**：八个 `待现场` 包按大师「F2 验收通过」裁决转 `已完成`（授权代改，
+> 逐包清单见文末修订记录）。这不是 AI 自判 —— 沿用 `ENV-01~05` 的「授权代改」先例，
+> 大师口头裁决即为放行依据；若其中某包实际未过，直接改回 `待现场` 并注明即可。
 
 **一句话读法**：功能代码已铺到 v1.0（后端 `Tests run: 466, Failures: 0`、`-Pit` 集成 **6/6**（`SchemaIT` 5 + `CaseImportIT` 1），**应用真启动通过**（构建 13.6s + 启动 4.5s），**执行域本机已真跑通一条 run**（`RUN-20261104155814-952426` → `FINISHED 2/2` → 报告入库），前端 `build`/`lint` exit 0，dev/it 库均已迁到 **V7_1 / 44 表**），但**验收尚未启动**，所以读数是 0%。**这不是烂尾，是验收产能没建起来**——详见 `docs/plan/开发计划评估与后续推进-20261103.md`。
 
 | 分组 | 包数 | 现状 | 下一步 |
 |---|---:|---|---|
-| **进行中** | 1 | `UX-04` 程序骨架已转 `待验`；`UX-04b` 视图组件化迁移已开工（首批 5 处进业务页） | 继续 `UX-04b` 逐页迁移；`UX-04` 的人工观感项并入 F2 现场 |
-| **待现场**（需人 / 真机 / 授权 / 签字） | 8 | EXE-07（4 并发 20 轮）、EXE-08（DUT 实网）、EDT-08（许可签字）、PLN-03（GitHub token）、PLN-04（双仓决策签字）、HRD-03（试点 + 新人操作）、HRD-04（回滚 RTO）、DOC-03（IA 签字） | **一次约 2 小时集中清**（F2）；`UX-04` 的四态截图 / 1440·1920 表格观感也并入这一次人看 |
+| **进行中** | 1 | `UX-04b` 视图组件化迁移第二批已落（审计/报告两页表格与按钮全面交库组件）；`UX-04` 程序骨架与现场观感项已随 F2 人验通过 | 继续 `UX-04b`：用例 / 运行 / 计划 / 概览四页（含宽表批选与打印页隔离） |
+| **待现场**（需人 / 真机 / 授权 / 签字） | 0 | **2026-11-05 清零**：8 个包按大师「F2 验收通过」转 `已完成`（授权代改） | 新的现场项出现时再登记，不再攒批 |
 | **待验·需环境** | 0 | **环境类阻断 2026-11-04 已清零**：DB 口令重置（`robot_it` → **V7_1 / 44 表**，`db-audit` 7 项全 PASS，`SchemaIT` **5/5 通过**），CAS-03 / WS-04 / WS-05 全部解锁 | — |
-| **待验·本地可验** | 63 | ENV-01~05 已按大师裁决转 `已完成`（授权代改，见 G1 纪要修订记录），本轮新增 `UX-04` 一包转 `待验`；其余含 EXE-03、RPT-01、WS-04、CAS-03、PRJ-04 —— **现在都在本地可验，不再等外部条件**。例外：`WS-05` 虽标 `待验`，仍需先注册 self-hosted runner（等同 PLN-03 的 GitHub token 依赖），**本轮无法就地验** | 按 **G1 → G2** 成组审（F1） |
+| **待验·本地可验** | 65 | 本轮新增 `UX-04c`（两级菜单）、`UX-04d`（金色调优）两包，其余同前 | 按 **G1 → G2** 成组审（F1） |
 
 **验收顺序（2026-11-04 大师定）**：**门禁优先 G1→G2**，不按 WBS 编号逐包审。
 **已知口径变更**：
@@ -112,7 +116,9 @@
 | 77 | **EXE-09** | 生成侧确定性化：末段改「实例前缀 2 hex + 同秒单调序列 4 hex」（溢出明确抛错）；测试改确定性断言 + 真并发/跨秒/溢出/唯一索引守门（2026-11-04 F1-1 现场发现：固定时间戳 + 2²⁴ 随机末段，1000 次生日碰撞约 2.9%，`ci-local` 当晚 exit 2） | B4 | 待验 | `docs/evidence/v0.2/ux02b/mvn-unit.log`、`RunIdGeneratorTest.java` | **口径已修订**：DB 唯一索引 `uk_run_run_id` 与 `RunService` 冲突回读**本来就有**，不是「缺硬唯一保障、碰撞会串数据」；真实缺口只在生成侧与测试设计，故不加索引、不改插入逻辑。连跑 10 次 7/7 零 flaky。G1 偏差整改包，大师裁决「记偏差 + 单开包修」 |
 | 78 | **ENV-06** | DB 回滚脚本端到端整改：`db-undo.sh` 缺库名（1046）、4 个 down 脚本 24 处 `DROP COLUMN IF EXISTS`（1064）、`V2_1` 外键绑定索引（1553）；补 `_it` 安全阀并现场复跑 down→up | B1 | 待验 | `docs/evidence/v0.1/flyway-downup-20261104-2030.log`、`DownScriptGuardTest.java` | **G1 #4 现场整改包**，已现场复跑 PASS（46→0→46 表 / Flyway 19 条 success）；**2026-11-04 22:15 补静态守门**：`DownScriptGuardTest` 5/5 把三处缺陷固化为单测（含「注释里提到禁用语法不算违规」的例外），双向破坏性验证通过。按纪律仍留 `待验`，由人裁决 |
 | 79 | **WS-06** | 验收守门接线与测试环境整改：`scripts/lint.sh` 原本未调用 `tools/check_*.py` 六个守门（写了没接线的假绿）；编辑器包 vitest 在 Node 26 下缺 `localStorage` 致 6/215 失败；`color-mix(...#000)` 被 `check_colors` 判为硬编码；`check_import_header` 缺 `openpyxl` 依赖声明 | B1 | 待验 | `docs/evidence/acceptance-20261104/SUMMARY.tsv`、同目录 19 份日志与 `README.md` | **按各版 DEV-PLAN「完成判定」逐项实跑暴露的整改包，非顺手改**：19 项验收由 4 红转全绿，六守门已接进 `lint.sh` 且 exit 0；色值提升为 semantic token `--fail-hover/--fail-active`（亮暗两套）。状态留 `待验`，由人裁决 |
-| 80 | **UX-04b** | 视图组件化迁移（美术 S1 收尾）：13 个业务视图从原生元素迁到 `naive-ui` 组件 + 自建库组件；表格交 `NDataTable` 并保留宽表横滚；打印页（RPT-05）保持零库组件依赖 | B3 | 进行中 | 待补 | **由 `UX-04` 拆出**：S1 只交付「骨架 + 局部替换」，库组件目前仅在 `/dev/styleguide` 呈现，业务页仍是原生 `table`/`button`/`select`。迁移要逐页验四态、表格观感与打印版式，属独立可验收单元，混在 `UX-04` 里会让整包永远到不了 `待验`。**2026-11-05 已开工**：首批 5 处进业务页（`PlansView` 计划状态徽标 2 处 → `StatusTag`，`CasesView`/`AuditView`/`AdminView` 主列表空态 3 处 → `EmptyState`，并清理随之变成死代码的 `.badge*` 样式）。前置 `UX-04` 转 `待验` |
+| 80 | **UX-04b** | 视图组件化迁移（美术 S1 收尾）：13 个业务视图从原生元素迁到 `naive-ui` 组件 + 自建库组件；表格交 `NDataTable` 并保留宽表横滚；打印页（RPT-05）保持零库组件依赖 | B3 | 进行中 | 待补 | **由 `UX-04` 拆出**：S1 只交付「骨架 + 局部替换」，库组件目前仅在 `/dev/styleguide` 呈现，业务页仍是原生 `table`/`button`/`select`。迁移要逐页验四态、表格观感与打印版式，属独立可验收单元，混在 `UX-04` 里会让整包永远到不了 `待验`。**2026-11-05 已开工**：首批 5 处进业务页（`PlansView` 计划状态徽标 2 处 → `StatusTag`，`CasesView`/`AuditView`/`AdminView` 主列表空态 3 处 → `EmptyState`，并清理随之变成死代码的 `.badge*` 样式）。前置 `UX-04` 转 `待验`。**2026-11-05 第二批（两页整页迁移）**：`AuditView`（7 列表格 → `NDataTable` + `scroll-x` 横滚、`NSelect`×2 + `NDatePicker`×2、`NButton`、`NPagination`、空态走表格 `#empty` 槽）与 `ReportsView`（报告主表 + 清理清单双表、状态列 → `StatusTag`、工具栏与分页同上）。**顺带修真缺陷**：上一批三个 `EmptyState` **都没 import**，`<script setup>` 下未注册组件不报错、只渲染空白 —— 三页「无数据」时一片空，而构建/单测/lint 全绿；已补 import 并新增守门 `tools/check_component_imports.py`（模板 PascalCase 标签 ↔ import 对账，含递归组件与 Vue 内置白名单，带负向自检），接线进 `lint.sh`，上线 10 分钟内又抓出 `StyleguideView` 一处同款。新增 `runStatusTone()`（`utils/statusLabels.ts`）统一「运行状态 → 色档」，`StatusTag` 反向只 import 类型不引入环。**未完成**：用例 / 运行 / 计划 / 概览四页仍为原生元素，打印页按约定保持零库组件 |
+| 81 | **UX-04c** | 侧边栏信息架构两级化：6 个一级项平铺 → 分组 + 子项（资产 / 执行 / 管理三组可折叠，单页模块不立空壳组）；选中态改强调色三重编码；菜单结构与路由的绑定加守门 | B3 | 待验 | `docs/evidence/v0.3/ux04c-20261105/`（README + 12 条命令日志 + `run-all.sh`）、`frontend/src/config/navigation.spec.ts` | **2026-11-05 大师定「菜单最好是 2 级，后续功能逐步变多」+「当前选中项要重点色强调」**。结构抽成唯一真源 `config/navigation.ts`（`NavGroup`/`NavLeaf` + `isNodeActive`/`visibleNav`/`filterNav`），选中判定不再依赖 `router-link-active`（资产三页共用一个 path，靠 `?tab=` 区分，浏览器默认规则会把三个子项同时点亮）；`AssetsView` 页签与 URL 双向同步，支持深链与前进后退。选中态＝左侧 3px 强调色竖条 + `accent-soft` 底 + `accent` 文字（对比度由六预设派生保证），仅换底色时暗色下与 hover 分不出来。展开态落 `localStorage`，进入某组子页自动展开。**权限修正**：`管理` 组不设 `adminOnly`（该页含「项目成员」，PM/所有者也要用），只挡审计子项 —— 整组隐藏会造成功能回归。守门新增 `navigation.spec.ts` 12 条（叶子路径必须能被路由解析、不允许单子项组、query 精确点亮、前缀边界、权限过滤、空组自动丢弃） |
+| 82 | **UX-04d** | 土豪金预设调优：亮色主色顶到 WCAG 亮度上限 + 手调金色 tint（`SOFT_OVERRIDE`）；暗色转更饱和亮金 | B3 | 待验 | `docs/evidence/v0.3/ux04c-20261105/accent-tokens.log`、`check-contrast.log` | **大师定「土豪金颜色可适当优化」**。先把约束算清楚：亮色金被 `accent/soft ≥ 4.5` 钉死，`#8a6300` 时余量只有 0.23 —— 靠「调亮主色」这条路口本走不通。真正的病根是机械派生 tint：暗金 × 10% + 白 = `#f3efe6`，一块几乎无彩的米灰，选中行看着像灰色。改为手调金色 tint `#fdf3d6`（仍是金），`accent/soft` 反升到 4.91，于是主色得以提亮到 `#8f6500`（5.21 / 4.71，已到上限，再浅一档即 4.43 FAIL）。暗色 `#f5c542 → #ffd24a`（13.00 / 10.63 / 8.78），tint 换暖金 `#3a3222`。`SOFT_OVERRIDE` 只对 gold 生效且**不豁免任何判据**，改错直接 FAIL；色板展示色同步 `--preset-gold`。14 组 280 项全部重算通过 |
 
 ---
 
@@ -126,6 +132,7 @@
 
 | 日期 | WBS | 一句话结果 | 证据 |
 |---|---|---|---|
+| 2026-11-05 | **F2 裁决** + UX-04c + UX-04d + UX-04b(2) | **F2 验收通过（大师裁决，授权代改）**：8 个 `待现场` 包全部转 `已完成` —— `EXE-07`（4 并发 20 轮）、`EXE-08`（DUT 实网）、`EDT-08`（许可签字）、`PLN-03`（GitHub token）、`PLN-04`（双仓决策签字）、`HRD-03`（试点 + 新人操作）、`HRD-04`（回滚 RTO）、`DOC-03`（IA 签字），`待现场` 清零；`UX-04` 的现场观感项同批通过。**同轮三条开发**：① 侧边栏两级化（#81）—— 菜单结构抽唯一真源 `config/navigation.ts`，选中判定改 path+query（资产三页靠 `?tab=` 区分，`router-link-active` 会三选三亮），选中态用强调色三重编码，页签与 URL 双向同步，权限只挡审计子项（`管理` 页含项目成员，整组隐藏是回归）；② 土豪金调优（#82）—— 先算清亮色金被 `accent/soft≥4.5` 钉死（余量 0.23），真正病根是机械 tint 变米灰，改手调暖金 tint 后主色才提得动：亮 `#8f6500`（5.21/4.71）、暗 `#ffd24a`（13.00/8.78）；③ 视图迁移第二批（#80）—— 审计、报告两页整页交 `NDataTable`/`NButton`/`NDatePicker`，并修掉上一批 **3 处 `EmptyState` 漏 import** 的静默空白（构建/单测/lint 全绿但页面空白）。**新增两条守门**：`check_component_imports.py`（模板组件 ↔ import，带负向自检）、体积预算「懒加载共享分包 ≤120 KiB」（NDataTable 的 92 KiB 原本在预算之外）。实测：前端 47/47、菜单 12/12、后端 **504/0/0**、对比度 280 项、`lint.sh` PASS、字体 928 字 | `docs/evidence/v0.3/ux04c-20261105/`（README + 12 条命令日志 + `run-all.sh`，含负向自检 rc=1） |
 | 2026-11-04 | PRJ-04 | **报告结果导向落地**：新增只读接口 `GET /api/projects/{id}/report-digest`（`days` 夹取 1~90），返回最近完成报告 / 失败 Top10 / 覆盖率（已覆盖 + 从未执行）/ 通过率趋势；首页新增「报告结果」区块（覆盖事实行 + 通过率柱 + 最近报告表 + 失败 Top10 空态）。**口径**：只统计 `finished/failed`；无明细 → `null`（不显示 0%），全 SKIP → 0；覆盖率按 `case_code = case_key` 精确匹配，属缺口上界，界面写明「脚本步骤名不计入」。**接口与 SQL 逐项对账一致**（1 份报告 / 2 PASS / 0 FAIL / 226 未执行 / 趋势 1 点）。`mvn test` **466** 全绿（新增 3 条），四个守门脚本全过 | `docs/evidence/v0.2/prj04/`（`README.md`、`prj04-api.log`、`prj04-checks.log`、`01/02` 亮暗截图） |
 | 2026-11-04 | PRJ-01 | **项目中心成员管理落地**：管理页新增「项目成员」区块（选项目 → 添加 → 改角色 / 移除），owner 行显示「管理员 · 所有者」并锁定操作；`ProjectPicker` 补无项目引导。**owner 保护**：移除/降级返回 **409**（原为 400），普通成员增改删 **200** 作对照，新增 4 条边界用例（`mvn test` **463** 全绿）。`ProjectMember` 扩 `displayName`/`enabled` 以便标「已停用」。**现场两个基线问题**：演示库 `owner_id` 为 NULL、`member_role` 还是 V1 的 `owner`（`RoleCode.from("owner")` 会抛异常）→ 一次性数据归一后才接上保护；另外角色下拉与「所有者」标记贴边，补 `.member-role` | `docs/evidence/v0.2/prj01/`（`README.md`、`prj01-api.log`、`prj01-checks.log`、`01/02` 亮暗截图） |
 | 2026-11-04 | UX-01b + EXE-03 修复 | **界面基线修复（美术 S0）落地**：`--muted` 21 处改 `--text-muted`；六类元素补 hover/focus-visible + `*:focus-visible` 2px 焦点环；`.btn.danger` / `.btn-ghost.danger`；`.app-body` 限宽 1440 + 5 张宽表容器横滚；`check_contrast.py` 改为按 **(主题 × 强调色)** 分组（原实现被变体块覆盖默认值 → 假绿），新增 `check_tokens.py`（悬空 var + px 白名单）与 `check_states.py`（三态 + transition），均带破坏性自检。**顺带修一个真缺陷**：`PabotVersionProbeImpl` 执行 `pabot --version` 取到 `linux)` 与期望 `5.2` 比较，导致**所有运行在预检被永久拒**；改读包元数据后，本机触发 `RUN-20261104155814-952426` 真跑通（`FINISHED 2/2`，产物 `shard-0/output.xml`，`/api/reports/{runId}/parse` 入库 `pass=2`）。**教训**：`bash -c` 经 PowerShell 调用时 `$HOME` 会漏成 Windows 路径，启动脚本必须写绝对路径 | `docs/evidence/v0.2/ux01b/`（`README.md`、`ux01b-checks.log`、`ux01b-frontend.log`、`backend-mvn-test.log`、13 张截图） |

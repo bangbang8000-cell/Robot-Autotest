@@ -83,6 +83,9 @@ DEFAULT_DIST = ROOT / "frontend" / "dist"
 ICON_BUDGET = 15 * 1024        # 15360 B —— §2.2 步骤 1「图标 chunk ≤ 15 KB」gzip
 VENDOR_BUDGET = 200 * 1024     # 204800 B —— §2.2 步骤 8，试点实测后定
 FONT_BUDGET = 800 * 1024       # 819200 B —— §2.2 步骤 2「首屏字体增量 ≤ 800 KB gzip」
+# 懒加载共享分包（非入口 / 非路由视图）合计上限。2026-11-05 引入 NDataTable 后实测
+# 94 KiB（表格组件 92 KiB + 若干 util），留约 26 KiB 余量；再大一档就要显式调预算。
+LAZY_BUDGET = 120 * 1024       # 122880 B
 
 # 标识是启发式：文件名或内容命中即认为属于该类 chunk（大小写不敏感）。
 # 若 Vite 产物里的标识形态变化（例如只留 n-* 类名、不再出现包名），需同步更新
@@ -239,6 +242,36 @@ def evaluate(bundle: Bundle) -> Result:
             r.infos.append(
                 f"组件库 vendor chunk {len(vendor_chunks)} 个，gzip 合计 {total_gz} B ≤ "
                 f"{VENDOR_BUDGET} B（200 KiB），达标"
+            )
+
+    # ---- (b2) 懒加载第三方分包 ≤ 120 KiB gzip（2026-11-05 新增） ----
+    #
+    # 起因：UX-04b 把审计/报告两页的表格换成 `NDataTable` 后，Vite 把表格组件单独拆成
+    # `DataTable-*.js`（gzip 92 KiB）。这个 chunk **不含** "naive-ui" 字样，于是 (b) 的
+    # vendor 判据只看到 104 KiB 就报达标 —— 凭空多出 92 KiB 而预算毫无反应，这正是
+    # 「写了守门但守不住」的典型。这里补一条覆盖「非入口、非路由视图」的共享分包。
+    #
+    # 识别依赖项目约定：路由视图一律命名 `XxxView.vue`（Vite 会产出 `XxxView-*.js`），
+    # 入口固定 `index-*.js`，vue runtime 与图标 chunk 另有名字。新增一类共享分包时
+    # 无需改这里；但如果哪天出现不叫 `*View` 的页面组件，需要同步本判据。
+    lazy_shared = [
+        e
+        for e in bundle.js
+        if not re.search(r"(^|/)(index|vue|lucide)-[^/]*\.js$", e.rel)
+        and not re.search(r"View-[^/]*\.js$", e.rel)
+    ]
+    if lazy_shared:
+        lazy_gz = sum(e.gz for e in lazy_shared)
+        biggest = max(lazy_shared, key=lambda e: e.gz)
+        if lazy_gz > LAZY_BUDGET:
+            r.violations.append(
+                f"懒加载第三方分包超预算：{len(lazy_shared)} 个合计 gzip {lazy_gz} B > "
+                f"{LAZY_BUDGET} B（120 KiB）；最大 {biggest.rel} {biggest.gz} B"
+            )
+        else:
+            r.infos.append(
+                f"懒加载共享分包 {len(lazy_shared)} 个，gzip 合计 {lazy_gz} B ≤ "
+                f"{LAZY_BUDGET} B（120 KiB），达标（最大 {biggest.rel} {biggest.gz} B）"
             )
 
     # ---- (c) 字体 ≤ 800 KiB + font-display: swap（§2.2 步骤 2 / TC-S1-02） ----
