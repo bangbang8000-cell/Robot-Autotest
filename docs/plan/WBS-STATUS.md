@@ -106,6 +106,7 @@
 
 | 日期 | WBS | 一句话结果 | 证据 |
 |---|---|---|---|
+| 2026-11-04 | CAS-01/02/03（前端） | **前端首次真跑通**：登录 → 6 页逐页核对，抓到一个会让验收误判的缺陷——用例 / 资产 / 执行三页的 `watch` 缺 `immediate`，`projectId` 初值即目标值时 `load()` 从不执行，页面永远「暂无数据」且**不发任何请求**。修后 `/api/projects/1/cases` 与 `/devices` 正常发出，226 条台账渲染为 23 页、3 台设备正常显示 | `frontend/src/views/{Cases,Assets,Runs}View.vue`、提交 `c79dbb5`、`docs/env/环境基线.md` §10 |
 | 2026-11-04 | G1 判据 | 后端**真启动**通过（此前 450+ 单测从未起过 Spring 上下文）：空目录 → 构建 13.6s → 启动 4.5s；顺带抓到一个真缺陷 —— 未匹配路径返回 **500 而非 404**，已修并用真启动复验；G1 第三条（ArchUnit 拦故意跨层）经查**早已满足**，未重做 | `docs/evidence/v0.1/g1-boot-check.md`、`g1-jar-boot.log`、`scripts/boot-check.sh`、`GlobalExceptionHandlerTest` |
 | 2026-11-04 | CAS-03 | 台账导入**真跑通过**（此前只有静态对账顶替）：226 行 preview 零错误 → commit 入库 226 → 重导 226 行全报「编号已存在」；`CaseImportIT` 入 `-Pit` 套件 | `docs/evidence/v0.2/cas03-import-it.log`、`backend/src/test/java/com/qa/autotest/application/caseasset/CaseImportIT.java` |
 | 2026-11-04 | ENV-01~05 | 五项全转 `待验`，环境类阻断清零：口令重置、`robot_it`→V7_1/44 表、表头对账 1/14→**6/14 PASS**；顺带修掉三个「验证在说谎」（`-Pit` 空跑、`ArtifactVerifier` 假绿、`check_import_header` 假红）；全量 **450 单测全绿** + `SchemaIT` **5/5** | `docs/evidence/v0.1/{env02-build-test-20261104.log, env04-header-check.log, env-README.md}`、`docs/plan/决策纪要-20261104.md` §4 |
