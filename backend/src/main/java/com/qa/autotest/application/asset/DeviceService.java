@@ -77,6 +77,7 @@ public class DeviceService {
         access.require(PermissionResource.ASSET, PermissionAction.UPDATE);
         Device existing = devices.find(projectId, id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "设备不存在"));
+        requireOwned(existing, projectId);
         requireName(command.name());
         if (command.serialNo() != null && !command.serialNo().isBlank()
                 && devices.serialExists(projectId, command.serialNo(), id)) {
@@ -90,8 +91,9 @@ public class DeviceService {
     public void delete(long projectId, long id) {
         access.bindProject(projectId);
         access.require(PermissionResource.ASSET, PermissionAction.DELETE);
-        devices.find(projectId, id)
+        Device existing = devices.find(projectId, id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "设备不存在"));
+        requireOwned(existing, projectId);
         devices.delete(projectId, id);
         audit.record("device.delete", "device", String.valueOf(id), "");
     }
@@ -107,8 +109,9 @@ public class DeviceService {
     public DevicePort addPort(long projectId, long deviceId, PortCommand command) {
         access.bindProject(projectId);
         access.require(PermissionResource.ASSET, PermissionAction.CREATE);
-        devices.find(projectId, deviceId)
+        Device device = devices.find(projectId, deviceId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "设备不存在"));
+        requireOwned(device, projectId);
         requireName(command.portName());
         if (devices.portNameExists(projectId, deviceId, command.portName(), null)) {
             throw new BusinessException(ErrorCode.CONFLICT, "端口名已存在：" + command.portName());
@@ -126,6 +129,7 @@ public class DeviceService {
         access.require(PermissionResource.ASSET, PermissionAction.UPDATE);
         DevicePort existing = devices.findPort(projectId, portId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "端口不存在"));
+        requireOwnedPort(projectId, existing);
         requireName(command.portName());
         if (devices.portNameExists(projectId, existing.deviceId(), command.portName(), portId)) {
             throw new BusinessException(ErrorCode.CONFLICT, "端口名已存在：" + command.portName());
@@ -140,10 +144,27 @@ public class DeviceService {
     public void deletePort(long projectId, long portId) {
         access.bindProject(projectId);
         access.require(PermissionResource.ASSET, PermissionAction.DELETE);
-        devices.findPort(projectId, portId)
+        DevicePort existing = devices.findPort(projectId, portId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "端口不存在"));
+        requireOwnedPort(projectId, existing);
         devices.deletePort(projectId, portId);
         audit.record("device.port-delete", "device_port", String.valueOf(portId), "");
+    }
+
+    /**
+     * 平台共享资产对引用方是只读的：归属项目仍是 owner_scope=PROJECT 的那一个。
+     * 共享后本行 project_id 为 NULL，映射成 0，与本项目号不等即非归属。
+     */
+    private static void requireOwned(Device device, long projectId) {
+        if (device.projectId() != projectId) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "平台共享资产只能由归属项目修改");
+        }
+    }
+
+    private void requireOwnedPort(long projectId, DevicePort port) {
+        Device device = devices.find(projectId, port.deviceId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "设备不存在"));
+        requireOwned(device, projectId);
     }
 
     private static Device toDevice(Long id, long projectId, DeviceCommand c) {

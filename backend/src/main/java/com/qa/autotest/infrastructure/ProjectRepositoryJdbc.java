@@ -109,23 +109,28 @@ public class ProjectRepositoryJdbc implements ProjectRepository {
     @Override
     public List<ProjectMember> members(long projectId) {
         return jdbc.query("""
-                SELECT m.id, m.project_id, m.user_id, u.username, m.member_role
+                SELECT m.id, m.project_id, m.user_id, u.username, m.member_role,
+                       u.display_name, u.status
                   FROM project_member m JOIN app_user u ON u.id = m.user_id
                  WHERE m.project_id = ? ORDER BY m.id
                 """, (rs, rowNum) -> new ProjectMember(
                         rs.getLong("id"), rs.getLong("project_id"), rs.getLong("user_id"),
-                        rs.getString("username"), rs.getString("member_role")), projectId);
+                        rs.getString("username"), rs.getString("member_role"),
+                        rs.getString("display_name"), rs.getInt("status") == 1), projectId);
     }
 
     @Override
     public Optional<ProjectMember> findMember(long projectId, long userId) {
         return JdbcSupport.first(jdbc.query("""
-                SELECT m.id, m.project_id, m.user_id, u.username, m.member_role
+                SELECT m.id, m.project_id, m.user_id, u.username, m.member_role,
+                       u.display_name, u.status
                   FROM project_member m JOIN app_user u ON u.id = m.user_id
                  WHERE m.project_id = ? AND m.user_id = ?
                 """, (rs, rowNum) -> new ProjectMember(
                         rs.getLong("id"), rs.getLong("project_id"), rs.getLong("user_id"),
-                        rs.getString("username"), rs.getString("member_role")), projectId, userId));
+                        rs.getString("username"), rs.getString("member_role"),
+                        rs.getString("display_name"), rs.getInt("status") == 1),
+                projectId, userId));
     }
 
     @Override

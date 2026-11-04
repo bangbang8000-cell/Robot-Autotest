@@ -421,7 +421,8 @@ async function runCommit(): Promise<void> {
       </button>
     </SelectionBar>
 
-    <table v-if="cases.length" class="table">
+    <div v-if="cases.length" class="table-scroll">
+    <table class="table">
       <thead>
         <tr>
           <th class="col-check">
@@ -482,6 +483,7 @@ async function runCommit(): Promise<void> {
         </tr>
       </tbody>
     </table>
+    </div>
 
     <p v-if="!loading && !error && total === 0" class="muted">{{ t('common.noData') }}</p>
 

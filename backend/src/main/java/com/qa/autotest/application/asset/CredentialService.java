@@ -66,6 +66,7 @@ public class CredentialService {
         access.require(PermissionResource.CREDENTIAL, PermissionAction.UPDATE);
         Credential existing = credentials.find(projectId, id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "凭据不存在"));
+        requireOwned(existing, projectId);
         requireText(name, "凭据名称");
         if (credentials.nameExists(projectId, name, id)) {
             throw new BusinessException(ErrorCode.CONFLICT, "凭据名称已存在：" + name);
@@ -86,8 +87,9 @@ public class CredentialService {
     public void delete(long projectId, long id) {
         access.bindProject(projectId);
         access.require(PermissionResource.CREDENTIAL, PermissionAction.DELETE);
-        credentials.find(projectId, id)
+        Credential existing = credentials.find(projectId, id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "凭据不存在"));
+        requireOwned(existing, projectId);
         credentials.delete(projectId, id);
         audit.record("credential.delete", "credential", String.valueOf(id), "");
     }
@@ -104,6 +106,13 @@ public class CredentialService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "凭据未配置内容"));
         audit.record("credential.use", "credential", String.valueOf(id), "resolve");
         return cipher.decrypt(blob);
+    }
+
+    /** 平台共享凭据对引用方只读：可被取用执行，但元信息与密文只能由归属项目改。 */
+    private static void requireOwned(Credential credential, long projectId) {
+        if (credential.projectId() != projectId) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "平台共享资产只能由归属项目修改");
+        }
     }
 
     /** 目标账号为空时写「未指定」，避免摘要出现 null。 */

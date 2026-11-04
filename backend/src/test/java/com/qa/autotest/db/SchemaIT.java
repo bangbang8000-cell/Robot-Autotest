@@ -28,11 +28,12 @@ class SchemaIT {
     private static final String DB_NAME = System.getenv().getOrDefault("DB_NAME", "robot_it");
 
     /**
-     * 业务表总数。v0.1 设计为 38 张；后续版本新增 6 张（editor_keyword / case_requirement /
-     * export_record / ci_trigger / execution_plan_dependency / schedule_dependency），实测 45（2026-11-04 加 user_preference，UX-01）。
+     * 业务表总数。v0.1 设计为 38 张；后续版本新增 7 张（editor_keyword / case_requirement /
+     * export_record / ci_trigger / execution_plan_dependency / schedule_dependency /
+     * project_asset），实测 46（2026-11-04 加 project_asset，AST-05）。
      * 这个值随迁移演进更新，不是「越多越好」。
      */
-    private static final int EXPECTED_TABLES = 45;
+    private static final int EXPECTED_TABLES = 46;
 
     /**
      * append-only 表：按设计只增不改，没有「更新人/更新时间」这回事。
@@ -139,6 +140,25 @@ class SchemaIT {
         }
     }
 
+    @Test
+    @DisplayName("TC-AST-05-01 资产池结构：三表 owner_scope、project_id 可空、引用表与平台序列号唯一")
+    void 资产池结构() throws Exception {
+        for (String table : List.of("device", "link", "credential")) {
+            assertThat(列名(table)).as(table + " 缺少 owner_scope").contains("owner_scope");
+            assertThat(可空列(table, "project_id")).as(table + " 的 project_id 必须可空").isTrue();
+        }
+        assertThat(表名清单()).as("缺 project_asset").contains("project_asset");
+        assertThat(索引名("project_asset")).as("引用唯一键").contains("uk_project_asset");
+        assertThat(索引名("device")).as("平台级序列号唯一键").contains("uk_device_serial");
+    }
+
+    @Test
+    @DisplayName("TC-AST-05-02 用例不与设备耦合：test_case 不得出现 device 类列（DEV-PLAN §10.8 步骤 7）")
+    void 用例不绑定设备() throws Exception {
+        assertThat(列名("test_case")).as("用例只能声明能力/技术域，DUT 由执行时选")
+                .noneMatch(column -> column.startsWith("device"));
+    }
+
     // ---------------------------------------------------------------- 内部工具
 
     private Connection 连接() throws Exception {
@@ -177,6 +197,30 @@ class SchemaIT {
             }
         }
         return columns;
+    }
+
+    private boolean 可空列(String table, String column) throws Exception {
+        try (Connection conn = 连接();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(
+                     "SELECT is_nullable FROM information_schema.columns WHERE table_schema='"
+                             + DB_NAME + "' AND table_name='" + table + "' AND column_name='" + column + "'")) {
+            return rs.next() && "YES".equalsIgnoreCase(rs.getString(1));
+        }
+    }
+
+    private List<String> 索引名(String table) throws Exception {
+        List<String> indexes = new ArrayList<>();
+        try (Connection conn = 连接();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(
+                     "SELECT DISTINCT index_name FROM information_schema.statistics WHERE table_schema='"
+                             + DB_NAME + "' AND table_name='" + table + "'")) {
+            while (rs.next()) {
+                indexes.add(rs.getString(1));
+            }
+        }
+        return indexes;
     }
 
     private String 列类型(String table, String column) throws Exception {

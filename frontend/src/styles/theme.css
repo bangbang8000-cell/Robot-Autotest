@@ -87,6 +87,16 @@
   --accent: var(--blue-400);
   --accent-soft: #17324d;
   --accent-contrast: #06131f;
+  /* 三态：默认 / 悬停 / 按下。UX-01b 起所有可点元素都必须有 hover 与 active 反馈，
+     accent 只给默认态用，否则按下与悬停看起来完全一样（D2）。 */
+  --accent-hover: #63b5ff;
+  --accent-active: #2b96ef;
+
+  /* 交互面：行悬停 / 行选中 / 焦点环。原来这些状态全无 token，只能各写各的
+     rgb 半透明，暗亮两套对不上（D2/D3）。 */
+  --surface-hover: #223142;
+  --surface-selected: #17324d;
+  --focus-ring: var(--blue-400);
 
   /* 状态：主色用于文字/图标，soft 用于底色，border 用于描边 */
   --ok: var(--green-400);
@@ -135,6 +145,13 @@
   --accent: #1567c9;
   --accent-soft: #e8f1fd;
   --accent-contrast: var(--gray-0);
+  /* 亮色下悬停要**压深**而不是提亮：白底上提亮等于降低对比度 */
+  --accent-hover: #0f57ab;
+  --accent-active: #0b4a94;
+
+  --surface-hover: var(--gray-100);
+  --surface-selected: #dbe9fb;
+  --focus-ring: #1567c9;
 
   --ok: var(--green-700);
   --ok-soft: #e8f7ee;
@@ -154,4 +171,39 @@
   --chart-2: #6b4fd8;
   --chart-3: #1a8a5a;
   --chart-4: #b5651d;
+}
+
+/* ============ 4. 强调色变体（data-accent） ============ */
+
+/*
+ * UX-01b 只把**机制**就位（blue 先行），**不提供切换入口**——入口属 UX-04 的六预设，
+ * 现在挂出来等于让用户点一个只有一种颜色的开关。
+ *
+ * 机制约定：`<html data-accent="blue">`，缺省等同 blue。变体块**只允许覆盖 accent 三态
+ * 与 surface-selected**，其余 semantic token 继承所在主题，这样亮/暗 × N 个强调色
+ * 不会各自漂移。
+ *
+ * 坑（D15）：`check_contrast.py` 原来把所有含 data-theme 的块 `update` 进同一份变量表，
+ * 变体块会**覆盖**默认值 —— 后面再补 teal/fuchsia 时，变体值会顶掉默认值，算出来仍然
+ * "全 PASS"，但真实默认态没人验（假绿）。所以解析器必须按 (主题 × 强调色) 分组。
+ */
+
+:root[data-accent='blue'][data-theme='dark'] {
+  --accent: var(--blue-400);
+  --accent-hover: #63b5ff;
+  --accent-active: #2b96ef;
+  --accent-soft: #17324d;
+  --accent-contrast: #06131f;
+  --surface-selected: #17324d;
+  --focus-ring: var(--blue-400);
+}
+
+:root[data-accent='blue'][data-theme='light'] {
+  --accent: #1567c9;
+  --accent-hover: #0f57ab;
+  --accent-active: #0b4a94;
+  --accent-soft: #e8f1fd;
+  --accent-contrast: var(--gray-0);
+  --surface-selected: #dbe9fb;
+  --focus-ring: #1567c9;
 }

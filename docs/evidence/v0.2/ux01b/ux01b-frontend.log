@@ -1,0 +1,70 @@
+=== npm run build ===
+
+> robot-autotest-frontend@0.1.0 build
+> vue-tsc --noEmit && vite build
+
+vite v6.4.5 building for production...
+transforming...
+✓ 148 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                              1.50 kB │ gzip:   0.92 kB
+dist/assets/ReportsView-DIH_ou2m.css                                         0.14 kB │ gzip:   0.13 kB
+dist/assets/CasesView-DHKIByvg.css                                           0.57 kB │ gzip:   0.30 kB
+dist/assets/RunsView-CHCKqx4T.css                                            0.64 kB │ gzip:   0.34 kB
+dist/assets/ErrorLine-D-aJ6yPk.css                                           0.71 kB │ gzip:   0.34 kB
+dist/assets/PlansView-CoL1Bnis.css                                           1.76 kB │ gzip:   0.60 kB
+dist/assets/ReportPrintView-CHqipGbz.css                                     2.05 kB │ gzip:   0.66 kB
+dist/assets/ReportDetailView-ChQbUBvd.css                                    3.93 kB │ gzip:   1.11 kB
+dist/assets/index-DjVTY91N.css                                              11.85 kB │ gzip:   3.00 kB
+dist/assets/EditorView-EUMMeTD4.css                                         87.04 kB │ gzip:  13.44 kB
+dist/assets/NotFoundView-CRgd2aDa.js                                         0.41 kB │ gzip:   0.29 kB
+dist/assets/statusLabels-CXZEOoF-.js                                         0.51 kB │ gzip:   0.33 kB
+dist/assets/errors-2nwwflZv.js                                               0.67 kB │ gzip:   0.40 kB
+dist/assets/ProjectPicker.vue_vue_type_script_setup_true_lang-BIW78EID.js    0.68 kB │ gzip:   0.44 kB
+dist/assets/ErrorLine-DY5GEz-S.js                                            0.75 kB │ gzip:   0.43 kB
+dist/assets/format-C4jpDdOz.js                                               1.12 kB │ gzip:   0.60 kB
+dist/assets/cases-A6fSUcxu.js                                                1.21 kB │ gzip:   0.43 kB
+dist/assets/reports-BWayya7Y.js                                              1.27 kB │ gzip:   0.52 kB
+dist/assets/LoginView-2YukDJtS.js                                            1.62 kB │ gzip:   0.82 kB
+dist/assets/AuditView-CKGEEPFU.js                                            4.32 kB │ gzip:   1.75 kB
+dist/assets/ReportPrintView-BpE7B1t-.js                                      4.56 kB │ gzip:   1.78 kB
+dist/assets/ReportsView-D8vw42Y1.js                                          5.62 kB │ gzip:   2.00 kB
+dist/assets/RunsView-CxdVR2jY.js                                             6.33 kB │ gzip:   2.62 kB
+dist/assets/AdminView-Ck2Xni44.js                                            7.51 kB │ gzip:   2.27 kB
+dist/assets/OverviewView-Bu9p1M_k.js                                         9.04 kB │ gzip:   2.66 kB
+dist/assets/PlansView-Da6t_F5y.js                                           11.89 kB │ gzip:   3.52 kB
+dist/assets/CasesView-b5S75ih0.js                                           14.27 kB │ gzip:   4.44 kB
+dist/assets/AssetsView-BCU-j65a.js                                          14.91 kB │ gzip:   3.68 kB
+dist/assets/ReportDetailView-DY-eWewB.js                                    21.01 kB │ gzip:   6.66 kB
+dist/assets/index-CmRIzR6b.js                                              241.42 kB │ gzip:  88.41 kB
+dist/assets/EditorView-BuMy7isM.js                                         857.87 kB │ gzip: 265.21 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 6.26s
+
+=== npm run lint ===
+
+> robot-autotest-frontend@0.1.0 lint
+> eslint .
+
+
+=== vitest ===
+
+ RUN  v3.2.7 /home/evergreen/robot-autotest/frontend
+
+(node:104783) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:104784) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/composables/useSelection.spec.ts (8 tests) 14ms
+ ✓ src/utils/format.spec.ts (8 tests) 50ms
+
+ Test Files  2 passed (2)
+      Tests  16 passed (16)
+   Start at  15:50:23
+   Duration  1.26s (transform 182ms, setup 38ms, collect 349ms, tests 64ms, environment 864ms, prepare 296ms)
+

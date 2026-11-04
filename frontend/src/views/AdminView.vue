@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { roleApi, userApi, projectApi, type Role, type UserSummary } from '@/api/iam'
+import {
+  roleApi,
+  userApi,
+  projectApi,
+  type ProjectMember,
+  type Role,
+  type UserSummary,
+} from '@/api/iam'
 import { useAuthStore } from '@/stores/auth'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
@@ -30,6 +37,19 @@ const userForm = reactive({
 })
 
 const projectForm = reactive({ code: '', name: '', description: '', visibility: 'private' })
+
+/** 项目内角色只有这四个值（与后端 RoleCode 同值）；与全局角色是两套口径。 */
+const PROJECT_ROLES = ['admin', 'pm', 'engineer', 'viewer']
+
+const memberProjectId = ref<number | null>(null)
+const members = ref<ProjectMember[]>([])
+const memberLoading = ref(false)
+const candidates = ref<UserSummary[]>([])
+const memberForm = reactive({ userId: null as number | null, roleCode: 'viewer' })
+
+const selectedProject = computed(
+  () => auth.projects.find((p) => p.id === memberProjectId.value) ?? null,
+)
 
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / size)))
 
@@ -60,6 +80,15 @@ onMounted(async () => {
     } catch (e) {
       error.value = localizeError(e)
     }
+  }
+  try {
+    candidates.value = (await userApi.page({ page: 1, size: 100 })).items
+  } catch (e) {
+    error.value = localizeError(e)
+  }
+  if (memberProjectId.value === null && auth.projects.length > 0) {
+    memberProjectId.value = auth.projects[0].id
+    await loadMembers()
   }
 })
 
@@ -133,6 +162,78 @@ async function createProject(): Promise<void> {
     projectForm.name = ''
     projectForm.description = ''
     showProjectForm.value = false
+  } catch (e) {
+    error.value = localizeError(e)
+  }
+}
+
+function roleLabel(code: string): string {
+  return t(`admin.projectRole.${code}`)
+}
+
+function isOwner(member: ProjectMember): boolean {
+  return selectedProject.value?.ownerId === member.userId
+}
+
+async function loadMembers(): Promise<void> {
+  if (memberProjectId.value === null) {
+    members.value = []
+    return
+  }
+  memberLoading.value = true
+  error.value = null
+  try {
+    members.value = await projectApi.members(memberProjectId.value)
+  } catch (e) {
+    error.value = localizeError(e)
+    members.value = []
+  } finally {
+    memberLoading.value = false
+  }
+}
+
+async function addMember(): Promise<void> {
+  error.value = null
+  message.value = ''
+  if (memberProjectId.value === null || memberForm.userId === null) {
+    error.value = { summary: t('admin.memberRequired'), detail: null }
+    return
+  }
+  try {
+    await projectApi.addMember(memberProjectId.value, {
+      userId: memberForm.userId,
+      roleCode: memberForm.roleCode,
+    })
+    message.value = t('common.saved')
+    memberForm.userId = null
+    await loadMembers()
+  } catch (e) {
+    error.value = localizeError(e)
+  }
+}
+
+/** 改角色失败时仍重载列表：把下拉框还原成服务端的真实值，不留下「看起来改了」的假象。 */
+async function changeMemberRole(member: ProjectMember, event: Event): Promise<void> {
+  const roleCode = (event.target as HTMLSelectElement).value
+  error.value = null
+  message.value = ''
+  try {
+    await projectApi.updateMember(member.projectId, member.userId, roleCode)
+    message.value = t('common.saved')
+  } catch (e) {
+    error.value = localizeError(e)
+  } finally {
+    await loadMembers()
+  }
+}
+
+async function removeMember(member: ProjectMember): Promise<void> {
+  error.value = null
+  message.value = ''
+  try {
+    await projectApi.removeMember(member.projectId, member.userId)
+    message.value = t('common.saved')
+    await loadMembers()
   } catch (e) {
     error.value = localizeError(e)
   }
@@ -260,6 +361,83 @@ async function createProject(): Promise<void> {
         </tbody>
       </table>
       <p v-else class="muted">{{ t('common.noData') }}</p>
+    </section>
+
+    <section class="card wide-card">
+      <div class="section-head">
+        <h2 class="card-title">{{ t('admin.projectMembers') }}</h2>
+        <div class="toolbar">
+          <select v-model.number="memberProjectId" class="input" @change="loadMembers()">
+            <option :value="null" disabled>{{ t('admin.selectProject') }}</option>
+            <option v-for="p in auth.projects" :key="p.id" :value="p.id">
+              {{ p.code }} · {{ p.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <p v-if="auth.projects.length === 0" class="muted">{{ t('project.emptyHint') }}</p>
+      <template v-else>
+        <form class="inline-form" @submit.prevent="addMember">
+          <select v-model.number="memberForm.userId" class="input">
+            <option :value="null" disabled>{{ t('admin.selectUser') }}</option>
+            <option v-for="u in candidates" :key="u.id" :value="u.id">
+              {{ u.username }} · {{ u.displayName }}
+              {{ u.enabled ? '' : ` (${t('admin.disabledUser')})` }}
+            </option>
+          </select>
+          <select v-model="memberForm.roleCode" class="input">
+            <option v-for="r in PROJECT_ROLES" :key="r" :value="r">{{ roleLabel(r) }}</option>
+          </select>
+          <button class="btn" type="submit">{{ t('admin.addMember') }}</button>
+        </form>
+        <p class="muted">{{ t('admin.ownerHint') }}</p>
+
+        <p v-if="memberLoading" class="muted">{{ t('common.loading') }}</p>
+        <table v-if="members.length" class="table">
+          <thead>
+            <tr>
+              <th>{{ t('admin.username') }}</th>
+              <th>{{ t('admin.displayName') }}</th>
+              <th>{{ t('admin.memberRole') }}</th>
+              <th>{{ t('admin.memberStatus') }}</th>
+              <th>{{ t('common.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="m in members" :key="m.userId">
+              <td>{{ m.username }}</td>
+              <td>{{ m.displayName }}</td>
+              <td>
+                <div v-if="isOwner(m)" class="member-role">
+                  <span class="muted">{{ roleLabel(m.roleCode) }} · {{ t('admin.owner') }}</span>
+                </div>
+                <select
+                  v-else
+                  class="input"
+                  :value="m.roleCode"
+                  @change="changeMemberRole(m, $event)"
+                >
+                  <option v-for="r in PROJECT_ROLES" :key="r" :value="r">{{ roleLabel(r) }}</option>
+                </select>
+              </td>
+              <td>{{ m.enabled ? t('common.yes') : t('admin.disabledUser') }}</td>
+              <td>
+                <button
+                  v-if="!isOwner(m)"
+                  class="link-btn danger"
+                  type="button"
+                  @click="removeMember(m)"
+                >
+                  {{ t('admin.removeMember') }}
+                </button>
+                <span v-else class="muted">{{ t('admin.ownerLocked') }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p v-if="!memberLoading && members.length === 0" class="muted">{{ t('admin.noMembers') }}</p>
+      </template>
     </section>
 
     <section class="card wide-card">

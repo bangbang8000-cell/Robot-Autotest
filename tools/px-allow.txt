@@ -1,0 +1,40 @@
+# px 字面量白名单（UX-01b 基线快照，由 tools/check_tokens.py --write-px-allow 生成）
+# 规则：新出现的 px 值不在本表即 FAIL。加值前先问自己能不能复用已有档位；
+# 真正的收敛（字号 6 档 / 间距 8 档）在 UX-04 做，届时本表应显著变短。
+1px
+2px
+3px
+4px
+6px
+8px
+10px
+11px
+12px
+13px
+14px
+15px
+16px
+18px
+20px
+22px
+24px
+28px
+34px
+36px
+40px
+56px
+90px
+110px
+120px
+140px
+180px
+200px
+220px
+232px
+240px
+340px
+420px
+520px
+760px
+999px
+1440px

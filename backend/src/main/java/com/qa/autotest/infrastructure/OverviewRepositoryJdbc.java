@@ -56,17 +56,21 @@ public class OverviewRepositoryJdbc implements OverviewRepository {
              LIMIT ?
             """;
 
-    private static final String ASSET_COUNTS = """
-            SELECT
-              (SELECT COUNT(*) FROM device WHERE project_id = ? AND status = 1) AS devices,
-              (SELECT COUNT(*) FROM device_port p
-                 JOIN device d ON d.id = p.device_id
-                WHERE d.project_id = ?) AS ports,
-              (SELECT COUNT(*) FROM link WHERE project_id = ? AND status = 1) AS links,
-              (SELECT COUNT(*) FROM credential WHERE project_id = ?) AS credentials,
-              (SELECT COUNT(*) FROM env_profile WHERE project_id = ?) AS environments,
-              (SELECT COUNT(*) FROM test_set WHERE project_id = ? AND set_status = 'active') AS test_sets
-            """;
+    /**
+     * 资产计数与资产页同一口径（{@link AssetScopeSql}）：私有 OR 平台共享且本项目已引用。
+     * 否则「总览说有 3 台设备、资产页只有 2 台」这种对不上的数会出现。
+     */
+    private static final String ASSET_COUNTS = "SELECT "
+            + "(SELECT COUNT(*) FROM device d " + AssetScopeSql.DEVICE_JOIN
+            + AssetScopeSql.DEVICE_WHERE + " AND d.status = 1) AS devices, "
+            + "(SELECT COUNT(*) FROM device_port p JOIN device d ON d.id = p.device_id "
+            + AssetScopeSql.DEVICE_JOIN + AssetScopeSql.DEVICE_WHERE + ") AS ports, "
+            + "(SELECT COUNT(*) FROM link l " + AssetScopeSql.LINK_JOIN
+            + AssetScopeSql.LINK_WHERE + " AND l.status = 1) AS links, "
+            + "(SELECT COUNT(*) FROM credential c " + AssetScopeSql.CREDENTIAL_JOIN
+            + AssetScopeSql.CREDENTIAL_WHERE + ") AS credentials, "
+            + "(SELECT COUNT(*) FROM env_profile WHERE project_id = ?) AS environments, "
+            + "(SELECT COUNT(*) FROM test_set WHERE project_id = ? AND set_status = 'active') AS test_sets";
 
     private static final String RUN_COUNTS = """
             SELECT COUNT(*) AS total,
@@ -154,7 +158,9 @@ public class OverviewRepositoryJdbc implements OverviewRepository {
                 rs.getInt("links"),
                 rs.getInt("credentials"),
                 rs.getInt("environments"),
-                rs.getInt("test_sets")), projectId, projectId, projectId, projectId, projectId, projectId);
+                rs.getInt("test_sets")),
+                projectId, projectId, projectId, projectId, projectId, projectId,
+                projectId, projectId, projectId, projectId);
     }
 
     @Override

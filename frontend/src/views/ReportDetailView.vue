@@ -402,17 +402,19 @@ watch(granularity, () => {
 
       <section class="card wide-card">
         <h2 class="card-title">{{ t('reports.metadataTitle') }}</h2>
-        <table class="table meta-table">
-          <tbody>
-            <tr v-for="key in REPORT_METADATA_KEYS" :key="key">
-              <th>{{ key }}</th>
-              <td v-if="metadataMissing(key)" class="text-fail">
-                {{ t('reports.missingValue') }}
-              </td>
-              <td v-else>{{ metadataValue(key) }}</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-scroll">
+          <table class="table meta-table">
+            <tbody>
+              <tr v-for="key in REPORT_METADATA_KEYS" :key="key">
+                <th>{{ key }}</th>
+                <td v-if="metadataMissing(key)" class="text-fail">
+                  {{ t('reports.missingValue') }}
+                </td>
+                <td v-else>{{ metadataValue(key) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <div class="toolbar export-bar">
@@ -507,7 +509,8 @@ watch(granularity, () => {
         <p v-else-if="!exportHistory.length" class="muted">
           {{ t('reports.exportSection.historyEmpty') }}
         </p>
-        <table v-else class="table">
+        <div v-else class="table-scroll">
+          <table class="table">
           <thead>
             <tr>
               <th>{{ t('reports.exportSection.historyFormat') }}</th>
@@ -541,6 +544,7 @@ watch(granularity, () => {
             </tr>
           </tbody>
         </table>
+        </div>
       </section>
 
       <section class="card wide-card">
@@ -686,7 +690,8 @@ watch(granularity, () => {
             </span>
           </div>
 
-          <table class="table compare-table">
+          <div class="table-scroll">
+            <table class="table compare-table">
             <thead>
               <tr>
                 <th>{{ t('reports.case') }}</th>
@@ -712,6 +717,7 @@ watch(granularity, () => {
               </tr>
             </tbody>
           </table>
+          </div>
         </template>
       </section>
     </template>
@@ -725,7 +731,7 @@ watch(granularity, () => {
 
 .meta-table th {
   width: 140px;
-  color: var(--muted);
+  color: var(--text-muted);
   font-weight: 500;
 }
 
@@ -822,7 +828,7 @@ watch(granularity, () => {
 
 .change-same,
 .change-not_run {
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 /* 窄屏：对比表上下堆叠，避免双列被压成单字符宽度 */

@@ -21,10 +21,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class DeviceRepositoryJdbc implements DeviceRepository {
 
+    /** 读口径见 {@link AssetScopeSql}：私有 OR 平台共享且本项目已引用。 */
     private static final String SELECT = """
-            SELECT id, project_id, name, device_type, model, vendor, serial_no, management_ip,
-                   location, rack_no, domain_tag, status, owner_id, last_checked_at
-              FROM device
+            SELECT d.id, d.project_id, d.name, d.device_type, d.model, d.vendor, d.serial_no,
+                   d.management_ip, d.location, d.rack_no, d.domain_tag, d.status, d.owner_id,
+                   d.last_checked_at
+              FROM device d
             """;
 
     private static final RowMapper<Device> MAPPER = (rs, rowNum) -> new Device(
@@ -51,30 +53,32 @@ public class DeviceRepositoryJdbc implements DeviceRepository {
     @Override
     public PageResult<Device> page(long projectId, String keyword, Integer status, String domain,
                                    int page, int size) {
-        StringBuilder where = new StringBuilder(" WHERE project_id = ?");
+        StringBuilder where = new StringBuilder(AssetScopeSql.DEVICE_WHERE);
         List<Object> args = new ArrayList<>();
         args.add(projectId);
+        args.add(projectId);
         if (keyword != null && !keyword.isBlank()) {
-            where.append(" AND (name LIKE ? OR management_ip LIKE ? OR serial_no LIKE ?)");
+            where.append(" AND (d.name LIKE ? OR d.management_ip LIKE ? OR d.serial_no LIKE ?)");
             String like = "%" + keyword.trim() + "%";
             args.add(like);
             args.add(like);
             args.add(like);
         }
         if (status != null) {
-            where.append(" AND status = ?");
+            where.append(" AND d.status = ?");
             args.add(status);
         }
         if (domain != null && !domain.isBlank()) {
-            where.append(" AND domain_tag = ?");
+            where.append(" AND d.domain_tag = ?");
             args.add(domain);
         }
-        String countSql = "SELECT COUNT(*) FROM device" + where;
+        String countSql = "SELECT COUNT(*) FROM device d " + AssetScopeSql.DEVICE_JOIN + where;
         TenantGuard.requireProjectScope(countSql, "device");
         Long total = jdbc.queryForObject(countSql, Long.class, args.toArray());
         args.add(size);
         args.add((page - 1) * size);
-        String listSql = SELECT + where + " ORDER BY id DESC LIMIT ? OFFSET ?";
+        String listSql = SELECT + AssetScopeSql.DEVICE_JOIN + where
+                + " ORDER BY d.id DESC LIMIT ? OFFSET ?";
         TenantGuard.requireProjectScope(listSql, "device");
         List<Device> rows = jdbc.query(listSql, MAPPER, args.toArray());
         return new PageResult<>(rows, total == null ? 0 : total, page, size);
@@ -82,9 +86,9 @@ public class DeviceRepositoryJdbc implements DeviceRepository {
 
     @Override
     public Optional<Device> find(long projectId, long id) {
-        String sql = SELECT + " WHERE project_id = ? AND id = ?";
+        String sql = SELECT + AssetScopeSql.DEVICE_JOIN + AssetScopeSql.DEVICE_WHERE + " AND d.id = ?";
         TenantGuard.requireProjectScope(sql, "device");
-        return JdbcSupport.first(jdbc.query(sql, MAPPER, projectId, id));
+        return JdbcSupport.first(jdbc.query(sql, MAPPER, projectId, projectId, id));
     }
 
     @Override
@@ -162,11 +166,10 @@ public class DeviceRepositoryJdbc implements DeviceRepository {
                 SELECT dp.id, dp.device_id, dp.port_name, dp.port_type, dp.protocol, dp.mac_address,
                        dp.speed_gbps, dp.mtu, dp.ip_address, dp.port_status
                   FROM device_port dp JOIN device d ON d.id = dp.device_id
-                 WHERE d.project_id = ? AND dp.device_id = ?
-                 ORDER BY dp.id
-                """;
+                """ + AssetScopeSql.DEVICE_JOIN + AssetScopeSql.DEVICE_WHERE
+                + " AND dp.device_id = ? ORDER BY dp.id";
         TenantGuard.requireProjectScope(sql, "device_port");
-        return jdbc.query(sql, PORT_MAPPER, projectId, deviceId);
+        return jdbc.query(sql, PORT_MAPPER, projectId, projectId, deviceId);
     }
 
     @Override
@@ -175,10 +178,9 @@ public class DeviceRepositoryJdbc implements DeviceRepository {
                 SELECT dp.id, dp.device_id, dp.port_name, dp.port_type, dp.protocol, dp.mac_address,
                        dp.speed_gbps, dp.mtu, dp.ip_address, dp.port_status
                   FROM device_port dp JOIN device d ON d.id = dp.device_id
-                 WHERE d.project_id = ? AND dp.id = ?
-                """;
+                """ + AssetScopeSql.DEVICE_JOIN + AssetScopeSql.DEVICE_WHERE + " AND dp.id = ?";
         TenantGuard.requireProjectScope(sql, "device_port");
-        return JdbcSupport.first(jdbc.query(sql, PORT_MAPPER, projectId, portId));
+        return JdbcSupport.first(jdbc.query(sql, PORT_MAPPER, projectId, projectId, portId));
     }
 
     @Override
@@ -245,10 +247,10 @@ public class DeviceRepositoryJdbc implements DeviceRepository {
     @Override
     public List<String> domains(long projectId) {
         String sql = """
-                SELECT DISTINCT domain_tag FROM device
-                 WHERE project_id = ? AND domain_tag IS NOT NULL ORDER BY domain_tag
-                """;
+                SELECT DISTINCT d.domain_tag FROM device d
+                """ + AssetScopeSql.DEVICE_JOIN + AssetScopeSql.DEVICE_WHERE
+                + " AND d.domain_tag IS NOT NULL ORDER BY d.domain_tag";
         TenantGuard.requireProjectScope(sql, "device");
-        return jdbc.query(sql, (rs, rowNum) -> rs.getString(1), projectId);
+        return jdbc.query(sql, (rs, rowNum) -> rs.getString(1), projectId, projectId);
     }
 }

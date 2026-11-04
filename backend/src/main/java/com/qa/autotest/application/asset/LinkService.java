@@ -61,8 +61,9 @@ public class LinkService {
     public Link update(long projectId, long id, LinkCommand command) {
         access.bindProject(projectId);
         access.require(PermissionResource.ASSET, PermissionAction.UPDATE);
-        links.find(projectId, id)
+        Link existing = links.find(projectId, id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "链路不存在"));
+        requireOwned(existing, projectId);
         validate(projectId, command);
         links.update(toLink(id, projectId, command), TenantContext.userId());
         audit.record("link.update", "link", String.valueOf(id), "name=" + command.name());
@@ -72,10 +73,18 @@ public class LinkService {
     public void delete(long projectId, long id) {
         access.bindProject(projectId);
         access.require(PermissionResource.ASSET, PermissionAction.DELETE);
-        links.find(projectId, id)
+        Link existing = links.find(projectId, id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "链路不存在"));
+        requireOwned(existing, projectId);
         links.delete(projectId, id);
         audit.record("link.delete", "link", String.valueOf(id), "");
+    }
+
+    /** 平台共享链路对引用方只读：归属项目仍是原项目，共享后 project_id 为 NULL（映射成 0）。 */
+    private static void requireOwned(Link link, long projectId) {
+        if (link.projectId() != projectId) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "平台共享资产只能由归属项目修改");
+        }
     }
 
     /** 校验：名称非空、两端设备存在、不能自环、端口属于对应设备。 */

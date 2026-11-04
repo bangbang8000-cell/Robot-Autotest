@@ -225,18 +225,18 @@ function clickPoint(id: string): void {
 }
 
 .axis-label {
-  fill: var(--muted);
+  fill: var(--text-muted);
   font-size: 11px;
 }
 
 .baseline-line {
-  stroke: var(--muted);
+  stroke: var(--text-muted);
   stroke-width: 1;
   stroke-dasharray: 5 4;
 }
 
 .baseline-label {
-  fill: var(--muted);
+  fill: var(--text-muted);
   font-size: 11px;
 }
 
@@ -260,7 +260,7 @@ function clickPoint(id: string): void {
   gap: 14px;
   margin-top: 8px;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .legend-item {

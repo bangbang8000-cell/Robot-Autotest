@@ -300,7 +300,8 @@ class RetentionPlannerTest {
                 return Optional.of(new Project(PROJECT, "P21", "项目21", null, true, 1L, "private"));
             }
             if ("findMember".equals(method.getName())) {
-                return Optional.of(new ProjectMember(1L, PROJECT, 2L, "viewer", "viewer"));
+                return Optional.of(new ProjectMember(1L, PROJECT, 2L, "viewer", "viewer",
+                        "viewer", true));
             }
             return defaultValue(method.getReturnType());
         });

@@ -36,6 +36,8 @@ THEME_CSS = ROOT / "frontend" / "src" / "styles" / "theme.css"
 BLOCK_RE = re.compile(r"([^{}]+)\{([^{}]*)\}", re.S)
 DECL_RE = re.compile(r"(--[\w-]+)\s*:\s*([^;]+);")
 VAR_RE = re.compile(r"^var\(\s*(--[\w-]+)\s*\)$")
+ACCENT_RE = re.compile(r"""data-accent\s*=\s*['"]([^'"]+)['"]""")
+THEME_RE = re.compile(r"""data-theme\s*=\s*['"](light|dark)['"]""")
 
 # (前景, 背景, 阈值, 说明)
 CHECKS: list[tuple[str, str, float, str]] = [
@@ -62,8 +64,16 @@ CHECKS: list[tuple[str, str, float, str]] = [
 ]
 
 
-def parse_theme(path: Path) -> tuple[dict[str, str], dict[str, str], dict[str, str]]:
-    """返回 (primitives, dark, light)。dark/light 只含各自块里声明的变量。"""
+def parse_theme(path: Path) -> tuple[dict[str, str], dict[tuple[str, str], dict[str, str]]]:
+    """返回 (primitives, groups)。
+
+    groups 的键是 **(主题, 强调色)**，值是该组合下生效的完整变量表。
+
+    为什么要分组（D15）：早期版本把所有含 `data-theme` 的块 `update` 进同一份表，
+    后出现的 `[data-accent='teal'][data-theme='dark']` 会把默认暗色的 `--accent` 覆盖掉。
+    结果是"默认态"根本没被测，但脚本仍打印全 PASS —— 典型的假绿。分组后
+    每个 (主题 × 强调色) 各自独立合成，变体块无法污染默认块。
+    """
     text = path.read_text(encoding="utf-8")
     # 必须先剥注释：文件头有大段 /* ... */，不剥的话第一个匹配到的选择器会变成
     # "注释 + :root"，既不等于 ":root" 也不含 data-theme，整块 primitives 就丢了，
@@ -71,21 +81,35 @@ def parse_theme(path: Path) -> tuple[dict[str, str], dict[str, str], dict[str, s
     text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
 
     primitives: dict[str, str] = {}
-    dark: dict[str, str] = {}
-    light: dict[str, str] = {}
+    defaults: dict[str, dict[str, str]] = {}
+    variants: dict[tuple[str, str], dict[str, str]] = {}
 
     for selector, body in BLOCK_RE.findall(text):
         sel = " ".join(selector.split())
         decls = dict(DECL_RE.findall(body))
         if not decls:
             continue
-        if "data-theme='light'" in sel or 'data-theme="light"' in sel:
-            light.update(decls)
-        elif "data-theme='dark'" in sel or 'data-theme="dark"' in sel:
-            dark.update(decls)
+        theme_match = THEME_RE.search(sel)
+        accent_match = ACCENT_RE.search(sel)
+        if theme_match:
+            theme = theme_match.group(1)
+            if accent_match:
+                variants.setdefault((theme, accent_match.group(1)), {}).update(decls)
+            else:
+                defaults.setdefault(theme, {}).update(decls)
         elif sel == ":root":
             primitives.update(decls)
-    return primitives, dark, light
+
+    groups: dict[tuple[str, str], dict[str, str]] = {}
+    for theme, base in defaults.items():
+        groups[(theme, "default")] = {**primitives, **base}
+        for (v_theme, accent), overrides in variants.items():
+            if v_theme == theme:
+                groups[(theme, accent)] = {**primitives, **base, **overrides}
+    # 变体块没有对应主题基础块时也要能单独成立（防止只写了变体没写默认的漏配置）
+    for (theme, accent), overrides in variants.items():
+        groups.setdefault((theme, accent), {**primitives, **overrides})
+    return primitives, groups
 
 
 def resolve(name: str, variables: dict[str, str], depth: int = 0) -> str:
@@ -138,46 +162,58 @@ def contrast(fg: str, bg: str) -> float | None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="检查两套主题的 token 对比度")
     parser.add_argument("--theme", choices=["dark", "light"], help="只检查一套主题")
+    parser.add_argument("--accent", help="只检查某个强调色分组（default / blue / teal ...）")
     args = parser.parse_args()
 
     if not THEME_CSS.is_file():
         print(f"[FAIL] 找不到 {THEME_CSS}", file=sys.stderr)
         return 2
 
-    primitives, dark, light = parse_theme(THEME_CSS)
-    themes = {
-        "dark": {**primitives, **dark},
-        "light": {**primitives, **light},
-    }
+    primitives, groups = parse_theme(THEME_CSS)
+
+    # 自检 1：解析出 0 项时所有检查都会被"跳过"，脚本会打印 PASS —— 那是最坏的假绿。
+    # 自检 2：分组数下限。当前是「2 主题 × (默认 + blue)」= 4 组，要求 ≥4；
+    # 如果 theme.css 结构又变了（比如变体块挪进 @media），这里会先炸，而不是静默少测。
+    if len(groups) < 4:
+        print(f"[FAIL] 只解析出 {len(groups)} 个 (主题 × 强调色) 分组，"
+              f"疑似 theme.css 结构变化导致解析失败（而不是真的没有变量）",
+              file=sys.stderr)
+        return 2
 
     failures = 0
     skipped: list[str] = []
+    rows = 0
 
-    # 自检：解析出 0 项时所有检查都会被"跳过"，脚本会打印 PASS —— 那是最坏的假绿。
-    # 正常应该有 40+ 个 token（primitives 18 + 每套 semantic 20+）。
-    for theme_name, variables in themes.items():
-        if len(variables) < 25:
-            print(f"[FAIL] {theme_name} 只解析出 {len(variables)} 个 token，"
-                  f"疑似 theme.css 结构变化导致解析失败（而不是真的没有变量）",
-                  file=sys.stderr)
-            return 2
-
-    for theme_name, variables in themes.items():
+    for (theme_name, accent), variables in sorted(groups.items()):
         if args.theme and theme_name != args.theme:
             continue
-        print(f"\n=== {theme_name} ===")
+        if args.accent and accent != args.accent:
+            continue
+        # 每组独立自检：组内 token 太少说明这一组是空壳（变体块没继承到基础块）
+        if len(variables) < 30:
+            print(f"[FAIL] {theme_name}/{accent} 只解析出 {len(variables)} 个 token，"
+                  f"疑似分组合成失败", file=sys.stderr)
+            return 2
+
+        print(f"\n=== {theme_name} / accent={accent} ===")
         for fg_name, bg_name, threshold, label in CHECKS:
             fg = resolve(f"--{fg_name}", variables)
             bg = resolve(f"--{bg_name}", variables)
             ratio = contrast(fg, bg)
             if ratio is None:
-                skipped.append(f"{theme_name}: {fg_name} / {bg_name}（非 hex：{fg} / {bg}）")
+                skipped.append(f"{theme_name}/{accent}: {fg_name} / {bg_name}（非 hex：{fg} / {bg}）")
                 continue
+            rows += 1
             ok = ratio >= threshold
             mark = "PASS" if ok else "FAIL"
             print(f"  [{mark}] {ratio:5.2f} : 1  (需 ≥{threshold})  {label}  {fg} on {bg}")
             if not ok:
                 failures += 1
+
+    if rows < 20:
+        print(f"[FAIL] 实际只判定了 {rows} 项（下限 20），说明分组或值解析大面积失败",
+              file=sys.stderr)
+        return 2
 
     if skipped:
         print("\n跳过（值不是 hex，脚本不判定）：")
@@ -189,7 +225,13 @@ def main() -> int:
               file=sys.stderr)
         return 1
 
-    print("\n[PASS] 两套主题的 token 组合全部达标")
+    checked = [
+        key for key in groups
+        if (not args.theme or key[0] == args.theme)
+        and (not args.accent or key[1] == args.accent)
+    ]
+
+    print(f"\n[PASS] {len(checked)} 组（主题 × 强调色）共 {rows} 项对比度全部达标")
     return 0
 
 

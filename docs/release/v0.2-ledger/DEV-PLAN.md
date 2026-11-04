@@ -431,6 +431,23 @@ Windows 下用 Python 的 `io.open(path, 'w')` 改文件，会把整个文件的
 **权限口径落地**：`effectiveRole` 的「全局 admin → 项目成员角色 → 全局最高角色」写进类注释与 PRD §3.8，
 前端成员表显示的是 `member_role`（项目内），不显示全局角色，避免用户混淆。
 
+**完成情况（2026-11-04，状态 → `待验`）**：4 步全部落地，证据 `docs/evidence/v0.2/prj01/`。
+`mvn test` **463**（新增 4 条 owner 保护边界用例）；接口实测 owner 移除/降级 **409**、普通成员增改删 **200**；
+亮/暗两张管理页截图（1920×1080）可见「所有者不可移除」与「管理员 · 所有者」标记。
+
+**三处与计划偏差（都是现场实情迫使）**：
+
+1. **owner 保护原无对象**：演示库 `project.owner_id` 为 NULL，`member_role` 还是 V1 基线的 `owner`
+   （`V1__baseline.sql` 注释 `owner/member/viewer`，`V2_1` 才加 `owner_id` 且未回填）。
+   `RoleCode.from("owner")` 会抛异常，保护逻辑接上去也永远不触发。→ 做了一次性数据归一
+   （`member_role='owner'` → `admin`；`owner_id=2`），SQL 与理由写进证据 README §六。
+   **这是数据修复，不是代码修复**；其他环境若 `owner_id IS NULL` 需按同口径回填。
+2. **成员记录要带 `displayName` / `enabled`**：原 `ProjectMember` 只有 `username`，界面既显示不了人名也标不出停用。
+   → 扩 record 两字段 + 2 处 SELECT 连 `app_user`，并同步 5 处测试构造。
+3. **一个计划外样式改动**：角色下拉与「所有者」标记贴边 → 加 `.member-role`（`inline-flex` + `gap:8px`）。
+
+**未覆盖**：空项目引导与「已停用」标记的截图（本库当前造不出这两种状态）；成员变更审计未在界面核验。
+
 ### 10.7 PRJ-04 报告结果导向
 
 | 步骤 | 内容 | 产出 | 验收命令 |
@@ -439,6 +456,33 @@ Windows 下用 Python 的 `io.open(path, 'w')` 改文件，会把整个文件的
 | 2 | 总览页补「报告结果」区块（在 OVW-01 四区之后） | 1 个 vue | 浏览器截图 |
 | 3 | 空态：无报告时给「去执行页建计划」引导，**不显示 0%** | 1 个 vue + 语言包 | 空库截图 |
 | 4 | 与真库 SQL 逐项对照并留证 | 1 份 log | `docs/evidence/v0.2/prj04-db-vs-api.log` |
+
+**完成情况（2026-11-04，状态 → `待验`）**：4 步全部落地，证据 `docs/evidence/v0.2/prj04/`。
+后端 `ReportDigest`（record + `passRateBp` / `coverage` 两个纯函数）、`ReportDigestRepositoryJdbc`（4 段 SQL，
+全部 `TenantGuard.requireProjectScope`）、`ReportDigestService`（权限 `EXECUTION.READ`、窗口夹取 1~90）、
+`ReportDigestController`；前端 `digestApi` + 总览「报告结果」区块（覆盖事实行 / 通过率柱 / 最近报告表 / 失败 Top10）。
+`mvn test` **466** 全绿（新增 `ReportDigestTest` 3 条）；`vue-tsc`、`eslint`、`npm run build` 与四个守门脚本全过。
+
+**口径三条（写进 `ReportDigest` 类注释）**：
+
+1. 只统计 `run_status IN ('finished','failed')`，与 OVW-01 的 `TrendRepositoryJdbc` 死条件修复保持同一口径；
+2. **无明细 → `passRateBp = null`（界面显示「—」，不是 0%）**；全 SKIP → `0`，两者必须可区分；
+3. 「从未执行」= `test_case.case_code` 在窗口内没有被任何 `test_result.case_key` 精确命中，
+   属**覆盖缺口上界**（脚本步骤名不计入），界面已加一行口径说明，不伪造成覆盖率。
+
+**三处与计划偏差**：
+
+1. **没有写 `ReportDigestIT`**：改为 `ReportDigestTest`（3 条，纯函数口径）+ 真库 API↔SQL 逐项对账
+   （`prj04-api.log`）。理由是仓储 SQL 的正确性只有真库能证，IT 在 `robot_it` 空库上反而证明不了口径。
+2. **证据文件名**改为 `prj04-api.log`（计划写 `prj04-db-vs-api.log`），内容同时含接口响应与对账 SQL。
+3. **空态**：本库有 1 份已完成报告，造不出「无报告」状态 → 只验了失败 Top10 与趋势的单点空/满态；
+   「无报告」文案已实现，截图留待有空库环境时补。
+
+**实测读数**（`GET /api/projects/1/report-digest?days=30` 与 SQL 逐项一致）：
+最近报告 1 份（`RUN-20261104155814-952426`，2 PASS / 0 FAIL / 0 SKIP，通过率 100%）、
+失败 Top10 **0 行**（空态）、用例 226 条 / 已覆盖 0 / 从未执行 226、趋势 1 点。
+覆盖率为 0 的原因已查明：该冒烟运行的 `case_key` 是 `run-RUN-…Bench-1-A` 这类脚本步骤名，
+与台账 `TN-IMP-001~226` 不同源 —— **这是台账↔脚本绑定缺失的既有问题**（WBS #73 EXEC-01 已登记），不是本包的统计错误。
 
 ### 10.8 AST-05 资产共享池（唯一动 schema）
 
@@ -455,6 +499,17 @@ Windows 下用 Python 的 `io.open(path, 'w')` 改文件，会把整个文件的
 **升级风险与对策**：本包是唯一会改线上数据的包。回填 SQL 必须在**同一事务**内完成，且先跑
 「升级前资产数快照 → 升级 → 升级后可见数比对」，两列不相等即中止。down 迁移只回滚结构，
 **不回滚 `project_asset` 数据**（宁可留冗余引用，不制造「资产消失」）。
+
+**完成情况（2026-11-04，状态 → `待验`）**：7 步全部落地。`V7_3` 在 `robot_dev` 实跑：
+升级前后 **3 设备 / 2 链路 / 2 凭据**不变，回填 7 条（全 `PROJECT`，无自动转平台）；
+`robot_it` 空库 up → down → up 通过（down 先把平台资产按引用还回项目，再删表/列，最后收紧 `project_id`）。
+接口 12 步验收：共享 200、项目 1 视图不变、未引用项目 0 台、引用后 1 台、引用方改资产 **403**、
+解除引用只删 `project_asset`。SchemaIT **7/7**、OverviewRepositoryIT、`db-audit`（**46 表**）全 PASS，
+`mvn test` **466** 全绿。**三处与计划的偏差**：(1) 平台级序列号唯一用**生成列** `platform_serial`
+（仅 `owner_scope='PLATFORM'` 行参与唯一），避免全局 `UNIQUE(serial_no)` 连私有设备的跨项目复用也拦掉；
+(2) down 里 `project_asset` 会随表删除，无法「留冗余引用」，因此改为**先还原归属再删表**，
+零引用的平台资产会让回滚失败中止（脚本头已注明）；(3) `project_asset` 补了 `updated_at/updated_by`，
+否则过不了审计四列体检。证据：`docs/evidence/v0.2/ast05/README.md`。
 
 ### 10.9 PRJ-03 引用保护与跨项目视图
 
@@ -478,6 +533,10 @@ Windows 下用 Python 的 `io.open(path, 'w')` 改文件，会把整个文件的
 | 7 | 新守门 `check_tokens.py` + `check_states.py`（带自检） | 2 个脚本 | 破坏性自检各拦 1 次 |
 
 **边界**：只动样式与守门脚本，不改业务逻辑与 i18n 键；半天体量。
+
+**完成情况（2026-11-04，状态 → `待验`）**：7 步全部落地。实测 `check_contrast.py` **4 组 × 20 项 = 80 项 PASS**（原计划按 2 主题算 40 项，加入 accent 分组后翻倍）；`check_tokens.py` **0 悬空 / 104 处引用**；`check_states.py` **8 类元素三态齐备**；两个新脚本破坏性自检各拦 1 次；`build`/`lint`/`vitest 16` 与 `mvn package` **459 测试**全绿。**两处与计划的偏差**：(1) 危险按钮两套 class 在页面里**早已写好**，缺的是 CSS 定义，因此没有改 `PlansView` 结构；(2) 宽表内滚需要容器，给 5 张宽表补了 `.table-scroll` 包裹（模板改动，无逻辑）。证据：`docs/evidence/v0.2/ux01b/README.md`。
+
+**顺带修复（不在本包范围，但属阻断）**：`PabotVersionProbeImpl` 用 `pabot --version` 取末段得到 `linux)`，与期望前缀 `5.2` 永远不匹配 → **执行域在本机根本起不来**。改为读 `importlib.metadata.version('robotframework-pabot')` 后，本机真跑通 `RUN-20261104155814-952426`（2 passed）。
 
 ### 10.11 EXEC-01 执行人工触发（详见 `docs/plan/执行人工触发-评估与计划-20261104.md` §4）
 

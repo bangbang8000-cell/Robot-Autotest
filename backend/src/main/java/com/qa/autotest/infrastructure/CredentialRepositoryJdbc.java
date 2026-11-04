@@ -19,11 +19,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class CredentialRepositoryJdbc implements CredentialRepository {
 
+    /** 读口径见 {@link AssetScopeSql}：本项目私有 或 平台共享且已引用。 */
     private static final String SELECT = """
-            SELECT id, project_id, name, cred_type, username,
-                   CASE WHEN cipher_blob IS NULL OR cipher_blob = '' THEN 0 ELSE 1 END AS configured,
-                   key_version, last_rotated_at
-              FROM credential
+            SELECT c.id, c.project_id, c.name, c.cred_type, c.username,
+                   CASE WHEN c.cipher_blob IS NULL OR c.cipher_blob = '' THEN 0 ELSE 1 END AS configured,
+                   c.key_version, c.last_rotated_at
+              FROM credential c
             """;
 
     private static final RowMapper<Credential> MAPPER = (rs, rowNum) -> new Credential(
@@ -39,25 +40,26 @@ public class CredentialRepositoryJdbc implements CredentialRepository {
 
     @Override
     public List<Credential> list(long projectId) {
-        String sql = SELECT + " WHERE project_id = ? ORDER BY id DESC";
+        String sql = SELECT + AssetScopeSql.CREDENTIAL_JOIN + AssetScopeSql.CREDENTIAL_WHERE
+                + " ORDER BY c.id DESC";
         TenantGuard.requireProjectScope(sql, "credential");
-        return jdbc.query(sql, MAPPER, projectId);
+        return jdbc.query(sql, MAPPER, projectId, projectId);
     }
 
     @Override
     public Optional<Credential> find(long projectId, long id) {
-        String sql = SELECT + " WHERE project_id = ? AND id = ?";
+        String sql = SELECT + AssetScopeSql.CREDENTIAL_JOIN + AssetScopeSql.CREDENTIAL_WHERE
+                + " AND c.id = ?";
         TenantGuard.requireProjectScope(sql, "credential");
-        return JdbcSupport.first(jdbc.query(sql, MAPPER, projectId, id));
+        return JdbcSupport.first(jdbc.query(sql, MAPPER, projectId, projectId, id));
     }
 
     @Override
     public Optional<String> cipherOf(long projectId, long id) {
-        String sql = """
-                SELECT cipher_blob FROM credential WHERE project_id = ? AND id = ?
-                """;
+        String sql = "SELECT c.cipher_blob FROM credential c " + AssetScopeSql.CREDENTIAL_JOIN
+                + AssetScopeSql.CREDENTIAL_WHERE + " AND c.id = ?";
         TenantGuard.requireProjectScope(sql, "credential");
-        List<String> rows = jdbc.query(sql, (rs, rowNum) -> rs.getString(1), projectId, id);
+        List<String> rows = jdbc.query(sql, (rs, rowNum) -> rs.getString(1), projectId, projectId, id);
         return JdbcSupport.first(rows).filter(value -> value != null && !value.isBlank());
     }
 

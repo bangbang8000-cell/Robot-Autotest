@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { overviewApi, type CountItem, type ProjectOverview } from '@/api/overview'
+import {
+  digestApi,
+  overviewApi,
+  type CountItem,
+  type DigestTrendPoint,
+  type ProjectOverview,
+  type ReportDigest,
+} from '@/api/overview'
 import { useAuthStore } from '@/stores/auth'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
@@ -23,6 +30,8 @@ const auth = useAuthStore()
 
 const projectId = computed(() => auth.projectId ?? 0)
 const data = ref<ProjectOverview | null>(null)
+const digest = ref<ReportDigest | null>(null)
+const digestError = ref<ErrorLine | null>(null)
 const loading = ref(false)
 const error = ref<ErrorLine | null>(null)
 
@@ -42,19 +51,31 @@ const hasFinishedRuns = computed(() => (data.value?.runs.finished ?? 0) > 0)
 
 async function load(): Promise<void> {
   error.value = null
+  digestError.value = null
   if (!projectId.value) {
     data.value = null
+    digest.value = null
     return
   }
   loading.value = true
-  try {
-    data.value = await overviewApi.load(projectId.value)
-  } catch (e) {
-    error.value = localizeError(e)
+  // 两个接口互不依赖：总览挂了不该把报告结果一起清空，反之亦然。
+  const [overviewResult, digestResult] = await Promise.allSettled([
+    overviewApi.load(projectId.value),
+    digestApi.load(projectId.value),
+  ])
+  if (overviewResult.status === 'fulfilled') {
+    data.value = overviewResult.value
+  } else {
+    error.value = localizeError(overviewResult.reason)
     data.value = null
-  } finally {
-    loading.value = false
   }
+  if (digestResult.status === 'fulfilled') {
+    digest.value = digestResult.value
+  } else {
+    digest.value = null
+    digestError.value = localizeError(digestResult.reason)
+  }
+  loading.value = false
 }
 
 // immediate 不能省：projectId 来自 localStorage，进页面时通常已经是目标值，
@@ -88,6 +109,25 @@ function segHeight(value: number): string {
 
 function dayLabel(date: string): string {
   return date.slice(5)
+}
+
+const RATE_HEIGHT = 56
+const RATE_MIN_HEIGHT = 2
+
+/**
+ * 通过率柱：粒度过粗时最小的「有失败」运行会正好落在 0 高度上，
+ * 所以给最低 2px，保证「跑过但通过率极低」和「没跑过」在视觉上仍可区分。
+ */
+function rateHeight(point: DigestTrendPoint): string {
+  const bp = point.passRateBp
+  if (bp === null) return `${RATE_MIN_HEIGHT}px`
+  return `${Math.max(RATE_MIN_HEIGHT, Math.round((bp / 10000) * RATE_HEIGHT))}px`
+}
+
+function rateBarClass(point: DigestTrendPoint): string {
+  if (point.passRateBp === null) return 'rate-bar empty'
+  if (point.fail > 0) return 'rate-bar mixed'
+  return 'rate-bar pass'
 }
 </script>
 
@@ -243,6 +283,91 @@ function dayLabel(date: string): string {
           </div>
         </template>
         <p v-else class="muted">{{ t('overview.trend.empty') }}</p>
+      </section>
+
+      <section v-if="digest || digestError" class="card wide-card">
+        <div class="section-head">
+          <h2 class="card-title">{{ t('overview.digest.title') }}</h2>
+          <span v-if="digest" class="muted">{{ t('overview.digest.window', { days: digest.windowDays }) }}</span>
+        </div>
+        <ErrorLineView v-if="digestError" :error="digestError" />
+        <template v-else-if="digest">
+          <div class="digest-facts">
+            <span>
+              <span class="muted">{{ t('overview.digest.coverage') }}</span>
+              {{ t('overview.digest.coverageValue', {
+                covered: digest.coverage.covered,
+                total: digest.coverage.caseTotal,
+              }) }}
+            </span>
+            <span>
+              <span class="muted">{{ t('overview.digest.neverExecuted') }}</span>
+              {{ digest.coverage.neverExecuted }}
+            </span>
+          </div>
+          <p class="muted">{{ t('overview.digest.coverageHint') }}</p>
+
+          <h3 class="card-title">{{ t('overview.digest.trendTitle') }}</h3>
+          <template v-if="digest.passRateTrend.length > 0">
+            <div class="rate-bars">
+              <span
+                v-for="point in digest.passRateTrend"
+                :key="point.runId"
+                :class="rateBarClass(point)"
+                :style="{ height: rateHeight(point) }"
+                :title="`${point.runId} · ${formatPercent(point.passRateBp)} · `
+                  + `${t('overview.digest.failures')} ${point.fail}`"
+              />
+            </div>
+            <div class="trend-axis">
+              <span>{{ digest.passRateTrend[0]?.runId }}</span>
+              <span>{{ digest.passRateTrend[digest.passRateTrend.length - 1]?.runId }}</span>
+            </div>
+          </template>
+          <p v-else class="muted">{{ t('overview.digest.trendEmpty') }}</p>
+
+          <h3 class="card-title">{{ t('overview.digest.recentTitle') }}</h3>
+          <table v-if="digest.recentReports.length > 0" class="table">
+            <thead>
+              <tr>
+                <th>{{ t('overview.digest.runId') }}</th>
+                <th>{{ t('overview.digest.state') }}</th>
+                <th>{{ t('overview.digest.finishedAt') }}</th>
+                <th>{{ t('overview.digest.cases') }}</th>
+                <th>{{ t('overview.digest.passRate') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in digest.recentReports" :key="row.runId">
+                <td><RouterLink :to="`/reports/${row.runId}`">{{ row.runId }}</RouterLink></td>
+                <td><span :class="stateClass(row.state)">{{ runStatusLabel(row.state) }}</span></td>
+                <td>{{ formatDateTime(row.finishedAt) }}</td>
+                <td>{{ row.pass }} / {{ row.fail }} / {{ row.skip }}</td>
+                <td>{{ formatPercent(row.passRateBp) }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p v-else class="muted">{{ t('overview.digest.recentEmpty') }}</p>
+
+          <h3 class="card-title">{{ t('overview.digest.failedTitle') }}</h3>
+          <table v-if="digest.topFailedCases.length > 0" class="table">
+            <thead>
+              <tr>
+                <th>{{ t('overview.digest.caseKey') }}</th>
+                <th>{{ t('overview.digest.failures') }}</th>
+                <th>{{ t('overview.digest.lastFailedAt') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in digest.topFailedCases" :key="item.caseKey">
+                <td>{{ item.caseKey }}</td>
+                <td>{{ item.failures }}</td>
+                <td>{{ formatDateTime(item.lastFailedAt) }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p v-else class="muted">{{ t('overview.digest.failedEmpty') }}</p>
+        </template>
       </section>
 
       <section class="card wide-card">

@@ -14,7 +14,20 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** 项目与成员管理（IAM-01 / IAM-03）。 */
+/**
+ * 项目与成员管理（IAM-01 / IAM-03）。
+ *
+ * <p><b>权限双轨口径（PRD §3.8）</b>：一个用户对某项目的有效角色按以下顺序取第一个命中的——
+ * <ol>
+ *   <li>全局 {@code admin}（平台管理员）→ 视为所有项目的 admin；</li>
+ *   <li>项目成员关系（{@code project_member.member_role}）→ 项目内角色；</li>
+ *   <li>全局最高角色（无成员关系时兜底，仅决定能否读列表，不代表可写）。</li>
+ * </ol>
+ * 成员表只展示 {@code member_role}（项目内角色），不展示全局角色，避免用户把两种角色混为一谈。
+ *
+ * <p><b>owner 保护</b>：项目 owner 的成员关系不可删除、其项目角色不可降级（非 admin 一律 409），
+ * 需要先转移所有权（{@code PUT /api/projects/{id}} 的 {@code ownerId}）。
+ */
 @Service
 public class ProjectService {
 
@@ -114,6 +127,13 @@ public class ProjectService {
         ProjectMember member = projects.findMember(projectId, userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "成员不存在"));
         String role = normalizeRole(roleCode);
+        Project project = projects.findById(projectId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "项目不存在"));
+        if (project.ownerId() != null && project.ownerId() == userId
+                && !RoleCode.ADMIN.code().equals(role)) {
+            throw new BusinessException(ErrorCode.CONFLICT,
+                    "不能降级项目所有者；如需变更请先转移所有权");
+        }
         projects.updateMemberRole(projectId, userId, role, TenantContext.userId());
         audit.recordChange("member:update", "project_member", projectId + ":" + userId,
                 "role=" + member.roleCode(), "role=" + role);
@@ -128,7 +148,8 @@ public class ProjectService {
         Project project = projects.findById(projectId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "项目不存在"));
         if (project.ownerId() != null && project.ownerId() == userId) {
-            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "不能移除项目所有者");
+            throw new BusinessException(ErrorCode.CONFLICT,
+                    "不能移除项目所有者；如需变更请先转移所有权");
         }
         projects.removeMember(projectId, userId);
         audit.record("project.member-remove", "project_member",

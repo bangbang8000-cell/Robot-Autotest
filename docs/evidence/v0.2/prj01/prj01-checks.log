@@ -1,0 +1,19 @@
+== 时间：2026-11-04 16:35:12 ==
+
+== 后端单测（mvn -B test）==
+[INFO] Tests run: 463, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+== 前端门禁 ==
+vue-tsc: PASS（0 类型错误）
+> eslint .
+
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 5.02s
+
+== 守门脚本 ==
+扫描 22 个文件：63 个 token 定义，104 处不同引用
+[PASS] var 引用 0 悬空；px 字面量 322 处全部在白名单内（37 个取值）
+[PASS] 8 类元素均有默认 / 悬停 / 焦点三态与 transition
+[PASS] 4 组（主题 × 强调色）共 80 项对比度全部达标
+[RESULT] 通过：键集相等 / 无硬编码中文 / 无同值漏译 / 键引用完整 / 枚举全覆盖

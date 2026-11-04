@@ -665,7 +665,8 @@ class AuthzMatrixTest {
         }
         AppUser user = users.get(userId);
         return Optional.of(new ProjectMember(null, projectId, userId,
-                user == null ? "user-" + userId : user.username(), members.get(userId)));
+                user == null ? "user-" + userId : user.username(), members.get(userId),
+                user == null ? null : user.displayName(), user == null || user.enabled()));
     }
 
     /** 伪仓库方法分发：name 为方法名，args 为入参。 */

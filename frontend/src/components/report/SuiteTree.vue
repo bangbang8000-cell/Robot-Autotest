@@ -115,7 +115,7 @@ function verdictClass(verdict: string): string {
 }
 
 .caret {
-  color: var(--muted);
+  color: var(--text-muted);
   width: 12px;
 }
 

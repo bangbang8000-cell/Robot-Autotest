@@ -19,6 +19,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class LinkRepositoryJdbc implements LinkRepository {
 
+    /** 读口径见 {@link AssetScopeSql}；引用别名用 lpa，pa 已被 A 端端口名占用。 */
     private static final String SELECT = """
             SELECT l.id, l.project_id, l.name, l.link_type, l.protocol, l.speed_gbps, l.mtu,
                    l.a_device_id, da.name AS a_device_name, l.a_port_id, pa.port_name AS a_port_name,
@@ -54,8 +55,9 @@ public class LinkRepositoryJdbc implements LinkRepository {
 
     @Override
     public PageResult<Link> page(long projectId, String keyword, int page, int size) {
-        StringBuilder where = new StringBuilder(" WHERE l.project_id = ?");
+        StringBuilder where = new StringBuilder(AssetScopeSql.LINK_WHERE);
         List<Object> args = new ArrayList<>();
+        args.add(projectId);
         args.add(projectId);
         if (keyword != null && !keyword.isBlank()) {
             where.append(" AND (l.name LIKE ? OR da.name LIKE ? OR db.name LIKE ?)");
@@ -64,22 +66,23 @@ public class LinkRepositoryJdbc implements LinkRepository {
             args.add(like);
             args.add(like);
         }
-        Long total = jdbc.queryForObject(
-                "SELECT COUNT(*) FROM link l LEFT JOIN device da ON da.id = l.a_device_id "
-                        + "LEFT JOIN device db ON db.id = l.b_device_id" + where,
-                Long.class, args.toArray());
+        String countSql = "SELECT COUNT(*) FROM link l LEFT JOIN device da ON da.id = l.a_device_id "
+                + "LEFT JOIN device db ON db.id = l.b_device_id " + AssetScopeSql.LINK_JOIN + where;
+        TenantGuard.requireProjectScope(countSql, "link");
+        Long total = jdbc.queryForObject(countSql, Long.class, args.toArray());
         args.add(size);
         args.add((page - 1) * size);
-        List<Link> rows = jdbc.query(SELECT + where + " ORDER BY l.id DESC LIMIT ? OFFSET ?",
+        List<Link> rows = jdbc.query(
+                SELECT + AssetScopeSql.LINK_JOIN + where + " ORDER BY l.id DESC LIMIT ? OFFSET ?",
                 MAPPER, args.toArray());
         return new PageResult<>(rows, total == null ? 0 : total, page, size);
     }
 
     @Override
     public Optional<Link> find(long projectId, long id) {
-        String sql = SELECT + " WHERE l.project_id = ? AND l.id = ?";
+        String sql = SELECT + AssetScopeSql.LINK_JOIN + AssetScopeSql.LINK_WHERE + " AND l.id = ?";
         TenantGuard.requireProjectScope(sql, "link");
-        return JdbcSupport.first(jdbc.query(sql, MAPPER, projectId, id));
+        return JdbcSupport.first(jdbc.query(sql, MAPPER, projectId, projectId, id));
     }
 
     @Override

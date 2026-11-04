@@ -24,7 +24,7 @@ public final class TenantGuard {
     /** 必须带租户条件的业务表。新增业务表默认加进这里。 */
     public static final Set<String> TENANT_TABLES = Set.of(
             "project", "project_setting", "project_label",
-            "device", "device_port", "link", "credential", "env_profile", "topology_node",
+            "device", "device_port", "link", "credential", "project_asset", "env_profile", "topology_node",
             "test_case", "test_case_step", "test_set", "test_set_item",
             "robot_file", "robot_file_version", "case_requirement", "editor_keyword",
             "schedule", "schedule_dependency", "execution_job", "run", "export_record",

@@ -40,6 +40,17 @@ export interface Project {
   visibility: string | null
 }
 
+/** 项目成员；roleCode 是**项目内角色**（member_role），不是全局角色。 */
+export interface ProjectMember {
+  id: number | null
+  projectId: number
+  userId: number
+  username: string
+  roleCode: string
+  displayName: string | null
+  enabled: boolean
+}
+
 export interface LoginResult {
   token: string
   expiresAt: string
@@ -113,5 +124,23 @@ export const projectApi = {
   },
   remove(id: number) {
     return request<void>(`/projects/${id}`, { method: 'DELETE' })
+  },
+  members(id: number) {
+    return request<ProjectMember[]>(`/projects/${id}/members`)
+  },
+  addMember(id: number, body: { userId: number; roleCode: string }) {
+    return request<ProjectMember>(`/projects/${id}/members`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  },
+  updateMember(id: number, userId: number, roleCode: string) {
+    return request<ProjectMember>(`/projects/${id}/members/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ roleCode }),
+    })
+  },
+  removeMember(id: number, userId: number) {
+    return request<void>(`/projects/${id}/members/${userId}`, { method: 'DELETE' })
   },
 }

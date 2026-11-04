@@ -81,3 +81,52 @@ export const overviewApi = {
     )
   },
 }
+
+/** 报告结果概览（PRJ-04，PRD FR-v0.2-53）：结果视角，与总览的规模视角互补。 */
+export interface DigestReportRow {
+  runId: string
+  state: string
+  finishedAt: string | null
+  total: number
+  pass: number
+  fail: number
+  skip: number
+  /** 基点；null = 该运行没有用例明细，显示「—」而不是 0%。 */
+  passRateBp: number | null
+}
+
+export interface DigestFailedCase {
+  caseKey: string
+  failures: number
+  lastFailedAt: string | null
+}
+
+export interface DigestCoverage {
+  caseTotal: number
+  covered: number
+  /** 从未在任何已完成运行的结果里出现过的启用用例数（上界口径，见后端注释）。 */
+  neverExecuted: number
+}
+
+export interface DigestTrendPoint {
+  runId: string
+  finishedAt: string | null
+  passRateBp: number | null
+  fail: number
+}
+
+export interface ReportDigest {
+  projectId: number
+  generatedAt: string
+  windowDays: number
+  recentReports: DigestReportRow[]
+  topFailedCases: DigestFailedCase[]
+  coverage: DigestCoverage
+  passRateTrend: DigestTrendPoint[]
+}
+
+export const digestApi = {
+  load(projectId: number, days = 30): Promise<ReportDigest> {
+    return request<ReportDigest>(`/projects/${projectId}/report-digest${toQuery({ days })}`)
+  },
+}

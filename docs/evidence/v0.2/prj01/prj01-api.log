@@ -1,0 +1,109 @@
+
+=== 登录成功：qa-ui（token 前 8 位 5KDo93TS…） ===
+
+=== 项目：id=1 code=demo owner=2 ===
+
+=== GET /api/projects/1/members —— 期望含 displayName / enabled ===
+{
+    "code": 0,
+    "codeName": "OK",
+    "message": "OK",
+    "data": [
+        {
+            "id": 1,
+            "projectId": 1,
+            "userId": 1,
+            "username": "admin",
+            "roleCode": "admin",
+            "displayName": "\u7ba1\u7406\u5458",
+            "enabled": true
+        },
+        {
+            "id": 2,
+            "projectId": 1,
+            "userId": 2,
+            "username": "qa-ui",
+            "roleCode": "admin",
+            "displayName": "UI \u8d70\u67e5\u8d26\u53f7",
+            "enabled": true
+        }
+    ],
+    "success": true
+}
+
+=== DELETE /api/projects/1/members/2（项目所有者）—— 期望 409 ===
+HTTP 409
+{
+    "code": 40900,
+    "codeName": "CONFLICT",
+    "message": "\u4e0d\u80fd\u79fb\u9664\u9879\u76ee\u6240\u6709\u8005\uff1b\u5982\u9700\u53d8\u66f4\u8bf7\u5148\u8f6c\u79fb\u6240\u6709\u6743",
+    "data": null,
+    "success": false
+}
+
+
+=== PUT /api/projects/1/members/2 {roleCode:engineer}（降级所有者）—— 期望 409 ===
+HTTP 409
+{
+    "code": 40900,
+    "codeName": "CONFLICT",
+    "message": "\u4e0d\u80fd\u964d\u7ea7\u9879\u76ee\u6240\u6709\u8005\uff1b\u5982\u9700\u53d8\u66f4\u8bf7\u5148\u8f6c\u79fb\u6240\u6709\u6743",
+    "data": null,
+    "success": false
+}
+
+
+=== 准备对照成员：创建用户 prj01-demo（已存在则复用） ===
+新建用户 id=3（roleIds=[]）
+
+=== POST /api/projects/1/members {userId:3, roleCode:engineer} —— 期望 200 ===
+HTTP 200
+{
+    "code": 0,
+    "codeName": "OK",
+    "message": "OK",
+    "data": {
+        "id": 3,
+        "projectId": 1,
+        "userId": 3,
+        "username": "prj01-demo",
+        "roleCode": "engineer",
+        "displayName": "PRJ01 \u6f14\u793a\u6210\u5458",
+        "enabled": true
+    },
+    "success": true
+}
+
+
+=== PUT /api/projects/1/members/3 {roleCode:viewer} —— 期望 200 ===
+HTTP 200
+{
+    "code": 0,
+    "codeName": "OK",
+    "message": "OK",
+    "data": {
+        "id": 3,
+        "projectId": 1,
+        "userId": 3,
+        "username": "prj01-demo",
+        "roleCode": "viewer",
+        "displayName": "PRJ01 \u6f14\u793a\u6210\u5458",
+        "enabled": true
+    },
+    "success": true
+}
+
+
+=== DELETE /api/projects/1/members/3（普通成员）—— 期望 200 ===
+HTTP 200
+{
+    "code": 0,
+    "codeName": "OK",
+    "message": "OK",
+    "data": null,
+    "success": true
+}
+
+
+=== 汇总 ===
+owner 删除=409（期望 409）  owner 降级=409（期望 409）  普通成员 新增=200 改角色=200 移除=200（期望 200）

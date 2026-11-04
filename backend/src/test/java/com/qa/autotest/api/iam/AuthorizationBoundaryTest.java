@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -475,6 +476,40 @@ class AuthorizationBoundaryTest {
     }
 
     // ------------------------------------------------------------------
+    // 维度五：项目 owner 保护（PRJ-01）
+    // ------------------------------------------------------------------
+
+    @Test
+    @DisplayName("PRJ01-01 移除项目 owner → 409（不是 400）")
+    void 移除项目所有者_409() throws Exception {
+        assertConflict(auth(delete("/api/projects/{projectId}/members/{userId}", ALPHA, 2L),
+                TOKEN_ADMIN), "不能移除项目所有者；如需变更请先转移所有权");
+    }
+
+    @Test
+    @DisplayName("PRJ01-02 降级项目 owner（admin→engineer）→ 409")
+    void 降级项目所有者_409() throws Exception {
+        assertConflict(auth(put("/api/projects/{projectId}/members/{userId}", ALPHA, 2L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"roleCode\":\"engineer\"}"), TOKEN_ADMIN),
+                "不能降级项目所有者；如需变更请先转移所有权");
+    }
+
+    @Test
+    @DisplayName("PRJ01-03 移除普通成员 → 200（对照，保护不能误伤）")
+    void 移除普通成员_200() throws Exception {
+        assertOk(auth(delete("/api/projects/{projectId}/members/{userId}", ALPHA, 3L), TOKEN_ADMIN));
+    }
+
+    @Test
+    @DisplayName("PRJ01-04 降级普通成员 → 200（对照）")
+    void 降级普通成员_200() throws Exception {
+        assertOk(auth(put("/api/projects/{projectId}/members/{userId}", ALPHA, 4L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"roleCode\":\"engineer\"}"), TOKEN_ADMIN));
+    }
+
+    // ------------------------------------------------------------------
     // 装配
     // ------------------------------------------------------------------
 
@@ -617,7 +652,8 @@ class AuthorizationBoundaryTest {
         }
         AppUser user = users.get(userId);
         return Optional.of(new ProjectMember(null, projectId, userId,
-                user == null ? "user-" + userId : user.username(), members.get(userId)));
+                user == null ? "user-" + userId : user.username(), members.get(userId),
+                user == null ? null : user.displayName(), user == null || user.enabled()));
     }
 
     private List<ProjectMember> membersOf(long projectId) {
@@ -664,6 +700,17 @@ class AuthorizationBoundaryTest {
         mockMvc.perform(request)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(ErrorCode.SUCCESS.code()));
+    }
+
+    /** 409 断言：状态码 + 错误码 + 消息（owner 保护用）。 */
+    private void assertConflict(MockHttpServletRequestBuilder request, String message)
+            throws Exception {
+        mockMvc.perform(request)
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value(ErrorCode.CONFLICT.code()))
+                .andExpect(jsonPath("$.codeName").value(ErrorCode.CONFLICT.codeName()))
+                .andExpect(jsonPath("$.message").value(message))
+                .andExpect(jsonPath("$.data").value(nullValue()));
     }
 
     /**

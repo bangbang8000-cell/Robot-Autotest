@@ -208,7 +208,8 @@ class AuditQueryTest {
                     yield Optional.empty();
                 }
                 yield Optional.of(new ProjectMember(null, ((Number) args[0]).longValue(), uid,
-                        users.get(uid).username(), members.get(uid)));
+                        users.get(uid).username(), members.get(uid),
+                        users.get(uid).displayName(), users.get(uid).enabled()));
             }
             case "findByMember" -> List.of();
             default -> UNHANDLED;

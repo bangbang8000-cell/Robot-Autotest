@@ -495,7 +495,8 @@ class AuditAspectTest {
         }
         AppUser user = users.get(userId);
         return Optional.of(new ProjectMember(null, projectId, userId,
-                user == null ? "user-" + userId : user.username(), members.get(userId)));
+                user == null ? "user-" + userId : user.username(), members.get(userId),
+                user == null ? null : user.displayName(), user == null || user.enabled()));
     }
 
     /** 记录型审计仓库。 */

@@ -1,0 +1,27 @@
+=== 环境：2026-11-04 17:15:06 CST　后端 8081（当前代码 jar）· 前端 vite 5273 · MySQL robot_dev ===
+
+=== 1. GET /api/projects/1/report-digest?days=30（HTTP 状态） ===
+{"code":0,"codeName":"OK","message":"OK","data":{"projectId":1,"generatedAt":"2026-11-04T09:15:06.114527415Z","windowDays":30,"recentReports":[{"runId":"RUN-20261104155814-952426","state":"finished","finishedAt":"2026-11-04T07:58:28.922Z","total":2,"pass":2,"fail":0,"skip":0,"passRateBp":10000}],"topFailedCases":[],"coverage":{"caseTotal":226,"covered":0,"neverExecuted":226},"passRateTrend":[{"runId":"RUN-20261104155814-952426","finishedAt":"2026-11-04T07:58:28.922Z","passRateBp":10000,"fail":0}]},"success":true}
+HTTP 200
+
+=== 2. SQL 对账：project=1 的已完成运行 ===
+RUN-20261104155814-952426	finished	2	2	0	2	0	0	2026-11-04 15:58:28.922
+
+=== 3. SQL 对账：这些运行的 test_result 明细（run.id <- test_result.run_id） ===
+1	run-RUN-20261104155814-952426.Bench-1-A	PASS
+1	run-RUN-20261104155814-952426.Bench-1-B	PASS
+
+=== 4. SQL 对账：用例总数（status=1） / 覆盖数 ===
+226
+0
+
+=== 5. SQL 对账：FAIL 用例（窗口内，应为 0 行） ===
+（空 = 失败 Top10 为空态，与接口一致）
+
+=== 6. days 夹取 ===
+days=0   -> windowDays 1
+days=999 -> windowDays 90
+
+=== 7. 鉴权对照 ===
+no-token:                  HTTP 401
+admin 跨项目 project=999:  HTTP 200（全局 admin 放行，见 AccessControlService:86 注释）

@@ -195,7 +195,8 @@ watch(projectId, () => {
     <ErrorLineView v-if="error" :error="error" />
     <p v-if="loading" class="muted">{{ t('common.loading') }}</p>
 
-    <table v-if="items.length" class="table">
+    <div v-if="items.length" class="table-scroll">
+    <table class="table">
       <thead>
         <tr>
           <th>{{ t('reports.runId') }}</th>
@@ -231,6 +232,7 @@ watch(projectId, () => {
         </tr>
       </tbody>
     </table>
+    </div>
 
     <p v-if="!loading && !error && total === 0" class="muted">{{ t('common.noData') }}</p>
 
@@ -253,7 +255,7 @@ watch(projectId, () => {
 
 <style scoped>
 .missing-keys {
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 12px;
   margin-left: 6px;
 }

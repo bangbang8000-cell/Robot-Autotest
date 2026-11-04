@@ -1,0 +1,46 @@
+# AST-05 库体检（2026-11-04 18:18:59 / robot_dev）
+## 版本
+version	description	success
+7.3	asset pool	1
+7.2	user preference	1
+7.1	audit summary	1
+## 资产数（升级前后不变：3 设备 / 2 链路 / 2 凭据）
+t	n
+device	3
+link	2
+credential	2
+## owner_scope 分布
+owner_scope	COUNT(*)
+PROJECT	2
+PLATFORM	1
+## project_asset（回填 7 条 + 演示引用 1 条）
+project_id	asset_type	asset_id
+1	CREDENTIAL	1
+1	CREDENTIAL	2
+1	DEVICE	1
+1	DEVICE	2
+1	DEVICE	3
+2	DEVICE	3
+1	LINK	1
+1	LINK	2
+## 项目 1 可见设备（口径 SQL）
+id	name
+1	gpu-node-01
+2	gpu-node-02
+3	leaf-switch-01
+## 项目 2 可见设备（只应看到被引用的 leaf-switch-01）
+id	name
+3	leaf-switch-01
+## 表数（不含 flyway 历史表）
+COUNT(*)
+46
+## 删项目级联（TC-AST-06）
+删前引用	COUNT(*)
+删前引用	1
+删后引用	COUNT(*)
+删后引用	0
+设备本体	COUNT(*)
+设备本体	1
+## 撤销本次验证令牌
+COUNT(*)
+0

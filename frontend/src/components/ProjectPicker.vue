@@ -20,5 +20,6 @@ function change(event: Event): void {
         {{ p.code }} · {{ p.name }}
       </option>
     </select>
+    <span v-if="auth.projects.length === 0" class="muted">{{ t('project.emptyHint') }}</span>
   </div>
 </template>
