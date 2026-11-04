@@ -25,7 +25,12 @@ public record ProjectOverview(
         List<RecentRun> recentRuns,
         List<DailyPoint> dailyTrend) {
 
-    /** 分组计数。key 为展示名（空值已归一到「未标注」），count 为行数。 */
+    /**
+     * 分组计数。key 为**原始库值**，count 为行数。
+     *
+     * <p>空串表示该字段未填（界面显示「未标注」/「Not set」）。**接口不返回展示文案**——
+     * 一旦后端吐「未标注」，英文界面就会冒中文，且同一份数据在两种语言下只能有一种读法。
+     */
     public record CountItem(String key, int count) {
     }
 

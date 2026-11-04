@@ -1,0 +1,229 @@
+{
+  "ok": [
+    "[en-US] 语言切换入口生效：localStorage.locale=en-US html[lang]=en-US",
+    "[en-US] cases 状态列无裸枚举：Approved|Approved|Approved|Approved|Approved",
+    "[en-US] cases 状态列取值命中词表：Approved|Approved|Approved|Approved|Approved",
+    "[en-US] cases 评审状态下拉已本地化：All statuses|Draft|Pending review|Approved|Rejected",
+    "[en-US] runs 状态下拉已本地化：All states|Queued|Preparing|Running|Finished|Failed|Canceled",
+    "[en-US] runs 状态下拉含「Queued」",
+    "[en-US] overview 空态文案已本地化（无运行记录，跳过触发列断言）",
+    "[en-US] admin 标题为「Users」：Admin|Users|Projects|Roles",
+    "[en-US] 错误提示条已渲染",
+    "[en] 错误主文案为英文：The object does not exist or has been deleted",
+    "[en] 折叠里有可追溯的原文：报告不存在: NO-SUCH-RUN-UX03 ⏎ NOT_FOUND (40400)",
+    "[en] 折叠标题本地化：Technical details",
+    "[zh-CN] 语言切换入口生效：localStorage.locale=zh-CN html[lang]=zh-CN",
+    "[zh-CN] cases 状态列无裸枚举：已通过|已通过|已通过|已通过|已通过",
+    "[zh-CN] cases 状态列取值命中词表：已通过|已通过|已通过|已通过|已通过",
+    "[zh-CN] cases 评审状态下拉已本地化：全部状态|草稿|待评审|已通过|已驳回",
+    "[zh-CN] runs 状态下拉已本地化：全部状态|排队中|准备中|运行中|已完成|失败|已取消",
+    "[zh-CN] runs 状态下拉含「排队中」",
+    "[zh-CN] overview 空态文案已本地化（无运行记录，跳过触发列断言）",
+    "[zh-CN] admin 标题为「用户」：管理|用户|项目|角色",
+    "[zh-CN] 错误提示条已渲染",
+    "[zh] 错误主文案为服务端中文原文：报告不存在: NO-SUCH-RUN-UX03"
+  ],
+  "fail": [],
+  "shots": [
+    {
+      "locale": "en-US",
+      "name": "cases",
+      "probe": {
+        "rows": [
+          [
+            "TN-IMP-226",
+            "REL（可靠性）",
+            "P2",
+            "Approved"
+          ],
+          [
+            "TN-IMP-225",
+            "Thermal（热测试）",
+            "P2",
+            "Approved"
+          ],
+          [
+            "TN-IMP-224",
+            "SIV（信号完整性视图）",
+            "P2",
+            "Approved"
+          ],
+          [
+            "TN-IMP-223",
+            "EMC（电磁兼容性测试）",
+            "P2",
+            "Approved"
+          ],
+          [
+            "TN-IMP-222",
+            "SI测试",
+            "P2",
+            "Approved"
+          ]
+        ],
+        "selects": [
+          [
+            "All priorities",
+            "P0",
+            "P1",
+            "P2",
+            "P3"
+          ],
+          [
+            "All statuses",
+            "Draft",
+            "Pending review",
+            "Approved",
+            "Rejected"
+          ]
+        ]
+      }
+    },
+    {
+      "locale": "en-US",
+      "name": "runs",
+      "probe": {
+        "states": [],
+        "select": [
+          "All states",
+          "Queued",
+          "Preparing",
+          "Running",
+          "Finished",
+          "Failed",
+          "Canceled"
+        ]
+      }
+    },
+    {
+      "locale": "en-US",
+      "name": "overview",
+      "probe": {
+        "hasTrigger": false,
+        "text": "AIDC AutoTest Overview Assets Test Cases Runs Reports Admin Audit Log v0.2 ledger edition UI 走查账号 ◐ 中文 English Sign out Overview Current project demo · 演示项目 Refresh What this project has, and how it has been running · Measured at 11/04/2026, 11:55:02 Test cases 226 active cases Priority P2 226 Review status Draft 216 · Approved 10 Top domains Not set 226 Assets 3 devices Ports 0 Links 2 Credentials 2 Environments / Test sets 0 / 0 Pass rate — last 30 days · per case No runs yet Only execution plans produce runs today; the manual queue worker is not wired yet Runs 0 total runs last 30 days 0 Finished 0 Failed 0 Running 0 Runs in the last 30 days Finished Failed Canceled Daily finished / failed / canceled bars appear once you have runs Recent runs No runs yet Create a plan on the Runs page and trigger it now, or wait for its schedule"
+      }
+    },
+    {
+      "locale": "en-US",
+      "name": "admin",
+      "probe": {
+        "headings": [
+          "Admin",
+          "Users",
+          "Projects",
+          "Roles"
+        ]
+      }
+    },
+    {
+      "locale": "en-US",
+      "name": "report-missing",
+      "probe": {
+        "found": true,
+        "summary": "The object does not exist or has been deleted",
+        "foldLabel": "Technical details",
+        "raw": "报告不存在: NO-SUCH-RUN-UX03\nNOT_FOUND (40400)"
+      }
+    },
+    {
+      "locale": "zh-CN",
+      "name": "cases",
+      "probe": {
+        "rows": [
+          [
+            "TN-IMP-226",
+            "REL（可靠性）",
+            "P2",
+            "已通过"
+          ],
+          [
+            "TN-IMP-225",
+            "Thermal（热测试）",
+            "P2",
+            "已通过"
+          ],
+          [
+            "TN-IMP-224",
+            "SIV（信号完整性视图）",
+            "P2",
+            "已通过"
+          ],
+          [
+            "TN-IMP-223",
+            "EMC（电磁兼容性测试）",
+            "P2",
+            "已通过"
+          ],
+          [
+            "TN-IMP-222",
+            "SI测试",
+            "P2",
+            "已通过"
+          ]
+        ],
+        "selects": [
+          [
+            "全部优先级",
+            "P0",
+            "P1",
+            "P2",
+            "P3"
+          ],
+          [
+            "全部状态",
+            "草稿",
+            "待评审",
+            "已通过",
+            "已驳回"
+          ]
+        ]
+      }
+    },
+    {
+      "locale": "zh-CN",
+      "name": "runs",
+      "probe": {
+        "states": [],
+        "select": [
+          "全部状态",
+          "排队中",
+          "准备中",
+          "运行中",
+          "已完成",
+          "失败",
+          "已取消"
+        ]
+      }
+    },
+    {
+      "locale": "zh-CN",
+      "name": "overview",
+      "probe": {
+        "hasTrigger": true,
+        "text": "AIDC自动化测试 总览 资产 用例 执行 报告 管理 审计日志 v0.2 台账版 UI 走查账号 ◐ 中文 English 退出登录 总览 当前项目 demo · 演示项目 刷新 一屏看清这个项目现在有什么、跑得怎么样 · 统计于 2026/11/04 11:55:14 用例 226 在用用例总数 优先级 P2 226 评审状态 草稿 216 · 已通过 10 技术域 Top 未标注 226 资产 3 设备 端口 0 链路 2 凭据 2 环境 / 用例集 0 / 0 通过率 — 近 30 天 · 用例级 还没有执行记录 当前只有「执行计划」触发会产生运行记录；手工运行的队列执行器尚未接通 执行 0 累计运行次数 近 30 天 0 完成 0 失败 0 运行中 0 近 30 天执行趋势 完成 失败 取消 有执行记录后，这里会出现每天的成功 / 失败 / 取消柱状 近期执行 还没有执行记录 在「执行」页创建计划并「立即触发」，或等待计划自动触发"
+      }
+    },
+    {
+      "locale": "zh-CN",
+      "name": "admin",
+      "probe": {
+        "headings": [
+          "管理",
+          "用户",
+          "项目",
+          "角色"
+        ]
+      }
+    },
+    {
+      "locale": "zh-CN",
+      "name": "report-missing",
+      "probe": {
+        "found": true,
+        "summary": "报告不存在: NO-SUCH-RUN-UX03",
+        "foldLabel": "技术详情",
+        "raw": "NOT_FOUND (40400)"
+      }
+    }
+  ]
+}

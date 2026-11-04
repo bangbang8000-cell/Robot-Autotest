@@ -74,7 +74,12 @@ export const executionApi = {
     return request<ExecutionRun>(`/execution/runs/${encodeURIComponent(runId)}${toQuery({ projectId })}`)
   },
 
-  cancel(projectId: number, runId: string, reason = '操作人取消'): Promise<ExecutionRun> {
+  /**
+   * 取消运行。`reason` 必填：它会落库并在报告里显示，属于**数据**而非界面文案，
+   * 因此由调用方按当前界面语言传入（`t('execution.cancelReason')`），
+   * API 层不设中文默认值——否则英文界面取消的运行，报告里会留一句中文。
+   */
+  cancel(projectId: number, runId: string, reason: string): Promise<ExecutionRun> {
     return request<ExecutionRun>(
       `/execution/runs/${encodeURIComponent(runId)}/cancel${toQuery({ projectId })}`,
       { method: 'POST', body: JSON.stringify({ reason }) },

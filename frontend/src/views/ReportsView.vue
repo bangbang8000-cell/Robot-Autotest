@@ -2,10 +2,13 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { ApiError } from '@/api/http'
 import { reportsApi, type ReportListItem, type RetentionResult } from '@/api/reports'
 import { useAuthStore } from '@/stores/auth'
 import ProjectPicker from '@/components/ProjectPicker.vue'
+import ErrorLineView from '@/components/ErrorLine.vue'
+import { localizeError, type ErrorLine } from '@/utils/errors'
+import { formatBytes } from '@/utils/format'
+import { runStatusLabel } from '@/utils/statusLabels'
 
 const { t, te } = useI18n()
 const auth = useAuthStore()
@@ -16,29 +19,21 @@ const total = ref(0)
 const page = ref(1)
 const size = 10
 const loading = ref(false)
-const error = ref('')
+const error = ref<ErrorLine | null>(null)
 
 // 产物清理（RPT-06）：先 dry-run 展示清单，二次确认后才执行。
 const retentionOpen = ref(false)
 const retentionLoading = ref(false)
-const retentionError = ref('')
+const retentionError = ref<ErrorLine | null>(null)
 const retention = ref<RetentionResult | null>(null)
 const retentionDone = ref<RetentionResult | null>(null)
 
 const projectId = computed(() => auth.projectId ?? 0)
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / size)))
 
-function errText(e: unknown): string {
-  return e instanceof ApiError ? `${e.codeName}：${e.message}` : String(e)
-}
-
-function stateLabel(state: string): string {
-  const key = `reports.states.${state.toLowerCase()}`
-  return te(key) ? t(key) : state
-}
 
 async function load(): Promise<void> {
-  error.value = ''
+  error.value = null
   if (!projectId.value) {
     items.value = []
     total.value = 0
@@ -50,7 +45,7 @@ async function load(): Promise<void> {
     items.value = result.items
     total.value = result.total
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   } finally {
     loading.value = false
   }
@@ -66,16 +61,6 @@ function openReport(runId: string): void {
   void router.push({ name: 'report-detail', params: { runId } })
 }
 
-function formatBytes(bytes: number): string {
-  const gb = 1024 ** 3
-  const mb = 1024 ** 2
-  const kb = 1024
-  if (bytes >= gb) return `${(bytes / gb).toFixed(2)} GB`
-  if (bytes >= mb) return `${(bytes / mb).toFixed(1)} MB`
-  if (bytes >= kb) return `${(bytes / kb).toFixed(1)} KB`
-  return `${bytes} B`
-}
-
 function reasonLabel(reason: string): string {
   const key = `reports.retention.reasons.${reason}`
   return te(key) ? t(key) : reason
@@ -88,13 +73,13 @@ async function openRetention(): Promise<void> {
 }
 
 async function runRetention(dryRun: boolean): Promise<void> {
-  retentionError.value = ''
+  retentionError.value = null
   retentionLoading.value = true
   try {
     retention.value = await reportsApi.retention(projectId.value, dryRun)
     if (!dryRun) retentionDone.value = retention.value
   } catch (e) {
-    retentionError.value = errText(e)
+    retentionError.value = localizeError(e)
   } finally {
     retentionLoading.value = false
   }
@@ -147,7 +132,7 @@ watch(projectId, () => {
       </div>
       <p class="muted">{{ t('reports.retention.hint') }}</p>
 
-      <p v-if="retentionError" class="text-fail">{{ retentionError }}</p>
+      <ErrorLineView v-if="retentionError" :error="retentionError" />
       <p v-if="retentionLoading" class="muted">{{ t('common.loading') }}</p>
 
       <template v-else-if="retention">
@@ -207,7 +192,7 @@ watch(projectId, () => {
       </template>
     </section>
 
-    <p v-if="error" class="text-fail">{{ error }}</p>
+    <ErrorLineView v-if="error" :error="error" />
     <p v-if="loading" class="muted">{{ t('common.loading') }}</p>
 
     <table v-if="items.length" class="table">
@@ -227,7 +212,7 @@ watch(projectId, () => {
               {{ item.runId }}
             </button>
           </td>
-          <td>{{ stateLabel(item.state) }}</td>
+          <td>{{ runStatusLabel(item.state) }}</td>
           <td>
             <span class="text-ok">{{ item.passCount }}</span>
             /

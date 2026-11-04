@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ApiError } from '@/api/http'
 import { roleApi, userApi, projectApi, type Role, type UserSummary } from '@/api/iam'
 import { useAuthStore } from '@/stores/auth'
+import ErrorLineView from '@/components/ErrorLine.vue'
+import { localizeError, type ErrorLine } from '@/utils/errors'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -15,7 +16,7 @@ const page = ref(1)
 const size = 10
 const total = ref(0)
 const loading = ref(false)
-const error = ref('')
+const error = ref<ErrorLine | null>(null)
 const message = ref('')
 const showUserForm = ref(false)
 const showProjectForm = ref(false)
@@ -32,9 +33,6 @@ const projectForm = reactive({ code: '', name: '', description: '', visibility: 
 
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / size)))
 
-function errText(e: unknown): string {
-  return e instanceof ApiError ? `${e.codeName}：${e.message}` : String(e)
-}
 
 async function loadUsers(): Promise<void> {
   loading.value = true
@@ -43,7 +41,7 @@ async function loadUsers(): Promise<void> {
     users.value = result.items
     total.value = result.total
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   } finally {
     loading.value = false
   }
@@ -53,14 +51,14 @@ onMounted(async () => {
   try {
     roles.value = await roleApi.list()
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
   await loadUsers()
   if (auth.projects.length === 0) {
     try {
       await auth.loadProjects()
     } catch (e) {
-      error.value = errText(e)
+      error.value = localizeError(e)
     }
   }
 })
@@ -72,10 +70,10 @@ function turnPage(next: number): void {
 }
 
 async function createUser(): Promise<void> {
-  error.value = ''
+  error.value = null
   message.value = ''
   if (!userForm.username.trim() || !userForm.displayName.trim() || !userForm.password) {
-    error.value = t('admin.requiredUser')
+    error.value = { summary: t('admin.requiredUser'), detail: null }
     return
   }
   try {
@@ -94,7 +92,7 @@ async function createUser(): Promise<void> {
     showUserForm.value = false
     await loadUsers()
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 
@@ -111,15 +109,15 @@ async function toggleUser(user: UserSummary): Promise<void> {
     })
     await loadUsers()
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 
 async function createProject(): Promise<void> {
-  error.value = ''
+  error.value = null
   message.value = ''
   if (!projectForm.code.trim() || !projectForm.name.trim()) {
-    error.value = t('admin.requiredProject')
+    error.value = { summary: t('admin.requiredProject'), detail: null }
     return
   }
   try {
@@ -136,7 +134,7 @@ async function createProject(): Promise<void> {
     projectForm.description = ''
     showProjectForm.value = false
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 </script>
@@ -145,7 +143,7 @@ async function createProject(): Promise<void> {
   <div class="page">
     <h1 class="page-title">{{ t('menu.admin') }}</h1>
 
-    <p v-if="error" class="text-fail">{{ error }}</p>
+    <ErrorLineView v-if="error" :error="error" />
     <p v-if="message" class="text-ok">{{ message }}</p>
 
     <section class="card wide-card">

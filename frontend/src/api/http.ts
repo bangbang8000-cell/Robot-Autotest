@@ -8,6 +8,19 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 const DEFAULT_TIMEOUT_MS = 10_000
 
+/**
+ * 前端合成错误码（9xxxx 段，后端 `ErrorCode` 从未占用）。
+ *
+ * <p>为什么需要：`fetch` 断网时抛 `TypeError: Failed to fetch`、超时抛
+ * `AbortError`，都是**英文且面向开发者**的字符串。不做归一的话，
+ * 中文界面会弹出英文 `Failed to fetch`，英文界面也无法区分"超时"和"断网"。
+ */
+const SYNTHETIC_CODE_BASE = 90_000
+export { SYNTHETIC_CODE_BASE }
+export const TIMEOUT_CODE = SYNTHETIC_CODE_BASE + 1
+export const NETWORK_CODE = SYNTHETIC_CODE_BASE + 2
+export const MALFORMED_CODE = SYNTHETIC_CODE_BASE + 3
+
 export interface ApiEnvelope<T> {
   code: number
   codeName: string
@@ -33,6 +46,29 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * 把 `fetch` 层的原始异常归一成带错误码的 `ApiError`。
+ *
+ * <p>已经是 `ApiError` 的原样返回——业务错误码不能被这里覆盖成"网络错误"。
+ */
+function normalizeFailure(e: unknown): ApiError {
+  if (e instanceof ApiError) return e
+  if (e instanceof DOMException && e.name === 'AbortError') {
+    return new ApiError(TIMEOUT_CODE, 'TIMEOUT', 'Request aborted after timeout')
+  }
+  const text = e instanceof Error ? e.message : String(e)
+  return new ApiError(NETWORK_CODE, 'NETWORK_ERROR', text)
+}
+
+/** 响应体不是 JSON 信封（典型：反向代理返回 502 HTML 页）时给出可读错误。 */
+function parseEnvelope<T>(raw: string): ApiEnvelope<T> {
+  try {
+    return JSON.parse(raw) as ApiEnvelope<T>
+  } catch {
+    throw new ApiError(MALFORMED_CODE, 'MALFORMED_RESPONSE', raw.slice(0, 200))
+  }
+}
+
 export async function request<T>(
   path: string,
   init: RequestInit = {},
@@ -53,11 +89,13 @@ export async function request<T>(
       },
     })
 
-    const envelope = (await response.json()) as ApiEnvelope<T>
+    const envelope = parseEnvelope<T>(await response.text())
     if (envelope.code !== 0) {
       throw new ApiError(envelope.code, envelope.codeName, envelope.message)
     }
     return envelope.data as T
+  } catch (e) {
+    throw normalizeFailure(e)
   } finally {
     clearTimeout(timer)
   }
@@ -85,9 +123,10 @@ export async function requestBlob(
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
     if (!response.ok) {
-      let message = `下载失败（HTTP ${response.status}）`
+      // 兜底文案保持中性（只是 HTTP 状态），实际可读文案由 error.DOWNLOAD_FAILED 提供
+      let message = `HTTP ${response.status}`
       try {
-        const envelope = (await response.json()) as ApiEnvelope<unknown>
+        const envelope = parseEnvelope<unknown>(await response.text())
         if (envelope?.message) message = envelope.message
       } catch {
         // 非 JSON 错误体：保留 HTTP 状态提示
@@ -95,6 +134,8 @@ export async function requestBlob(
       throw new ApiError(response.status, 'DOWNLOAD_FAILED', message)
     }
     return await response.blob()
+  } catch (e) {
+    throw normalizeFailure(e)
   } finally {
     clearTimeout(timer)
   }
@@ -130,11 +171,13 @@ export async function requestMultipart<T>(
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
 
-    const envelope = (await response.json()) as ApiEnvelope<T>
+    const envelope = parseEnvelope<T>(await response.text())
     if (envelope.code !== 0) {
       throw new ApiError(envelope.code, envelope.codeName, envelope.message)
     }
     return envelope.data as T
+  } catch (e) {
+    throw normalizeFailure(e)
   } finally {
     clearTimeout(timer)
   }

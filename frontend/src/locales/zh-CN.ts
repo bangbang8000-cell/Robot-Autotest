@@ -10,6 +10,45 @@ export default {
     dark: '暗色',
     switchTo: '切换主题（当前：{mode}）',
   },
+  /**
+   * 受控词表的展示文案（FR-v0.2-34）。键名一律小写，映射逻辑见 `utils/statusLabels.ts`。
+   * 加一个状态值就加一个键，界面不用改。
+   */
+  enum: {
+    reviewStatus: {
+      draft: '草稿',
+      pending: '待评审',
+      approved: '已通过',
+      rejected: '已驳回',
+    },
+    runStatus: {
+      queued: '排队中',
+      preparing: '准备中',
+      running: '运行中',
+      finished: '已完成',
+      failed: '失败',
+      canceled: '已取消',
+    },
+    priority: {
+      p0: 'P0',
+      p1: 'P1',
+      p2: 'P2',
+      p3: 'P3',
+    },
+    triggerType: {
+      manual: '手动',
+      schedule: '计划',
+      ci: 'CI',
+    },
+    memberRole: {
+      owner: '所有者',
+      admin: '管理员',
+      pm: '项目经理',
+      engineer: '工程师',
+      member: '成员',
+      viewer: '只读成员',
+    },
+  },
   menu: {
     overview: '总览',
     assets: '资产',
@@ -77,25 +116,6 @@ export default {
       device: '设备 / 链路',
       trigger: '触发方式',
     },
-    state: {
-      queued: '排队中',
-      preparing: '准备中',
-      running: '运行中',
-      finished: '完成',
-      failed: '失败',
-      canceled: '已取消',
-    },
-    trigger: {
-      manual: '手动',
-      schedule: '计划',
-      ci: 'CI',
-    },
-    reviewStatus: {
-      draft: '草稿',
-      pending: '待评审',
-      approved: '已通过',
-      rejected: '已驳回',
-    },
   },
   common: {
     placeholder: '本版只做骨架，页面内容由后续版本填充',
@@ -120,6 +140,47 @@ export default {
     next: '下一页',
     pageInfo: '第 {page} / {total} 页',
     confirmDelete: '确认删除？该操作不可撤销',
+    close: '关闭',
+    errorDetail: '技术详情',
+  },
+  /**
+   * 错误码文案（FR-v0.2-36）。键名必须与后端 `common/ErrorCode` 的 name 完全一致；
+   * TIMEOUT / NETWORK_ERROR / MALFORMED_RESPONSE / DOWNLOAD_FAILED / UNKNOWN 为前端合成。
+   */
+  error: {
+    INVALID_ARGUMENT: '参数校验未通过',
+    UNAUTHENTICATED: '登录已失效，请重新登录',
+    FORBIDDEN: '没有权限执行该操作',
+    NOT_FOUND: '对象不存在或已被删除',
+    METHOD_NOT_ALLOWED: '该操作不被支持',
+    CONFLICT: '数据已变化，请刷新后重试',
+    TOO_MANY_REQUESTS: '操作过于频繁，请稍后重试',
+    INTERNAL_ERROR: '服务内部错误',
+    DEPENDENCY_UNAVAILABLE: '依赖服务不可用，请稍后重试',
+    TIMEOUT: '请求超时，请检查网络后重试',
+    NETWORK_ERROR: '无法连接服务器，请检查网络',
+    MALFORMED_RESPONSE: '服务器返回了无法识别的响应',
+    DOWNLOAD_FAILED: '文件下载失败',
+    UNKNOWN: '操作失败',
+  },
+  editor: {
+    titleEditor: '用例编辑器',
+    titleViewer: '只读查看器',
+    roleEditable: '可编辑',
+    roleReadonly: '只读',
+    saving: '保存中…',
+    versions: '版本历史',
+    versionsCount: '版本历史（{count}）',
+    noVersions: '暂无版本',
+    diffCurrent: '对比当前',
+    rollback: '回滚',
+    diffTitle: '版本对比 {title}',
+    missingRoute: '地址缺少 projectId 或 path 参数',
+    savedAs: '已保存为 v{version}',
+    unchanged: '内容未变，仍为 v{version}',
+    unchangedUnchecked: '内容未变，仍为 v{version}（服务端未校验语法）',
+    conflictRefreshed: '他人已修改该文件，已刷新到 v{version}，请对比后重试',
+    rolledBack: '已回滚到 v{from}，生成新版本 v{to}',
   },
   login: {
     subtitle: '请使用本地账号登录',
@@ -231,14 +292,6 @@ export default {
       connecting: '连接中',
       open: '已连接',
       closed: '已断开',
-    },
-    states: {
-      queued: '排队中',
-      preparing: '准备中',
-      running: '运行中',
-      finished: '已完成',
-      failed: '失败',
-      canceled: '已取消',
     },
   },
   plans: {
@@ -353,14 +406,6 @@ export default {
       missing: '缺失',
       exportable: '可对外',
       notExportable: '存在缺失项，不可对外',
-    },
-    states: {
-      queued: '排队中',
-      preparing: '准备中',
-      running: '运行中',
-      finished: '已完成',
-      failed: '失败',
-      canceled: '已取消',
     },
     compare: {
       toggle: '本轮 vs 基线',

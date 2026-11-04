@@ -8,9 +8,9 @@
 
 | 汇总 | 未开始 | 进行中 | 待验 | 待现场 | 已完成 |
 |---|---:|---:|---:|---:|---:|
-| 71 个任务包 | **0** | 0 | **56** | **8** | **7** |
+| 71 个任务包 | **0** | 0 | **57** | **8** | **6** |
 
-**当前进度：0 / 71（0% 已完成 · 56 待验 · 8 待现场 · 7 未开始）**
+**当前进度：0 / 71（0% 已完成 · 57 待验 · 8 待现场 · 6 未开始）**
 
 **一句话读法**：功能代码已铺到 v1.0（后端 `Tests run: 453, Failures: 0`、`-Pit` 集成 **6/6**（`SchemaIT` 5 + `CaseImportIT` 1），**应用真启动通过**（构建 13.6s + 启动 4.5s），前端 `build`/`lint` exit 0，dev/it 库均已迁到 **V7_1 / 44 表**），但**验收尚未启动**，所以读数是 0%。**这不是烂尾，是验收产能没建起来**——详见 `docs/plan/开发计划评估与后续推进-20261103.md`。
 
@@ -96,7 +96,7 @@
 | 62 | **OVW-01** | 总览真实化：聚合读接口 + 四区页面 + 空态引导（v0.2 增量，`FR-v0.2-25~30`） | B2 | 待验 | `api/overview/OverviewController.java`、`application/overview/OverviewService.java`、`infrastructure/OverviewRepositoryJdbc.java`、`frontend/src/views/OverviewView.vue`、`frontend/src/api/overview.ts`；证据 `docs/evidence/v0.2/ovw01-*.log`、`ovw01-overview.png` | 无新表、无迁移，不阻塞 G2；顺带修正 `TrendRepositoryJdbc` 的 `run_status IN ('passed','failed')` 死条件（状态枚举无 `passed`） |
 | 63 | **NAM-01** | 产品命名统一：中文「AIDC自动化测试」/ 英文「AIDC AutoTest」，覆盖登录页 / 侧栏 / 浏览器标题 / 报告页眉（`FR-v0.2-46`） | B2 | 待验 | `frontend/src/locales/{zh-CN,en-US}.ts`、`index.html`、`App.vue`（`document.title` 随 locale 同步）、`README.md`；证据 `docs/evidence/v0.2/nam01-naming.log`、`nam01-zh/overview.png`、`nam01-en/overview.png` | 只改显示层；仓库名 / `artifactId` / `package.json name` / Java 包名 / 库名**一律不动**。**必须最先做**——否则后续所有截图证据都要重截 |
 | 64 | **UX-01** | 亮/暗双主题：语义 token 化 + 三态切换 + 首帧不闪 + 跨设备偏好（`FR-v0.2-31~34`） | B2 | 待验 | `styles/theme.css`（两层 token）、`composables/useTheme.ts`、`tools/check_colors.py`、`tools/check_contrast.py`、`api/iam/UserPreferenceController`、迁移 `V7_2`；证据 `docs/evidence/v0.2/ux01-checks.log`、`ux01-theme-probe.log`、`ux01-{light,dark}/*.png` | 前置：`NAM-01`。起点是 100 处硬编码 hex（`main.css` 35 + 组件 65）需清零；唯一新增表 `user_preference` |
-| 65 | **UX-03** | 国际化一致：24 处硬编码中文清零 + 枚举映射 + 服务端错误按 `ErrorCode.name` 本地化（`FR-v0.2-41~45`） | B2 | 未开始 | 待补 | 已知边界：服务端 213 处中文 `detail` 本包不处理，只做「主文案本地化 + 详情折叠」；彻底解需 `UX-03b` |
+| 65 | **UX-03** | 国际化一致：硬编码中文清零 + 枚举映射 + 服务端错误按 `ErrorCode.name` 本地化（`FR-v0.2-41~45`） | B2 | 待验 | `utils/statusLabels.ts`（五组词表 + `ENUM_GROUPS`）、`utils/errors.ts` + `components/ErrorLine.vue`、`utils/format.ts`、`tools/check_i18n.py`（五项检查 + 破坏性自检）；证据 `docs/evidence/v0.2/ux03-i18n/`（10 截图 + probe.json）、`ux03-i18n-walkthrough.log`（22/22）、`ux03-format.log` | 已知边界：服务端 213 处中文 `detail` 本包不处理，只做「主文案本地化 + 详情折叠」；彻底解需 `UX-03b`。计划外：后端总览接口去中文哨兵（`COALESCE(col,'')`，接口只吐原始值）+ `OverviewRepositoryIT` 锁契约；格式化实测用 esbuild+node（vitest 随 UX-02 引入后补正式单测） |
 | 66 | **UX-02** | 列表批量：通用选择组件 + 用例批量六动作 + 部分成功契约 + 逐条审计（`FR-v0.2-35~39`） | B2 | 未开始 | 待补 | 契约硬规则：部分失败返回 **200**、逐条独立事务、单次上限 200；资产/报告/用户走 `UX-02b` |
 | 67 | **PRJ-01** | 项目中心：成员管理界面 + owner 保护 + 无项目引导 + 权限双轨口径明文（`FR-v0.2-47~49`） | B2 | 未开始 | 待补 | 后端成员接口已存在（`ProjectController` 72~95），本包主要是补界面；`owner` 被移除需 409 |
 | 68 | **PRJ-04** | 报告结果导向：`GET /report-digest` + 首页结果区块（最近报告 / 失败 Top10 / 未执行数 / 趋势）（`FR-v0.2-53`） | B2 | 未开始 | 待补 | 只读，不改表；空项目**不显示 0%** |
@@ -117,6 +117,7 @@
 | 日期 | WBS | 一句话结果 | 证据 |
 |---|---|---|---|
 | 2026-11-04 | UX-01 | **亮/暗双主题落地**：113 处硬编码色值清零（main.css 35 + 组件 78），两层 token（primitives + semantic）支撑三套状态；三态切换 system/light/dark 全部实测生效，system 下改 OS 外观**无刷新即跟随**；首帧 3ms 写入 data-theme（不闪）；`user_preference` 表 + `GET/PUT /api/users/me/preferences` 实现换设备一致。**顺带修两个既有缺陷**：暗色表格边框原值 `#22303f` 与卡片只差 1.14:1（分割线几乎看不见）；`scripts/db-audit.sh` 被写成 CRLF，Linux 下 `set -o pipefail` 直接报错跑不起来 | `docs/evidence/v0.2/ux01-checks.log`、`ux01-theme-probe.log`、`ux01-{light,dark}/`（7 页截图）、`ux01-frontend.log` |
+| 2026-11-04 | UX-03 | **国际化一致落地**：EditorView 14 处（计划写 24，盘点偏差）硬编码中文抽键；五组枚举集中 `statusLabels.ts`（下拉选项同源）；错误统一 `ErrorLine.vue`（主文案走 `error.<NAME>` 键、服务端原文+codeName 进折叠，覆盖 12 个 view）；`format.ts` 替换 4 处手写实现；守门脚本 5 项检查 + 3 轮破坏性自检。**计划外**：后端总览接口去中文哨兵「未标注」（英文界面必冒中文），IT 锁契约。中英双界面 22/22 断言过、IT 16/16、单测 459。**教训**：走查前必须清点遗留 vite/后端进程（本轮旧进程产过一轮作废证据）；本机 curl 被 HTTP_PROXY 劫持须 `--noproxy '*'`；vite 自测要 `--host 127.0.0.1` | `docs/evidence/v0.2/ux03-i18n/`、`ux03-i18n-walkthrough.log`、`ux03-format.log` |
 | 2026-11-04 | NAM-01 | **产品改名落地**：中文「AIDC自动化测试」/ 英文「AIDC AutoTest」，登录页与侧栏品牌位、浏览器标签页（随语言切换）全部生效；顺带修掉 `index.html` 静态标题不随语言变的问题。**工程标识零改动**（pom / package.json / Java 包名 / 库名均未动） | `docs/evidence/v0.2/nam01-naming.log`、`nam01-zh/overview.png`、`nam01-en/overview.png` |
 | 2026-11-04 | 计划（新增 9 包） | **v0.2 增 9 个包**（`NAM-01`、`UX-01~03`、`PRJ-01`/`PRJ-03`/`PRJ-04`、`AST-05`、`UX-02b`）：双主题、列表批量、中英一致与命名、项目中心与资产共享池。四项决策经向导确认（跟随系统 / 资产池+引用 / 用例优先 / 并入 v0.2）。已完成评估 + PRD `FR-v0.2-31~53` + 开发计划 §10 + 测试计划 §13，**代码未动** | `docs/plan/多项目与体验基线-评估与设计-20261104.md`、`docs/release/v0.2-ledger/{PRD,DEV-PLAN,TEST-PLAN}.md` |
 | 2026-11-04 | OVW-01（新增） | **总览从 43 行 ping 占位页改成真总览**：一次聚合接口返回用例数 / 资产数 / 执行统计 / 近期执行 / 近 30 天趋势；读数与直接 SQL **13 项逐项一致**（226 用例、3 设备、2 链路、2 凭据、0 运行）；空项目 `passRateBp=null` 而不是 0；跨项目 403。顺带修掉 `TrendRepositoryJdbc` 把状态写成 `IN ('passed','failed')` 的死条件（枚举里没有 `passed`，`finished` 的 run 全被漏算） | `docs/plan/总览页真实化-评估与设计-20261104.md`、`docs/evidence/v0.2/{ovw01-db-vs-api.log, ovw01-api.json, ovw01-repo-it.log, ovw01-mvn-test.log, ovw01-frontend.log, frontend-ovw01/overview.png}` |

@@ -26,8 +26,13 @@ public class OverviewRepositoryJdbc implements OverviewRepository {
             SELECT COUNT(*) FROM test_case WHERE project_id = ? AND status = 1
             """;
 
+    /**
+     * 分组统计的 key 一律用 {@code COALESCE(col, '')}：**空串表示未填**，
+     * 由前端翻成「未标注」/「Not set」。不在这里写展示文案——接口吐中文，
+     * 英文界面就必然冒中文。
+     */
     private static final String CASE_BY_PRIORITY = """
-            SELECT COALESCE(NULLIF(priority, ''), '未标注') AS k, COUNT(*) AS c
+            SELECT COALESCE(priority, '') AS k, COUNT(*) AS c
               FROM test_case
              WHERE project_id = ? AND status = 1
              GROUP BY k
@@ -35,7 +40,7 @@ public class OverviewRepositoryJdbc implements OverviewRepository {
             """;
 
     private static final String CASE_BY_REVIEW = """
-            SELECT COALESCE(NULLIF(review_status, ''), '未标注') AS k, COUNT(*) AS c
+            SELECT COALESCE(review_status, '') AS k, COUNT(*) AS c
               FROM test_case
              WHERE project_id = ? AND status = 1
              GROUP BY k
@@ -43,7 +48,7 @@ public class OverviewRepositoryJdbc implements OverviewRepository {
             """;
 
     private static final String CASE_TOP_DOMAINS = """
-            SELECT COALESCE(NULLIF(domain_tag, ''), '未标注') AS k, COUNT(*) AS c
+            SELECT COALESCE(domain_tag, '') AS k, COUNT(*) AS c
               FROM test_case
              WHERE project_id = ? AND status = 1
              GROUP BY k

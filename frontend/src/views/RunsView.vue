@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ApiError } from '@/api/http'
 import { executionApi, runLogSocketUrl, type ExecutionRun, type RunLogLine } from '@/api/execution'
 import { useAuthStore } from '@/stores/auth'
 import ProjectPicker from '@/components/ProjectPicker.vue'
+import ErrorLineView from '@/components/ErrorLine.vue'
+import { localizeError, type ErrorLine } from '@/utils/errors'
+import { RUN_STATUSES, runStatusLabel } from '@/utils/statusLabels'
 
-const { t, te } = useI18n()
+const { t } = useI18n()
 const auth = useAuthStore()
 
 const runs = ref<ExecutionRun[]>([])
@@ -15,7 +17,7 @@ const page = ref(1)
 const size = 10
 const stateFilter = ref('')
 const loading = ref(false)
-const error = ref('')
+const error = ref<ErrorLine | null>(null)
 const message = ref('')
 
 const selected = ref<ExecutionRun | null>(null)
@@ -30,17 +32,9 @@ let socket: WebSocket | null = null
 let closedByUser = false
 let reconnectTimer: number | undefined
 
-function errText(e: unknown): string {
-  return e instanceof ApiError ? `${e.codeName}：${e.message}` : String(e)
-}
-
-function stateLabel(state: string): string {
-  const key = `execution.states.${state.toLowerCase()}`
-  return te(key) ? t(key) : state
-}
 
 async function load(): Promise<void> {
-  error.value = ''
+  error.value = null
   message.value = ''
   if (!projectId.value) {
     runs.value = []
@@ -57,7 +51,7 @@ async function load(): Promise<void> {
     runs.value = result.items
     total.value = result.total
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   } finally {
     loading.value = false
   }
@@ -76,7 +70,7 @@ async function loadRecentLog(): Promise<void> {
     logLines.value = await executionApi.recentLog(projectId.value, selected.value.runId, 200)
     scrollToBottom()
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 
@@ -89,7 +83,7 @@ function connect(): void {
     socket = new WebSocket(runLogSocketUrl(selected.value.runId))
   } catch (e) {
     socketState.value = 'closed'
-    error.value = errText(e)
+    error.value = localizeError(e)
     return
   }
   socket.onopen = () => {
@@ -148,7 +142,7 @@ function scrollToBottom(): void {
 }
 
 async function cancelRun(run: ExecutionRun): Promise<void> {
-  error.value = ''
+  error.value = null
   message.value = ''
   try {
     await executionApi.cancel(projectId.value, run.runId, t('execution.cancelReason'))
@@ -158,7 +152,7 @@ async function cancelRun(run: ExecutionRun): Promise<void> {
     }
     await load()
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 
@@ -197,18 +191,15 @@ onBeforeUnmount(() => {
     <div class="toolbar">
       <select v-model="stateFilter" class="input">
         <option value="">{{ t('execution.allStates') }}</option>
-        <option value="QUEUED">{{ t('execution.states.queued') }}</option>
-        <option value="PREPARING">{{ t('execution.states.preparing') }}</option>
-        <option value="RUNNING">{{ t('execution.states.running') }}</option>
-        <option value="FINISHED">{{ t('execution.states.finished') }}</option>
-        <option value="FAILED">{{ t('execution.states.failed') }}</option>
-        <option value="CANCELED">{{ t('execution.states.canceled') }}</option>
+        <option v-for="item in RUN_STATUSES" :key="item" :value="item.toUpperCase()">
+          {{ runStatusLabel(item) }}
+        </option>
       </select>
       <button class="btn btn-ghost" type="button" @click="load">{{ t('common.refresh') }}</button>
       <RouterLink class="btn btn-ghost" to="/plans">{{ t('plans.title') }}</RouterLink>
     </div>
 
-    <p v-if="error" class="text-fail">{{ error }}</p>
+    <ErrorLineView v-if="error" :error="error" />
     <p v-if="message" class="text-ok">{{ message }}</p>
     <p v-if="loading" class="muted">{{ t('common.loading') }}</p>
 
@@ -227,7 +218,7 @@ onBeforeUnmount(() => {
       <tbody>
         <tr v-for="run in runs" :key="run.id">
           <td>{{ run.runId }}</td>
-          <td>{{ stateLabel(run.state) }}</td>
+          <td>{{ runStatusLabel(run.state) }}</td>
           <td>{{ run.passedTests }} / {{ run.totalTests }}</td>
           <td>{{ run.failureReason || '—' }}</td>
           <td>{{ run.startedAt || '—' }}</td>
@@ -270,7 +261,7 @@ onBeforeUnmount(() => {
       <div class="log-head">
         <h2 class="card-title">{{ t('execution.logPanel') }} · {{ selected.runId }}</h2>
         <span class="muted">
-          {{ stateLabel(selected.state) }} · {{ t(`execution.socket.${socketState}`) }}
+          {{ runStatusLabel(selected.state) }} · {{ t(`execution.socket.${socketState}`) }}
         </span>
         <label class="muted only-fail">
           <input v-model="onlyFail" type="checkbox" />

@@ -2,7 +2,6 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ApiError } from '@/api/http'
 import {
   REPORT_METADATA_KEYS,
   reportsApi,
@@ -24,6 +23,9 @@ import ProjectPicker from '@/components/ProjectPicker.vue'
 import SuiteTree from '@/components/report/SuiteTree.vue'
 import TrendChart from '@/components/report/TrendChart.vue'
 import type { TrendChartSeries } from '@/components/report/trendChart'
+import ErrorLineView from '@/components/ErrorLine.vue'
+import { localizeError, type ErrorLine } from '@/utils/errors'
+import { formatBytes, formatDateTime, formatDuration } from '@/utils/format'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -36,22 +38,22 @@ const runId = computed(() => String(route.params.runId ?? ''))
 const detail = ref<ReportDetail | null>(null)
 const tree = ref<ReportSuiteNode | null>(null)
 const loading = ref(false)
-const error = ref('')
+const error = ref<ErrorLine | null>(null)
 
 const showCompare = ref(false)
 const compare = ref<CompareResult | null>(null)
 const compareLoading = ref(false)
-const compareError = ref('')
+const compareError = ref<ErrorLine | null>(null)
 
 // 趋势区块（RPT-04）：用例维度 + 环境断线 + 自写 SVG 折线。
 const trend = ref<CaseTrendResult | null>(null)
 const trendLoading = ref(false)
-const trendError = ref('')
+const trendError = ref<ErrorLine | null>(null)
 const selectedCase = ref('')
 const granularity = ref<'day' | 'week'>('day')
 const passRate = ref<PassRateResult | null>(null)
 const passRateLoading = ref(false)
-const passRateError = ref('')
+const passRateError = ref<ErrorLine | null>(null)
 
 const logOpen = ref(false)
 const logCaseKey = ref('')
@@ -59,18 +61,15 @@ const logLines = ref<ReportLogLine[]>([])
 const logTotal = ref(0)
 const nextOffset = ref<number | null>(0)
 const logLoading = ref(false)
-const logError = ref('')
+const logError = ref<ErrorLine | null>(null)
 
 // 导出（RPT-05）：外部版受 exportable 门禁；内部版允许缺项但需二次确认。
 const exportBusy = ref('')
-const exportError = ref('')
+const exportError = ref<ErrorLine | null>(null)
 const exportResult = ref<ReportExportResult | null>(null)
 const exportHistory = ref<ReportExportHistoryItem[]>([])
-const exportHistoryError = ref('')
+const exportHistoryError = ref<ErrorLine | null>(null)
 
-function errText(e: unknown): string {
-  return e instanceof ApiError ? `${e.codeName}：${e.message}` : String(e)
-}
 
 function metadataValue(key: string): string {
   const value = detail.value?.metadata?.[key]
@@ -86,7 +85,7 @@ function verdictClass(verdict: string): string {
 }
 
 async function loadAll(): Promise<void> {
-  error.value = ''
+  error.value = null
   if (!projectId.value || !runId.value) {
     detail.value = null
     tree.value = null
@@ -103,19 +102,19 @@ async function loadAll(): Promise<void> {
     await loadPassRate()
     await loadExports()
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   } finally {
     loading.value = false
   }
 }
 
 async function loadCompare(): Promise<void> {
-  compareError.value = ''
+  compareError.value = null
   compareLoading.value = true
   try {
     compare.value = await reportsApi.compare(projectId.value, runId.value)
   } catch (e) {
-    compareError.value = errText(e)
+    compareError.value = localizeError(e)
   } finally {
     compareLoading.value = false
   }
@@ -186,7 +185,7 @@ const passRateSeries = computed<TrendChartSeries[]>(() => {
 })
 
 async function loadTrend(): Promise<void> {
-  trendError.value = ''
+  trendError.value = null
   if (!selectedCase.value || !projectId.value || !runId.value) {
     trend.value = null
     return
@@ -195,14 +194,14 @@ async function loadTrend(): Promise<void> {
   try {
     trend.value = await reportsApi.trend(projectId.value, runId.value, selectedCase.value, 5)
   } catch (e) {
-    trendError.value = errText(e)
+    trendError.value = localizeError(e)
   } finally {
     trendLoading.value = false
   }
 }
 
 async function loadPassRate(): Promise<void> {
-  passRateError.value = ''
+  passRateError.value = null
   if (!projectId.value) {
     passRate.value = null
     return
@@ -211,7 +210,7 @@ async function loadPassRate(): Promise<void> {
   try {
     passRate.value = await reportsApi.passRate(projectId.value, granularity.value, 12)
   } catch (e) {
-    passRateError.value = errText(e)
+    passRateError.value = localizeError(e)
   } finally {
     passRateLoading.value = false
   }
@@ -232,13 +231,13 @@ async function openLogs(caseKey: string): Promise<void> {
   logLines.value = []
   logTotal.value = 0
   nextOffset.value = 0
-  logError.value = ''
+  logError.value = null
   await loadMoreLogs()
 }
 
 async function loadMoreLogs(): Promise<void> {
   if (nextOffset.value === null) return
-  logError.value = ''
+  logError.value = null
   logLoading.value = true
   try {
     const page = await reportsApi.logs(
@@ -253,18 +252,18 @@ async function loadMoreLogs(): Promise<void> {
     logTotal.value = page.total
     nextOffset.value = page.nextOffset
   } catch (e) {
-    logError.value = errText(e)
+    logError.value = localizeError(e)
   } finally {
     logLoading.value = false
   }
 }
 
 function historyText(side: CompareSide | null): string {
-  return side ? `${side.verdict} · ${side.durationMs} ms` : t('reports.compare.noneBaseline')
+  return side ? `${side.verdict} · ${formatDuration(side.durationMs)}` : t('reports.compare.noneBaseline')
 }
 
 function currentText(side: CompareSide | null): string {
-  return side ? `${side.verdict} · ${side.durationMs} ms` : t('reports.compare.noneThisRun')
+  return side ? `${side.verdict} · ${formatDuration(side.durationMs)}` : t('reports.compare.noneThisRun')
 }
 
 function changeClass(row: CompareRow): string {
@@ -279,7 +278,7 @@ function backToList(): void {
 }
 
 async function loadExports(): Promise<void> {
-  exportHistoryError.value = ''
+  exportHistoryError.value = null
   if (!projectId.value || !runId.value) {
     exportHistory.value = []
     return
@@ -287,7 +286,7 @@ async function loadExports(): Promise<void> {
   try {
     exportHistory.value = await reportsApi.exports(projectId.value, runId.value)
   } catch (e) {
-    exportHistoryError.value = errText(e)
+    exportHistoryError.value = localizeError(e)
   }
 }
 
@@ -306,7 +305,7 @@ async function doExport(mode: ReportExportMode, format: ReportExportFormat): Pro
   }
 
   exportBusy.value = `${mode}-${format}`
-  exportError.value = ''
+  exportError.value = null
   try {
     exportResult.value = await reportsApi.exportReport(
       projectId.value,
@@ -316,7 +315,7 @@ async function doExport(mode: ReportExportMode, format: ReportExportFormat): Pro
     )
     await loadExports()
   } catch (e) {
-    exportError.value = t('reports.exportSection.failed', { msg: errText(e) })
+    exportError.value = localizeError(e)
   } finally {
     exportBusy.value = ''
   }
@@ -325,7 +324,7 @@ async function doExport(mode: ReportExportMode, format: ReportExportFormat): Pro
 async function saveExport(downloadUrl?: string, fileName?: string): Promise<void> {
   const url = downloadUrl ?? exportResult.value?.downloadUrl
   if (!url) return
-  exportError.value = ''
+  exportError.value = null
   try {
     const blob = await reportsApi.downloadExport(url)
     const objectUrl = URL.createObjectURL(blob)
@@ -338,24 +337,12 @@ async function saveExport(downloadUrl?: string, fileName?: string): Promise<void
     link.click()
     URL.revokeObjectURL(objectUrl)
   } catch (e) {
-    exportError.value = t('reports.exportSection.failed', { msg: errText(e) })
+    exportError.value = localizeError(e)
   }
 }
 
 function exportDownloadUrl(item: ReportExportHistoryItem): string {
   return `/api/exports/${item.exportId}/download?projectId=${projectId.value}`
-}
-
-function formatSize(bytes: number): string {
-  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(2)} MB`
-  if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${bytes} B`
-}
-
-function formatExportTime(value: string | null): string {
-  if (!value) return ''
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
 }
 
 watch([projectId, runId], () => {
@@ -366,7 +353,7 @@ watch([projectId, runId], () => {
   passRate.value = null
   selectedCase.value = ''
   exportResult.value = null
-  exportError.value = ''
+  exportError.value = null
   exportHistory.value = []
   void loadAll()
 }, { immediate: true })
@@ -399,7 +386,7 @@ watch(granularity, () => {
       <ProjectPicker />
     </div>
 
-    <p v-if="error" class="text-fail">{{ error }}</p>
+    <ErrorLineView v-if="error" :error="error" />
     <p v-if="loading" class="muted">{{ t('common.loading') }}</p>
 
     <template v-if="detail">
@@ -500,12 +487,12 @@ watch(granularity, () => {
           })
         }}
       </p>
-      <p v-if="exportError" class="text-fail">{{ exportError }}</p>
+      <ErrorLineView v-if="exportError" :error="exportError" />
       <p v-if="exportResult" class="text-ok export-result">
         {{
           t('reports.exportSection.done', {
             format: exportResult.format.toUpperCase(),
-            size: formatSize(exportResult.bytes),
+            size: formatBytes(exportResult.bytes),
             sha256: exportResult.sha256,
           })
         }}
@@ -516,7 +503,7 @@ watch(granularity, () => {
 
       <section class="card wide-card">
         <h2 class="card-title">{{ t('reports.exportSection.historyTitle') }}</h2>
-        <p v-if="exportHistoryError" class="text-fail">{{ exportHistoryError }}</p>
+        <ErrorLineView v-if="exportHistoryError" :error="exportHistoryError" />
         <p v-else-if="!exportHistory.length" class="muted">
           {{ t('reports.exportSection.historyEmpty') }}
         </p>
@@ -540,8 +527,8 @@ watch(granularity, () => {
                     : t('reports.exportSection.externalTag')
                 }}
               </td>
-              <td>{{ formatSize(item.bytes) }}</td>
-              <td>{{ formatExportTime(item.createdAt) }}</td>
+              <td>{{ formatBytes(item.bytes) }}</td>
+              <td>{{ formatDateTime(item.createdAt) }}</td>
               <td>
                 <button
                   class="link-btn"
@@ -567,7 +554,7 @@ watch(granularity, () => {
           </label>
         </div>
 
-        <p v-if="trendError" class="text-fail">{{ trendError }}</p>
+        <ErrorLineView v-if="trendError" :error="trendError" />
         <p v-if="trendLoading" class="muted">{{ t('common.loading') }}</p>
 
         <template v-else-if="trend">
@@ -621,7 +608,7 @@ watch(granularity, () => {
                 </button>
               </div>
             </div>
-            <p v-if="passRateError" class="text-fail">{{ passRateError }}</p>
+            <ErrorLineView v-if="passRateError" :error="passRateError" />
             <p v-if="passRateLoading" class="muted">{{ t('common.loading') }}</p>
             <TrendChart v-else :series="passRateSeries" unit="%" />
           </div>
@@ -648,7 +635,7 @@ watch(granularity, () => {
               {{ t('reports.logTotal', { total: logTotal, loaded: logLines.length }) }}
             </span>
           </div>
-          <p v-if="logError" class="text-fail">{{ logError }}</p>
+          <ErrorLineView v-if="logError" :error="logError" />
           <pre v-if="logLines.length" class="log-lines"><span
   v-for="line in logLines"
   :key="line.seq"
@@ -680,7 +667,7 @@ watch(granularity, () => {
           <span v-else-if="compare" class="text-fail">{{ t('reports.compare.noBaseline') }}</span>
         </div>
 
-        <p v-if="compareError" class="text-fail">{{ compareError }}</p>
+        <ErrorLineView v-if="compareError" :error="compareError" />
         <p v-if="compareLoading" class="muted">{{ t('common.loading') }}</p>
 
         <template v-if="compare">

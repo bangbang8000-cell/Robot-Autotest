@@ -1,0 +1,37 @@
+登录成功，落在 /overview
+[en-US] /cases -> en-US-cases.png
+[en-US] /runs -> en-US-runs.png
+[en-US] /overview -> en-US-overview.png
+[en-US] /admin -> en-US-admin.png
+[en-US] /reports/NO-SUCH-RUN-UX03 -> en-US-report-missing.png
+[zh-CN] /cases -> zh-CN-cases.png
+[zh-CN] /runs -> zh-CN-runs.png
+[zh-CN] /overview -> zh-CN-overview.png
+[zh-CN] /admin -> zh-CN-admin.png
+[zh-CN] /reports/NO-SUCH-RUN-UX03 -> zh-CN-report-missing.png
+
+===== 断言 =====
+  [PASS] [en-US] 语言切换入口生效：localStorage.locale=en-US html[lang]=en-US
+  [PASS] [en-US] cases 状态列无裸枚举：Approved|Approved|Approved|Approved|Approved
+  [PASS] [en-US] cases 状态列取值命中词表：Approved|Approved|Approved|Approved|Approved
+  [PASS] [en-US] cases 评审状态下拉已本地化：All statuses|Draft|Pending review|Approved|Rejected
+  [PASS] [en-US] runs 状态下拉已本地化：All states|Queued|Preparing|Running|Finished|Failed|Canceled
+  [PASS] [en-US] runs 状态下拉含「Queued」
+  [PASS] [en-US] overview 空态文案已本地化（无运行记录，跳过触发列断言）
+  [PASS] [en-US] admin 标题为「Users」：Admin|Users|Projects|Roles
+  [PASS] [en-US] 错误提示条已渲染
+  [PASS] [en] 错误主文案为英文：The object does not exist or has been deleted
+  [PASS] [en] 折叠里有可追溯的原文：报告不存在: NO-SUCH-RUN-UX03 ⏎ NOT_FOUND (40400)
+  [PASS] [en] 折叠标题本地化：Technical details
+  [PASS] [zh-CN] 语言切换入口生效：localStorage.locale=zh-CN html[lang]=zh-CN
+  [PASS] [zh-CN] cases 状态列无裸枚举：已通过|已通过|已通过|已通过|已通过
+  [PASS] [zh-CN] cases 状态列取值命中词表：已通过|已通过|已通过|已通过|已通过
+  [PASS] [zh-CN] cases 评审状态下拉已本地化：全部状态|草稿|待评审|已通过|已驳回
+  [PASS] [zh-CN] runs 状态下拉已本地化：全部状态|排队中|准备中|运行中|已完成|失败|已取消
+  [PASS] [zh-CN] runs 状态下拉含「排队中」
+  [PASS] [zh-CN] overview 空态文案已本地化（无运行记录，跳过触发列断言）
+  [PASS] [zh-CN] admin 标题为「用户」：管理|用户|项目|角色
+  [PASS] [zh-CN] 错误提示条已渲染
+  [PASS] [zh] 错误主文案为服务端中文原文：报告不存在: NO-SUCH-RUN-UX03
+
+结论：通过 22 项，失败 0 项

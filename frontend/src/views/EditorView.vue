@@ -9,6 +9,7 @@
  * - 语法校验由服务端做（RF `--dryrun`）；服务端缺 RF 时返回 `syntaxChecked=false`，如实提示。
  */
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { RobotEditor, configureEditorAdapter, setEditorScope } from '@robot-autotest/editor'
 import '@robot-autotest/editor-css'
@@ -20,6 +21,9 @@ import {
 } from '@/api/editor'
 import { fileApi, type RobotFileVersion } from '@/api/files'
 import { ApiError } from '@/api/http'
+import { localizeError, type ErrorLine } from '@/utils/errors'
+import { formatDateTime, EMPTY } from '@/utils/format'
+import ErrorLineView from '@/components/ErrorLine.vue'
 
 // 适配器注入是进程级单例：宿主全应用只注入一次（N13：编辑器包内零 HTTP）
 configureEditorAdapter({
@@ -42,6 +46,7 @@ configureEditorAdapter({
 })
 
 const route = useRoute()
+const { t } = useI18n()
 const projectId = computed(() => Number(route.params.projectId))
 const filePath = computed(() => String(route.query.path ?? ''))
 const forcedReadonly = computed(() => route.name === 'viewer')
@@ -52,7 +57,7 @@ const currentVersion = ref(0)
 const canWrite = ref(false)
 const loading = ref(false)
 const saving = ref(false)
-const error = ref<string | null>(null)
+const error = ref<ErrorLine | null>(null)
 const notice = ref<string | null>(null)
 const noticeLevel = ref<'info' | 'warn' | 'error'>('info')
 
@@ -63,11 +68,7 @@ const diffTitle = ref('')
 
 const readonly = computed(() => forcedReadonly.value || !canWrite.value)
 const dirty = computed(() => content.value !== savedContent.value)
-const roleLabel = computed(() => (canWrite.value ? '可编辑' : '只读'))
-
-function messageOf(e: unknown): string {
-  return e instanceof Error ? e.message : String(e)
-}
+const roleLabel = computed(() => (canWrite.value ? t('editor.roleEditable') : t('editor.roleReadonly')))
 
 function say(text: string, level: 'info' | 'warn' | 'error' = 'info'): void {
   notice.value = text
@@ -78,7 +79,7 @@ async function open(): Promise<void> {
   const pid = projectId.value
   const path = filePath.value
   if (!Number.isInteger(pid) || pid <= 0 || path.length === 0) {
-    error.value = '地址缺少 projectId 或 path 参数'
+    error.value = { summary: t('editor.missingRoute'), detail: null }
     return
   }
   loading.value = true
@@ -91,7 +92,7 @@ async function open(): Promise<void> {
     await reloadFile()
     if (canWrite.value) await loadVersions()
   } catch (e) {
-    error.value = messageOf(e)
+    error.value = localizeError(e)
   } finally {
     loading.value = false
   }
@@ -125,21 +126,21 @@ async function save(): Promise<void> {
     })
     currentVersion.value = result.version
     savedContent.value = content.value
-    say(
-      result.changed
-        ? `已保存为 v${result.version}`
-        : `内容未变，仍为 v${result.version}` + (result.syntaxChecked ? '' : '（服务端未校验语法）'),
-      result.syntaxChecked ? 'info' : 'warn',
-    )
+    const key = result.changed
+      ? 'editor.savedAs'
+      : result.syntaxChecked
+        ? 'editor.unchanged'
+        : 'editor.unchangedUnchecked'
+    say(t(key, { version: result.version }), result.syntaxChecked ? 'info' : 'warn')
     await loadVersions()
   } catch (e) {
     // 409：他人已改，先刷新到最新，再让用户对比（不自动合并）
     if (e instanceof ApiError && e.codeName === 'CONFLICT') {
       await reloadFile()
       await loadVersions()
-      say(`${messageOf(e)}（已刷新到 v${currentVersion.value}，请对比后重试）`, 'warn')
+      say(t('editor.conflictRefreshed', { version: currentVersion.value }), 'warn')
     } else {
-      say(messageOf(e), 'error')
+      error.value = localizeError(e)
     }
   } finally {
     saving.value = false
@@ -148,6 +149,7 @@ async function save(): Promise<void> {
 
 async function rollback(versionNo: number): Promise<void> {
   if (readonly.value) return
+  error.value = null
   try {
     const result = await editorSaveApi.rollback({
       projectId: projectId.value,
@@ -157,13 +159,14 @@ async function rollback(versionNo: number): Promise<void> {
     currentVersion.value = result.version
     await reloadFile()
     await loadVersions()
-    say(`已回滚到 v${versionNo}，生成新版本 v${result.version}`, 'info')
+    say(t('editor.rolledBack', { from: versionNo, to: result.version }), 'info')
   } catch (e) {
-    say(messageOf(e), 'error')
+    error.value = localizeError(e)
   }
 }
 
 async function showDiff(fromVersion: number): Promise<void> {
+  error.value = null
   try {
     diffLines.value = await editorSaveApi.diff({
       projectId: projectId.value,
@@ -173,13 +176,8 @@ async function showDiff(fromVersion: number): Promise<void> {
     })
     diffTitle.value = `v${fromVersion} → v${currentVersion.value}`
   } catch (e) {
-    say(messageOf(e), 'error')
+    error.value = localizeError(e)
   }
-}
-
-function formatTime(value: string): string {
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
 }
 
 watch([projectId, filePath], () => { void open() }, { immediate: true })
@@ -188,7 +186,9 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
 <template>
   <div class="editor-host">
     <header class="editor-host__bar">
-      <h2 class="editor-host__title">{{ forcedReadonly ? '只读查看器' : '用例编辑器' }}</h2>
+      <h2 class="editor-host__title">
+        {{ forcedReadonly ? t('editor.titleViewer') : t('editor.titleEditor') }}
+      </h2>
       <span class="editor-host__path">{{ filePath }}</span>
       <span v-if="currentVersion > 0" class="editor-host__version">v{{ currentVersion }}</span>
       <span class="editor-host__role" :data-readonly="readonly">{{ roleLabel }}</span>
@@ -199,7 +199,7 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
         :disabled="!dirty || saving"
         @click="save"
       >
-        {{ saving ? '保存中…' : '保存' }}
+        {{ saving ? t('editor.saving') : t('common.save') }}
       </button>
       <button
         v-if="canWrite"
@@ -207,13 +207,13 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
         data-testid="editor-versions"
         @click="showVersions = !showVersions"
       >
-        版本历史（{{ versions.length }}）
+        {{ t('editor.versionsCount', { count: versions.length }) }}
       </button>
     </header>
 
     <p v-if="notice" class="editor-host__notice" :data-level="noticeLevel">{{ notice }}</p>
-    <p v-if="error" class="editor-host__error">{{ error }}</p>
-    <p v-else-if="loading" class="editor-host__loading">加载中…</p>
+    <ErrorLineView v-if="error" :error="error" />
+    <p v-else-if="loading" class="editor-host__loading">{{ t('common.loading') }}</p>
     <RobotEditor
       v-else
       class="editor-host__body"
@@ -223,26 +223,28 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
     />
 
     <aside v-if="showVersions && canWrite" class="editor-host__versions" data-testid="version-list">
-      <h3>版本历史</h3>
-      <p v-if="versions.length === 0" class="editor-host__versions-empty">暂无版本</p>
+      <h3>{{ t('editor.versions') }}</h3>
+      <p v-if="versions.length === 0" class="editor-host__versions-empty">
+        {{ t('editor.noVersions') }}
+      </p>
       <ul v-else>
         <li v-for="item in versions" :key="item.id" class="version-row">
           <span class="version-row__no">v{{ item.versionNo }}</span>
-          <span class="version-row__time">{{ formatTime(item.createdAt) }}</span>
-          <span class="version-row__comment">{{ item.comment || '—' }}</span>
+          <span class="version-row__time">{{ formatDateTime(item.createdAt) }}</span>
+          <span class="version-row__comment">{{ item.comment || EMPTY }}</span>
           <button
             v-if="item.versionNo !== currentVersion"
             class="editor-host__btn editor-host__btn--small"
             @click="showDiff(item.versionNo)"
           >
-            对比当前
+            {{ t('editor.diffCurrent') }}
           </button>
           <button
             v-if="item.versionNo !== currentVersion"
             class="editor-host__btn editor-host__btn--small"
             @click="rollback(item.versionNo)"
           >
-            回滚
+            {{ t('editor.rollback') }}
           </button>
         </li>
       </ul>
@@ -251,8 +253,8 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
     <div v-if="diffLines" class="editor-host__modal" data-testid="diff-modal">
       <div class="editor-host__modal-body">
         <header class="editor-host__modal-bar">
-          <h3>版本对比 {{ diffTitle }}</h3>
-          <button class="editor-host__btn" @click="diffLines = null">关闭</button>
+          <h3>{{ t('editor.diffTitle', { title: diffTitle }) }}</h3>
+          <button class="editor-host__btn" @click="diffLines = null">{{ t('common.close') }}</button>
         </header>
         <pre class="diff">
 <span

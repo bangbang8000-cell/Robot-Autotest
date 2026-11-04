@@ -211,6 +211,64 @@ class OverviewRepositoryIT {
         }
     }
 
+    /**
+     * 分组键的**空值口径**（UX-03 回归点）。
+     *
+     * <p>历史实现用 {@code COALESCE(NULLIF(col, ''), '未标注')} 在 SQL 里拼中文展示文案，
+     * 结果是接口把「未标注」当数据吐给前端——英文界面必然冒中文，且前端只能靠字符串
+     * 相等判断哪一项是"未填"。现已改为 `COALESCE(col, '')`：空串表示未填，
+     * 由前端按当前语言翻译。
+     *
+     * <p>这条测试专门盯住"退回中文哨兵"的改动，因为它在中文界面下**看起来完全正常**。
+     */
+    @Test
+    @DisplayName("分组键：未填的优先级/技术域返回空串，接口不返回中文展示文案")
+    void 分组键空值返回空串() {
+        assertThat(DB_NAME).as("集成测试库名必须以 _it 结尾，防止误清开发库").endsWith("_it");
+
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource());
+        OverviewService service = new OverviewService(
+                new OverviewRepositoryJdbc(jdbc),
+                new AccessControlService(new UserRepositoryJdbc(jdbc), new ProjectRepositoryJdbc(jdbc)));
+
+        String stamp = String.valueOf(System.currentTimeMillis());
+        String username = "it-ovw-key-" + stamp;
+        String projectCode = "IT-OVW-KEY-" + stamp;
+        Long userId = null;
+        Long projectId = null;
+        try {
+            userId = seedUser(jdbc, username);
+            projectId = seedProject(jdbc, projectCode, userId);
+            seedMember(jdbc, projectId, userId);
+            TenantContext.set(userId, username, null);
+
+            seedCase(jdbc, projectId, "OVW-K1", "P0", "draft", "rdma");
+            // priority / domain_tag 允许为 NULL；review_status 是 NOT NULL DEFAULT 'draft'
+            jdbc.update("INSERT INTO test_case (project_id, case_code, title) VALUES (?, ?, ?)",
+                    projectId, "OVW-K2", "未填优先级与技术域");
+
+            ProjectOverview view = service.load(projectId, 8, WINDOW_DAYS);
+
+            assertThat(pairs(view.cases().byPriority()))
+                    .as("空优先级要归到空串，不能是「未标注」")
+                    .containsExactlyInAnyOrder("P0=1", "=1");
+            assertThat(pairs(view.cases().topDomains()))
+                    .as("空技术域要归到空串")
+                    .containsExactlyInAnyOrder("rdma=1", "=1");
+            assertThat(view.cases().byPriority())
+                    .as("接口返回的 key 不允许含中文（那是展示文案，不是数据）")
+                    .allSatisfy(item -> assertThat(item.key()).matches("[^\\u4e00-\\u9fff]*"));
+            assertThat(view.cases().topDomains())
+                    .allSatisfy(item -> assertThat(item.key()).matches("[^\\u4e00-\\u9fff]*"));
+
+            System.out.println("[UX-03] 分组键空值：byPriority=" + pairs(view.cases().byPriority())
+                    + " topDomains=" + pairs(view.cases().topDomains()));
+        } finally {
+            TenantContext.clear();
+            cleanup(jdbc, projectId, null, null, userId, projectCode, null, null, username);
+        }
+    }
+
     private static List<String> pairs(List<ProjectOverview.CountItem> items) {
         return items.stream().map(item -> item.key() + "=" + item.count()).toList();
     }

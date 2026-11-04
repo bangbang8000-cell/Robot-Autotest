@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ApiError } from '@/api/http'
 import { auditApi, type AuditEntry } from '@/api/audit'
 import { useAuthStore } from '@/stores/auth'
+import ErrorLineView from '@/components/ErrorLine.vue'
+import { localizeError, type ErrorLine } from '@/utils/errors'
+import { formatDateTime } from '@/utils/format'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -29,7 +31,7 @@ const rows = ref<AuditEntry[]>([])
 const total = ref(0)
 const page = ref(1)
 const loading = ref(false)
-const error = ref('')
+const error = ref<ErrorLine | null>(null)
 const message = ref('')
 
 // 空串代表「全部项目」：管理员可查全局，项目所有者只查本项目
@@ -42,9 +44,6 @@ const filter = reactive({
 
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / size)))
 
-function errText(e: unknown): string {
-  return e instanceof ApiError ? `${e.codeName}：${e.message}` : String(e)
-}
 
 function params(nextPage = page.value) {
   return {
@@ -57,14 +56,8 @@ function params(nextPage = page.value) {
   }
 }
 
-function fmt(value: string | null): string {
-  if (!value) return '—'
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
-}
-
 async function load(nextPage = page.value): Promise<void> {
-  error.value = ''
+  error.value = null
   loading.value = true
   try {
     const result = await auditApi.page(params(nextPage))
@@ -72,7 +65,7 @@ async function load(nextPage = page.value): Promise<void> {
     total.value = result.total
     page.value = result.page
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
     rows.value = []
     total.value = 0
   } finally {
@@ -91,7 +84,7 @@ function turnPage(next: number): void {
 }
 
 async function exportCsv(): Promise<void> {
-  error.value = ''
+  error.value = null
   message.value = ''
   try {
     const blob = await auditApi.exportCsv(params(1))
@@ -103,7 +96,7 @@ async function exportCsv(): Promise<void> {
     URL.revokeObjectURL(url)
     message.value = t('audit.exported')
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 
@@ -117,7 +110,7 @@ onMounted(() => {
     <h1 class="page-title">{{ t('audit.title') }}</h1>
     <p class="muted">{{ t('audit.hint') }}</p>
 
-    <p v-if="error" class="text-fail">{{ error }}</p>
+    <ErrorLineView v-if="error" :error="error" />
     <p v-if="message" class="text-ok">{{ message }}</p>
 
     <section class="card wide-card">
@@ -157,7 +150,7 @@ onMounted(() => {
         </thead>
         <tbody>
           <tr v-for="row in rows" :key="row.id">
-            <td>{{ fmt(row.occurredAt) }}</td>
+            <td>{{ formatDateTime(row.occurredAt) }}</td>
             <td>{{ row.operator ?? '—' }}</td>
             <td>{{ row.action }}</td>
             <td>{{ row.resourceType }}</td>

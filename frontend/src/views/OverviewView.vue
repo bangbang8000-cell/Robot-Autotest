@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ApiError } from '@/api/http'
 import { overviewApi, type CountItem, type ProjectOverview } from '@/api/overview'
 import { useAuthStore } from '@/stores/auth'
 import ProjectPicker from '@/components/ProjectPicker.vue'
+import ErrorLineView from '@/components/ErrorLine.vue'
+import { localizeError, type ErrorLine } from '@/utils/errors'
+import { formatDateTime, formatDuration, formatPercent } from '@/utils/format'
+import { reviewStatusLabel, runStatusLabel, triggerTypeLabel } from '@/utils/statusLabels'
 
 /**
  * 项目总览（OVW-01）。
@@ -15,13 +18,13 @@ import ProjectPicker from '@/components/ProjectPicker.vue'
  * 空态是这个页面的正事：真实新项目就是 0 用例 0 运行，如果照常渲染一排 0 和 0%，
  * 用户会以为坏了。所以每个区块都有「下一步点哪里」的引导。
  */
-const { t, te } = useI18n()
+const { t } = useI18n()
 const auth = useAuthStore()
 
 const projectId = computed(() => auth.projectId ?? 0)
 const data = ref<ProjectOverview | null>(null)
 const loading = ref(false)
-const error = ref('')
+const error = ref<ErrorLine | null>(null)
 
 const BAR_HEIGHT = 110
 
@@ -38,7 +41,7 @@ const hasRuns = computed(() => (data.value?.runs.total ?? 0) > 0)
 const hasFinishedRuns = computed(() => (data.value?.runs.finished ?? 0) > 0)
 
 async function load(): Promise<void> {
-  error.value = ''
+  error.value = null
   if (!projectId.value) {
     data.value = null
     return
@@ -47,7 +50,7 @@ async function load(): Promise<void> {
   try {
     data.value = await overviewApi.load(projectId.value)
   } catch (e) {
-    error.value = e instanceof ApiError ? `${e.codeName}：${e.message}` : String(e)
+    error.value = localizeError(e)
     data.value = null
   } finally {
     loading.value = false
@@ -58,36 +61,6 @@ async function load(): Promise<void> {
 // 不加 immediate 时 watch 不触发，load() 永不执行——页面会一直停在「加载中」。
 watch(projectId, () => void load(), { immediate: true })
 
-function pad(value: number): string {
-  return String(value).padStart(2, '0')
-}
-
-function formatTime(iso: string | null): string {
-  if (!iso) return '—'
-  const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) return '—'
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} `
-    + `${pad(date.getHours())}:${pad(date.getMinutes())}`
-}
-
-function formatDuration(ms: number | null): string {
-  if (ms === null || ms < 0) return '—'
-  if (ms < 1000) return `${ms} ms`
-  const seconds = ms / 1000
-  if (seconds < 60) return `${seconds.toFixed(1)} s`
-  return `${Math.floor(seconds / 60)}m ${Math.round(seconds % 60)}s`
-}
-
-/** 基点 → 百分比。null 一律显示「—」，绝不显示 0%——那会被读成「跑过且全挂」。 */
-function percent(bp: number | null): string {
-  return bp === null ? '—' : `${(bp / 100).toFixed(1)}%`
-}
-
-function stateText(state: string): string {
-  const key = `overview.state.${state}`
-  return te(key) ? t(key) : state
-}
-
 function stateClass(state: string): string {
   if (state === 'finished') return 'badge verdict-pass'
   if (state === 'failed') return 'badge verdict-fail'
@@ -95,24 +68,17 @@ function stateClass(state: string): string {
   return 'badge verdict-skip'
 }
 
-function triggerText(type: string): string {
-  const key = `overview.trigger.${type}`
-  return te(key) ? t(key) : type
-}
-
-function reviewText(key: string): string {
-  const path = `overview.reviewStatus.${key}`
-  return te(path) ? t(path) : key
-}
-
 function chips(items: CountItem[]): string {
   return items.map((item) => `${item.key} ${item.count}`).join(' · ')
 }
 
-/** 后端把空的 domain_tag 归一成「未标注」；英文界面要能翻译，其余值原样展示。 */
+/**
+ * 后端把空的 domain_tag 原样返回空串（OVW-01 修订：SQL 不再吐中文哨兵），
+ * 空串才代表「未标注」，其余值原样展示。
+ */
 function domainChips(items: CountItem[]): string {
   return items
-    .map((item) => `${item.key === '未标注' ? t('overview.cases.unset') : item.key} ${item.count}`)
+    .map((item) => `${item.key === '' ? t('overview.cases.unset') : item.key} ${item.count}`)
     .join(' · ')
 }
 
@@ -139,12 +105,12 @@ function dayLabel(date: string): string {
 
     <p class="page-hint">
       {{ t('overview.subtitle') }}
-      <span v-if="data"> · {{ t('overview.generatedAt', { time: formatTime(data.generatedAt) }) }}</span>
+      <span v-if="data"> · {{ t('overview.generatedAt', { time: formatDateTime(data.generatedAt) }) }}</span>
     </p>
 
     <p v-if="!projectId" class="muted">{{ t('overview.noProject') }}</p>
     <p v-else-if="loading" class="muted">{{ t('common.loading') }}</p>
-    <p v-else-if="error" class="text-fail">{{ error }}</p>
+    <ErrorLineView v-else-if="error" :error="error" />
 
     <template v-else-if="data">
       <section class="stat-grid">
@@ -160,7 +126,7 @@ function dayLabel(date: string): string {
             <div class="stat-row">
               <span class="muted">{{ t('overview.cases.review') }}</span>
               <span>{{ data.cases.byReviewStatus
-                .map((item) => `${reviewText(item.key)} ${item.count}`).join(' · ') }}</span>
+                .map((item) => `${reviewStatusLabel(item.key)} ${item.count}`).join(' · ') }}</span>
             </div>
             <div class="stat-row">
               <span class="muted">{{ t('overview.cases.domains') }}</span>
@@ -201,7 +167,7 @@ function dayLabel(date: string): string {
         <article class="stat-card">
           <span class="stat-label">{{ t('overview.runs.passRate') }}</span>
           <span class="stat-value" :class="{ muted: data.runs.passRateBp === null }">
-            {{ percent(data.runs.passRateBp) }}
+            {{ formatPercent(data.runs.passRateBp) }}
           </span>
           <span class="stat-sub">{{ t('overview.runs.passRateHint', { days: data.windowDays }) }}</span>
           <template v-if="hasFinishedRuns">
@@ -215,7 +181,7 @@ function dayLabel(date: string): string {
             </div>
             <div class="stat-row">
               <span class="muted">{{ t('overview.runs.lastRun') }}</span>
-              <span>{{ formatTime(data.runs.lastRunAt) }}</span>
+              <span>{{ formatDateTime(data.runs.lastRunAt) }}</span>
             </div>
           </template>
           <div v-else class="empty-box">
@@ -299,13 +265,13 @@ function dayLabel(date: string): string {
           <tbody>
             <tr v-for="run in data.recentRuns" :key="run.runId">
               <td>{{ run.runId }}</td>
-              <td><span :class="stateClass(run.state)">{{ stateText(run.state) }}</span></td>
-              <td>{{ formatTime(run.startedAt) }}</td>
+              <td><span :class="stateClass(run.state)">{{ runStatusLabel(run.state) }}</span></td>
+              <td>{{ formatDateTime(run.startedAt) }}</td>
               <td>{{ formatDuration(run.durationMs) }}</td>
               <td>{{ run.total }}</td>
-              <td>{{ percent(run.passRateBp) }}</td>
+              <td>{{ formatPercent(run.passRateBp) }}</td>
               <td>{{ run.dut || '—' }}<span v-if="run.link" class="muted"> · {{ run.link }}</span></td>
-              <td>{{ triggerText(run.triggerType) }}</td>
+              <td>{{ triggerTypeLabel(run.triggerType) }}</td>
             </tr>
           </tbody>
         </table>

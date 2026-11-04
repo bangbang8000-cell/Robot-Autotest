@@ -1,0 +1,4 @@
+TC-I18N-06 格式化实测（esbuild 打包 format.ts 后 node 直跑，同一时间戳/时长/字节）：
+  zh-CN | dt: 2026/11/04 18:30:00 | dur: 1.5秒 | bytes: 2.30 MB | pct: 87.5% | null: "—"
+  en-US | dt: 11/04/2026, 18:30:00 | dur: 1.5s | bytes: 2.30 MB | pct: 87.5% | null: "—"
+结论：日期与时长单位随 locale 变化（秒/s），null 统一为「—」不显示 0

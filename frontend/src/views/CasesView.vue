@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ApiError } from '@/api/http'
 import {
   caseApi,
   type CapabilityStat,
@@ -11,6 +10,14 @@ import {
 } from '@/api/cases'
 import { useAuthStore } from '@/stores/auth'
 import ProjectPicker from '@/components/ProjectPicker.vue'
+import ErrorLineView from '@/components/ErrorLine.vue'
+import { localizeError, type ErrorLine } from '@/utils/errors'
+import {
+  PRIORITIES,
+  REVIEW_STATUSES,
+  priorityLabel,
+  reviewStatusLabel,
+} from '@/utils/statusLabels'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -23,7 +30,7 @@ const page = ref(1)
 const size = 10
 const total = ref(0)
 const loading = ref(false)
-const error = ref('')
+const error = ref<ErrorLine | null>(null)
 const message = ref('')
 
 const cases = ref<TestCase[]>([])
@@ -50,12 +57,8 @@ const importMessage = ref('')
 const projectId = computed(() => auth.projectId ?? 0)
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / size)))
 
-function errText(e: unknown): string {
-  return e instanceof ApiError ? `${e.codeName}：${e.message}` : String(e)
-}
-
 async function load(): Promise<void> {
-  error.value = ''
+  error.value = null
   message.value = ''
   if (!projectId.value) {
     cases.value = []
@@ -79,7 +82,7 @@ async function load(): Promise<void> {
     total.value = result.total
     capabilities.value = caps
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   } finally {
     loading.value = false
   }
@@ -108,10 +111,10 @@ function turnPage(next: number): void {
 }
 
 async function createCase(): Promise<void> {
-  error.value = ''
+  error.value = null
   message.value = ''
   if (!form.caseCode.trim() || !form.title.trim()) {
-    error.value = t('cases.requiredCodeTitle')
+    error.value = { summary: t('cases.requiredCodeTitle'), detail: null }
     return
   }
   try {
@@ -132,7 +135,7 @@ async function createCase(): Promise<void> {
     showForm.value = false
     await load()
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 
@@ -145,12 +148,12 @@ async function reviewCase(item: TestCase, approved: boolean): Promise<void> {
 }
 
 async function act(action: () => Promise<unknown>): Promise<void> {
-  error.value = ''
+  error.value = null
   try {
     await action()
     await load()
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 
@@ -167,23 +170,23 @@ function pickFile(event: Event): void {
 }
 
 async function runPreview(): Promise<void> {
-  error.value = ''
+  error.value = null
   importMessage.value = ''
   preview.value = null
   if (!importFile.value) {
-    error.value = t('cases.import.pickFile')
+    error.value = { summary: t('cases.import.pickFile'), detail: null }
     return
   }
   try {
     preview.value = await caseApi.previewImport(projectId.value, importFile.value)
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 
 async function runCommit(): Promise<void> {
   if (!preview.value || preview.value.errors.length > 0) {
-    error.value = t('cases.import.fixErrors')
+    error.value = { summary: t('cases.import.fixErrors'), detail: null }
     return
   }
   try {
@@ -196,7 +199,7 @@ async function runCommit(): Promise<void> {
     preview.value = null
     await load()
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 </script>
@@ -217,17 +220,13 @@ async function runCommit(): Promise<void> {
       />
       <select v-model="priority" class="input">
         <option value="">{{ t('cases.allPriority') }}</option>
-        <option value="P0">P0</option>
-        <option value="P1">P1</option>
-        <option value="P2">P2</option>
-        <option value="P3">P3</option>
+        <option v-for="item in PRIORITIES" :key="item" :value="item">{{ priorityLabel(item) }}</option>
       </select>
       <select v-model="reviewStatus" class="input">
         <option value="">{{ t('cases.allStatus') }}</option>
-        <option value="draft">draft</option>
-        <option value="pending">pending</option>
-        <option value="approved">approved</option>
-        <option value="rejected">rejected</option>
+        <option v-for="item in REVIEW_STATUSES" :key="item" :value="item">
+          {{ reviewStatusLabel(item) }}
+        </option>
       </select>
       <input v-model="domain" class="input" :placeholder="t('cases.domain')" />
       <button class="btn" type="button" @click="showForm = !showForm">
@@ -239,7 +238,7 @@ async function runCommit(): Promise<void> {
       <button class="btn btn-ghost" type="button" @click="load">{{ t('common.refresh') }}</button>
     </div>
 
-    <p v-if="error" class="text-fail">{{ error }}</p>
+    <ErrorLineView v-if="error" :error="error" />
     <p v-if="message" class="text-ok">{{ message }}</p>
     <p v-if="loading" class="muted">{{ t('common.loading') }}</p>
 
@@ -248,10 +247,7 @@ async function runCommit(): Promise<void> {
       <input v-model="form.title" class="input wide" :placeholder="t('cases.title')" />
       <input v-model="form.category" class="input" :placeholder="t('cases.category')" />
       <select v-model="form.priority" class="input">
-        <option value="P0">P0</option>
-        <option value="P1">P1</option>
-        <option value="P2">P2</option>
-        <option value="P3">P3</option>
+        <option v-for="item in PRIORITIES" :key="item" :value="item">{{ priorityLabel(item) }}</option>
       </select>
       <input v-model="form.domainTag" class="input" :placeholder="t('cases.domain')" />
       <input v-model="form.capability" class="input" :placeholder="t('cases.capability')" />
@@ -303,8 +299,8 @@ async function runCommit(): Promise<void> {
         <tr v-for="c in cases" :key="c.id">
           <td>{{ c.caseCode }}</td>
           <td>{{ c.title }}</td>
-          <td>{{ c.priority }}</td>
-          <td>{{ c.reviewStatus }}</td>
+          <td>{{ priorityLabel(c.priority) }}</td>
+          <td>{{ reviewStatusLabel(c.reviewStatus) }}</td>
           <td>{{ c.domainTag }}</td>
           <td>{{ c.capability }}</td>
           <td>

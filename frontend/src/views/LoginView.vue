@@ -2,8 +2,9 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ApiError } from '@/api/http'
 import { useAuthStore } from '@/stores/auth'
+import ErrorLineView from '@/components/ErrorLine.vue'
+import { localizeError, type ErrorLine } from '@/utils/errors'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -13,12 +14,12 @@ const auth = useAuthStore()
 const username = ref('')
 const password = ref('')
 const submitting = ref(false)
-const error = ref('')
+const error = ref<ErrorLine | null>(null)
 
 async function submit(): Promise<void> {
-  error.value = ''
+  error.value = null
   if (!username.value.trim() || !password.value) {
-    error.value = t('login.required')
+    error.value = { summary: t('login.required'), detail: null }
     return
   }
   submitting.value = true
@@ -27,7 +28,7 @@ async function submit(): Promise<void> {
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/overview'
     await router.replace(redirect)
   } catch (e) {
-    error.value = e instanceof ApiError ? `${e.codeName}：${e.message}` : String(e)
+    error.value = localizeError(e)
   } finally {
     submitting.value = false
   }
@@ -49,7 +50,7 @@ async function submit(): Promise<void> {
         <input v-model="password" class="input" type="password" autocomplete="current-password" />
       </label>
 
-      <p v-if="error" class="text-fail">{{ error }}</p>
+      <ErrorLineView v-if="error" :error="error" />
       <button class="btn login-btn" type="submit" :disabled="submitting">
         {{ submitting ? t('login.submitting') : t('login.submit') }}
       </button>

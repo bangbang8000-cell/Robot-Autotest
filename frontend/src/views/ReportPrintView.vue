@@ -10,13 +10,15 @@ import {
   type ReportPrintData,
   type ReportSuiteNode,
 } from '@/api/reports'
+import { localizeError, type ErrorLine } from '@/utils/errors'
+import { formatDateTime } from '@/utils/format'
 
 const route = useRoute()
 const { t } = useI18n()
 
 const data = ref<ReportPrintData | null>(null)
 const loading = ref(true)
-const error = ref('')
+const error = ref<ErrorLine | null>(null)
 
 const runId = computed(() => String(route.params.runId ?? ''))
 
@@ -61,7 +63,7 @@ function metadataValue(key: string): string {
 }
 
 function printedAt(): string {
-  return new Date().toLocaleString()
+  return formatDateTime(new Date().toISOString())
 }
 
 function printPage(): void {
@@ -72,17 +74,18 @@ onMounted(async () => {
   document.body.classList.add('print-mode')
   const token = String(route.query.token ?? '')
   if (!token) {
-    error.value = t('reports.print.invalidToken')
+    error.value = { summary: t('reports.print.invalidToken'), detail: null }
     loading.value = false
     return
   }
   try {
     data.value = await reportsApi.printData(runId.value, token)
   } catch (e) {
+    // 打印链接是一次性 token，404 就等价于「链接无效」，比通用 404 文案更贴切
     error.value =
-      e instanceof ApiError
-        ? e.message
-        : t('reports.print.invalidToken')
+      e instanceof ApiError && e.codeName === 'NOT_FOUND'
+        ? { summary: t('reports.print.invalidToken'), detail: null }
+        : localizeError(e)
   } finally {
     loading.value = false
   }
@@ -104,7 +107,7 @@ onUnmounted(() => {
 
     <div v-if="error" class="print-error">
       <h1>{{ t('reports.print.title') }}</h1>
-      <p>{{ error }}</p>
+      <p>{{ error.summary }}</p>
     </div>
 
     <template v-else-if="data">

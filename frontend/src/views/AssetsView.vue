@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ApiError } from '@/api/http'
 import {
   credentialApi,
   deviceApi,
@@ -13,6 +12,8 @@ import {
 } from '@/api/asset'
 import { useAuthStore } from '@/stores/auth'
 import ProjectPicker from '@/components/ProjectPicker.vue'
+import ErrorLineView from '@/components/ErrorLine.vue'
+import { localizeError, type ErrorLine } from '@/utils/errors'
 
 type Tab = 'devices' | 'links' | 'credentials'
 
@@ -25,7 +26,7 @@ const page = ref(1)
 const size = 10
 const total = ref(0)
 const loading = ref(false)
-const error = ref('')
+const error = ref<ErrorLine | null>(null)
 const message = ref('')
 
 const devices = ref<Device[]>([])
@@ -77,12 +78,9 @@ const credentialForm = reactive({
 const projectId = computed(() => auth.projectId ?? 0)
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / size)))
 
-function errText(e: unknown): string {
-  return e instanceof ApiError ? `${e.codeName}：${e.message}` : String(e)
-}
 
 async function load(): Promise<void> {
-  error.value = ''
+  error.value = null
   message.value = ''
   if (!projectId.value) {
     devices.value = []
@@ -120,7 +118,7 @@ async function load(): Promise<void> {
       total.value = credentials.value.length
     }
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   } finally {
     loading.value = false
   }
@@ -147,10 +145,10 @@ function turnPage(next: number): void {
 }
 
 async function createDevice(): Promise<void> {
-  error.value = ''
+  error.value = null
   message.value = ''
   if (!deviceForm.name.trim()) {
-    error.value = t('assets.requiredName')
+    error.value = { summary: t('assets.requiredName'), detail: null }
     return
   }
   try {
@@ -164,7 +162,7 @@ async function createDevice(): Promise<void> {
     deviceForm.name = ''
     await load()
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 
@@ -174,7 +172,7 @@ async function removeDevice(device: Device): Promise<void> {
     await deviceApi.remove(projectId.value, device.id)
     await load()
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 
@@ -191,7 +189,7 @@ async function addPort(): Promise<void> {
   const deviceId = expandedDeviceId.value
   if (!deviceId) return
   if (!portForm.portName.trim()) {
-    error.value = t('assets.requiredPortName')
+    error.value = { summary: t('assets.requiredPortName'), detail: null }
     return
   }
   try {
@@ -203,7 +201,7 @@ async function addPort(): Promise<void> {
     portForm.portName = ''
     ports.value = await deviceApi.ports(projectId.value, deviceId)
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 
@@ -219,10 +217,10 @@ async function loadPortsFor(side: 'a' | 'b', deviceId: number | null): Promise<v
 }
 
 async function createLink(): Promise<void> {
-  error.value = ''
+  error.value = null
   message.value = ''
   if (!linkForm.name.trim()) {
-    error.value = t('assets.requiredName')
+    error.value = { summary: t('assets.requiredName'), detail: null }
     return
   }
   try {
@@ -232,7 +230,7 @@ async function createLink(): Promise<void> {
     showForm.value = false
     await load()
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 
@@ -242,15 +240,15 @@ async function removeLink(link: Link): Promise<void> {
     await linkApi.remove(projectId.value, link.id)
     await load()
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 
 async function createCredential(): Promise<void> {
-  error.value = ''
+  error.value = null
   message.value = ''
   if (!credentialForm.name.trim() || !credentialForm.secret) {
-    error.value = t('assets.requiredCredential')
+    error.value = { summary: t('assets.requiredCredential'), detail: null }
     return
   }
   try {
@@ -267,7 +265,7 @@ async function createCredential(): Promise<void> {
     showForm.value = false
     await load()
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 
@@ -277,7 +275,7 @@ async function removeCredential(credential: Credential): Promise<void> {
     await credentialApi.remove(projectId.value, credential.id)
     await load()
   } catch (e) {
-    error.value = errText(e)
+    error.value = localizeError(e)
   }
 }
 </script>
@@ -319,7 +317,7 @@ async function removeCredential(credential: Credential): Promise<void> {
       <button class="btn btn-ghost" type="button" @click="load">{{ t('common.refresh') }}</button>
     </div>
 
-    <p v-if="error" class="text-fail">{{ error }}</p>
+    <ErrorLineView v-if="error" :error="error" />
     <p v-if="message" class="text-ok">{{ message }}</p>
     <p v-if="loading" class="muted">{{ t('common.loading') }}</p>
 

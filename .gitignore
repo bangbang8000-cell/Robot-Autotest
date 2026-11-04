@@ -16,3 +16,4 @@ selenium-screenshot-*.png
 
 # 本地开发文档（不上 GitHub）
 AGENTS.md
+.chrome-profile/

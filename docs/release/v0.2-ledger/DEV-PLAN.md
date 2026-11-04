@@ -360,6 +360,34 @@ Windows 下用 Python 的 `io.open(path, 'w')` 改文件，会把整个文件的
 **已知边界（写在这里免得扯皮）**：服务端 `detail` 仍是中文（213 处业务异常），本包只做「主文案本地化 + 详情折叠」。
 彻底解决需服务端错误结构化，单列 `UX-03b`，不在本包。
 
+**实际完成（2026-11-04 回写）**：
+
+| 计划步骤 | 实际情况 | 偏差说明 |
+|---:|---|---|
+| 1 | `EditorView.vue` 全部中文抽键 + `EditorView` 语言包段新建 | 计划写「24 处」，实测盘点 **14 处**——计划数是拍脑袋估计，以扫描为准 |
+| 2 | 顺带清理：`api/execution.ts` 里 `'操作人取消'` 默认参数改由前端传键名 | 计划低估；实际用逐文件扫描兜底而不是凭印象列清单 |
+| 3 | `utils/statusLabels.ts`：五组词表 + `ENUM_GROUPS` 声明 + 六个映射函数；下拉选项也从它取（`RUN_STATUSES`/`REVIEW_STATUSES`），消灭「下拉与映射两处漂移」 | 计划没提下拉选项同源，实现时发现必须一起做 |
+| 4 | `utils/errors.ts`（localizeError + ErrorLine）+ `ErrorLine.vue` 组件 + `http.ts` 网络层归一（断网/超时/非 JSON 都有 codeName） | 计划只写「1 个 ts」，实际错误渲染散在 12 个 view 里，必须做组件否则模板重复 12 遍 |
+| 5 | `utils/format.ts` 六个函数，替换 4 个 view 里各自手写的 `fmt`/`formatBytes`/`stateLabel` | 同上，扫描发现的重复实现比计划多 |
+| 6 | `tools/check_i18n.py` **五项**检查 + 三轮破坏性自检（删 en 键 / 两侧同删枚举键 / 同值漏译） | 计划三项；第 4 项「代码引用键存在」、第 5 项「受控词表逐值核对」是本包真实事故（枚举键误删导致界面裸 `approved`）的直接产物 |
+
+**计划外新增（超范围但必要）**：
+
+- **后端总览接口去中文哨兵**：`OverviewRepositoryJdbc` 原来把空 `domain_tag` 渲染成 `'未标注'` 吐给前端——
+  英文界面必冒中文。改为 `COALESCE(col, '')` 吐原始值，前端按语言翻成「未标注 / Not set」。
+  `OverviewRepositoryIT` 新增一条用例锁住「分组键空值返回**空串**而非展示文案」（2 条全绿）。
+- **`ProjectOverview.CountItem` javadoc 写明契约**：key 是原始库值，接口永不返回展示文案。
+
+**本包踩的环境坑（记录给后续 UI 包，都是真实发生）**：
+
+1. **遗留进程干扰**：上个会话留下的 vite（5173）与后端（WSL 内 java，占 8080，经 WSL2 localhost 转发）一直活着，
+   走查打到**旧代码**上，「改了没生效」的假象查了三轮。教训：**UI 走查前先 `netstat` + 双平台进程清点**，杀干净再起。
+2. **shell 代理劫持 curl**：本会话有 `HTTP_PROXY=127.0.0.1:54877`，所有 curl 打 localhost 都被代理转发，
+   表现为「upstream connect failed (os error 10061)」。本地验证一律 `curl --noproxy '*'`。
+3. **vite 默认只绑 IPv6 回环**：Chrome 走 IPv4 打不到。开发自测用 `--host 127.0.0.1`。
+4. **`CRED_MASTER_KEY` 是启动硬前置**（有意设计，勿"修"成默认值）：本地固定密钥放 `~/.config/robot-autotest/env`
+   （不入仓）。用临时密钥启动过的库，此前加密的 credential 行换钥后解不开——本机开发库 2 行已因此作废（试验数据，可弃）。
+
 ### 10.5 UX-02 列表批量（用例优先）
 
 | 步骤 | 内容 | 产出 | 验收命令 |
