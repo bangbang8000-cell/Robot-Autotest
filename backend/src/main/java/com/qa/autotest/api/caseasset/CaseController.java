@@ -98,6 +98,18 @@ public class CaseController {
         return ApiResponse.ok(cases.review(projectId, id, approved, request.comment()));
     }
 
+    /**
+     * 批量操作（UX-02，FR-v0.2-36~39）：部分成功返回 200 + 逐条结果。
+     *
+     * <p>仅参数级错误（ids 空 / 超 200 / action 未知 / 动作专属参数缺失）返回 400。
+     */
+    @PostMapping("/cases/batch")
+    public ApiResponse<TestCaseService.BatchResult> batch(
+            @PathVariable long projectId,
+            @RequestBody TestCaseService.BatchRequest request) {
+        return ApiResponse.ok(cases.batch(projectId, request));
+    }
+
     @GetMapping("/capabilities")
     public ApiResponse<List<CapabilityStat>> capabilities(@PathVariable long projectId) {
         return ApiResponse.ok(capabilities.list(projectId));

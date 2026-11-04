@@ -32,6 +32,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "frontend" / "src"
 LOCALES = SRC / "locales"
+
+
+def is_test_file(path: Path) -> bool:
+    """单测与测试基建文件：用例描述合法含中文，不参与 UI 文案守门。"""
+    return path.name.endswith(".spec.ts") or path.name == "test-setup.ts"
 ZH = LOCALES / "zh-CN.ts"
 EN = LOCALES / "en-US.ts"
 
@@ -271,10 +276,12 @@ def main() -> int:
         print("[2/5] 键集相等：通过")
 
     # 检查 2：源码零硬编码中文
+    # 测试文件（*.spec.ts / test-setup.ts）豁免：用例描述与注释合法含中文，
+    # 不是 UI 字符串；UI 文案守门只针对运行时代码（UX-02 引入 vitest 时补的口径）。
     scanned = 0
     hardcoded = 0
     for path in sorted(list(SRC.rglob("*.vue")) + list(SRC.rglob("*.ts"))):
-        if LOCALES in path.parents:
+        if LOCALES in path.parents or is_test_file(path):
             continue
         scanned += 1
         for kind, snippet in scan_file(path):
@@ -290,7 +297,7 @@ def main() -> int:
     # 自检 4：代码里用到的字面量键必须存在
     used: set[str] = set()
     for path in list(SRC.rglob("*.vue")) + list(SRC.rglob("*.ts")):
-        if LOCALES in path.parents:
+        if LOCALES in path.parents or is_test_file(path):
             continue
         used |= literal_keys(path)
     missing = sorted(key for key in used if key not in zh or key not in en)

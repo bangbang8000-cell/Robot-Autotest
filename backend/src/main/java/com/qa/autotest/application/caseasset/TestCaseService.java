@@ -16,9 +16,14 @@ import com.qa.autotest.domain.common.PageResult;
 import com.qa.autotest.domain.iam.PermissionAction;
 import com.qa.autotest.domain.iam.PermissionResource;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /** 用例台账（CAS-02）：台账可独立于脚本存在（ADR-0005）。 */
 @Service
@@ -38,14 +43,49 @@ public class TestCaseService {
     public record CaseDetail(TestCase testCase, List<TestCaseStep> steps) {
     }
 
+    /** 批量动作（UX-02，FR-v0.2-37）。 */
+    public static final Set<String> BATCH_ACTIONS =
+            Set.of("submit", "approve", "reject", "setPriority", "setDomainTag", "delete");
+
+    /** 单次批量上限（FR-v0.2-39）。 */
+    public static final int BATCH_MAX = 200;
+
+    /** 批量请求：reject 必须带 comment，setPriority 必须带 priority，setDomainTag 必须带 domainTag。 */
+    public record BatchRequest(String action, List<Long> ids, String comment,
+                               String priority, String domainTag) {
+    }
+
+    /** 逐条结果：失败带稳定错误码名（NOT_FOUND / CONFLICT / INTERNAL_ERROR）。 */
+    public record BatchItemResult(long id, boolean ok, String code, String message) {
+    }
+
+    /** 批量结果：部分成功语义（FR-v0.2-38）——逐条独立事务，失败不影响其他。 */
+    public record BatchResult(int total, int succeeded, int failed, List<BatchItemResult> items) {
+    }
+
     private final TestCaseRepository cases;
     private final AccessControlService access;
     private final AuditService audit;
+    private final TransactionTemplate tx;
 
+    /** Spring 装配入口：批量走逐条独立事务。 */
+    @org.springframework.beans.factory.annotation.Autowired
+    public TestCaseService(TestCaseRepository cases, AccessControlService access, AuditService audit,
+                           PlatformTransactionManager txManager) {
+        this(cases, access, audit, new TransactionTemplate(txManager));
+    }
+
+    /** 测试装配入口：不起事务代理（与既有测试一致），逐条直接执行。 */
     public TestCaseService(TestCaseRepository cases, AccessControlService access, AuditService audit) {
+        this(cases, access, audit, (TransactionTemplate) null);
+    }
+
+    private TestCaseService(TestCaseRepository cases, AccessControlService access, AuditService audit,
+                            TransactionTemplate tx) {
         this.cases = cases;
         this.access = access;
         this.audit = audit;
+        this.tx = tx;
     }
 
     public PageResult<TestCase> page(long projectId, String keyword, String domain, String priority,
@@ -143,6 +183,135 @@ public class TestCaseService {
         access.bindProject(projectId);
         access.require(PermissionResource.CASE, PermissionAction.READ);
         return cases.capabilities(projectId);
+    }
+
+    /**
+     * 批量操作（UX-02，FR-v0.2-36~39）。
+     *
+     * <p>契约硬规则（DEV-PLAN §10.5，不许简化）：
+     * <ul>
+     *   <li>部分成功返回 200 + 逐条结果；</li>
+     *   <li>逐条独立事务，单条失败不影响其他（有事务管理器时按条提交）；</li>
+     *   <li>仅「ids 空 / 超 200 / action 未知 / 动作专属参数缺失」返回 400；</li>
+     *   <li>每条写一次审计并带 {@code batch=<id>} 标识。</li>
+     * </ul>
+     */
+    public BatchResult batch(long projectId, BatchRequest request) {
+        access.bindProject(projectId);
+        String action = request.action() == null ? "" : request.action().trim();
+        if (!BATCH_ACTIONS.contains(action)) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
+                    "未知批量动作：" + request.action());
+        }
+        List<Long> ids = request.ids();
+        if (ids == null || ids.isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "ids 不能为空");
+        }
+        if (ids.size() > BATCH_MAX) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
+                    "单次批量上限 " + BATCH_MAX + " 条，请分批提交");
+        }
+        switch (action) {
+            case "reject" -> requireText(request.comment(), "驳回必须填写意见");
+            case "setPriority" -> requirePriority(request.priority());
+            case "setDomainTag" -> requireText(request.domainTag(), "技术域标签不能为空");
+            default -> {
+            }
+        }
+        // 权限一次判定：删除走 DELETE，其余走 UPDATE（与单条操作同口径）
+        access.require(PermissionResource.CASE,
+                "delete".equals(action) ? PermissionAction.DELETE : PermissionAction.UPDATE);
+
+        // batch 标识进审计 detail（FR-v0.2-39）：不动表结构，同批次可反查
+        String batchTag = "batch=" + UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+        List<BatchItemResult> items = new ArrayList<>(ids.size());
+        for (long id : ids) {
+            if (tx != null) {
+                items.add(tx.execute(status -> applyOne(projectId, id, action, request, batchTag)));
+            } else {
+                items.add(applyOne(projectId, id, action, request, batchTag));
+            }
+        }
+        int succeeded = (int) items.stream().filter(BatchItemResult::ok).count();
+        return new BatchResult(items.size(), succeeded, items.size() - succeeded, items);
+    }
+
+    /** 单条处理：异常转逐条结果，绝不向上抛（部分成功语义）。 */
+    private BatchItemResult applyOne(long projectId, long id, String action, BatchRequest req,
+                                     String batchTag) {
+        try {
+            TestCase existing = cases.find(projectId, id)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "用例不存在"));
+            ReviewStatus current = ReviewStatus.from(existing.reviewStatus());
+            String detail;
+            switch (action) {
+                case "submit" -> {
+                    if (current != ReviewStatus.DRAFT && current != ReviewStatus.REJECTED) {
+                        throw new BusinessException(ErrorCode.CONFLICT,
+                                "当前状态不可提交评审：" + current.code());
+                    }
+                    cases.updateReview(projectId, id, ReviewStatus.PENDING.code(), null, null, null);
+                    detail = "code=" + existing.caseCode();
+                }
+                case "approve" -> {
+                    if (current != ReviewStatus.PENDING) {
+                        throw new BusinessException(ErrorCode.CONFLICT, "只有待评审用例可通过");
+                    }
+                    cases.updateReview(projectId, id, ReviewStatus.APPROVED.code(), null,
+                            TenantContext.userId(), Instant.now());
+                    detail = "code=" + existing.caseCode();
+                }
+                case "reject" -> {
+                    if (current != ReviewStatus.PENDING) {
+                        throw new BusinessException(ErrorCode.CONFLICT, "只有待评审用例可驳回");
+                    }
+                    cases.updateReview(projectId, id, ReviewStatus.REJECTED.code(), req.comment(),
+                            TenantContext.userId(), Instant.now());
+                    detail = "code=" + existing.caseCode() + "; comment=" + req.comment();
+                }
+                case "setPriority" -> {
+                    String priority = requirePriority(req.priority());
+                    cases.updatePriority(projectId, id, priority, TenantContext.userId());
+                    detail = "code=" + existing.caseCode() + "; priority=" + priority;
+                }
+                case "setDomainTag" -> {
+                    String domainTag = req.domainTag().trim();
+                    cases.updateDomainTag(projectId, id, domainTag, TenantContext.userId());
+                    detail = "code=" + existing.caseCode() + "; domain=" + domainTag;
+                }
+                case "delete" -> {
+                    if (current == ReviewStatus.APPROVED) {
+                        throw new BusinessException(ErrorCode.CONFLICT, "已通过用例不可批量删除，请先驳回");
+                    }
+                    cases.delete(projectId, id);
+                    detail = "code=" + existing.caseCode() + "; title=" + existing.title();
+                }
+                default -> throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
+                        "未知批量动作：" + action);
+            }
+            audit.record("case.batch." + action, "test_case", String.valueOf(id),
+                    batchTag + "; " + detail);
+            return new BatchItemResult(id, true, null, null);
+        } catch (BusinessException ex) {
+            return new BatchItemResult(id, false, ex.errorCode().codeName(), ex.getMessage());
+        } catch (RuntimeException ex) {
+            return new BatchItemResult(id, false, ErrorCode.INTERNAL_ERROR.codeName(), ex.toString());
+        }
+    }
+
+    private static void requireText(String value, String message) {
+        if (value == null || value.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, message);
+        }
+    }
+
+    private static String requirePriority(String value) {
+        requireText(value, "改优先级必须指定 P0/P1/P2/P3");
+        try {
+            return Priority.from(value).name();
+        } catch (IllegalArgumentException ex) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, ex.getMessage());
+        }
     }
 
     private void saveSteps(long caseId, List<StepCommand> steps) {

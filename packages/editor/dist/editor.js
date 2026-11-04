@@ -2192,7 +2192,7 @@ const fr = { class: "keyword-palette" }, mr = { class: "palette-header" }, gr = 
       ])
     ]));
   }
-}), pi = /* @__PURE__ */ qe(di, [["__scopeId", "data-v-a8ed7b26"]]), fi = { class: "kw-autocomplete" }, mi = ["value", "placeholder"], gi = ["aria-selected", "onMouseenter", "onMousedown"], vi = { class: "kw-autocomplete-name" }, hi = { class: "kw-autocomplete-lib" }, yi = /* @__PURE__ */ je({
+}), pi = /* @__PURE__ */ qe(di, [["__scopeId", "data-v-504d2430"]]), fi = { class: "kw-autocomplete" }, mi = ["value", "placeholder"], gi = ["aria-selected", "onMouseenter", "onMousedown"], vi = { class: "kw-autocomplete-name" }, hi = { class: "kw-autocomplete-lib" }, yi = /* @__PURE__ */ je({
   __name: "KeywordAutocompleteInput",
   props: {
     value: {},
@@ -2478,7 +2478,7 @@ const fr = { class: "keyword-palette" }, mr = { class: "palette-header" }, gr = 
       _: 1
     }, 8, ["model-value", "title"]));
   }
-}), xi = /* @__PURE__ */ qe(Mi, [["__scopeId", "data-v-a75d4fa6"]]), Ui = /* @__PURE__ */ new Set(["text", "css", "role", "aria"]);
+}), xi = /* @__PURE__ */ qe(Mi, [["__scopeId", "data-v-737ea011"]]), Ui = /* @__PURE__ */ new Set(["text", "css", "role", "aria"]);
 function Bi(e) {
   return e.includes(">> nth=") || e.includes(":nth-match(") || e.includes(":nth-of-type(") || e.includes(">>>") || e.includes(">>");
 }
@@ -6280,7 +6280,7 @@ const Qc = { class: "flow-editor" }, Jc = { class: "flow-section-bar" }, ed = { 
       ]);
     };
   }
-}), If = /* @__PURE__ */ qe(Of, [["__scopeId", "data-v-a6829e74"]]), Wf = { class: "read-only-banner__msg" }, jf = ["href"], qf = /* @__PURE__ */ je({
+}), If = /* @__PURE__ */ qe(Of, [["__scopeId", "data-v-b19bd9b2"]]), Wf = { class: "read-only-banner__msg" }, jf = ["href"], qf = /* @__PURE__ */ je({
   __name: "ReadOnlyBanner",
   props: {
     role: {},
@@ -10359,7 +10359,7 @@ const ym = { class: "spec-tabs" }, bm = { class: "tab-buttons" }, wm = { class: 
       }, 8, ["modelValue", "title"])
     ], 6));
   }
-}), N_ = /* @__PURE__ */ qe(d_, [["__scopeId", "data-v-24b635b7"]]), p_ = {
+}), N_ = /* @__PURE__ */ qe(d_, [["__scopeId", "data-v-8d9875d7"]]), p_ = {
   robotEditor: {
     visualTab: "可视化编辑器",
     flowTab: "流程",

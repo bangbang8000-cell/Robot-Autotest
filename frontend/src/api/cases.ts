@@ -95,6 +95,40 @@ export interface TestSet {
   description: string | null
 }
 
+/** 批量动作（FR-v0.2-37：提交评审/通过/驳回/改优先级/改技术域/删除）。 */
+export type BatchAction =
+  | 'submit'
+  | 'approve'
+  | 'reject'
+  | 'setPriority'
+  | 'setDomainTag'
+  | 'delete'
+
+/** 批量请求：reject 必填 comment；setPriority 必填 priority；setDomainTag 必填 domainTag。 */
+export interface BatchRequest {
+  action: BatchAction
+  ids: number[]
+  comment?: string
+  priority?: string
+  domainTag?: string
+}
+
+/** 逐条结果：失败带稳定错误码名（NOT_FOUND / CONFLICT）。 */
+export interface BatchItemResult {
+  id: number
+  ok: boolean
+  code: string | null
+  message: string | null
+}
+
+/** 批量结果（部分成功语义：HTTP 200 + 逐条结果，FR-v0.2-38）。 */
+export interface BatchResult {
+  total: number
+  succeeded: number
+  failed: number
+  items: BatchItemResult[]
+}
+
 const base = (projectId: number): string => `/projects/${projectId}`
 
 export const caseApi = {
@@ -134,6 +168,12 @@ export const caseApi = {
     return request<CaseDetail>(`${base(projectId)}/cases/${id}/review`, {
       method: 'POST',
       body: JSON.stringify({ action: approved ? 'approve' : 'reject', comment }),
+    })
+  },
+  batch(projectId: number, body: BatchRequest) {
+    return request<BatchResult>(`${base(projectId)}/cases/batch`, {
+      method: 'POST',
+      body: JSON.stringify(body),
     })
   },
   capabilities(projectId: number) {

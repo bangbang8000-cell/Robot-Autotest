@@ -3,6 +3,8 @@ import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   caseApi,
+  type BatchAction,
+  type BatchResult,
   type CapabilityStat,
   type ImportPreview,
   type ImportRow,
@@ -10,8 +12,10 @@ import {
 } from '@/api/cases'
 import { useAuthStore } from '@/stores/auth'
 import ProjectPicker from '@/components/ProjectPicker.vue'
+import SelectionBar from '@/components/SelectionBar.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
+import { useSelection } from '@/composables/useSelection'
 import {
   PRIORITIES,
   REVIEW_STATUSES,
@@ -37,6 +41,25 @@ const cases = ref<TestCase[]>([])
 const capabilities = ref<CapabilityStat[]>([])
 const showForm = ref(false)
 const showImport = ref(false)
+
+// ---- 批量选择（UX-02，FR-v0.2-35/36）----
+const pageCaseIds = computed(() => cases.value.map((c) => c.id))
+const selection = useSelection(pageCaseIds)
+const {
+  count: selectedCount,
+  crossPageCount,
+  pageAllSelected,
+  pageIndeterminate,
+  isSelected,
+  toggle,
+  togglePage,
+  retain,
+  clear: clearSelection,
+} = selection
+const batchResult = ref<BatchResult | null>(null)
+const batchLoading = ref(false)
+const batchPriority = ref('P1')
+const batchDomain = ref('')
 
 const form = reactive({
   caseCode: '',
@@ -96,6 +119,9 @@ watch([projectId], () => {
   showForm.value = false
   showImport.value = false
   preview.value = null
+  // 切项目后选择集合里的 id 属于旧项目，必须清空，否则批量动作会打到错误项目
+  clearSelection()
+  batchResult.value = null
   void load()
 }, { immediate: true })
 
@@ -107,7 +133,50 @@ watch([keyword, priority, reviewStatus, domain], () => {
 function turnPage(next: number): void {
   if (next < 1 || next > pageCount.value) return
   page.value = next
-  void load()
+  void load()  // 选择跨页保留（FR-v0.2-35），翻页不清空
+}
+
+/**
+ * 批量动作（FR-v0.2-36~39）：部分成功返回 200，失败项保留勾选可重试。
+ * 仅「ids 空」不发起请求；参数级 400（如驳回缺意见）在本地前置拦截。
+ */
+async function runBatch(action: BatchAction): Promise<void> {
+  error.value = null
+  message.value = ''
+  const ids = [...selection.selectedIds.value]
+  if (ids.length === 0) return
+
+  let comment: string | undefined
+  if (action === 'reject') {
+    const input = window.prompt(t('cases.batch.rejectComment'))
+    comment = input?.trim() ?? ''
+    if (!comment) return // 驳回必填意见，空则中止
+  }
+  if (action === 'delete' && !window.confirm(t('cases.batch.confirmDelete'))) return
+  if (action === 'setPriority' && !batchPriority.value) return
+  if (action === 'setDomainTag' && !batchDomain.value.trim()) {
+    error.value = { summary: t('cases.batch.setDomainTag'), detail: null }
+    return
+  }
+
+  batchLoading.value = true
+  try {
+    const result = await caseApi.batch(projectId.value, {
+      action,
+      ids,
+      comment,
+      priority: action === 'setPriority' ? batchPriority.value : undefined,
+      domainTag: action === 'setDomainTag' ? batchDomain.value.trim() : undefined,
+    })
+    batchResult.value = result
+    // 失败项保留选中：重试只作用于它们（FR-v0.2-36）
+    retain(result.items.filter((i) => !i.ok).map((i) => i.id))
+    await load()
+  } catch (e) {
+    error.value = localizeError(e)
+  } finally {
+    batchLoading.value = false
+  }
 }
 
 async function createCase(): Promise<void> {
@@ -283,9 +352,87 @@ async function runCommit(): Promise<void> {
       <p v-if="importMessage" class="text-ok">{{ importMessage }}</p>
     </div>
 
+    <SelectionBar
+      v-if="selectedCount > 0"
+      :count="selectedCount"
+      :cross-page="crossPageCount"
+      :result="batchResult"
+      :loading="batchLoading"
+      @clear="clearSelection(); batchResult = null"
+    >
+      <button
+        class="btn btn-ghost"
+        type="button"
+        :disabled="batchLoading"
+        @click="runBatch('submit')"
+      >
+        {{ t('cases.batch.submit') }}
+      </button>
+      <button
+        class="btn btn-ghost"
+        type="button"
+        :disabled="batchLoading"
+        @click="runBatch('approve')"
+      >
+        {{ t('cases.batch.approve') }}
+      </button>
+      <button
+        class="btn btn-ghost"
+        type="button"
+        :disabled="batchLoading"
+        @click="runBatch('reject')"
+      >
+        {{ t('cases.batch.reject') }}
+      </button>
+      <select v-model="batchPriority" class="input" :disabled="batchLoading">
+        <option v-for="item in PRIORITIES" :key="item" :value="item">
+          {{ priorityLabel(item) }}
+        </option>
+      </select>
+      <button
+        class="btn btn-ghost"
+        type="button"
+        :disabled="batchLoading"
+        @click="runBatch('setPriority')"
+      >
+        {{ t('cases.batch.setPriority') }}
+      </button>
+      <input
+        v-model="batchDomain"
+        class="input"
+        :placeholder="t('cases.domain')"
+        :disabled="batchLoading"
+      />
+      <button
+        class="btn btn-ghost"
+        type="button"
+        :disabled="batchLoading"
+        @click="runBatch('setDomainTag')"
+      >
+        {{ t('cases.batch.setDomainTag') }}
+      </button>
+      <button
+        class="btn btn-ghost danger"
+        type="button"
+        :disabled="batchLoading"
+        @click="runBatch('delete')"
+      >
+        {{ t('cases.batch.delete') }}
+      </button>
+    </SelectionBar>
+
     <table v-if="cases.length" class="table">
       <thead>
         <tr>
+          <th class="col-check">
+            <input
+              type="checkbox"
+              :checked="pageAllSelected"
+              :indeterminate.prop="pageIndeterminate"
+              :aria-label="t('cases.batch.barLabel')"
+              @change="togglePage()"
+            />
+          </th>
           <th>{{ t('cases.caseCode') }}</th>
           <th>{{ t('cases.title') }}</th>
           <th>{{ t('cases.priority') }}</th>
@@ -297,6 +444,14 @@ async function runCommit(): Promise<void> {
       </thead>
       <tbody>
         <tr v-for="c in cases" :key="c.id">
+          <td class="col-check">
+            <input
+              type="checkbox"
+              :checked="isSelected(c.id)"
+              :aria-label="`${t('cases.caseCode')}: ${c.caseCode}`"
+              @change="toggle(c.id)"
+            />
+          </td>
           <td>{{ c.caseCode }}</td>
           <td>{{ c.title }}</td>
           <td>{{ priorityLabel(c.priority) }}</td>
@@ -355,3 +510,11 @@ async function runCommit(): Promise<void> {
     </section>
   </div>
 </template>
+
+<style scoped>
+/* 勾选列：窄列居中，不挤占正文 */
+.col-check {
+  width: 36px;
+  text-align: center;
+}
+</style>

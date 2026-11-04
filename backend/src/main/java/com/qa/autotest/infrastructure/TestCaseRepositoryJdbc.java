@@ -201,6 +201,26 @@ public class TestCaseRepositoryJdbc implements TestCaseRepository {
     }
 
     @Override
+    public void updatePriority(long projectId, long id, String priority, Long operatorId) {
+        String sql = """
+                UPDATE test_case SET priority = ?, updated_by = ?
+                 WHERE project_id = ? AND id = ?
+                """;
+        TenantGuard.requireProjectScope(sql, "test_case");
+        jdbc.update(sql, priority, operatorId, projectId, id);
+    }
+
+    @Override
+    public void updateDomainTag(long projectId, long id, String domainTag, Long operatorId) {
+        String sql = """
+                UPDATE test_case SET domain_tag = ?, updated_by = ?
+                 WHERE project_id = ? AND id = ?
+                """;
+        TenantGuard.requireProjectScope(sql, "test_case");
+        jdbc.update(sql, domainTag, operatorId, projectId, id);
+    }
+
+    @Override
     public boolean codeExists(long projectId, String caseCode, Long excludeId) {
         String sql = """
                 SELECT COUNT(*) FROM test_case

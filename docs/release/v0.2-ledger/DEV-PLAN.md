@@ -406,6 +406,19 @@ Windows 下用 Python 的 `io.open(path, 'w')` 改文件，会把整个文件的
 **契约硬规则**（实现时不许简化）：部分成功返回 **200**、逐条独立事务、单条失败不影响其他、
 `ids` 为空或 >200 或 action 未知才 400。
 
+**实际完成（2026-11-04 回写）**：
+
+| 计划步骤 | 实际情况 | 偏差说明 |
+|---:|---|---|
+| 1 | `composables/useSelection.ts`（id 集合/本页全选/半选/跨页保留/失败保留/清空）+ vitest 基建 | vitest 3.2.7 + happy-dom；Node 26 内建实验性 localStorage 未开旗标会遮蔽 happy-dom，`src/test-setup.ts` 内存实现兜底。`format.spec.ts` 顺带把 UX-03 的 esbuild 临时单测补成正式（TC-I18N-06 备注兑现） |
+| 2 | `components/SelectionBar.vue`：计数 + 跨页提示 + 动作插槽 + 回执 + 清空 | 头注释含 UX-02b 接入清单（步骤 6 一并落） |
+| 3 | `POST /cases/batch` 放在 `CaseController` + `TestCaseService.batch()`：六动作 + 部分成功 200 + 逐条独立事务（`TransactionTemplate` 按条提交）+ 400 路径（空 ids/超 200/未知 action/驳回缺意见/非法优先级） | 计划写的 `BatchCaseController/BatchCaseService` 未单独建类——批量是用例域的一部分，并入现有类更符合现有结构；仓储补 `updatePriority/updateDomainTag`。构造器双轨：Spring 走 4 参（@Autowired，带事务），既有测试 3 参不动 |
+| 4 | `CasesView.vue` 接入（勾选列 + 批量条 + 驳回 prompt + 删除 confirm）+ `api/cases.ts#batch` | 无 |
+| 5 | 审计 `case.batch.<action>` + `batch=<16hex>` 进 `detail`，复用 `AuditService.record` | 不动表结构；同批次可反查（E2E 实证 7 条共享 `batch=5ed8…`） |
+| 6 | UX-02b 预留：资产/报告/用户接入清单写进 `SelectionBar` 头注释 | 按计划不在本包实现 |
+
+证据：`CaseBatchIT` 3/3（robot_it 真库，覆盖 TC-BAT-03/05/06/07/08/09）、`mvn -B test` 459 全绿（含架构测试）、vitest 16/16、`check_i18n` 五项通过、E2E 走查 8 截图 + `ux02-walkthrough.log`（见 `docs/evidence/v0.2/ux02-batch/`）。
+
 ### 10.6 PRJ-01 项目中心（成员与角色）
 
 | 步骤 | 内容 | 产出 | 验收命令 |

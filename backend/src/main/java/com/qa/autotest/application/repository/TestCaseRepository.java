@@ -32,6 +32,12 @@ public interface TestCaseRepository {
     void updateReview(long projectId, long id, String reviewStatus, String comment,
                       Long reviewedBy, Instant reviewedAt);
 
+    /** 批量改优先级（UX-02，FR-v0.2-37）。 */
+    void updatePriority(long projectId, long id, String priority, Long operatorId);
+
+    /** 批量改技术域标签（UX-02，FR-v0.2-37）。 */
+    void updateDomainTag(long projectId, long id, String domainTag, Long operatorId);
+
     boolean codeExists(long projectId, String caseCode, Long excludeId);
 
     long countByProject(long projectId);

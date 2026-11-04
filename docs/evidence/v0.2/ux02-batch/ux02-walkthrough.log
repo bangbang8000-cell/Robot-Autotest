@@ -1,0 +1,62 @@
+UX-02 列表批量 · E2E 走查记录（2026-11-04）
+=============================================================
+
+走查环境口径
+-------------------------------------------------------------
+干净 vite（--host 127.0.0.1:5273 --strictPort，VITE_API_TARGET=8081）
+→ 当前代码 jar（8081，robot_dev，含本次 UX-02 提交）
+→ WSL MySQL。账号 qa-ui（走查专用，PBKDF2，非生产）。
+走查前已双平台清点进程：杀掉 Windows 侧上会话残留 vite（E:\ 冻结副本起，
+--strictPort 5273，PID 45960），避免再打在旧代码上（DEV-PLAN §10.4 环境坑）。
+驱动：playwright-cli（Chromium headless）。
+
+TC-BAT-01 本页全选边界（bat01a / bat01b）  PASS
+-------------------------------------------------------------
+01a 表头全选：计数「已选 10 条」、无跨页提示、本页 10 行全勾
+01b 翻页：计数仍 10、提示「含跨页 10 条」、新页 0 勾选
+
+TC-BAT-02 半选态（bat02）  PASS
+-------------------------------------------------------------
+勾 9/10：表头 indeterminate=true、checked=false、计数「已选 9 条」
+
+TC-BAT-04 部分失败回执 + 失败保留重试（bat03 / bat04a / bat04b / bat05）  PASS
+-------------------------------------------------------------
+S1 搜索 TN-IMP-01（ids 10-19 全 draft）批量提交评审：
+  HTTP 200，succeeded=10/10，回执「成功 10 条」
+S2 搜索 TN-IMP-22（ids 220-226 全 approved）批量通过：
+  HTTP 200，succeeded=0/7，逐条 code=CONFLICT（只有待评审用例可通过），
+  回执「成功 0 条 / 失败 7 条 失败项已保留勾选，可直接重试」，失败项 7 条保留勾选
+S3 重试（同一动作）：仍 0/7，keptChecked=7 —— 重试只作用于失败项
+S4 改优先级 P1（approved 可改）：HTTP 200，succeeded=7/7
+
+i18n（bat06）  PASS
+-------------------------------------------------------------
+locale=en-US：计数「10 selected」、按钮 Submit for review|Approve|Reject|
+Set priority|Set domain|Delete|Clear，无裸枚举、无错位语言
+
+批量审计（TC-BAT-07 E2E 侧）  PASS
+-------------------------------------------------------------
+走查中真实批删 210-216（7 条 draft）后查 audit_log：
+  action=case.batch.delete 共 7 条，同一批次共享 batch=5ed87a2622ab47d1，
+  operator=qa-ui 可查；case.batch.submit 10 条、case.batch.setPriority 10 条。
+汇总：
+  action               cnt
+  case.batch.delete      7
+  case.batch.setPriority 10
+  case.batch.submit      10
+
+数据恢复
+-------------------------------------------------------------
+走查产生的写操作已全部还原（备份先行）：
+- 210-216 从 mysqldump 备份恢复（/tmp/ux02-backup-211-216.sql）
+- ids 1-19 review_status 回 draft、217-226 priority 回 P2
+- 终态校验：draft P2 216 + approved P2 10 = 226，与走查前一致
+
+IT 证据
+-------------------------------------------------------------
+CaseBatchIT（robot_it 真库）：Tests run: 3, Failures: 0, Errors: 0
+  输出：[UX-02] setPriority=2/0 setDomain=1/0 submit=2/1 delete=2/1
+        | 审计 batch=17cf94df91a0426c 条数=2 | 操作人=it-bat-*
+全量单测：Tests run: 459, Failures: 0, Errors: 0（mvn -B test）
+前端 vitest：Test Files 2 passed, Tests 16 passed（npm run test）
+vue-tsc + vite build：通过；check_i18n 五项：通过（430 键中英对齐）

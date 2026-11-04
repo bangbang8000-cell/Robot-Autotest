@@ -319,6 +319,22 @@
 | TC-BAT-08 | 越权批处理 | IT | 用 A 项目 id 批量改 B 项目用例 | 逐条 `ok:false, NOT_FOUND`，实际零改动 | 接口 + 查库 |
 | TC-BAT-09 | 已通过不可批删 | IT | 批量删除含 `approved` 用例 | 该条失败并提示先驳回 | 接口返回 |
 
+**实测（2026-11-04 回写，证据 `docs/evidence/v0.2/ux02-batch/`）**：
+
+| ID | 结果 | 实测说明 |
+|---|---|---|
+| TC-BAT-01 | **PASS** | `bat01a`（全选本页：计数 10、无跨页提示、10 行全勾）+ `bat01b`（翻页：计数仍 10、提示「含跨页 10 条」、新页 0 勾选） |
+| TC-BAT-02 | **PASS** | `bat02`：勾 9/10 → 表头 `indeterminate=true`、`checked=false`、计数「已选 9 条」 |
+| TC-BAT-03 | **PASS**（IT） | `ux02-casebatchit.log`：submit 2 成功 / 1 失败（`approved` 冲突 `CONFLICT`），HTTP 200 语义（服务层返回逐条结果） |
+| TC-BAT-04 | **PASS**（E2E） | `bat04a`（approved 7 条批量通过 → 回执「成功 0 条 / 失败 7 条 失败项已保留勾选」+ keptChecked=7）+ `bat04b`（重试仍 0/7、保留 7 —— 只作用于失败项） |
+| TC-BAT-05 | **PASS**（IT） | ids 201 → `INVALID_ARGUMENT`，报文含「请分批提交」，无任何写操作 |
+| TC-BAT-06 | **PASS**（IT） | 空 ids → `INVALID_ARGUMENT`，库计数不变 |
+| TC-BAT-07 | **PASS**（IT+E2E） | IT：批删 2 条 → 2 条同 `batch=` 审计 + 操作人；E2E：批删 7 条 → `case.batch.delete` 7 条共享 `batch=5ed87a2622ab47d1`，operator=qa-ui |
+| TC-BAT-08 | **PASS**（IT） | A 项目身份批改 B 项目用例 → 逐条 `ok:false NOT_FOUND`，B 项目零改动 |
+| TC-BAT-09 | **PASS**（IT） | 批删含 `approved` → 该条 `CONFLICT`（报文含「先驳回」），approved 仍在库 |
+
+**走查环境口径**：干净 vite（`--host 127.0.0.1:5273 --strictPort`）→ 本次 UX-02 代码 jar（8081）→ WSL MySQL（robot_dev）。走查前双平台清点进程，杀掉 Windows 侧上会话残留 vite（E:\ 冻结副本起的 `--strictPort 5273`）——同一环境坑第二次出现（DEV-PLAN §10.4），已按既定处置。走查写操作全部还原（备份先行，终态 draft 216 + approved 10 = 226 与走查前一致）。配套：vitest 16/16（`useSelection` 8 + `format` 8）、`npm run build`（vue-tsc）通过、`check_i18n` 五项通过（430 键中英对齐）。
+
 ### 13.5 项目中心（PRJ-01）
 
 | ID | 用例 | 层级 | 步骤 | 期望 | 证据 |

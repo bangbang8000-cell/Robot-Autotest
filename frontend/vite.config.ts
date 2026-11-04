@@ -3,6 +3,14 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
+// 单测环境（UX-02 引入 vitest）：happy-dom 提供 localStorage / document（locales/index.ts
+// 在模块顶层就读 localStorage，node 纯环境会炸）。用例文件放在 src/**/*.spec.ts。
+const test = {
+  environment: 'happy-dom',
+  include: ['src/**/*.spec.ts'],
+  setupFiles: ['src/test-setup.ts'],
+}
+
 // 开发期把 /api 代理到本地后端（默认 :8081），生产由同域静态服务承载，前端不直连任何外部服务（N13）
 //
 // 两个值都允许用环境变量覆盖，因为一台机器上跑多个后端实例是常态：
@@ -19,6 +27,7 @@ const editorLocales = fileURLToPath(
 )
 
 export default defineConfig({
+  test,
   plugins: [vue()],
   resolve: {
     alias: [
