@@ -1,0 +1,15 @@
+登录后路径: /overview
+
+=== 1. 跟随系统（不刷新，只改 OS 偏好）===
+  OS=dark → {"mode":"system","dataTheme":"dark","bg":"rgb(15, 23, 32)","prefersDark":true}
+  OS=light → {"mode":"system","dataTheme":"light","bg":"rgb(244, 247, 251)","prefersDark":false}
+  OS=dark → {"mode":"system","dataTheme":"dark","bg":"rgb(15, 23, 32)","prefersDark":true}
+
+=== 2. 手动选 light 后，把 OS 改成 dark，页面不该跟着变 ===
+  点击后: {"mode":"light","dataTheme":"light","bg":"rgb(244, 247, 251)","prefersDark":false}
+  OS 改 dark 后: {"mode":"light","dataTheme":"light","bg":"rgb(244, 247, 251)","prefersDark":true}
+
+=== 3. 首帧不闪：reload 后立刻读 data-theme ===
+  首次赋值时间线: [{"ms":3,"theme":"light"},{"ms":135,"theme":"light"},{"ms":233,"theme":"light"}]
+  DOMContentLoaded 时: {"theme":"light","bg":"rgb(244, 247, 251)"}
+  load 时: {"theme":"light","bg":"rgb(244, 247, 251)","count":2}

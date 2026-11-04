@@ -309,6 +309,43 @@ NAM-01 ──► UX-01 ──► UX-03 ──► UX-02 ──► PRJ-01 ──�
 
 **回滚点**：步骤 3 之后若亮色出现大面积对比度问题，可只回滚 `theme.css` 的亮色值，不影响结构。
 
+**实际完成情况（2026-11-04，全部 6 步完成）**
+
+| 步骤 | 结果 | 与计划的偏差 |
+|---:|---|---|
+| 1 | 完成。`theme.css` 为 primitives（26 个）+ semantic（24 个 × 2 套） | 语义 token 比计划多出 `surface-2`/`overlay`/`shadow`/`shadow-sm`/`neutral-soft`/`chart-1~4` —— 这些是硬编码清零时**必然遇到**的用途，不补就得留 hex |
+| 2 | 完成，`main.css` 35 处清零 | 无 |
+| 3 | 完成，组件 78 处清零 | **计划估 65 处，实际 78 处**（含 `#fff`/`#999` 等 3 位简写，grep 六位 hex 时漏算）。教训：统计硬编码要匹配 `#rgb` 也要匹配 `#rrggbb` |
+| 4 | 完成，`useTheme.ts` 三态 + matchMedia | 无 |
+| 5 | 完成，`index.html` 内联脚本 | 无 |
+| 6 | 完成，`user_preference` 表 + GET/PUT 接口 + 侧栏按钮 | 表加了 `created_by`/`updated_by`：`SchemaIT` 要求每张表都有审计四列。**没有给偏好表开豁免**——规范开第一个洞之后，每张新表都会想开 |
+
+**实测推翻了三个假设（原计划没写对的）**
+
+1. **「按经验配色就能达标」不成立**。第一版 20 项对比度检查有 5 项不达标：
+   暗色 `neutral-soft` 2.81、暗色边框 1.14、亮色 accent 在 accent-soft 上 4.06、
+   亮色 warn 在 warn-soft 上 4.23、亮色 `neutral-soft` 2.45。**颜色必须算，不能凭感觉**。
+2. **暗色表格边框是既有缺陷**，不是这次改出来的。原 `#22303f` 压在 `#1a2634` 上只有 1.14:1，
+   分割线在暗色下几乎看不见。已提到 1.29:1 并拆出 `border-strong`。
+3. **图表色不能用 SVG presentation attribute 传 `var()`**。`TrendChart` 的 `stroke`/`fill`
+   原为 `:stroke="line.color"`，换成 `var(--chart-1)` 后能否解析取决于浏览器；
+   已改为 `:style="{ stroke: ... }"`（style 里的 `var()` 一定生效）。
+
+**新增的守门脚本（计划里没有，但不加就会退回去）**
+
+- `tools/check_colors.py`：只有 `theme.css` 允许定义色值。打印页用 `color-check: ignore-start/end`
+  显式豁免并注明原因（打印页必须白底黑字，跟主题走会导出黑纸）。
+- `tools/check_contrast.py`：解析两套主题 token 算 WCAG 对比度。**带自检**：解析出的 token 少于 25 个
+  直接 FAIL，否则「全部跳过」会伪装成「全部通过」。
+
+**踩到的流程坑（写给后来的人）**
+
+Windows 下用 Python 的 `io.open(path, 'w')` 改文件，会把整个文件的 `\n` 写成 `\r\n`。
+本次因此把 `scripts/db-audit.sh` 变成 CRLF，Linux 上执行 `set -euo pipefail` 直接报
+`set: pipefail: invalid option name`。**改脚本/代码一律用 `newline=''` 或 `newline='\n'`**，
+改完用 `grep -c $'\r'` 复查。仓库虽有 `.gitattributes`（`* text=auto eol=lf`）保证入库是 LF，
+但它管不到工作区文件——直接跑脚本用的是工作区那一份。
+
 ### 10.4 UX-03 国际化与错误本地化
 
 | 步骤 | 内容 | 产出 | 验收命令 |

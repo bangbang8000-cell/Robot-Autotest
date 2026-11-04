@@ -258,6 +258,27 @@
 | TC-UX-06 | 亮色逐页走查 | E2E | 亮色下走 7 个页面 + 报表打印页 | 无深色块、无白字白底、表格斑马纹正常 | 7 张截图 |
 | TC-UX-07 | 跨设备持久化 | IT + E2E | 在 A 浏览器选亮色 → B 浏览器登录 | B 也是亮色（服务端偏好生效） | `UserPreferenceIT` + 截图 |
 
+**实测结果（2026-11-04）**
+
+| ID | 结论 | 证据 / 备注 |
+|---|---|---|
+| TC-UX-01 | **PASS** | 连点三次：`system→light`、`light→dark`、`dark→system`，每次 `data-theme`、`localStorage.theme`、`colorScheme`、按钮 tooltip 四处同步；`body.bg` 实测 `rgb(244,247,251)` ↔ `rgb(15,23,32)` |
+| TC-UX-02 | **PASS** | `Emulation.setEmulatedMedia` 依次改 dark/light/dark，**不刷新**页面即时跟随；`prefersDark` 与 `data-theme` 一致 |
+| TC-UX-03 | **PASS** | 注入探针记录：首次写入 `data-theme` 在 **3ms**，`DOMContentLoaded` 时 `bg` 已是目标色；全程只出现同一个值，无 dark→light 跳变 |
+| TC-UX-04 | **PASS** | `check_colors.py` 扫 42 个文件，0 命中，退出 0 |
+| TC-UX-05 | **PASS** | `check_contrast.py` 两套主题 20 项组合全过；16 项因是 `rgb()` 被跳过（不影响判定） |
+| TC-UX-06 | **PASS（部分）** | 亮色走查 overview/assets/cases/runs/reports/admin/login 共 7 页 + 暗色 7 页，均无深色块、无白字白底。**编辑器页只验到空态**：库内 `robot_file` 为 0 行，diff 面板与版本面板渲染不出来 |
+| TC-UX-07 | **PASS** | `UserPreferenceIT` 8 条全绿（含「改 A 不影响 B」「删用户级联清偏好」）；E2E 侧观察到相反方向：服务端存 dark 时，本机 localStorage 写 light 也会被覆盖回 dark——**这正是跨设备一致在生效**，不是缺陷 |
+
+**计划外补充的用例（原计划没有，但漏了就会假通过）**
+
+| ID | 用例 | 结果 |
+|---|---|---|
+| TC-UX-08 | 对比度脚本自检：把 theme.css 改坏（token 解析不出来）时必须报错而不是「全跳过=PASS」 | 已实现数量下限自检（<25 个 token 即 FAIL） |
+| TC-UX-09 | 手动模式下 OS 切换不得误跟 | 选 light 后把 OS 改 dark，`data-theme` 保持 light（`ux01-theme-probe.log` 第 2 段） |
+| TC-UX-10 | 打印页不受主题影响 | 打印页样式块显式豁免并在注释里写明原因；`body.print-mode` 强制白底黑字 |
+| TC-UX-11 | 新表满足全库审计规范 | `SchemaIT` 5/5 通过；`db-audit.sh` 7 项 PASS，其中「缺审计四列的表 = 0」 |
+
 ### 13.3 国际化（UX-03）
 
 | ID | 用例 | 层级 | 步骤 | 期望 | 证据 |

@@ -1,0 +1,84 @@
+# UX-01 亮/暗双主题 · 验证记录
+# 日期: 2026-11-04  |  执行: 学徒  |  环境: 前端 5173 (Vite) + 后端 8082 (robot_dev)
+
+## 1. 硬编码色值清零（FR-v0.2-32）
+改造前: main.css 35 处 + views/components 68 处 = 103 处（脚本按 #rgb/#rrggbb 计，实际含 3 位简写共 113 处）
+[PASS] 42 个文件无硬编码色值
+check_colors_exit=0
+
+## 2. 对比度（FR-v0.2-34）
+
+=== dark ===
+  [PASS] 15.27 : 1  (需 ≥4.5)  正文 / 页面底  #e6edf3 on #0f1720
+  [PASS] 12.97 : 1  (需 ≥4.5)  正文 / 卡片  #e6edf3 on #1a2634
+  [PASS] 14.10 : 1  (需 ≥4.5)  正文 / 次级底（日志面板、端口格）  #e6edf3 on #141f2b
+  [PASS]  6.37 : 1  (需 ≥4.5)  辅助文字 / 页面底  #8b9bb0 on #0f1720
+  [PASS]  5.41 : 1  (需 ≥4.5)  辅助文字 / 卡片  #8b9bb0 on #1a2634
+  [PASS]  7.30 : 1  (需 ≥4.5)  主按钮文字 / 按钮底  #06131f on #3fa7ff
+  [PASS]  5.97 : 1  (需 ≥4.5)  链接与强调文字 / 卡片  #3fa7ff on #1a2634
+  [PASS]  5.11 : 1  (需 ≥4.5)  强调文字 / 强调软底（徽标）  #3fa7ff on #17324d
+  [PASS]  6.63 : 1  (需 ≥4.5)  成功文字 / 卡片  #46c07a on #1a2634
+  [PASS]  6.18 : 1  (需 ≥4.5)  成功文字 / 成功软底（徽标、diff 行）  #46c07a on #12301f
+  [PASS]  5.42 : 1  (需 ≥4.5)  失败文字 / 卡片  #f27272 on #1a2634
+  [PASS]  5.53 : 1  (需 ≥4.5)  失败文字 / 失败软底  #f27272 on #3a1a1a
+  [PASS]  9.28 : 1  (需 ≥4.5)  告警文字 / 卡片  #f0c36b on #1a2634
+  [PASS]  8.21 : 1  (需 ≥4.5)  告警文字 / 告警软底（顶部横条）  #f0c36b on #3a2c14
+  [PASS]  3.58 : 1  (需 ≥3.0)  取消态色块 / 卡片（非文字，3:1 即可）  #6b7c90 on #1a2634
+  [PASS]  8.29 : 1  (需 ≥3.0)  图表系列 1 / 卡片  #7cc6fe on #1a2634
+  [PASS]  7.27 : 1  (需 ≥3.0)  图表系列 2 / 卡片  #b9a6ff on #1a2634
+  [PASS]  9.82 : 1  (需 ≥3.0)  图表系列 3 / 卡片  #7ee2b8 on #1a2634
+  [PASS]  8.99 : 1  (需 ≥3.0)  图表系列 4 / 卡片  #ffb86b on #1a2634
+  [PASS]  1.30 : 1  (需 ≥1.2)  边框 / 卡片（只要不是完全同色看不见）  #29394a on #1a2634
+
+=== light ===
+  [PASS] 14.60 : 1  (需 ≥4.5)  正文 / 页面底  #1a2430 on #f4f7fb
+  [PASS] 15.68 : 1  (需 ≥4.5)  正文 / 卡片  #1a2430 on #ffffff
+  [PASS] 13.95 : 1  (需 ≥4.5)  正文 / 次级底（日志面板、端口格）  #1a2430 on #eef2f7
+  [PASS]  5.09 : 1  (需 ≥4.5)  辅助文字 / 页面底  #5b6b7c on #f4f7fb
+  [PASS]  5.47 : 1  (需 ≥4.5)  辅助文字 / 卡片  #5b6b7c on #ffffff
+  [PASS]  5.50 : 1  (需 ≥4.5)  主按钮文字 / 按钮底  #ffffff on #1567c9
+  [PASS]  5.50 : 1  (需 ≥4.5)  链接与强调文字 / 卡片  #1567c9 on #ffffff
+  [PASS]  4.83 : 1  (需 ≥4.5)  强调文字 / 强调软底（徽标）  #1567c9 on #e8f1fd
+  [PASS]  5.34 : 1  (需 ≥4.5)  成功文字 / 卡片  #1c7a4a on #ffffff
+  [PASS]  4.82 : 1  (需 ≥4.5)  成功文字 / 成功软底（徽标、diff 行）  #1c7a4a on #e8f7ee
+  [PASS]  5.44 : 1  (需 ≥4.5)  失败文字 / 卡片  #c0392b on #ffffff
+  [PASS]  4.76 : 1  (需 ≥4.5)  失败文字 / 失败软底  #c0392b on #fdecec
+  [PASS]  5.78 : 1  (需 ≥4.5)  告警文字 / 卡片  #8f5a08 on #ffffff
+  [PASS]  5.29 : 1  (需 ≥4.5)  告警文字 / 告警软底（顶部横条）  #8f5a08 on #fff4dc
+  [PASS]  3.62 : 1  (需 ≥3.0)  取消态色块 / 卡片（非文字，3:1 即可）  #7b8896 on #ffffff
+  [PASS]  4.13 : 1  (需 ≥3.0)  图表系列 1 / 卡片  #2b7fd4 on #ffffff
+  [PASS]  5.62 : 1  (需 ≥3.0)  图表系列 2 / 卡片  #6b4fd8 on #ffffff
+  [PASS]  4.35 : 1  (需 ≥3.0)  图表系列 3 / 卡片  #1a8a5a on #ffffff
+  [PASS]  4.34 : 1  (需 ≥3.0)  图表系列 4 / 卡片  #b5651d on #ffffff
+  [PASS]  1.29 : 1  (需 ≥1.2)  边框 / 卡片（只要不是完全同色看不见）  #dde3ea on #ffffff
+
+[PASS] 两套主题的 token 组合全部达标
+check_contrast_exit=0
+
+## 3. 用户偏好接口（FR-v0.2-33）
+--- GET 初始 ---
+{"code":0,"codeName":"OK","message":"OK","data":{"theme":"light"},"success":true}
+--- PUT theme=dark ---
+{"code":0,"codeName":"OK","message":"OK","data":{"theme":"dark"},"success":true}
+--- GET 回读（换设备登录拿到的是这个值）---
+{"code":0,"codeName":"OK","message":"OK","data":{"theme":"dark"},"success":true}
+--- PUT 非法键（应 40001）---
+{"code":40001,"codeName":"INVALID_ARGUMENT","message":"不支持的偏好键：is_admin","data":null,"success":false}
+--- PUT 非法值（应 40001）---
+{"code":40001,"codeName":"INVALID_ARGUMENT","message":"偏好值非法：theme=rainbow","data":null,"success":false}
+
+## 4. 数据库
+迁移后业务表数（原 44 + user_preference）:
+45
+db-audit 结论: PASS（7 项，含「缺审计四列的表 = 0」）
+
+## 5. 浏览器实测（详见 ux01-theme-probe.log）
+三态点击: system→light→dark→system 均同步 data-theme / localStorage / colorScheme / 按钮文案
+跟随系统: OS dark↔light 切换，页面无刷新即跟随
+手动模式: 选 light 后把 OS 改 dark，页面保持 light（不误跟）
+首帧: reload 后 3ms 已写入 data-theme，DOMContentLoaded 时背景已是目标色
+
+## 6. 未覆盖（如实记录）
+- EditorView 的 diff 面板 / 版本历史面板未实测：库内 robot_file 表为 0 行，编辑器只能渲染到「地址缺少 path 参数」
+  该页已确认无黑块（只读徽标、错误文字、标题均正常），且其色值已全部 token 化并通过对比度检查
+- Safari < 14 的 matchMedia addListener 兼容分支未实机验证
