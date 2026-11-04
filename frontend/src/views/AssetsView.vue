@@ -14,6 +14,10 @@ import { useAuthStore } from '@/stores/auth'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
+import { batchApi, type BatchResource } from '@/api/batch'
+import SelectionBar from '@/components/SelectionBar.vue'
+import { useBatchAction } from '@/composables/useBatchAction'
+import { useSelection } from '@/composables/useSelection'
 
 type Tab = 'devices' | 'links' | 'credentials'
 
@@ -78,6 +82,43 @@ const credentialForm = reactive({
 const projectId = computed(() => auth.projectId ?? 0)
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / size)))
 
+// ---- UX-02b 通用批量：三个 tab 共用一套选择模型与执行器（复用而非各写一套）----
+const pageAssetIds = computed<number[]>(() => {
+  if (tab.value === 'devices') return devices.value.map((d) => d.id)
+  if (tab.value === 'links') return links.value.map((l) => l.id)
+  return credentials.value.map((c) => c.id)
+})
+const assetSelection = useSelection(pageAssetIds)
+const {
+  count: selectedCount,
+  crossPageCount,
+  pageAllSelected,
+  pageIndeterminate,
+  isSelected,
+  toggle,
+  togglePage,
+  clear: clearSelection,
+} = assetSelection
+
+const batchResource = computed<BatchResource>(() =>
+  tab.value === 'devices' ? 'DEVICE' : tab.value === 'links' ? 'LINK' : 'CREDENTIAL')
+
+const assetBatch = useBatchAction({
+  run: (ids) => batchApi.run(projectId.value, {
+    resource: batchResource.value,
+    action: 'delete',
+    ids,
+  }),
+  reload: load,
+  onError: (e) => { error.value = localizeError(e) },
+})
+
+async function batchDeleteAssets(): Promise<void> {
+  if (!window.confirm(t('batch.confirmDeleteAssets'))) return
+  error.value = null
+  await assetBatch.execute([...assetSelection.selectedIds.value], assetSelection)
+}
+
 
 async function load(): Promise<void> {
   error.value = null
@@ -127,6 +168,8 @@ async function load(): Promise<void> {
 // immediate 同 CasesView：projectId 初值即目标值时 watch 不会触发，页面会永远空着
 watch([projectId, tab], () => {
   page.value = 1
+  clearSelection()
+  assetBatch.clear()
   expandedDeviceId.value = null
   ports.value = []
   showForm.value = false
@@ -321,6 +364,24 @@ async function removeCredential(credential: Credential): Promise<void> {
     <p v-if="message" class="text-ok">{{ message }}</p>
     <p v-if="loading" class="muted">{{ t('common.loading') }}</p>
 
+    <SelectionBar
+      v-if="selectedCount > 0"
+      :count="selectedCount"
+      :cross-page="crossPageCount"
+      :result="assetBatch.result.value"
+      :loading="assetBatch.loading.value"
+      @clear="clearSelection(); assetBatch.clear()"
+    >
+      <button
+        class="btn"
+        type="button"
+        :disabled="assetBatch.loading.value"
+        @click="batchDeleteAssets"
+      >
+        {{ t('batch.deleteAssets') }}
+      </button>
+    </SelectionBar>
+
     <form v-if="showForm && tab === 'devices'" class="inline-form" @submit.prevent="createDevice">
       <input v-model="deviceForm.name" class="input" :placeholder="t('assets.device.name')" />
       <input v-model="deviceForm.deviceType" class="input" :placeholder="t('assets.device.type')" />
@@ -404,6 +465,15 @@ async function removeCredential(credential: Credential): Promise<void> {
     <table v-if="tab === 'devices' && devices.length" class="table">
       <thead>
         <tr>
+          <th>
+            <input
+              type="checkbox"
+              :checked="pageAllSelected"
+              :indeterminate.prop="pageIndeterminate"
+              :aria-label="t('cases.batch.barLabel')"
+              @change="togglePage()"
+            />
+          </th>
           <th>{{ t('assets.device.name') }}</th>
           <th>{{ t('assets.device.type') }}</th>
           <th>{{ t('assets.device.model') }}</th>
@@ -415,6 +485,14 @@ async function removeCredential(credential: Credential): Promise<void> {
       </thead>
       <tbody>
         <tr v-for="d in devices" :key="d.id">
+          <td>
+            <input
+              type="checkbox"
+              :checked="isSelected(d.id)"
+              :aria-label="t('cases.batch.barLabel')"
+              @change="toggle(d.id)"
+            />
+          </td>
           <td>{{ d.name }}</td>
           <td>{{ d.deviceType }}</td>
           <td>{{ d.model }}</td>
@@ -431,7 +509,7 @@ async function removeCredential(credential: Credential): Promise<void> {
           </td>
         </tr>
         <tr v-if="expandedDeviceId !== null">
-          <td colspan="7" class="port-cell">
+          <td colspan="8" class="port-cell">
             <table class="table table-inner">
               <thead>
                 <tr>
@@ -470,6 +548,15 @@ async function removeCredential(credential: Credential): Promise<void> {
     <table v-if="tab === 'links' && links.length" class="table">
       <thead>
         <tr>
+          <th>
+            <input
+              type="checkbox"
+              :checked="pageAllSelected"
+              :indeterminate.prop="pageIndeterminate"
+              :aria-label="t('cases.batch.barLabel')"
+              @change="togglePage()"
+            />
+          </th>
           <th>{{ t('assets.link.name') }}</th>
           <th>{{ t('assets.link.endpointA') }}</th>
           <th>{{ t('assets.link.endpointB') }}</th>
@@ -480,6 +567,14 @@ async function removeCredential(credential: Credential): Promise<void> {
       </thead>
       <tbody>
         <tr v-for="l in links" :key="l.id">
+          <td>
+            <input
+              type="checkbox"
+              :checked="isSelected(l.id)"
+              :aria-label="t('cases.batch.barLabel')"
+              @change="toggle(l.id)"
+            />
+          </td>
           <td>{{ l.name }}</td>
           <td>{{ l.aDeviceName }} / {{ l.aPortName }}</td>
           <td>{{ l.bDeviceName }} / {{ l.bPortName }}</td>
@@ -497,6 +592,15 @@ async function removeCredential(credential: Credential): Promise<void> {
     <table v-if="tab === 'credentials' && credentials.length" class="table">
       <thead>
         <tr>
+          <th>
+            <input
+              type="checkbox"
+              :checked="pageAllSelected"
+              :indeterminate.prop="pageIndeterminate"
+              :aria-label="t('cases.batch.barLabel')"
+              @change="togglePage()"
+            />
+          </th>
           <th>{{ t('assets.credential.name') }}</th>
           <th>{{ t('assets.credential.type') }}</th>
           <th>{{ t('assets.credential.username') }}</th>
@@ -506,6 +610,14 @@ async function removeCredential(credential: Credential): Promise<void> {
       </thead>
       <tbody>
         <tr v-for="c in credentials" :key="c.id">
+          <td>
+            <input
+              type="checkbox"
+              :checked="isSelected(c.id)"
+              :aria-label="t('cases.batch.barLabel')"
+              @change="toggle(c.id)"
+            />
+          </td>
           <td>{{ c.name }}</td>
           <td>{{ c.credType }}</td>
           <td>{{ c.username }}</td>

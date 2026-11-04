@@ -8,9 +8,9 @@
 
 | 汇总 | 未开始 | 进行中 | 待验 | 待现场 | 已完成 |
 |---|---:|---:|---:|---:|---:|
-| 78 个任务包 | **6** | 0 | **59** | **8** | **5** |
+| 78 个任务包 | **4** | 0 | **61** | **8** | **5** |
 
-**当前进度：5 / 78（约 6.5% 已完成 · 59 待验 · 8 待现场 · 6 未开始）**
+**当前进度：5 / 78（约 6.5% 已完成 · 61 待验 · 8 待现场 · 4 未开始）**
 
 **一句话读法**：功能代码已铺到 v1.0（后端 `Tests run: 466, Failures: 0`、`-Pit` 集成 **6/6**（`SchemaIT` 5 + `CaseImportIT` 1），**应用真启动通过**（构建 13.6s + 启动 4.5s），**执行域本机已真跑通一条 run**（`RUN-20261104155814-952426` → `FINISHED 2/2` → 报告入库），前端 `build`/`lint` exit 0，dev/it 库均已迁到 **V7_1 / 44 表**），但**验收尚未启动**，所以读数是 0%。**这不是烂尾，是验收产能没建起来**——详见 `docs/plan/开发计划评估与后续推进-20261103.md`。
 
@@ -102,14 +102,14 @@
 | 68 | **PRJ-04** | 报告结果导向：`GET /report-digest` + 首页结果区块（最近报告 / 失败 Top10 / 未执行数 / 趋势）（`FR-v0.2-53`） | B2 | 待验 | `domain/report/ReportDigest.java`、`application/repository/ReportDigestRepository.java`、`infrastructure/ReportDigestRepositoryJdbc.java`（4 段 SQL 全走 `TenantGuard`）、`application/report/ReportDigestService.java`、`api/report/ReportDigestController.java`、`application/report/ReportDigestTest.java`（3 条）、`frontend/src/api/overview.ts`、`views/OverviewView.vue`、`locales/{zh-CN,en-US}.ts`、`styles/main.css`（`.digest-facts` / `.rate-*`）；证据 `docs/evidence/v0.2/prj04/`（`README.md`、`prj04-api.log`、`prj04-checks.log`、2 张亮/暗截图） | 只读，不改表；空项目**不显示 0%**（无明细 → `null`，全 SKIP → 0，沿用 OVW-01）。**口径**：「从未执行」按 `test_case.case_code = test_result.case_key` 精确匹配，属**覆盖缺口上界**——演示库 226 条台账 vs 冒烟运行的 `Bench-1-A` 步骤名 → 覆盖 0/226，界面已加口径说明文字，不伪造覆盖数 |
 | 69 | **AST-05** | 资产共享池：`owner_scope` + `project_asset` 引用表 + 存量回填 + 8 个仓储查询口径改写（`FR-v0.2-50`、`FR-v0.2-52`） | B2 | 待验 | `docs/evidence/v0.2/ast05/` | **本版唯一动 schema 的包**。V7_3 已实现并在 robot_dev 实跑：升级前后 3/2/2 不变、回填 7 条；`robot_it` 空库 up→down→up 通过；共享/引用/解除引用/越权 403 共 12 步接口验收通过；SchemaIT 7/7、db-audit 46 表 PASS。**遗留**：引用保护/转私有留给 PRJ-03 |
 | 70 | **PRJ-03** | 引用保护：被引用不可硬删（409）、项目内移除只删引用、删项目保留平台资产、越权 403（`FR-v0.2-51`） | B2 | 待验 | `docs/evidence/v0.2/prj03/` | 前置：`AST-05`。同批做 `AssetScopeIT` 越权用例 |
-| 71 | **UX-02b** | 其余列表接入批量（资产 / 报告 / 用户），复用 `UX-02` 组件与契约（`FR-v0.2-40`） | B2 | 未开始 | 待补 | P2，前置 `UX-02`；本版可以不做，但组件要按可复用设计 |
+| 71 | **UX-02b** | 其余列表接入批量，复用 `UX-02` 组件与契约（`FR-v0.2-40`）：通用批量端点 + `useBatchAction` + 资产三 tab / 用户页接入 | B2 | 待验 | `docs/evidence/v0.2/ux02b/` | **2026-11-04 22:15 实现**：`GenericBatchService` / `BatchController`（同一部分成功契约 + `batch=` 逐条审计）、真库 `GenericBatchIT` 3/3、前端 vitest 21/21、build 0。**偏差：报告页未接入**（`runId` 为字符串键、导出属任务型操作，与 `ids: number[]` 契约不兼容），登记为边界、需要时另开包；`TEST-PLAN` §13.11 已同步修订，G2 不得据此判完整通过 |
 | 72 | **UX-01b** | 界面基线修复（美术 S0）：`--muted` 21 处修复 + 交互态 + 危险按钮 + 内容宽 + D15 校验器修复 + accent 两态 token + 2 个新守门脚本（`FR-v0.2-54~58`） | B2 | 待验 | `styles/theme.css`、`styles/main.css`、`report/SuiteTree.vue`/`TrendChart.vue`/`ReportDetailView.vue`/`ReportsView.vue`/`CasesView.vue`（宽表容器）、`tools/check_tokens.py`+`tools/px-allow.txt`、`tools/check_states.py`、`tools/check_contrast.py`（按主题×强调色分组）；证据 `docs/evidence/v0.2/ux01b/`（`README.md`、`ux01b-checks.log`、`ux01b-frontend.log`、`backend-mvn-test.log`、13 张截图） | **v0.2 收尾必做，排在 UX-01 验收前**。只动样式不动逻辑。计划：`docs/design/美术体系-开发与测试计划-20261104.md` §2.1/§3.1。**2026-11-04 已实现**：4 组 × 20 项对比度全 PASS、0 悬空 var、8 类元素三态齐备、1920 下 `scrollWidth==clientWidth` 且 `.app-body`=1440 |
-| 73 | **EXEC-01** | 执行人工触发：quick-run 无计划直跑 + 执行页手动表单 + 僵尸端点 `POST /execution/runs` 收编（补派发消费者）+ 用例集立即执行 + 审计（`FR-v0.2-59~63`） | B2 | 未开始 | 待补 | 前置 `UX-02`/`UX-01b`。关键事实：现 `POST /execution/runs` 只落库无消费者（`RunQueuePolicy` 零调用点）——挂起的「执行队列」决策随本包收编。评估：`docs/plan/执行人工触发-评估与计划-20261104.md`。台账用例↔脚本绑定缺失，勾选用例直跑列 v0.4 EXEC-02 |
-| 74 | **UX-04** | 美术 S1 设计系统骨架：lucide 图标 + **组件库适配层（拍板引库：Naive UI 第一候选/Element Plus 对照，两页试点为闸门）** + **打包字体 Noto Sans SC+JetBrains Mono（拍板，子集化）** + 字阶/间距 token + 强调色**六预设**与切换（拍板，守门 96 组）+ styleguide 页 | B3 | 未开始 | 待补 | **已拍板归 v0.3**。前置 `UX-01b`。体量 47→约 80；试点评审不过回退自建方案。计划：`docs/design/美术体系-开发与测试计划-20261104.md` v1.1 §2.2 |
+| 73 | **EXEC-01** | 执行人工触发：quick-run 无计划直跑 + 执行页手动表单 + 僵尸端点 `POST /execution/runs` 收编（补派发消费者）+ 用例集立即执行 + 审计（`FR-v0.2-59~63`） | B2 | 未开始 | 待补 | **⛔ 大师 2026-11-04 22:01 裁决：完全冻结到 F2 现场**——不开发、不空跑、不落派发消费者，ADR-0013 禁跑令继续有效；开工时点由 F2 现场定。前置 `UX-02`/`UX-01b`。关键事实：现 `POST /execution/runs` 只落库无消费者（`RunQueuePolicy` 零调用点）。评估：`docs/plan/执行人工触发-评估与计划-20261104.md`。台账用例↔脚本绑定缺失，勾选用例直跑列 v0.4 EXEC-02 |
+| 74 | **UX-04** | 美术 S1 设计系统骨架：lucide 图标 + **组件库适配层（拍板引库：Naive UI 第一候选/Element Plus 对照，两页试点为闸门）** + **打包字体 Noto Sans SC+JetBrains Mono（拍板，子集化）** + 字阶/间距 token + 强调色**六预设**与切换（拍板，守门 96 组）+ styleguide 页 | B3 | 未开始 | `docs/design/UX-04-试点评审准备清单-20261104.md`（评审准备件，非实现证据） | **已拍板归 v0.3**。**闸门未过，本轮不写实现代码**：计划 §2.2 步骤 0 明写「试点评审通过后本表后续步骤才开工」，含步骤 1；本轮只备两页×两候选×四维度判据与回退路径，未装组件库、未改视图/样式。前置 `UX-01b` 仍为 `待验`。计划：`docs/design/美术体系-开发与测试计划-20261104.md` v1.1 §2.2 |
 | 75 | **UX-05** | 美术 S2 数据与报告视觉：表格规范 12 处 + 图表封装（y 轴/tooltip/空图）+ 品牌轻量版 + 空态插图 + 打印版式 | B5 | 未开始 | 待补 | 归 v0.5（与 RPT 同期）。前置 `UX-04` |
 | 76 | **UX-06** | 美术 S3 双语与密度：英文版式集中回归（每页 en 1440+1920 截图）+ 密度切换 + 暗色微调 | B7 | 未开始 | 待补 | 归 v1.0。前置 `UX-05` |
-| 77 | **EXE-09** | RUN_ID 硬唯一保障 + 并发用例确定性化：给 `RUN_ID` 加数据库唯一索引 / 单调序列并在碰撞时重试；把 `RunIdGeneratorTest.并发不重复` 从「随机量精确计数」改为确定性断言（2026-11-04 F1-1 现场发现：固定时间戳 + 2²⁴ 随机末段，1000 次生日碰撞约 2.9%，`ci-local` 当晚 exit 2） | B4 | 未开始 | 待补 | **G1 偏差整改包**，大师 2026-11-04 裁决「记偏差 + 单开包修，不承诺工期」；证据 `docs/evidence/v0.1/G1-核验纪要-20261104.md` §3 |
-| 78 | **ENV-06** | DB 回滚脚本端到端整改：`db-undo.sh` 缺库名（1046）、4 个 down 脚本 24 处 `DROP COLUMN IF EXISTS`（1064）、`V2_1` 外键绑定索引（1553）；补 `_it` 安全阀并现场复跑 down→up | B1 | 待验 | `docs/evidence/v0.1/flyway-downup-20261104-2030.log` | **G1 #4 现场整改包**，已实现并现场复跑 PASS（46→0→46 表 / Flyway 19 条 success）；按纪律仍留 `待验`，由人裁决 |
+| 77 | **EXE-09** | 生成侧确定性化：末段改「实例前缀 2 hex + 同秒单调序列 4 hex」（溢出明确抛错）；测试改确定性断言 + 真并发/跨秒/溢出/唯一索引守门（2026-11-04 F1-1 现场发现：固定时间戳 + 2²⁴ 随机末段，1000 次生日碰撞约 2.9%，`ci-local` 当晚 exit 2） | B4 | 待验 | `docs/evidence/v0.2/ux02b/mvn-unit.log`、`RunIdGeneratorTest.java` | **口径已修订**：DB 唯一索引 `uk_run_run_id` 与 `RunService` 冲突回读**本来就有**，不是「缺硬唯一保障、碰撞会串数据」；真实缺口只在生成侧与测试设计，故不加索引、不改插入逻辑。连跑 10 次 7/7 零 flaky。G1 偏差整改包，大师裁决「记偏差 + 单开包修」 |
+| 78 | **ENV-06** | DB 回滚脚本端到端整改：`db-undo.sh` 缺库名（1046）、4 个 down 脚本 24 处 `DROP COLUMN IF EXISTS`（1064）、`V2_1` 外键绑定索引（1553）；补 `_it` 安全阀并现场复跑 down→up | B1 | 待验 | `docs/evidence/v0.1/flyway-downup-20261104-2030.log`、`DownScriptGuardTest.java` | **G1 #4 现场整改包**，已现场复跑 PASS（46→0→46 表 / Flyway 19 条 success）；**2026-11-04 22:15 补静态守门**：`DownScriptGuardTest` 5/5 把三处缺陷固化为单测（含「注释里提到禁用语法不算违规」的例外），双向破坏性验证通过。按纪律仍留 `待验`，由人裁决 |
 
 ---
 
@@ -159,6 +159,20 @@
 2. **#78 / ENV-06**：G1 #4 回滚复现时挖出三处脚本缺陷，当场修好并复跑通过，按纪律仍留 `待验`。
 3. **#70 / PRJ-03**：引用保护实现 + `AssetScopeIT` 真库验收通过（1/1），回归 171/171，转 `待验`。
 4. 汇总行同步为 78 包 = 6 未开始 / 59 待验 / 8 待现场 / 5 已完成。
+
+### 2026-11-04 22:15 补记（大师「继续开发 不要自动停止」授权）
+
+1. **#77 / EXE-09**：生成侧改为「实例前缀 + 同秒单调序列」，测试改确定性断言（7/7，连跑 10 次零 flaky），转 `待验`。
+   **口径修订**：`uk_run_run_id` 唯一索引与 `RunService` 冲突回读本来就有，F1-1 纪要「缺硬唯一保障、会串数据」
+   一句被源码推翻，已在 G1 纪要 §3 留修订记录，不悄悄改字。
+2. **#78 / ENV-06**：新增 `DownScriptGuardTest` 5/5 静态守门，把三处回滚缺陷固化（含「注释里提到禁用语法不算违规」），
+   双向破坏性验证通过；状态仍 `待验`，由人裁决。
+3. **#71 / UX-02b**：通用批量端点 + 两页接入，真库 IT 3/3、前端 21/21、全量单测 476 / IT 25 全绿，转 `待验`。
+   **偏差**：报告页未接入（`runId` 字符串键 + 导出任务型操作与 `ids: number[]` 契约不兼容），
+   已写进 `TEST-PLAN` §13.12 与本行备注；G2 不得据此判「已完整验收」。
+4. **#73 / EXEC-01**：大师 22:01 裁决**完全冻结到 F2 现场**，不开发、不空跑、不落派发消费者。
+5. **#74 / UX-04**：试点评审闸门未过，本轮只出准备件，未装组件库、未改视图/样式。
+6. 汇总行同步为 78 包 = **4 未开始 / 61 待验 / 8 待现场 / 5 已完成**；`待验 → 已完成` 本轮一个都没改。
 
 ## 更新方式
 

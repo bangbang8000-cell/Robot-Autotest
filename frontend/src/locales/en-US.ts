@@ -559,6 +559,17 @@ export default {
       viewer: 'Viewer',
     },
   },
+  /** UX-02b shared batch copy for assets / users. Keys mirror zh-CN. */
+  batch: {
+    deleteAssets: 'Delete selected assets',
+    confirmDeleteAssets: 'Delete selected assets? Referenced platform assets are kept and reported individually.',
+    disableUsers: 'Disable selected users',
+    enableUsers: 'Enable selected users',
+    deleteUsers: 'Delete selected users',
+    confirmDeleteUsers: 'Delete selected users? The current account will not be deleted.',
+    confirmDisableUsers: 'Disable selected users?',
+    confirmEnableUsers: 'Enable selected users?',
+  },
   notFound: {
     title: 'Page not found',
     back: 'Back to overview',

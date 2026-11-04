@@ -6,10 +6,11 @@
  * （用例页是六个动作；UX-02b 接入其余列表时复用同一契约）。
  * 回执遵循「成功 N / 失败 M」；失败项由父级保留选中，重试只作用于它们。
  *
- * UX-02b 接入清单（不在本包实现，PRD FR-v0.2-40）：
- * 资产（设备/链路/凭据）→ 批量删除/改标签；报告 → 批量删除/导出；用户 → 批量停用/改角色。
- * 接入三件套：useSelection（本组件只管展示）+ 后端 batch 端点（沿用部分成功契约）
- * + 父列表页勾选列。后端契约硬规则见 DEV-PLAN §10.5。
+ * UX-02b 接入现状（PRD FR-v0.2-40，2026-11-04 已实现）：
+ * 资产（设备/链路/凭据）→ 批量删除；用户 → 批量停用/启用/删除；两页共用
+ * `useSelection` + `useBatchAction` + `POST /projects/{id}/batch`（同一部分成功契约与 batch= 审计）。
+ * 报告页未接入：列表主键是 runId 字符串、导出是任务型操作，与 ids:number[] 契约不兼容，
+ * 已登记为边界（需要时另开包），见 `GenericBatchService` 类注释。契约硬规则见 DEV-PLAN §10.5。
  */
 import { useI18n } from 'vue-i18n'
 import type { BatchResult } from '@/composables/useSelection'

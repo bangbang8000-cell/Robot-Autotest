@@ -567,6 +567,17 @@ export default {
       viewer: '访客',
     },
   },
+  /** UX-02b 通用批量文案：资产 / 用户两页共用，键名与 en-US 一一对应。 */
+  batch: {
+    deleteAssets: '删除选中资产',
+    confirmDeleteAssets: '确认删除选中的资产？被引用的平台资产会保留并单独提示。',
+    disableUsers: '停用选中用户',
+    enableUsers: '启用选中用户',
+    deleteUsers: '删除选中用户',
+    confirmDeleteUsers: '确认删除选中的用户？当前登录账号不会被删除。',
+    confirmDisableUsers: '确认停用选中的用户？',
+    confirmEnableUsers: '确认启用选中的用户？',
+  },
   notFound: {
     title: '页面不存在',
     back: '返回总览',

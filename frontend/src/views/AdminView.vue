@@ -12,6 +12,10 @@ import {
 import { useAuthStore } from '@/stores/auth'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
+import { batchApi } from '@/api/batch'
+import SelectionBar from '@/components/SelectionBar.vue'
+import { useBatchAction } from '@/composables/useBatchAction'
+import { useSelection } from '@/composables/useSelection'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -52,6 +56,48 @@ const selectedProject = computed(
 )
 
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / size)))
+
+// ---- UX-02b 用户批量：与资产页复用同一选择模型 / 执行器 / 批量条 ----
+const pageUserIds = computed<number[]>(() => users.value.map((u) => u.id))
+const userSelection = useSelection(pageUserIds)
+const {
+  count: userSelectedCount,
+  crossPageCount: userCrossPage,
+  pageAllSelected: userPageAll,
+  pageIndeterminate: userPageIndeterminate,
+  isSelected: userIsSelected,
+  toggle: userToggle,
+  togglePage: userTogglePage,
+  clear: clearUserSelection,
+} = userSelection
+
+type UserBatchAction = 'delete' | 'setEnabled'
+const pendingUserAction = ref<{ action: UserBatchAction; enabled?: boolean }>({
+  action: 'setEnabled', enabled: false,
+})
+
+const userBatch = useBatchAction({
+  run: (ids) => batchApi.run(auth.projectId ?? 0, {
+    resource: 'USER',
+    action: pendingUserAction.value.action,
+    ids,
+    enabled: pendingUserAction.value.enabled,
+  }),
+  reload: loadUsers,
+  onError: (e) => { error.value = localizeError(e) },
+})
+
+async function runUserBatch(action: UserBatchAction, enabled?: boolean): Promise<void> {
+  const confirmed = action === 'delete'
+    ? window.confirm(t('batch.confirmDeleteUsers'))
+    : enabled
+      ? window.confirm(t('batch.confirmEnableUsers'))
+      : window.confirm(t('batch.confirmDisableUsers'))
+  if (!confirmed) return
+  error.value = null
+  pendingUserAction.value = { action, enabled }
+  await userBatch.execute([...userSelection.selectedIds.value], userSelection)
+}
 
 
 async function loadUsers(): Promise<void> {
@@ -283,9 +329,38 @@ async function removeMember(member: ProjectMember): Promise<void> {
       <p class="muted">{{ t('admin.passwordHint') }}</p>
 
       <p v-if="loading" class="muted">{{ t('common.loading') }}</p>
+
+      <SelectionBar
+        v-if="userSelectedCount > 0"
+        :count="userSelectedCount"
+        :cross-page="userCrossPage"
+        :result="userBatch.result.value"
+        :loading="userBatch.loading.value"
+        @clear="clearUserSelection(); userBatch.clear()"
+      >
+        <button class="btn" type="button" :disabled="userBatch.loading.value" @click="runUserBatch('setEnabled', false)">
+          {{ t('batch.disableUsers') }}
+        </button>
+        <button class="btn" type="button" :disabled="userBatch.loading.value" @click="runUserBatch('setEnabled', true)">
+          {{ t('batch.enableUsers') }}
+        </button>
+        <button class="btn" type="button" :disabled="userBatch.loading.value" @click="runUserBatch('delete')">
+          {{ t('batch.deleteUsers') }}
+        </button>
+      </SelectionBar>
+
       <table v-if="users.length" class="table">
         <thead>
           <tr>
+            <th>
+              <input
+                type="checkbox"
+                :checked="userPageAll"
+                :indeterminate.prop="userPageIndeterminate"
+                :aria-label="t('cases.batch.barLabel')"
+                @change="userTogglePage()"
+              />
+            </th>
             <th>{{ t('admin.username') }}</th>
             <th>{{ t('admin.displayName') }}</th>
             <th>{{ t('admin.email') }}</th>
@@ -296,6 +371,14 @@ async function removeMember(member: ProjectMember): Promise<void> {
         </thead>
         <tbody>
           <tr v-for="u in users" :key="u.id">
+            <td>
+              <input
+                type="checkbox"
+                :checked="userIsSelected(u.id)"
+                :aria-label="t('cases.batch.barLabel')"
+                @change="userToggle(u.id)"
+              />
+            </td>
             <td>{{ u.username }}</td>
             <td>{{ u.displayName }}</td>
             <td>{{ u.email }}</td>
