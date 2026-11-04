@@ -16,6 +16,7 @@ import { batchApi } from '@/api/batch'
 import SelectionBar from '@/components/SelectionBar.vue'
 import { useBatchAction } from '@/composables/useBatchAction'
 import { useSelection } from '@/composables/useSelection'
+import { confirmAction } from '@/composables/useConfirm'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -88,12 +89,14 @@ const userBatch = useBatchAction({
 })
 
 async function runUserBatch(action: UserBatchAction, enabled?: boolean): Promise<void> {
-  const confirmed = action === 'delete'
-    ? window.confirm(t('batch.confirmDeleteUsers'))
+  const confirmMessage = action === 'delete'
+    ? t('batch.confirmDeleteUsers')
     : enabled
-      ? window.confirm(t('batch.confirmEnableUsers'))
-      : window.confirm(t('batch.confirmDisableUsers'))
-  if (!confirmed) return
+      ? t('batch.confirmEnableUsers')
+      : t('batch.confirmDisableUsers')
+  // 删除是破坏性操作用 danger；启用/停用是状态变更，用默认语气
+  const confirmOptions = action === 'delete' ? { tone: 'danger' as const } : undefined
+  if (!(await confirmAction(confirmMessage, confirmOptions))) return
   error.value = null
   pendingUserAction.value = { action, enabled }
   await userBatch.execute([...userSelection.selectedIds.value], userSelection)

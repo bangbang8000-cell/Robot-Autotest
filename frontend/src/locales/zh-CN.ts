@@ -14,6 +14,53 @@ export default {
    * 受控词表的展示文案（FR-v0.2-34）。键名一律小写，映射逻辑见 `utils/statusLabels.ts`。
    * 加一个状态值就加一个键，界面不用改。
    */
+  /** UX-04：外观设置（主题 + 六预设）与视觉体系页（仅 DEV 挂载）。 */
+  appearance: {
+    title: '外观设置',
+    open: '外观设置',
+    theme: '主题',
+    accent: '强调色',
+    accentHint: '六套强调色在亮色与暗色下均通过对比度校验',
+    confirmTitle: '请确认',
+    confirm: '确认',
+    presets: {
+      blue: '蓝',
+      cyan: '青',
+      indigo: '靛',
+      violet: '紫',
+      teal: '青绿',
+      fuchsia: '品红',
+    },
+  },
+  styleguide: {
+    title: '设计系统',
+    subtitle: '语义 token 与组件预览（仅开发环境可见）',
+    tokens: '语义 token',
+    tokenName: '变量',
+    tokenValue: '当前生效值',
+    library: '组件库（Naive UI）',
+    custom: '自建组件',
+    i18n: '双语对照',
+    sampleButton: '主按钮',
+    sampleGhost: '次按钮',
+    sampleInput: '输入示例',
+    samplePlaceholder: '请输入内容',
+    sampleEmpty: '暂无数据',
+    sampleEmptyDesc: '用于检查空态在两种主题下的可读性',
+    sampleAlert: '这是一条行内提示，用于检查亮暗两态的边框与文字',
+    sampleField: '字段标签',
+    sampleFieldHint: '输入说明文字',
+    sampleConfirm: '打开确认弹窗',
+    sampleConfirmMessage: '用于检查 Modal 在亮暗两态与双语下的表现',
+    samplePass: '通过',
+    sampleFail: '失败',
+    sampleWarn: '告警',
+    sampleInfo: '提示',
+    sampleNeutral: '中性',
+    sampleZh: '中文',
+    sampleEn: 'English',
+    sampleMono: 'RUN-20261104231001-952426',
+  },
   enum: {
     reviewStatus: {
       draft: '草稿',

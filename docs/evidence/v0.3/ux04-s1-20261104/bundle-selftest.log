@@ -1,0 +1,5 @@
+[SELFTEST] 通过：干净基线产物不假红（应返回 PASS）
+[SELFTEST] 通过：注入「图标超预算」后按预期报 FAIL —— 图标 chunk 超预算：assets/lucide-CCCC.js gzip 20052 B > 15360 B（15 KiB）
+[SELFTEST] 通过：注入「字体超预算」后按预期报 FAIL —— 字体超预算：1 个 woff2 原始合计 820004 B、gzip 合计 820277 B，较大者 820277 B > 819200 B（800 KiB）
+[SELFTEST] 通过：注入「styleguide 标记泄漏」后按预期报 FAIL —— styleguide 标记泄漏到生产：assets/styleguide-EEEE.js 含 __STYLEGUIDE_DEV_ONLY__（§4 要求构建产物 grep 为空）
+[SELFTEST] 通过：图标 / 字体 / styleguide 三类违规均可被拦截；临时目录已随上下文销毁，frontend/dist 未被触碰

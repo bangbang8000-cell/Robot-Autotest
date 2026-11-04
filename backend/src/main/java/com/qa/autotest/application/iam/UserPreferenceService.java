@@ -20,10 +20,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserPreferenceService {
 
-    /** 允许的键与取值。新增偏好项要同时改这里与前端常量。 */
+    /**
+     * 允许的键与取值。新增偏好项要同时改这里与前端常量。
+     *
+     * <p>坑：{@code accent}（UX-04 六预设强调色）漏加过一次——前端照常
+     * {@code PUT {accent:"violet"}}，后端 400，前端按"偏好同步失败不回滚"的约定静默吞掉，
+     * 于是表现出「本机有效、换设备丢」的假象，日志里什么都没有。偏好类缺陷都是这个形态：
+     * 不报错、只是不同步。加键时必须同步补 {@code UserPreferenceIT} 的用例。
+     */
     private static final Map<String, Set<String>> ALLOWED = Map.of(
             "theme", Set.of("system", "light", "dark"),
-            "locale", Set.of("zh-CN", "en-US"));
+            "locale", Set.of("zh-CN", "en-US"),
+            "accent", Set.of("blue", "cyan", "indigo", "violet", "teal", "fuchsia"));
 
     /** 单次提交的键数上限：偏好项就几项，超过说明调用方写错了。 */
     private static final int MAX_KEYS_PER_REQUEST = 10;

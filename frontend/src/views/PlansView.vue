@@ -9,6 +9,7 @@ import ErrorLineView from '@/components/ErrorLine.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { formatDateTime } from '@/utils/format'
 import { runStatusLabel } from '@/utils/statusLabels'
+import { confirmAction } from '@/composables/useConfirm'
 
 const { t, te } = useI18n()
 const auth = useAuthStore()
@@ -220,7 +221,7 @@ async function toggleStatus(plan: ExecutionPlan): Promise<void> {
 }
 
 async function triggerNow(plan: ExecutionPlan): Promise<void> {
-  if (!window.confirm(t('plans.confirmTrigger', { name: plan.name }))) return
+  if (!(await confirmAction(t('plans.confirmTrigger', { name: plan.name })))) return
   error.value = null
   message.value = ''
   try {
@@ -233,7 +234,7 @@ async function triggerNow(plan: ExecutionPlan): Promise<void> {
 }
 
 async function removePlan(plan: ExecutionPlan): Promise<void> {
-  if (!window.confirm(t('plans.confirmDelete', { name: plan.name }))) return
+  if (!(await confirmAction(t('plans.confirmDelete', { name: plan.name }), { tone: 'danger' }))) return
   error.value = null
   message.value = ''
   try {

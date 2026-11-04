@@ -18,6 +18,7 @@ import { batchApi, type BatchResource } from '@/api/batch'
 import SelectionBar from '@/components/SelectionBar.vue'
 import { useBatchAction } from '@/composables/useBatchAction'
 import { useSelection } from '@/composables/useSelection'
+import { confirmAction } from '@/composables/useConfirm'
 
 type Tab = 'devices' | 'links' | 'credentials'
 
@@ -114,7 +115,7 @@ const assetBatch = useBatchAction({
 })
 
 async function batchDeleteAssets(): Promise<void> {
-  if (!window.confirm(t('batch.confirmDeleteAssets'))) return
+  if (!(await confirmAction(t('batch.confirmDeleteAssets'), { tone: 'danger' }))) return
   error.value = null
   await assetBatch.execute([...assetSelection.selectedIds.value], assetSelection)
 }
@@ -210,7 +211,7 @@ async function createDevice(): Promise<void> {
 }
 
 async function removeDevice(device: Device): Promise<void> {
-  if (!window.confirm(t('common.confirmDelete'))) return
+  if (!(await confirmAction(t('common.confirmDelete'), { tone: 'danger' }))) return
   try {
     await deviceApi.remove(projectId.value, device.id)
     await load()
@@ -278,7 +279,7 @@ async function createLink(): Promise<void> {
 }
 
 async function removeLink(link: Link): Promise<void> {
-  if (!window.confirm(t('common.confirmDelete'))) return
+  if (!(await confirmAction(t('common.confirmDelete'), { tone: 'danger' }))) return
   try {
     await linkApi.remove(projectId.value, link.id)
     await load()
@@ -313,7 +314,7 @@ async function createCredential(): Promise<void> {
 }
 
 async function removeCredential(credential: Credential): Promise<void> {
-  if (!window.confirm(t('common.confirmDelete'))) return
+  if (!(await confirmAction(t('common.confirmDelete'), { tone: 'danger' }))) return
   try {
     await credentialApi.remove(projectId.value, credential.id)
     await load()

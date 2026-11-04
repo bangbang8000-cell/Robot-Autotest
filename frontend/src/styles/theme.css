@@ -56,7 +56,56 @@
 
   --violet-300: #b9a6ff;
 
+  /* UX-04 六预设的「色板展示色」：外观面板里六枚色块不能自己写 hex（色值守门只允许本文件），
+     所以把展示色也收进 primitives。取的是各预设在暗色下的主色，亮/暗底上均可辨。 */
+  --preset-blue: #3fa7ff;
+  --preset-cyan: #22d3ee;
+  --preset-indigo: #818cf8;
+  --preset-violet: #a78bfa;
+  --preset-teal: #2dd4bf;
+  --preset-fuchsia: #e879f9;
+
   /* 状态色对比度下限由 check_contrast.py 校验，改值前先跑一遍 */
+}
+
+/* ============ 1.5 排版 / 间距 / 圆角 / 层级（UX-04 步骤 3） ============ */
+
+/*
+ * 收敛前的现状是 49 种字号、22 种 padding、6 种圆角。这里只立**档位**，
+ * 不一次性重写 13 个视图（全量迁移属 UX-04 后批次）；新代码一律用档位，
+ * 旧代码由 `check_tokens.py` 的 px 白名单防止继续摊大，逐步替换。
+ * 所有 px 值都取自 `tools/px-allow.txt` 的既有档位，不新造尺寸。
+ */
+:root {
+  --font-sans: 'Noto Sans SC', 'Segoe UI', 'Microsoft YaHei', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', ui-monospace, monospace;
+
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-base: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 20px;
+  --font-size-xl: 28px;
+
+  --space-1: 4px;
+  --space-2: 6px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 20px;
+  --space-7: 24px;
+  --space-8: 28px;
+
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-overlay: 100;
+  --z-modal: 200;
+  --z-toast: 300;
 }
 
 /* ============ 2. semantic：暗色（默认） ============ */
@@ -181,12 +230,16 @@
 /* ============ 4. 强调色变体（data-accent） ============ */
 
 /*
- * UX-01b 只把**机制**就位（blue 先行），**不提供切换入口**——入口属 UX-04 的六预设，
- * 现在挂出来等于让用户点一个只有一种颜色的开关。
+ * UX-04 强调色六预设（blue/cyan/indigo/violet/teal/fuchsia）× 亮/暗 = 12 套运行时主题。
  *
- * 机制约定：`<html data-accent="blue">`，缺省等同 blue。变体块**只允许覆盖 accent 三态
- * 与 surface-selected**，其余 semantic token 继承所在主题，这样亮/暗 × N 个强调色
- * 不会各自漂移。
+ * 机制约定：`<html data-accent="...">`，缺省等同 blue。变体块**只允许覆盖 accent 三态、
+ * accent-soft/contrast、surface-selected 与 focus-ring**，其余 semantic token 继承所在主题，
+ * 这样亮/暗 × N 个强调色不会各自漂移。切换入口见 `composables/useAccent.ts` 与 App.vue 外观面板。
+ *
+ * 色值不是手挑的：除 blue（UX-01b 时代人工微调过的基准）外，其余 10 块由
+ * `tools/gen_accent_tokens.py` 从主色按固定规则派生并逐组校验 WCAG 4.5:1 后生成，
+ * 改色板请改脚本重新生成，不要直接改这里。`check_contrast.py` 按 (主题 × 强调色) 分组判定，
+ * 分组数与判定项下限都设了硬断言，防止「变体块覆盖默认值」的 D15 假绿。
  *
  * 坑（D15）：`check_contrast.py` 原来把所有含 data-theme 的块 `update` 进同一份变量表，
  * 变体块会**覆盖**默认值 —— 后面再补 teal/fuchsia 时，变体值会顶掉默认值，算出来仍然
@@ -211,4 +264,106 @@
   --accent-contrast: var(--gray-0);
   --surface-selected: #dbe9fb;
   --focus-ring: #1567c9;
+}
+
+/* ↓ 以下 10 块由 `python3 tools/gen_accent_tokens.py --write <file>` 生成，勿手改。 */
+
+:root[data-accent='cyan'][data-theme='light'] {
+  --accent: #0e7490;
+  --accent-hover: #0c667f;
+  --accent-active: #0b586d;
+  --accent-soft: #e7f1f4;
+  --accent-contrast: #ffffff;
+  --surface-selected: #e7f1f4;
+  --focus-ring: #0e7490;
+}
+
+:root[data-accent='cyan'][data-theme='dark'] {
+  --accent: #22d3ee;
+  --accent-hover: #3dd8f0;
+  --accent-active: #57def2;
+  --accent-soft: #123541;
+  --accent-contrast: #06131f;
+  --surface-selected: #123541;
+  --focus-ring: #22d3ee;
+}
+
+:root[data-accent='indigo'][data-theme='light'] {
+  --accent: #4338ca;
+  --accent-hover: #3b31b2;
+  --accent-active: #332b9a;
+  --accent-soft: #ecebfa;
+  --accent-contrast: #ffffff;
+  --surface-selected: #ecebfa;
+  --focus-ring: #4338ca;
+}
+
+:root[data-accent='indigo'][data-theme='dark'] {
+  --accent: #818cf8;
+  --accent-hover: #909af9;
+  --accent-active: #9fa8fa;
+  --accent-soft: #212a43;
+  --accent-contrast: #06131f;
+  --surface-selected: #212a43;
+  --focus-ring: #818cf8;
+}
+
+:root[data-accent='violet'][data-theme='light'] {
+  --accent: #6d28d9;
+  --accent-hover: #6023bf;
+  --accent-active: #531ea5;
+  --accent-soft: #f0eafb;
+  --accent-contrast: #ffffff;
+  --surface-selected: #f0eafb;
+  --focus-ring: #6d28d9;
+}
+
+:root[data-accent='violet'][data-theme='dark'] {
+  --accent: #a78bfa;
+  --accent-hover: #b299fb;
+  --accent-active: #bca7fb;
+  --accent-soft: #272a43;
+  --accent-contrast: #06131f;
+  --surface-selected: #272a43;
+  --focus-ring: #a78bfa;
+}
+
+:root[data-accent='teal'][data-theme='light'] {
+  --accent: #0f766e;
+  --accent-hover: #0d6861;
+  --accent-active: #0b5a54;
+  --accent-soft: #e7f1f0;
+  --accent-contrast: #ffffff;
+  --surface-selected: #e7f1f0;
+  --focus-ring: #0f766e;
+}
+
+:root[data-accent='teal'][data-theme='dark'] {
+  --accent: #2dd4bf;
+  --accent-hover: #46d9c7;
+  --accent-active: #5fdece;
+  --accent-soft: #143539;
+  --accent-contrast: #06131f;
+  --surface-selected: #143539;
+  --focus-ring: #2dd4bf;
+}
+
+:root[data-accent='fuchsia'][data-theme='light'] {
+  --accent: #a21caf;
+  --accent-hover: #8f199a;
+  --accent-active: #7b1585;
+  --accent-soft: #f6e8f7;
+  --accent-contrast: #ffffff;
+  --surface-selected: #f6e8f7;
+  --focus-ring: #a21caf;
+}
+
+:root[data-accent='fuchsia'][data-theme='dark'] {
+  --accent: #e879f9;
+  --accent-hover: #eb89fa;
+  --accent-active: #ee99fa;
+  --accent-soft: #322743;
+  --accent-contrast: #06131f;
+  --surface-selected: #322743;
+  --focus-ring: #e879f9;
 }

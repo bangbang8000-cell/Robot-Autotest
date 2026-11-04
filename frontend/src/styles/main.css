@@ -6,7 +6,16 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Segoe UI', 'Microsoft YaHei', system-ui, sans-serif;
+  /* UX-04：打包字体（子集化 + unicode-range 分包）优先，断网/冷僻字回退系统栈不破版 */
+  font-family: var(--font-sans);
+}
+
+/* RUN_ID / IP / 耗时等需逐位对齐的字段；tabular-nums 避免数字宽度跳动 */
+.mono,
+.mono td {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
 }
 
 .app-shell {
@@ -34,6 +43,10 @@ body {
 }
 
 .app-nav-item {
+  /* UX-04：菜单图标与文字同排，用间距 token 而不是各写各的 margin */
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   color: var(--text-muted);
   text-decoration: none;
   padding: 8px 10px;

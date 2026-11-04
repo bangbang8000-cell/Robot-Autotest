@@ -4,3 +4,6 @@
 # check_import_header.py 读真实 .xlsx 台账表头，必须与 openpyxl 一起装；
 # 其余 tools/check_*.py 只用标准库。
 openpyxl>=3.1,<4
+# subset_font.py：从 @fontsource 整包生成界面字符子集（woff2 输出需要 brotli）
+fonttools>=4.50
+brotli>=1.1

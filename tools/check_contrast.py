@@ -172,12 +172,26 @@ def main() -> int:
     primitives, groups = parse_theme(THEME_CSS)
 
     # 自检 1：解析出 0 项时所有检查都会被"跳过"，脚本会打印 PASS —— 那是最坏的假绿。
-    # 自检 2：分组数下限。当前是「2 主题 × (默认 + blue)」= 4 组，要求 ≥4；
-    # 如果 theme.css 结构又变了（比如变体块挪进 @media），这里会先炸，而不是静默少测。
-    if len(groups) < 4:
+    # 自检 2：分组数下限。UX-04 六预设落地后是「2 主题 × (默认 + 6 预设)」= 14 组，
+    # 要求 ≥14；如果 theme.css 结构又变了（比如变体块挪进 @media），这里会先炸，
+    # 而不是静默少测。计划 §3.2 TC-S1-05 的「96 组」是下限判据，14 组 × 20 项 = 280 项
+    # 已远超它，所以这里按实际结构设更严的断言。
+    if len(groups) < 14:
         print(f"[FAIL] 只解析出 {len(groups)} 个 (主题 × 强调色) 分组，"
               f"疑似 theme.css 结构变化导致解析失败（而不是真的没有变量）",
               file=sys.stderr)
+        return 2
+
+    # 六预设 × 两主题必须逐组存在：只写了 dark 或漏了 teal，分组数仍可能凑够 14。
+    required = {"blue", "cyan", "indigo", "violet", "teal", "fuchsia"}
+    missing = [
+        f"{theme_name}/{name}"
+        for theme_name in ("light", "dark")
+        for name in sorted(required)
+        if (theme_name, name) not in groups
+    ]
+    if missing:
+        print(f"[FAIL] 缺少强调色变体块：{', '.join(missing)}", file=sys.stderr)
         return 2
 
     failures = 0
@@ -210,8 +224,9 @@ def main() -> int:
             if not ok:
                 failures += 1
 
-    if rows < 20:
-        print(f"[FAIL] 实际只判定了 {rows} 项（下限 20），说明分组或值解析大面积失败",
+    # 14 组 × 20 项 = 280 项；计划判据只要求 96 项，这里按实际结构设更严的下限。
+    if rows < 240:
+        print(f"[FAIL] 实际只判定了 {rows} 项（下限 240），说明分组或值解析大面积失败",
               file=sys.stderr)
         return 2
 

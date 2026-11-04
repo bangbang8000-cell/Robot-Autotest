@@ -37,6 +37,21 @@ export default defineConfig({
       { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
     ],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // UX-04 步骤 1 / TC-S1-01：图标必须独立成 chunk 才能判「图标 chunk ≤ 15 KiB gzip」。
+        // 坑：manualChunks 会把**依赖一起拉进**同一个 chunk —— 只分 lucide 时，
+        // vue runtime（@vue/shared）也被塞进 lucide chunk，实测 37.8 KiB gzip 直接超预算。
+        // 所以把 vue 显式分到自己的 chunk，lucide chunk 才真的只剩图标 + createLucideIcon。
+        manualChunks(id) {
+          if (id.includes('/node_modules/vue/') || id.includes('/node_modules/@vue/')) return 'vue'
+          if (id.includes('/node_modules/lucide-vue-next/')) return 'lucide'
+          return undefined
+        },
+      },
+    },
+  },
   server: {
     port: DEV_PORT,
     proxy: {

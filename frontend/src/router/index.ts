@@ -103,4 +103,16 @@ router.beforeEach((to) => {
   return true
 })
 
+// UX-04 步骤 7：设计系统页只在 DEV 挂载（生产不挂载）。import.meta.env.DEV 在生产构建
+// 被静态折叠；`check_bundle_budget.py` 另在产物里 grep __STYLEGUIDE_DEV_ONLY__ 兜底，
+// 防止某次构建配置变化把整页打进生产包。
+if (import.meta.env.DEV) {
+  router.addRoute({
+    path: '/dev/styleguide',
+    name: 'styleguide',
+    component: () => import('@/views/StyleguideView.vue'),
+    meta: { public: true },
+  })
+}
+
 export default router

@@ -26,6 +26,7 @@ import type { TrendChartSeries } from '@/components/report/trendChart'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { formatBytes, formatDateTime, formatDuration } from '@/utils/format'
+import { confirmAction } from '@/composables/useConfirm'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -301,7 +302,8 @@ async function doExport(mode: ReportExportMode, format: ReportExportFormat): Pro
     const message = keys
       ? t('reports.exportSection.internalConfirm')
       : t('reports.exportSection.internalConfirmNoMissing')
-    if (!window.confirm(message)) return
+    // 「允许缺项导出」是二次确认而非破坏性操作，用默认语气
+    if (!(await confirmAction(message))) return
   }
 
   exportBusy.value = `${mode}-${format}`

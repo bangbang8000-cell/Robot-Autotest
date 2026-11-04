@@ -9,6 +9,7 @@ import ErrorLineView from '@/components/ErrorLine.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { formatBytes } from '@/utils/format'
 import { runStatusLabel } from '@/utils/statusLabels'
+import { confirmAction } from '@/composables/useConfirm'
 
 const { t, te } = useI18n()
 const auth = useAuthStore()
@@ -86,7 +87,7 @@ async function runRetention(dryRun: boolean): Promise<void> {
 }
 
 async function executeRetention(): Promise<void> {
-  if (!window.confirm(t('reports.retention.confirm'))) return
+  if (!(await confirmAction(t('reports.retention.confirm'), { tone: 'danger' }))) return
   await runRetention(false)
   if (retention.value && !retention.value.dryRun) {
     retentionOpen.value = true

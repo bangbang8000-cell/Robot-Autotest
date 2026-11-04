@@ -16,6 +16,7 @@ import SelectionBar from '@/components/SelectionBar.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { useSelection } from '@/composables/useSelection'
+import { confirmAction } from '@/composables/useConfirm'
 import {
   PRIORITIES,
   REVIEW_STATUSES,
@@ -152,7 +153,7 @@ async function runBatch(action: BatchAction): Promise<void> {
     comment = input?.trim() ?? ''
     if (!comment) return // 驳回必填意见，空则中止
   }
-  if (action === 'delete' && !window.confirm(t('cases.batch.confirmDelete'))) return
+  if (action === 'delete' && !(await confirmAction(t('cases.batch.confirmDelete'), { tone: 'danger' }))) return
   if (action === 'setPriority' && !batchPriority.value) return
   if (action === 'setDomainTag' && !batchDomain.value.trim()) {
     error.value = { summary: t('cases.batch.setDomainTag'), detail: null }
@@ -227,7 +228,7 @@ async function act(action: () => Promise<unknown>): Promise<void> {
 }
 
 async function removeCase(item: TestCase): Promise<void> {
-  if (!window.confirm(t('common.confirmDelete'))) return
+  if (!(await confirmAction(t('common.confirmDelete'), { tone: 'danger' }))) return
   await act(() => caseApi.remove(projectId.value, item.id))
 }
 

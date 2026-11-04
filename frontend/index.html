@@ -6,13 +6,14 @@
     <title>AIDC AutoTest</title>
     <script>
       /*
-       * 首帧防闪（FR-v0.2-31 / NFR-v0.2-07）。
+       * 首帧防闪（FR-v0.2-31 / NFR-v0.2-07，UX-04 补强调色）。
        *
        * 这段必须内联在 <head> 里同步执行，不能挪进 main.ts：Vue 挂载是异步的，
-       * 等它跑完再设 data-theme，暗色用户会先看到一帧白屏（反之亮色用户先看到一帧黑屏）。
-       * 逻辑与 composables/useTheme.ts 的 readStoredMode/resolve 保持一致，改一处要改两处。
+       * 等它跑完再设 data-theme/data-accent，暗色用户会先看到一帧白屏，选了品红的用户
+       * 会先看到一帧蓝。逻辑与 useTheme.ts / useAccent.ts 的读取保持一致，改一处要改三处。
        */
       (function () {
+        var ACCENTS = ['blue', 'cyan', 'indigo', 'violet', 'teal', 'fuchsia'];
         try {
           var saved = localStorage.getItem('theme');
           var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -20,9 +21,15 @@
             saved === 'light' || saved === 'dark' ? saved : prefersDark ? 'dark' : 'light';
           document.documentElement.setAttribute('data-theme', theme);
           document.documentElement.style.colorScheme = theme;
+          var savedAccent = localStorage.getItem('accent');
+          document.documentElement.setAttribute(
+            'data-accent',
+            ACCENTS.indexOf(savedAccent) >= 0 ? savedAccent : 'blue'
+          );
         } catch (e) {
-          // 存储被禁用等异常：给暗色（历史默认），保证至少有主题，不至于无样式
+          // 存储被禁用等异常：给历史默认（暗色 + 蓝），保证至少有主题，不至于无样式
           document.documentElement.setAttribute('data-theme', 'dark');
+          document.documentElement.setAttribute('data-accent', 'blue');
         }
       })();
     </script>

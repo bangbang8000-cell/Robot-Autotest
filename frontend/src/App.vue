@@ -1,11 +1,18 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { NConfigProvider } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
 import { useAuthStore } from '@/stores/auth'
 import { useTheme, type ThemeMode } from '@/composables/useTheme'
+import { useAccent } from '@/composables/useAccent'
+import { useNaiveTheme } from '@/composables/naiveTheme'
 import { preferenceApi } from '@/api/preferences'
+import AppIcon from '@/components/AppIcon.vue'
+import AppearanceDialog from '@/components/AppearanceDialog.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
+import type { IconName } from '@/components/iconMap'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -13,27 +20,31 @@ const router = useRouter()
 const localeStore = useLocaleStore()
 const auth = useAuthStore()
 const theme = useTheme()
+const accent = useAccent()
+const { overrides } = useNaiveTheme()
 
-// index.html 的内联脚本已设过 data-theme（防闪）；这里再跑一次是兜底：
-// 万一内联脚本被 CSP 拦掉，或 localStorage 里的值与当前 mode 不一致，也需要纠正。
+// index.html 的内联脚本已设过 data-theme / data-accent（防闪）；这里再跑一次是兜底：
+// 万一内联脚本被 CSP 拦掉，或 localStorage 里的值与当前状态不一致，也需要纠正。
 theme.init()
+accent.init()
 
-const THEME_ICONS: Record<ThemeMode, string> = {
-  system: '◐',
-  light: '☀',
-  dark: '☾',
+const THEME_ICONS: Record<ThemeMode, IconName> = {
+  system: 'system',
+  light: 'sun',
+  dark: 'moon',
 }
 
-const themeIcon = computed(() => THEME_ICONS[theme.mode.value])
+const themeIcon = computed<IconName>(() => THEME_ICONS[theme.mode.value])
 const themeLabel = computed(() => t('theme.switchTo', { mode: t(`theme.${theme.mode.value}`) }))
+const appearanceOpen = ref(false)
 
-const menus = [
-  { name: 'overview', path: '/overview' },
-  { name: 'assets', path: '/assets' },
-  { name: 'cases', path: '/cases' },
-  { name: 'runs', path: '/runs' },
-  { name: 'reports', path: '/reports' },
-  { name: 'admin', path: '/admin' },
+const menus: { name: string; path: string; icon: IconName }[] = [
+  { name: 'overview', path: '/overview', icon: 'dashboard' },
+  { name: 'assets', path: '/assets', icon: 'boxes' },
+  { name: 'cases', path: '/cases', icon: 'cases' },
+  { name: 'runs', path: '/runs', icon: 'runs' },
+  { name: 'reports', path: '/reports', icon: 'reports' },
+  { name: 'admin', path: '/admin', icon: 'admin' },
 ]
 
 const isLogin = computed(() => route.path === '/login')
@@ -89,6 +100,7 @@ onMounted(async () => {
   try {
     const prefs = await preferenceApi.get()
     theme.applyRemote(prefs.theme)
+    accent.applyRemote(prefs.accent)
   } catch {
     // 用本地值继续
   }
@@ -96,55 +108,72 @@ onMounted(async () => {
 </script>
 
 <template>
-  <RouterView v-if="isStandalone" />
+  <!-- abstract 保证不产生额外 DOM：不影响打印页 A4 版式与 .app-shell 的 flex 布局 -->
+  <NConfigProvider abstract :theme-overrides="overrides">
+    <RouterView v-if="isStandalone" />
 
-  <div v-else class="app-shell">
-    <aside class="app-side">
-      <div class="app-brand">{{ t('app.title') }}</div>
-      <nav class="app-nav">
-        <RouterLink v-for="m in menus" :key="m.name" :to="m.path" class="app-nav-item">
-          {{ t(`menu.${m.name}`) }}
-        </RouterLink>
-        <!-- 审计查询页挂在「管理」下的子入口；非管理员不显示（不新增一级菜单） -->
-        <RouterLink v-if="auth.isAdmin" to="/admin/audit" class="app-nav-item app-nav-sub">
-          {{ t('audit.title') }}
-        </RouterLink>
-      </nav>
-    </aside>
+    <div v-else class="app-shell">
+      <aside class="app-side">
+        <div class="app-brand">{{ t('app.title') }}</div>
+        <nav class="app-nav">
+          <RouterLink v-for="m in menus" :key="m.name" :to="m.path" class="app-nav-item">
+            <AppIcon :name="m.icon" :size="16" />
+            <span>{{ t(`menu.${m.name}`) }}</span>
+          </RouterLink>
+          <!-- 审计查询页挂在「管理」下的子入口；非管理员不显示（不新增一级菜单） -->
+          <RouterLink v-if="auth.isAdmin" to="/admin/audit" class="app-nav-item app-nav-sub">
+            <AppIcon name="audit" :size="16" />
+            <span>{{ t('audit.title') }}</span>
+          </RouterLink>
+        </nav>
+      </aside>
 
-    <main class="app-main">
-      <header class="app-header">
-        <span class="app-header-title">{{ t('app.subtitle') }}</span>
-        <div class="app-header-right">
-          <span v-if="displayName" class="muted">{{ displayName }}</span>
-          <button
-            class="btn btn-ghost theme-btn"
-            type="button"
-            :title="themeLabel"
-            :aria-label="themeLabel"
-            @click="toggleTheme"
-          >
-            {{ themeIcon }}
-          </button>
-          <select
-            class="app-lang"
-            :value="localeStore.locale"
-            @change="
-              localeStore.setLocale(($event.target as HTMLSelectElement).value as 'zh-CN' | 'en-US')
-            "
-          >
-            <option value="zh-CN">中文</option>
-            <option value="en-US">English</option>
-          </select>
-          <button class="btn btn-ghost" type="button" @click="logout">{{ t('app.logout') }}</button>
-        </div>
-      </header>
+      <main class="app-main">
+        <header class="app-header">
+          <span class="app-header-title">{{ t('app.subtitle') }}</span>
+          <div class="app-header-right">
+            <span v-if="displayName" class="muted">{{ displayName }}</span>
+            <button
+              class="btn btn-ghost theme-btn"
+              type="button"
+              :title="themeLabel"
+              :aria-label="themeLabel"
+              @click="toggleTheme"
+            >
+              <AppIcon :name="themeIcon" :size="16" />
+            </button>
+            <button
+              class="btn btn-ghost"
+              type="button"
+              :aria-label="t('appearance.open')"
+              :title="t('appearance.open')"
+              @click="appearanceOpen = true"
+            >
+              <AppIcon name="palette" :size="16" />
+            </button>
+            <select
+              class="app-lang"
+              :value="localeStore.locale"
+              @change="
+                localeStore.setLocale(($event.target as HTMLSelectElement).value as 'zh-CN' | 'en-US')
+              "
+            >
+              <option value="zh-CN">中文</option>
+              <option value="en-US">English</option>
+            </select>
+            <button class="btn btn-ghost" type="button" @click="logout">{{ t('app.logout') }}</button>
+          </div>
+        </header>
 
-      <p v-if="auth.passwordExpired" class="banner-warn">{{ t('login.passwordExpired') }}</p>
+        <p v-if="auth.passwordExpired" class="banner-warn">{{ t('login.passwordExpired') }}</p>
 
-      <section class="app-body">
-        <RouterView />
-      </section>
-    </main>
-  </div>
+        <section class="app-body">
+          <RouterView />
+        </section>
+      </main>
+
+      <AppearanceDialog v-model:open="appearanceOpen" />
+      <ConfirmModal />
+    </div>
+  </NConfigProvider>
 </template>

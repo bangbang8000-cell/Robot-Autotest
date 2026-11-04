@@ -98,6 +98,30 @@ class UserPreferenceIT {
     }
 
     @Test
+    @DisplayName("强调色偏好（UX-04）：六个预设值可存取，theme 不受影响")
+    void 强调色偏好可存取() {
+        for (String accent : new String[]{"blue", "cyan", "indigo", "violet", "teal", "fuchsia"}) {
+            service.put(userId, Map.of("accent", accent));
+            assertThat(service.get(userId)).containsEntry("accent", accent);
+        }
+
+        service.put(userId, Map.of("theme", "light", "accent", "fuchsia"));
+        assertThat(service.get(userId))
+                .containsEntry("theme", "light")
+                .containsEntry("accent", "fuchsia");
+    }
+
+    @Test
+    @DisplayName("强调色不在六预设内被拒（防止前端拼错颜色名静默落库）")
+    void 非法强调色被拒() {
+        assertThatThrownBy(() -> service.put(userId, Map.of("accent", "purple")))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("偏好值非法");
+
+        assertThat(service.get(userId)).as("被拒的写入不能落库").isEmpty();
+    }
+
+    @Test
     @DisplayName("跨用户隔离：改 A 的偏好不影响 B")
     void 跨用户隔离() {
         service.put(userId, Map.of("theme", "light"));

@@ -38,4 +38,18 @@ done
 echo "[lint]   - tools/check_import_header.py（CAS-03 台账表头对账）"
 python3 tools/check_import_header.py fixtures/case-ledger/ledger-sample-226.xlsx
 
+# UX-04 美术 S1：构建产物体积 / styleguide 泄漏守门。dist 缺失时脚本自身打印
+# [SKIP] 并返回 0，不会让 lint 假红；有违规才返回非 0，由 set -e 中断。
+echo "[lint]   - tools/check_bundle_budget.py（UX-04 S1 产物体积守门）"
+python3 tools/check_bundle_budget.py
+
+# UX-04 新增的三条静态守门：token 清单对账 / 六预设主色派生 / 字体子集预算。
+# 与上面五条一样，写了不接线就是假绿，所以统一挂在这里。
+echo "[lint]   - tools/check_styleguide_tokens.py（styleguide ↔ theme.css 对账）"
+python3 tools/check_styleguide_tokens.py
+echo "[lint]   - tools/gen_accent_tokens.py --check（六预设 WCAG 派生）"
+python3 tools/gen_accent_tokens.py --check
+echo "[lint]   - tools/subset_font.py --check（打包字体子集预算）"
+python3 tools/subset_font.py --check
+
 echo "[lint] PASS"
