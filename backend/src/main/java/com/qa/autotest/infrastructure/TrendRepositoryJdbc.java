@@ -62,25 +62,26 @@ public class TrendRepositoryJdbc implements TrendRepository {
              LIMIT ?
             """;
 
-    private static final String PASS_RATE_DAY = """
+    // 包私有：TrendRepositorySqlTest 要断言状态字面量，防止再写回枚举里不存在的 'passed'。
+    static final String PASS_RATE_DAY = """
             SELECT DATE_FORMAT(COALESCE(started_at, created_at), '%Y-%m-%d') AS bucket,
                    COALESCE(SUM(pass_count), 0) AS pass_count,
                    COALESCE(SUM(fail_count), 0) AS fail_count,
                    COALESCE(SUM(skip_count), 0) AS skip_count
               FROM `run`
-             WHERE project_id = ? AND run_status IN ('passed', 'failed')
+             WHERE project_id = ? AND run_status IN ('finished', 'failed')
              GROUP BY bucket
              ORDER BY bucket DESC
              LIMIT ?
             """;
 
-    private static final String PASS_RATE_WEEK = """
+    static final String PASS_RATE_WEEK = """
             SELECT DATE_FORMAT(COALESCE(started_at, created_at), '%x-%v') AS bucket,
                    COALESCE(SUM(pass_count), 0) AS pass_count,
                    COALESCE(SUM(fail_count), 0) AS fail_count,
                    COALESCE(SUM(skip_count), 0) AS skip_count
               FROM `run`
-             WHERE project_id = ? AND run_status IN ('passed', 'failed')
+             WHERE project_id = ? AND run_status IN ('finished', 'failed')
              GROUP BY bucket
              ORDER BY bucket DESC
              LIMIT ?
