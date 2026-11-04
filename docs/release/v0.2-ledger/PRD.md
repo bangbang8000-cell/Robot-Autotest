@@ -201,6 +201,34 @@
 | FR-v0.2-52 | **用例与资产解耦不退化**：`test_case` 不得新增 `device_id` 类列；DUT 在执行时绑定，且必须是本项目可见资产 | P0 | Schema 断言测试通过；用非本项目资产发起执行被拒 | AST-05 |
 | FR-v0.2-53 | **报告结果导向**：项目首屏含最近 5 份报告、失败用例 Top 10、未执行用例数、通过率趋势；只读接口 `GET /report-digest?days=30` | P1 | 接口与真库 SQL 逐项一致；空项目不显示 0% | PRJ-04 |
 
+### 3.9 界面基线修复（UX-01b，2026-11-04 增量，v0.2 收尾必做）
+
+> 背景：美术体系调研（`docs/design/界面与美术体系-调研与评估-20261104.md`）发现两个**正在生效的 P0 缺陷**：
+> `var(--muted)` 被引用 21 处但从未定义（全应用辅助文字退化为正文色），以及全应用零 hover/focus（WCAG 2.4.7 不达标）。
+> 完整分期见 `docs/design/美术体系-开发与测试计划-20261104.md`，本节只收 S0。
+
+| ID | 需求 | 优先级 | 验收标准 | WBS |
+|---|---|---|---|---|
+| FR-v0.2-54 | **token 引用完整性**：`var(--muted)` 21 处修正为 `--text-muted`；新增 `check_tokens.py`（所有 var 引用必须有定义 + px 字面量白名单），带自检 | P0 | 脚本 0 悬空引用；故意注入假 var 会被拦 | UX-01b |
+| FR-v0.2-55 | **全局交互态**：补 `--surface-hover/--surface-selected/--focus-ring/--accent-hover/--accent-active` token；六类元素（btn/link-btn/input/select/tab/nav-item/表格行）均有 `:hover` + `:focus-visible`；全局 focus-visible outline；新增 `check_states.py` | P0 | 键盘 Tab 焦点环处处可见；check_states 全过 | UX-01b |
+| FR-v0.2-56 | **危险操作视觉警示**：定义 `.btn.danger`（实底红）与 `.btn-ghost.danger`（描边红字）；删除计划等破坏性按钮全部套用 | P0 | 破坏性按钮与普通按钮在亮/暗主题下均可区分 | UX-01b |
+| FR-v0.2-57 | **内容区最大宽度**：主内容 `max-width: 1440px` 居中；超宽表格容器级横向滚动，页面不横滚 | P1 | 1920 截图内容居中；10 列报告表只表内滚 | UX-01b |
+| FR-v0.2-58 | **对比度校验器修复（D15）**：`check_contrast.py` 解析改按「(主题 × 强调色)」分组，杜绝 accent 变体块覆盖默认值的假绿；accent 两态 token 就位（blue 先行，不暴露切换入口） | P0 | 注入 `[data-accent]` 块后脚本仍正确；40 组全 PASS | UX-01b |
+
+### 3.10 执行人工触发（EXEC-01，2026-11-04 增量）
+
+> 背景：全应用唯一触发入口在计划页，**「临时跑一次」被逼成「先建计划」**；且 `POST /api/execution/runs`
+> 是僵尸端点（只落库无消费者，run 永远 queued，`RunQueuePolicy` 零调用点）。评估见
+> `docs/plan/执行人工触发-评估与计划-20261104.md`。
+
+| ID | 需求 | 优先级 | 验收标准 | WBS |
+|---|---|---|---|---|
+| FR-v0.2-59 | **一次人工触发**：无需创建计划，按套件路径集直接触发；`trigger_type=manual`、`plan_id=NULL`；走与计划触发同一条派发链（预检/超时/取消/日志全量可用） | P0 | 不建计划触发后 run 推进到 finished，产出 output.xml | EXEC-01 |
+| FR-v0.2-60 | **执行页手动执行表单**：套件多选 + 环境/设备/并发/超时；校验失败内联报错；成功跳转 run 详情 | P0 | 空套件 400；合法提交 2s 内见详情 | EXEC-01 |
+| FR-v0.2-61 | **僵尸端点收编**：`RunDispatcher` 提升为执行域公共组件；`POST /api/execution/runs` 落库后由它消费（CI 专用定位入文档） | P0 | 直调该端点的 run 不再永久 queued | EXEC-01 |
+| FR-v0.2-62 | **人工触发可追溯**：quick-run 与表单触发写 `audit_log`（`RUN_TRIGGER`，含来源页面与操作者） | P1 | 触发后审计可查 | EXEC-01 |
+| FR-v0.2-63 | **用例集立即执行**：按集合内已绑定脚本的套件路径触发；存在未绑定用例时 400 并列出编号，不静默跳过 | P1 | 混合集合报错信息含未绑定用例编号 | EXEC-01 |
+
 ---
 
 ## 4. 非功能需求

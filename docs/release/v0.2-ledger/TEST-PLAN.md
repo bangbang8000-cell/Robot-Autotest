@@ -352,7 +352,32 @@
 | TC-PRJ-09 | 空项目不显示 0% | E2E | 零运行项目看首页 | 显示引导，通过率显示 `—` | 截图 |
 | TC-PRJ-10 | 点击进报告 | E2E | 点最近报告行 | 跳报告详情且 runId 一致 | 截图 |
 
-### 13.8 回归与构建
+### 13.8 界面基线修复（UX-01b）
+
+| ID | 用例 | 层级 | 步骤 | 期望 | 证据 |
+|---|---|---|---|---|---|
+| TC-S0-01 | token 引用完整性 | 静态 | 跑 `check_tokens.py`；再注入假 `var(--fake-x)` | 0 悬空引用 + 自检计数达标；注入后 FAIL | 脚本输出 ×2 |
+| TC-S0-02 | 辅助文字层级恢复 | E2E | 亮/暗各截总览与报告页 | 表头/标签/轴标签恢复灰阶弱化（取色 = `--text-muted`） | 4 张截图 |
+| TC-S0-03 | 交互态 | E2E+静态 | `check_states.py`；键盘 Tab 连拍登录页与用例页 | 六类元素 hover/focus-visible 齐备，焦点环可见 | 脚本输出 + 截图 |
+| TC-S0-04 | 危险操作警示 | E2E | 亮/暗观察删除计划按钮 | 与普通按钮可区分 | 2 张截图 |
+| TC-S0-05 | 宽屏布局 | E2E | 1920×1080 截总览/报告 | 内容居中 ≤1440；页面不横滚 | 2 张截图 |
+| TC-S0-06 | D15 修复 | 静态 | 注入 `[data-accent]` 块复跑 `check_contrast.py` | `--accent` 不被覆盖；40 组 PASS | 脚本输出 ×2 |
+| TC-S0-07 | 守门自检 | 静态 | 删一条 `:hover` / 引用假 var | 两个新脚本分别 FAIL 退出 1 | 脚本输出 |
+
+### 13.9 执行人工触发（EXEC-01）
+
+| ID | 用例 | 层级 | 步骤 | 期望 | 证据 |
+|---|---|---|---|---|---|
+| TC-EXEC-01 | 无计划直跑 | IT | mock launcher 下 quick-run 2 套件 | queued→running→finished；`plan_id IS NULL`、`trigger_type=manual`；artifact 路径生成 | IT 报告 |
+| TC-EXEC-02 | 参数校验矩阵 | IT | 空套件 / 套件不存在 / 越权 / 项目不符 | 400 / 404 / 403，错误码符合 ErrorCode | IT 报告 |
+| TC-EXEC-03 | CI 端点收编 | IT | 直调 `POST /execution/runs` | run 不停留 queued；重复 runRequestId 幂等 | IT 报告 |
+| TC-EXEC-04 | 取消人工 run | IT | running 中 cancel | canceled；进程树被杀 | IT 报告 |
+| TC-EXEC-05 | 计划触发回归 | IT | trigger-now + cron 各 1 | 与提升组件前行为一致 | IT 报告 |
+| TC-EXEC-06 | 审计 | IT | quick-run 后查审计 | `RUN_TRIGGER` 含来源与操作者 | SQL 截图 |
+| TC-EXEC-07 | 界面走查 | E2E | 中英 × 亮暗走手动表单；空提交/成功跳转 | 内联报错、跳转正确、无裸枚举 | 8 张截图 |
+| TC-EXEC-08 | 真机端到端 | **待现场** | 149 上对 demo 工程触发真实 pabot | output.xml 落库、报告可开 | 现场记录 |
+
+### 13.10 回归与构建
 
 | ID | 用例 | 期望 | 证据 |
 |---|---|---|---|
@@ -361,7 +386,7 @@
 | TC-REG-03 | 前端三关 | `npm run lint` / `vue-tsc --noEmit` / `npm run build` 均 exit 0 | 日志 |
 | TC-REG-04 | 既有能力不退化 | CAS-03 导入 226 条仍成功；总览 OVW-01 读数不变 | 日志 |
 
-### 13.9 不做的测试
+### 13.11 不做的测试
 
 | 不做 | 理由 |
 |---|---|

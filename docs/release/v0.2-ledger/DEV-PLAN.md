@@ -279,12 +279,16 @@ npm run test:e2e -- --grep "v0.2 核心场景"   # 1~7 步全过
 ### 10.1 施工顺序与依赖
 
 ```
-NAM-01 ──► UX-01 ──► UX-03 ──► UX-02 ──► PRJ-01 ──► PRJ-04 ──► AST-05 ──► PRJ-03
-（改名最先，否则后面所有截图作废）        （依赖后端成员接口，已存在）  （读接口）（唯一动 schema）（跟随 AST-05）
+NAM-01 ──► UX-01 ──► UX-03 ──► UX-01b ──► UX-02 ──► PRJ-01 ──► PRJ-04 ──► AST-05 ──► PRJ-03 ──► EXEC-01
+（改名最先，否则后面所有截图作废）      （美术S0，UX-01 验收前置）        （依赖后端成员接口，已存在）  （读接口）（唯一动 schema）（跟随 AST-05）（人工触发，收尾）
 ```
 
 **为什么 `NAM-01` 必须最先做**：它只改 3 处文案，5 分钟完成；但后续每个包都要交截图证据。
 改名放最后，前面所有截图都要重截一遍——这是纯粹的白工。
+
+**为什么 `UX-01b` 插在 UX-03 之后**：美术调研实锤两个 P0 缺陷（`--muted` 未定义 21 处、零 hover/focus），
+且 D15（对比度校验器假绿）必须在任何 accent 变体落地前修掉。它只动样式不动逻辑，半天可验，
+但**必须排在 UX-01 验收之前**（否则验的是带已知缺陷的界面）。
 
 ### 10.2 NAM-01 产品命名统一
 
@@ -448,7 +452,35 @@ Windows 下用 Python 的 `io.open(path, 'w')` 改文件，会把整个文件的
 | 3 | 删项目级联删引用、保留平台资产 | Repository | 删项目后 device 仍在 |
 | 4 | 越权用例：无引用项目读平台资产 → 403（不是 404，避免探测） | 测试 | `mvn -Pit test -Dtest=AssetScopeIT` |
 
-### 10.10 完成判定
+### 10.10 UX-01b 界面基线修复（美术 S0，详见 `docs/design/美术体系-开发与测试计划-20261104.md` §2.1）
+
+| 步骤 | 内容 | 产出 | 验收命令 |
+|---:|---|---|---|
+| 1 | `var(--muted)` 21 处 → `--text-muted`；修 CONVENTIONS-frontend §8 错误 token 名 | 5 个文件 | `python tools/check_tokens.py` |
+| 2 | `check_contrast.py` 解析按「(主题×强调色)」分组 + 自检（D15） | 1 个脚本 | 注入 accent 块复跑仍 PASS |
+| 3 | 交互态 token + 六类元素 hover/focus-visible + 全局 focus outline | theme.css + main.css | `python tools/check_states.py` |
+| 4 | `.btn.danger` / `.btn-ghost.danger` 定义并套用破坏性按钮 | main.css + PlansView | 截图 |
+| 5 | 内容区 max-width 1440 + 超宽表内滚 | main.css | 1920 截图 |
+| 6 | accent 两态 token（blue 先行，不出切换入口） | theme.css | 40 组对比度 PASS |
+| 7 | 新守门 `check_tokens.py` + `check_states.py`（带自检） | 2 个脚本 | 破坏性自检各拦 1 次 |
+
+**边界**：只动样式与守门脚本，不改业务逻辑与 i18n 键；半天体量。
+
+### 10.11 EXEC-01 执行人工触发（详见 `docs/plan/执行人工触发-评估与计划-20261104.md` §4）
+
+| 步骤 | 内容 | 产出 | 验收 |
+|---:|---|---|---|
+| 1 | `RunDispatcher` 提升公共组件；`RunQueuePolicy` 启用或删除（实现时定，不留死代码） | 1 个服务 | 并发 dispatch 串行化单测 |
+| 2 | `POST /api/execution/quick-run`（校验→create→dispatch） | controller + service | IT 400/404/403 矩阵 |
+| 3 | `POST /api/execution/runs`（CI 专用）接派发 worker | RunController | IT：run 不再永久 queued |
+| 4 | 用例集执行：集合→套件路径解析 + 未绑定报错列表 | 1 service | IT 混合集合 400+编号 |
+| 5 | RunsView 手动执行表单 + `executionApi.quickRun` | 1 vue + 1 api | 中英双走查截图 |
+| 6 | 用例集「立即执行」入口 | 1 vue | 走查截图 |
+| 7 | 审计 `RUN_TRIGGER` 埋点 | 1 处 | SQL 查审计行 |
+
+**边界**：本包不做「勾选台账用例直接跑」（依赖用例↔脚本绑定模型，列 v0.4 EXEC-02）；排 UX-02/UX-01b 之后。
+
+### 10.12 完成判定
 
 上述各包独立验收，**不需要等全部做完**。合并判据：
 
