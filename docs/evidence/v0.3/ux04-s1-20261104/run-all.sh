@@ -41,6 +41,10 @@ python3 tools/check_styleguide_tokens.py > "$OUT/check-styleguide.log" 2>&1
 printf '%-26s rc=%s\n' 'check-styleguide' "$?"
 python3 tools/check_styleguide_tokens.py --self-test > "$OUT/styleguide-selftest.log" 2>&1
 printf '%-26s rc=%s\n' 'styleguide-selftest' "$?"
+python3 tools/check_icons.py > "$OUT/check-icons.log" 2>&1
+printf '%-26s rc=%s\n' 'check-icons' "$?"
+python3 tools/check_icons.py --self-test > "$OUT/icons-selftest.log" 2>&1
+printf '%-26s rc=%s\n' 'icons-selftest' "$?"
 python3 tools/gen_accent_tokens.py --check > "$OUT/accent-tokens.log" 2>&1
 printf '%-26s rc=%s\n' 'accent-tokens' "$?"
 python3 tools/subset_font.py --check > "$OUT/font-subset.log" 2>&1

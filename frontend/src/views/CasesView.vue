@@ -486,7 +486,10 @@ async function runCommit(): Promise<void> {
     </table>
     </div>
 
-    <p v-if="!loading && !error && total === 0" class="muted">{{ t('common.noData') }}</p>
+    <EmptyState
+      v-if="!loading && !error && total === 0"
+      :title="t('common.noData')"
+    />
 
     <div v-if="total > 0" class="pager">
       <button class="btn btn-ghost" type="button" :disabled="page <= 1" @click="turnPage(page - 1)">

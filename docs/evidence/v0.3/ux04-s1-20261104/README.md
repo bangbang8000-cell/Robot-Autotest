@@ -13,7 +13,9 @@
 
 ### 没做什么（边界如实写明）
 
-- **13 个业务视图没有全量迁移到库组件**。自建库组件（StatusTag / EmptyState / InlineAlert / FormField / ConfirmModal）在 `/dev/styleguide` 中呈现，业务视图全量迁移属**后批次**，本批次只做骨架与局部替换。
+- **13 个业务视图没有全量迁移到库组件**。自建库组件已**首批接入 5 处真实业务位点**
+  （`PlansView` 计划状态徽标 2 处、`CasesView` / `AuditView` / `AdminView` 主列表空态 3 处），
+  其余页面仍用原生 `table` / `button` / `select`；全量迁移属 WBS #80 `UX-04b`。
 - **四态截图、1440×1920 表格观感、组件库 chunk 预算的人为定夺**仍待现场，均**未完成**，不得写成已完成。
 - **F2 现场 EXEC-01 仍冻结**。
 - 未做试点评审（评审闸门已免除，见第二节），未做人工观感验收，未做业务视图全量改造。
@@ -45,6 +47,10 @@
 - 自建组件：StatusTag / EmptyState / InlineAlert / FormField / ConfirmModal。
 - 6 个视图共 **13 处** `window.confirm` 全部换成 `confirmAction`。
 - `/dev/styleguide` 仅 DEV 挂载；外观面板（主题三态 + 六色板）。
+- **自建组件已进业务页（首批 5 处）**：`PlansView` 两处计划状态徽标 → `StatusTag`（运行中 `ok` /
+  已暂停 `warn`，并删掉随之变成死代码的 `.badge*` 样式）；`CasesView` / `AuditView` / `AdminView`
+  的主列表空态 → `EmptyState`。**其余页面仍是原生元素**，全量迁移在 WBS #80。
+- 新增 `tools/check_icons.py`：图标名 ↔ `iconMap.ts` 静态对账（原因见 §七 第 3 条）。
 
 ## 四、守门与验收数据（评审口径，照抄）
 
@@ -62,6 +68,7 @@
 | `check_colors.py` | 0 处组件硬编码色值 | 零硬编码 | `check-colors.log` |
 | `check_states.py` | 8 类元素三态齐备 | 三态齐备 | `check-states.log` |
 | `check_styleguide_tokens.py` | styleguide 20 个语义名全部在 theme.css 96 个定义中；`--self-test` PASS | 全部有定义 | `check-styleguide.log`、`styleguide-selftest.log` |
+| `check_icons.py` | 图标表 41 个名字；静态引用 5 处全部有定义；动态表达式 7 处跳过（计数上报）；`--self-test` 三类问题均可拦 | 0 未定义 | `check-icons.log`、`icons-selftest.log` |
 | `gen_accent_tokens.py --check` | 10 / 10 派生组达标（blue 亮暗沿用 UX-01b 基准） | 10 组达标 | `accent-tokens.log` |
 | `subset_font.py --check` | 界面汉字 892 字，3 个 woff2 合计 157,077 B gzip（13,327 / 122,554 / 21,196 B） | 预算 800 KiB | `font-subset.log` |
 | `check_bundle_budget.py` | 图标 chunk 4,207 B gzip；vendor chunk 102,792 B gzip；字体 157,077 B；生产产物无 `__STYLEGUIDE_DEV_ONLY__` 泄漏；`--self-test` 三类违规均能拦截 | 图标 ≤ 15 KiB，组件库 ≤ 200 KiB，字体 ≤ 800 KiB | `bundle-budget.log`、`bundle-selftest.log` |
@@ -92,8 +99,10 @@
 | `backend-mvn-unit.log` | `mvn -B test`（backend/） | 0 | 是 | 是，`Tests run: 476, Failures: 0` + `BUILD SUCCESS` |
 | `backend-mvn-it.log` | `DB_NAME=robot_it mvn -B -Pit test` | 0 | 是 | 是，`Tests run: 27, Failures: 0` + `BUILD SUCCESS` |
 | `editor-vitest.log` | `npm test`（packages/editor/） | 0 | 是 | 是，`Test Files 23 passed` / `Tests 215 passed` |
+| `check-icons.log` | `python3 tools/check_icons.py` | 0 | 是 | 是，`[PASS] 图标名对账通过` |
+| `icons-selftest.log` | `python3 tools/check_icons.py --self-test` | 0 | 是 | 是，`[SELFTEST] 通过：三类问题均可拦截` |
 
-**17 条命令 rc 全部为 0**（`run-all.sh` 一轮跑完并逐条打印 rc），日志全部非空。末尾字样自检有 2 条例外，见第六节，未改写日志内容以凑字样。
+**19 条命令 rc 全部为 0**（`run-all.sh` 一轮跑完并逐条打印 rc），日志全部非空。末尾字样自检有 2 条例外，见第六节，未改写日志内容以凑字样。
 
 > **rc 读数的坑**：不要在 `wsl.exe -d Ubuntu-24.04 bash -lc '... echo rc=$?'` 里取 `$?` ——
 > 多层引号会把 `$?` 在外层先展开，实测**恒为 0**，连真失败都会显示 0。
@@ -115,6 +124,12 @@
 
 - `manualChunks` 只分 lucide 时把 vue runtime 一起拉进图标 chunk，达 37.8 KiB gzip 超预算；显式把 vue 分到独立 chunk 后降到 4.23 KiB（见 `fe-build.log` 中独立的 `vue-kPrVatBb.js`）。
 - 守门原按「内容含 lucide」把整个主包当图标 chunk 造成假红；改为按文件名认定独立 chunk。
+- **图标名拼错是静默失败**：`EmptyState` 用了 `icon="shield"`，而 `iconMap.ts` 里只有 `audit`。
+  项目没开 `vueCompilerOptions.strictTemplates`，**模板 prop 类型不被 vue-tsc 检查**，
+  `npm run build` / `vue-tsc --noEmit` 全绿，运行时 `<component :is="undefined">` 渲染空白——
+  页面上只是少个图标，没有任何报错。修法三条：① 改名 `icon="audit"`；② `AppIcon` 加 DEV 警告
+  并在生产退回 `help` 兜底；③ 新增 `tools/check_icons.py` 静态对账并接入 `lint.sh`，
+  自检覆盖「未定义名」「表被清空」两种场景。
 
 ## 八、遗留项（未完成，待现场 / 后批次）
 
@@ -123,7 +138,7 @@
 | 四态截图 | 未完成 | 仍待现场，不得写成已完成 |
 | 1440×1920 表格观感 | 未完成 | 仍待现场的人工定夺 |
 | 组件库 chunk 预算的人为定夺 | 未完成 | 脚本已按 200 KiB 判据实测达标，但预算数值的现场拍板仍待定 |
-| 13 个业务视图全量迁移到库组件 | 未完成 | 库组件仅在 styleguide 中呈现，迁移属后批次（已拆为 WBS #80 `UX-04b`） |
+| 13 个业务视图全量迁移到库组件 | 部分完成 | 首批 5 处已进业务页（计划徽标 2 + 列表空态 3），其余仍是原生元素；迁移属 WBS #80 `UX-04b` |
 
 ## 九、本轮抓到的真缺陷：强调色跨设备同步一直是空转
 

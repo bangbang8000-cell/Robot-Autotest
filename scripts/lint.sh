@@ -52,4 +52,9 @@ python3 tools/gen_accent_tokens.py --check
 echo "[lint]   - tools/subset_font.py --check（打包字体子集预算）"
 python3 tools/subset_font.py --check
 
+# 图标名对账：模板里的 `icon="x"` 不受 vue-tsc 检查（未开 strictTemplates），
+# 写错名字只渲染空白、无任何报错。这条把字面量与 iconMap.ts 对起来。
+echo "[lint]   - tools/check_icons.py（图标名 ↔ iconMap.ts 对账）"
+python3 tools/check_icons.py
+
 echo "[lint] PASS"

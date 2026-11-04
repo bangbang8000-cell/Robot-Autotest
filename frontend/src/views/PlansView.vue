@@ -6,6 +6,7 @@ import { caseSetApi, type TestSet } from '@/api/cases'
 import { useAuthStore } from '@/stores/auth'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
+import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { formatDateTime } from '@/utils/format'
 import { runStatusLabel } from '@/utils/statusLabels'
@@ -291,9 +292,10 @@ void load()
             <div class="muted small">{{ plan.suitePaths.join(', ') || '—' }}</div>
           </td>
           <td>
-            <span class="badge" :class="plan.status === 'paused' ? 'badge-paused' : 'badge-on'">
-              {{ statusLabel(plan.status) }}
-            </span>
+            <StatusTag
+              :label="statusLabel(plan.status)"
+              :tone="plan.status === 'paused' ? 'neutral' : 'ok'"
+            />
           </td>
           <td>
             <code>{{ plan.cron }}</code>
@@ -335,9 +337,10 @@ void load()
       <div v-for="plan in plans" :key="plan.id" class="card">
         <div class="card-head">
           <h2 class="card-title">{{ plan.name }}</h2>
-          <span class="badge" :class="plan.status === 'paused' ? 'badge-paused' : 'badge-on'">
-            {{ statusLabel(plan.status) }}
-          </span>
+          <StatusTag
+            :label="statusLabel(plan.status)"
+            :tone="plan.status === 'paused' ? 'neutral' : 'ok'"
+          />
         </div>
         <p class="muted small">{{ plan.suitePaths.join(', ') || '—' }}</p>
         <dl class="facts">
@@ -478,26 +481,6 @@ void load()
 
 .small {
   font-size: 12px;
-}
-
-.badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 12px;
-  border: 1px solid transparent;
-}
-
-.badge-on {
-  color: var(--ok);
-  background: var(--ok-soft);
-  border-color: var(--ok-border);
-}
-
-.badge-paused {
-  color: var(--warn);
-  background: var(--warn-soft);
-  border-color: var(--warn-border);
 }
 
 .form-card {

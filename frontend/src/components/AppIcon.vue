@@ -16,7 +16,18 @@ const props = withDefaults(
   { size: 16, label: '' },
 )
 
-const component = computed(() => ICONS[props.name])
+const component = computed(() => {
+  const found = ICONS[props.name]
+  if (found) return found
+  // 名字不在映射表里时 `<component :is="undefined">` 会**静默渲染空**——页面上只是少个图标，
+  // 没有任何报错，很难被发现。DEV 下吵一声，生产退回 help 图标保证不至于空白。
+  if (import.meta.env.DEV) {
+    // 英文文案是刻意的：i18n 守门把源码里的中文字面量视为硬编码用户文案，
+    // 而这是开发者诊断信息，不该进语言包。
+    console.warn(`[AppIcon] unknown icon name: ${props.name} (add it to iconMap.ts)`)
+  }
+  return ICONS.help
+})
 </script>
 
 <template>

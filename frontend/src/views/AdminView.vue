@@ -395,7 +395,7 @@ async function removeMember(member: ProjectMember): Promise<void> {
           </tr>
         </tbody>
       </table>
-      <p v-if="!loading && total === 0" class="muted">{{ t('common.noData') }}</p>
+      <EmptyState v-if="!loading && total === 0" :title="t('common.noData')" icon="users" />
 
       <div v-if="total > 0" class="pager">
         <button class="btn btn-ghost" type="button" :disabled="page <= 1" @click="turnPage(page - 1)">
