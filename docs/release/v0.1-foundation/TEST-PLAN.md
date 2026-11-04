@@ -197,3 +197,21 @@ void 规则能拦住故意违规的包() {
 | 集成测试用 H2 图省事 | 迁移在 CI 过、真实库崩（`DATETIME(3)` 差异） | ADR-0002 已否决 H2，评审时查 `pom.xml` 有无 H2 依赖 |
 | CI 与本地共库 | 偶发失败查不出根因 | 库名带 `_local` 与 `_it` 区分，环境基线文档写死 |
 | runner 未就绪 | WS-05 全部阻塞 | 降级为 `scripts/ci-local.sh` 人工跑，CI 推迟到 v0.2 首包 |
+
+---
+
+## 补记：CI 守门接线实测（2026-11-04）
+
+按本版 DEV-PLAN §7「完成判定」逐项实跑，发现 `scripts/lint.sh` 只做密文扫描 + 前端 eslint + 后端编译，
+**从未调用 `tools/check_*.py` 六个静态守门**（颜色 / 对比度 / i18n / 交互态 / token / 导入表头）——
+守门写了却没接线，所以「lint PASS」并不能证明这些判据真绿。本轮统一接线，并修复接线后暴露的三处问题：
+
+| 项 | 修复 | 证据 |
+|---|---|---|
+| `check_colors` 3 处 `color-mix(...#000)` | 提升为 semantic token `--fail-hover/--fail-active`，亮暗两套各一份（`theme.css`），组件侧只引用 var | `docs/evidence/acceptance-20261104/tool-check_colors.log` |
+| `check_import_header` 缺 `openpyxl` | 补 `tools/requirements.txt`；缺依赖时明确报错，不以降级放行 | `.../tool-import-header.log` |
+| 表头对账无参调用 | 预期 exit≠0 且明确报错，验证不静默放行 | `.../import-header-noarg.log` |
+| 编辑器包 `vitest` 在 Node 26 下 `localStorage` 未注入 | `tests/setup.ts` 仅在缺失时补内存实现，**不动上游 19 条断言** | `.../editor-test.log`（215/215） |
+
+最终 `bash scripts/lint.sh` exit 0，19 项验收逐项退出码见
+`docs/evidence/acceptance-20261104/SUMMARY.tsv`。对应整改包 **WBS #79 / WS-06**，状态 `待验`。

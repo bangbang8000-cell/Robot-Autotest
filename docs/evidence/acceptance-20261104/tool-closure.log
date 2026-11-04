@@ -1,0 +1,239 @@
+{
+  "entry": "/home/evergreen/robot-autotest/packages/editor/index.ts",
+  "srcRoot": "/home/evergreen/robot-autotest/packages/editor/src",
+  "totalFiles": 53,
+  "totalLines": 19372,
+  "files": [
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/index.ts",
+      "lines": 26
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/api/ai.api.ts",
+      "lines": 25
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/api/auth.api.ts",
+      "lines": 18
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/api/context.ts",
+      "lines": 234
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/api/debug.api.ts",
+      "lines": 85
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/api/environments.api.ts",
+      "lines": 50
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/api/explorer.api.ts",
+      "lines": 41
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/api/governance.api.ts",
+      "lines": 20
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/api/repos.api.ts",
+      "lines": 30
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/debug/DebugPanel.vue",
+      "lines": 467
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/debug/DebugPrereqDialog.vue",
+      "lines": 93
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/editor/flow/ControlGroupNode.vue",
+      "lines": 28
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/editor/flow/ControlNode.vue",
+      "lines": 171
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/editor/flow/flowConverter.ts",
+      "lines": 1097
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/editor/flow/keywordArgs.ts",
+      "lines": 66
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/editor/flow/KeywordAutocompleteInput.vue",
+      "lines": 287
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/editor/flow/KeywordDocModal.vue",
+      "lines": 260
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/editor/flow/KeywordNode.vue",
+      "lines": 358
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/editor/flow/KeywordPalette.vue",
+      "lines": 1303
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/editor/flow/paletteView.ts",
+      "lines": 215
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/editor/flow/reorderDrag.ts",
+      "lines": 20
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/editor/flow/resourcePath.ts",
+      "lines": 52
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/editor/flow/StartEndNode.vue",
+      "lines": 76
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/editor/FlowEditor.vue",
+      "lines": 4234
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/editor/ReadOnlyBanner.vue",
+      "lines": 78
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/editor/RobotEditor.vue",
+      "lines": 2949
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/editor/robotTextIO.ts",
+      "lines": 859
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/recorder/SelectorPicker.vue",
+      "lines": 836
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/ui/BaseButton.vue",
+      "lines": 103
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/components/ui/BaseModal.vue",
+      "lines": 114
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/composables/useFeatureFlags.ts",
+      "lines": 61
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/composables/useKeywordSignatures.ts",
+      "lines": 170
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/composables/useRecordingSidecar.ts",
+      "lines": 60
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/composables/useToast.ts",
+      "lines": 12
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/locales/en-US.ts",
+      "lines": 546
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/locales/index.ts",
+      "lines": 17
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/locales/zh-CN.ts",
+      "lines": 546
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/stores/auth.store.ts",
+      "lines": 65
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/stores/debug.store.ts",
+      "lines": 330
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/stores/environments.store.ts",
+      "lines": 135
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/stores/explorer.store.ts",
+      "lines": 243
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/stores/repos.store.ts",
+      "lines": 100
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/stores/ui.store.ts",
+      "lines": 106
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/types/api.types.ts",
+      "lines": 132
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/types/domain.types.ts",
+      "lines": 751
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/types/recorder.types.ts",
+      "lines": 140
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/utils/effectiveSelector.ts",
+      "lines": 151
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/utils/errors.ts",
+      "lines": 100
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/utils/healToggle.ts",
+      "lines": 290
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/utils/robotEnvVars.ts",
+      "lines": 61
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/utils/robotKeywordSignatures.ts",
+      "lines": 739
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/utils/robotLanguage.ts",
+      "lines": 406
+    },
+    {
+      "path": "/home/evergreen/robot-autotest/packages/editor/src/utils/selectorQuality.ts",
+      "lines": 16
+    }
+  ],
+  "externals": [
+    "@codemirror/commands",
+    "@codemirror/language",
+    "@codemirror/state",
+    "@codemirror/view",
+    "@lezer/highlight",
+    "@vue-flow/background",
+    "@vue-flow/controls",
+    "@vue-flow/controls/dist/style.css",
+    "@vue-flow/core",
+    "@vue-flow/core/dist/style.css",
+    "@vue-flow/core/dist/theme-default.css",
+    "@vue-flow/minimap",
+    "@vue-flow/minimap/dist/style.css",
+    "dompurify",
+    "pinia",
+    "vue",
+    "vue-i18n"
+  ]
+}

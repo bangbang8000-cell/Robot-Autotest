@@ -1,0 +1,4 @@
+[PASS] 试点静态守门：6 个文件、0 硬编码色值、24 个输入 token 全部有定义、两版均单向派生
+EXIT=0
+[SELFTEST PASS] 注入真违规必红、点名命中行、还原字节一致后必绿
+SELFTEST_EXIT=0

@@ -27,7 +27,13 @@ import re
 import sys
 from pathlib import Path
 
-import openpyxl
+try:
+    import openpyxl
+except ImportError:
+    sys.exit(
+        "[ENV] 缺少 openpyxl：先执行 `python3 -m pip install -r tools/requirements.txt`。"
+        " 表头对账是 CAS-03 的静态守门，不可跳过，故不以降级方式放行。"
+    )
 
 DEFAULT_JAVA = "backend/src/main/java/com/qa/autotest/application/caseasset/CaseImportService.java"
 REQUIRED = ("caseCode", "title")

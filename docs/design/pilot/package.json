@@ -1,0 +1,21 @@
+{
+  "name": "ux04-pilot",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "UX-04 步骤 0 两页试点评审用隔离工程，不并入主仓构建",
+  "scripts": {
+    "build:naive": "vite build --config vite.naive.config.ts",
+    "build:element": "vite build --config vite.element.config.ts"
+  },
+  "dependencies": {
+    "element-plus": "2.14.7",
+    "naive-ui": "2.45.3",
+    "vue": "3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "5.2.1",
+    "typescript": "5.6.3",
+    "vite": "6.0.3"
+  }
+}

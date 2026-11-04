@@ -1,0 +1,36 @@
+--- [be-unit] bash -c cd "$HOME/robot-autotest/backend" && mvn -B test
+be-unit	0	docs/evidence/acceptance-20261104/be-unit.log
+--- [be-it] bash -c cd "$HOME/robot-autotest/backend" && DB_NAME=robot_it mvn -B -Pit test
+be-it	0	docs/evidence/acceptance-20261104/be-it.log
+--- [fe-test] bash -c cd "$HOME/robot-autotest/frontend" && npm run test
+fe-test	0	docs/evidence/acceptance-20261104/fe-test.log
+--- [fe-lint] bash -c cd "$HOME/robot-autotest/frontend" && npm run lint
+fe-lint	0	docs/evidence/acceptance-20261104/fe-lint.log
+--- [fe-build] bash -c cd "$HOME/robot-autotest/frontend" && npm run build
+fe-build	0	docs/evidence/acceptance-20261104/fe-build.log
+--- [editor-test] bash -c cd "$HOME/robot-autotest/packages/editor" && npm run test
+editor-test	0	docs/evidence/acceptance-20261104/editor-test.log
+--- [editor-build] bash -c cd "$HOME/robot-autotest/packages/editor" && npm run build
+editor-build	0	docs/evidence/acceptance-20261104/editor-build.log
+--- [tool-check_colors] bash -c cd "$HOME/robot-autotest" && python3 tools/check_colors.py
+tool-check_colors	0	docs/evidence/acceptance-20261104/tool-check_colors.log
+--- [tool-check_contrast] bash -c cd "$HOME/robot-autotest" && python3 tools/check_contrast.py
+tool-check_contrast	0	docs/evidence/acceptance-20261104/tool-check_contrast.log
+--- [tool-check_i18n] bash -c cd "$HOME/robot-autotest" && python3 tools/check_i18n.py
+tool-check_i18n	0	docs/evidence/acceptance-20261104/tool-check_i18n.log
+--- [tool-check_states] bash -c cd "$HOME/robot-autotest" && python3 tools/check_states.py
+tool-check_states	0	docs/evidence/acceptance-20261104/tool-check_states.log
+--- [tool-check_tokens] bash -c cd "$HOME/robot-autotest" && python3 tools/check_tokens.py
+tool-check_tokens	0	docs/evidence/acceptance-20261104/tool-check_tokens.log
+--- [tool-roundtrip] bash -c cd "$HOME/robot-autotest" && python3 tools/roundtrip_judge.py --help
+tool-roundtrip	0	docs/evidence/acceptance-20261104/tool-roundtrip.log
+--- [tool-import-header] bash -c cd "$HOME/robot-autotest" && python3 tools/check_import_header.py fixtures/case-ledger/ledger-sample-226.xlsx
+tool-import-header	0	docs/evidence/acceptance-20261104/tool-import-header.log
+--- [tool-closure] bash -c cd "$HOME/robot-autotest" && node scripts/closure.mjs packages/editor/index.ts --root packages/editor/src --json
+tool-closure	0	docs/evidence/acceptance-20261104/tool-closure.log
+--- [lint-all] bash -c cd "$HOME/robot-autotest" && bash scripts/lint.sh
+lint-all	0	docs/evidence/acceptance-20261104/lint-all.log
+--- [doc-gate] bash -c cd "$HOME/robot-autotest" && python3 tools/check_release_docs.py
+doc-gate	0	docs/evidence/acceptance-20261104/doc-gate.log
+--- [brand-scan] bash -c cd "$HOME/robot-autotest" && bash scripts/brand-scan.sh
+brand-scan	0	docs/evidence/acceptance-20261104/brand-scan.log

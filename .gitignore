@@ -20,3 +20,7 @@ AGENTS.md
 
 # 前端构建产物：环境基线 §102 不入库（2026-11-04 大师拍板）
 frontend/dist/
+
+# UX-04 两页试点隔离工程：源码与 package-lock 入库（可复现），依赖与构建产物不入库
+docs/design/pilot/node_modules/
+docs/design/pilot/dist/

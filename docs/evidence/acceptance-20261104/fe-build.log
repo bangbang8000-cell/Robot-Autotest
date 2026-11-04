@@ -1,0 +1,49 @@
+
+> robot-autotest-frontend@0.1.0 build
+> vue-tsc --noEmit && vite build
+
+vite v6.4.5 building for production...
+transforming...
+✓ 150 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                              1.50 kB │ gzip:   0.92 kB
+dist/assets/CasesView-BF7kX-On.css                                           0.06 kB │ gzip:   0.08 kB
+dist/assets/ReportsView-DIH_ou2m.css                                         0.14 kB │ gzip:   0.13 kB
+dist/assets/useSelection-Cge7ZJsy.css                                        0.51 kB │ gzip:   0.27 kB
+dist/assets/RunsView-CHCKqx4T.css                                            0.64 kB │ gzip:   0.34 kB
+dist/assets/ErrorLine-D-aJ6yPk.css                                           0.71 kB │ gzip:   0.34 kB
+dist/assets/PlansView-CoL1Bnis.css                                           1.76 kB │ gzip:   0.60 kB
+dist/assets/ReportPrintView-CHqipGbz.css                                     2.05 kB │ gzip:   0.66 kB
+dist/assets/ReportDetailView-ChQbUBvd.css                                    3.93 kB │ gzip:   1.11 kB
+dist/assets/index-CYHoRbZi.css                                              12.50 kB │ gzip:   3.10 kB
+dist/assets/EditorView-EUMMeTD4.css                                         87.04 kB │ gzip:  13.44 kB
+dist/assets/NotFoundView-BcKAJekA.js                                         0.41 kB │ gzip:   0.29 kB
+dist/assets/statusLabels-Bo0hoT8k.js                                         0.51 kB │ gzip:   0.33 kB
+dist/assets/useBatchAction-CDt_qBXN.js                                       0.53 kB │ gzip:   0.37 kB
+dist/assets/errors-59V6slLQ.js                                               0.67 kB │ gzip:   0.40 kB
+dist/assets/ErrorLine-BuXWCUsA.js                                            0.75 kB │ gzip:   0.43 kB
+dist/assets/ProjectPicker.vue_vue_type_script_setup_true_lang-D6Hx2j59.js    0.78 kB │ gzip:   0.46 kB
+dist/assets/format-D5jrf0L2.js                                               1.12 kB │ gzip:   0.60 kB
+dist/assets/cases-BGuS1Hwg.js                                                1.21 kB │ gzip:   0.43 kB
+dist/assets/reports-5pGIz4Qd.js                                              1.27 kB │ gzip:   0.52 kB
+dist/assets/LoginView-zlG03Uho.js                                            1.62 kB │ gzip:   0.82 kB
+dist/assets/useSelection-B7vrdZTq.js                                         2.10 kB │ gzip:   0.97 kB
+dist/assets/AuditView-Dbp6HPOW.js                                            4.32 kB │ gzip:   1.74 kB
+dist/assets/ReportPrintView-BsXDUmwZ.js                                      4.56 kB │ gzip:   1.78 kB
+dist/assets/ReportsView-kdtK7eWn.js                                          5.62 kB │ gzip:   2.01 kB
+dist/assets/RunsView-BOq1U5i_.js                                             6.33 kB │ gzip:   2.62 kB
+dist/assets/PlansView-3zngI00r.js                                           11.89 kB │ gzip:   3.51 kB
+dist/assets/CasesView-KqyZmMuw.js                                           12.38 kB │ gzip:   3.84 kB
+dist/assets/OverviewView-D95kh055.js                                        12.66 kB │ gzip:   3.42 kB
+dist/assets/AdminView-Dtjq4p2_.js                                           13.34 kB │ gzip:   3.83 kB
+dist/assets/AssetsView-DucoB43P.js                                          17.14 kB │ gzip:   4.31 kB
+dist/assets/ReportDetailView-D5gb8wus.js                                    21.01 kB │ gzip:   6.66 kB
+dist/assets/index-_3XmhBfa.js                                              245.39 kB │ gzip:  89.62 kB
+dist/assets/EditorView-B9-snVL-.js                                         857.87 kB │ gzip: 265.21 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.93s

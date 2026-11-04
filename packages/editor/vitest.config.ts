@@ -13,5 +13,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     include: ['tests/**/*.spec.ts'],
+    // Node 26 下 jsdom 可能不注入 localStorage；setup 只在缺失时补内存实现。
+    setupFiles: ['./tests/setup.ts'],
   },
 })

@@ -106,6 +106,9 @@
   --fail: var(--red-400);
   --fail-soft: #3a1a1a;
   --fail-border: #5a2c2c;
+  /* 危险按钮的 hover/active：由 --fail 派生，不在组件里写死 #000（check_colors 会拦）。 */
+  --fail-hover: color-mix(in srgb, var(--fail) 88%, var(--gray-950));
+  --fail-active: color-mix(in srgb, var(--fail) 78%, var(--gray-950));
 
   --warn: #f0c36b;
   --warn-soft: #3a2c14;
@@ -160,6 +163,8 @@
   --fail: var(--red-600);
   --fail-soft: #fdecec;
   --fail-border: #f0c0ba;
+  --fail-hover: color-mix(in srgb, var(--fail) 88%, var(--gray-950));
+  --fail-active: color-mix(in srgb, var(--fail) 78%, var(--gray-950));
 
   --warn: #8f5a08;
   --warn-soft: #fff4dc;

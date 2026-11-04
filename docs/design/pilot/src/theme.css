@@ -1,0 +1,214 @@
+/**
+ * 主题 token（UX-01）
+ *
+ * 两层结构，顺序不能反：
+ *   1. primitives —— 固定色板，与主题无关，只描述"这个颜色是什么"，不许在组件里直接用；
+ *   2. semantic   —— 语义变量，按 data-theme 切换，组件与页面**只允许**用这一层。
+ *
+ * 之所以必须先建这一层：改造前 `main.css` 有 35 处、组件里有 68 处硬编码 hex。
+ * 直接"再加一套亮色变量"是无效的——那些写死的色值不会跟着变，亮色下就会出现
+ * 深色块、黑边框、看不清的告警条。这类缺陷不影响功能，但一眼就知道没做完。
+ *
+ * 主题由 `<html data-theme="light|dark">` 决定，见 `composables/useTheme.ts`。
+ * 首帧不闪由 `index.html` 的内联脚本保证（挂载前就写好 data-theme）。
+ *
+ * 修改此文件后必须跑：
+ *   python tools/check_colors.py     # 组件是否又写回硬编码
+ *   python tools/check_contrast.py   # 两套主题对比度是否达标
+ */
+
+/* ============ 1. primitives：固定色板 ============ */
+
+:root {
+  --gray-0: #ffffff;
+  --gray-50: #f4f7fb;
+  --gray-100: #eef2f7;
+  --gray-200: #dde3ea;
+  --gray-300: #c4cdd8;
+  --gray-400: #8b9bb0;
+  --gray-500: #5b6b7c;
+  --gray-600: #3d4c5c;
+  --gray-700: #22303f;
+  --gray-750: #1a2634;
+  --gray-800: #131c26;
+  --gray-850: #141f2b;
+  --gray-900: #0f1720;
+  --gray-950: #0b1218;
+  --gray-ink: #1a2430;
+
+  --blue-300: #7cc6fe;
+  --blue-400: #3fa7ff;
+  --blue-600: #2563eb;
+  --blue-700: #1b74d8;
+
+  --green-300: #7ee2b8;
+  --green-400: #46c07a;
+  --green-500: #1b7f3b;
+  --green-700: #1c7a4a;
+
+  --red-300: #ef5350;
+  --red-400: #f27272;
+  --red-600: #c0392b;
+
+  --amber-300: #ffb86b;
+  --amber-400: #f0b429;
+  --amber-600: #a5670a;
+
+  --violet-300: #b9a6ff;
+
+  /* 状态色对比度下限由 check_contrast.py 校验，改值前先跑一遍 */
+}
+
+/* ============ 2. semantic：暗色（默认） ============ */
+
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* 面 */
+  --bg: var(--gray-900);
+  --side: var(--gray-800);
+  --panel: var(--gray-750);
+  --surface-2: var(--gray-850);
+  --overlay: rgb(0 0 0 / 45%);
+  --shadow: 0 8px 24px rgb(0 0 0 / 45%);
+  /* 卡片一级阴影：暗色下白卡片不存在层次问题，给 none 免得发灰 */
+  --shadow-sm: none;
+
+  /* 线与字 */
+  /* 原来用 #22303f（= --gray-700），与 panel 只差 1.14:1，表格分割线在暗色下几乎看不见。
+     提到 1.29:1 后线条可辨；输入框/按钮再用更亮的 border-strong 拉开层级。 */
+  --border: #29394a;
+  --border-strong: #3a4d61;
+  --text: #e6edf3;
+  --text-muted: var(--gray-400);
+
+  /* 主色 */
+  --accent: var(--blue-400);
+  --accent-soft: #17324d;
+  --accent-contrast: #06131f;
+  /* 三态：默认 / 悬停 / 按下。UX-01b 起所有可点元素都必须有 hover 与 active 反馈，
+     accent 只给默认态用，否则按下与悬停看起来完全一样（D2）。 */
+  --accent-hover: #63b5ff;
+  --accent-active: #2b96ef;
+
+  /* 交互面：行悬停 / 行选中 / 焦点环。原来这些状态全无 token，只能各写各的
+     rgb 半透明，暗亮两套对不上（D2/D3）。 */
+  --surface-hover: #223142;
+  --surface-selected: #17324d;
+  --focus-ring: var(--blue-400);
+
+  /* 状态：主色用于文字/图标，soft 用于底色，border 用于描边 */
+  --ok: var(--green-400);
+  --ok-soft: #12301f;
+  --ok-border: #2c5a40;
+
+  --fail: var(--red-400);
+  --fail-soft: #3a1a1a;
+  --fail-border: #5a2c2c;
+  /* 危险按钮的 hover/active：由 --fail 派生，不在组件里写死 #000（check_colors 会拦）。 */
+  --fail-hover: color-mix(in srgb, var(--fail) 88%, var(--gray-950));
+  --fail-active: color-mix(in srgb, var(--fail) 78%, var(--gray-950));
+
+  --warn: #f0c36b;
+  --warn-soft: #3a2c14;
+  --warn-border: #4a3a1c;
+
+  /* 中性/取消态（趋势图里的 canceled 段） */
+  --neutral-soft: #6b7c90;
+
+  /* 图表系列色：亮底与暗底要各一套，否则亮色下浅蓝浅绿几乎看不见 */
+  --chart-1: var(--blue-300);
+  --chart-2: var(--violet-300);
+  --chart-3: var(--green-300);
+  --chart-4: var(--amber-300);
+}
+
+/* ============ 3. semantic：亮色 ============ */
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: var(--gray-50);
+  --side: var(--gray-0);
+  --panel: var(--gray-0);
+  --surface-2: var(--gray-100);
+  --overlay: rgb(26 36 48 / 35%);
+  --shadow: 0 8px 24px rgb(15 23 42 / 12%);
+  /* 亮色下 panel 是纯白、bg 是浅灰，只靠 1px 边框会显得"贴"在一起 */
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 6%);
+
+  --border: var(--gray-200);
+  --border-strong: var(--gray-300);
+  --text: var(--gray-ink);
+  --text-muted: var(--gray-500);
+
+  /* 亮色下 #3fa7ff 放在白底只有 2.2:1，必须压深：直接取 --blue-700(#1b74d8) 也只有
+     4.63:1，放到 accent-soft 徽标底上掉到 4.06 → 再压一档到 5.5:1，两种底都够。 */
+  --accent: #1567c9;
+  --accent-soft: #e8f1fd;
+  --accent-contrast: var(--gray-0);
+  /* 亮色下悬停要**压深**而不是提亮：白底上提亮等于降低对比度 */
+  --accent-hover: #0f57ab;
+  --accent-active: #0b4a94;
+
+  --surface-hover: var(--gray-100);
+  --surface-selected: #dbe9fb;
+  --focus-ring: #1567c9;
+
+  --ok: var(--green-700);
+  --ok-soft: #e8f7ee;
+  --ok-border: #bfe8cb;
+
+  --fail: var(--red-600);
+  --fail-soft: #fdecec;
+  --fail-border: #f0c0ba;
+  --fail-hover: color-mix(in srgb, var(--fail) 88%, var(--gray-950));
+  --fail-active: color-mix(in srgb, var(--fail) 78%, var(--gray-950));
+
+  --warn: #8f5a08;
+  --warn-soft: #fff4dc;
+  --warn-border: #f0d59a;
+
+  --neutral-soft: #7b8896;
+
+  --chart-1: #2b7fd4;
+  --chart-2: #6b4fd8;
+  --chart-3: #1a8a5a;
+  --chart-4: #b5651d;
+}
+
+/* ============ 4. 强调色变体（data-accent） ============ */
+
+/*
+ * UX-01b 只把**机制**就位（blue 先行），**不提供切换入口**——入口属 UX-04 的六预设，
+ * 现在挂出来等于让用户点一个只有一种颜色的开关。
+ *
+ * 机制约定：`<html data-accent="blue">`，缺省等同 blue。变体块**只允许覆盖 accent 三态
+ * 与 surface-selected**，其余 semantic token 继承所在主题，这样亮/暗 × N 个强调色
+ * 不会各自漂移。
+ *
+ * 坑（D15）：`check_contrast.py` 原来把所有含 data-theme 的块 `update` 进同一份变量表，
+ * 变体块会**覆盖**默认值 —— 后面再补 teal/fuchsia 时，变体值会顶掉默认值，算出来仍然
+ * "全 PASS"，但真实默认态没人验（假绿）。所以解析器必须按 (主题 × 强调色) 分组。
+ */
+
+:root[data-accent='blue'][data-theme='dark'] {
+  --accent: var(--blue-400);
+  --accent-hover: #63b5ff;
+  --accent-active: #2b96ef;
+  --accent-soft: #17324d;
+  --accent-contrast: #06131f;
+  --surface-selected: #17324d;
+  --focus-ring: var(--blue-400);
+}
+
+:root[data-accent='blue'][data-theme='light'] {
+  --accent: #1567c9;
+  --accent-hover: #0f57ab;
+  --accent-active: #0b4a94;
+  --accent-soft: #e8f1fd;
+  --accent-contrast: var(--gray-0);
+  --surface-selected: #dbe9fb;
+  --focus-ring: #1567c9;
+}

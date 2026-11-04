@@ -1,0 +1,6 @@
+# 仓库内 Python 守门脚本的运行依赖（在仓库根目录安装）：
+#   python3 -m pip install -r tools/requirements.txt
+#
+# check_import_header.py 读真实 .xlsx 台账表头，必须与 openpyxl 一起装；
+# 其余 tools/check_*.py 只用标准库。
+openpyxl>=3.1,<4

@@ -1,0 +1,35 @@
+/* 试点布局：只用 var()，不写任何色值。色值唯一真源是 theme.css。 */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Noto Sans SC", sans-serif;
+  font-size: 14px;
+}
+.pilot-shell { max-width: 1440px; margin: 0 auto; padding: 20px; }
+.pilot-bar {
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  padding: 12px 16px; margin-bottom: 16px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius-md, 8px);
+}
+.pilot-card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius-md, 8px); padding: 20px;
+}
+.pilot-login { max-width: 380px; margin: 40px auto; }
+.pilot-login label { display: block; margin: 14px 0 6px; color: var(--text-muted); }
+.pilot-hint { color: var(--text-muted); font-size: 12px; margin-top: 12px; }
+.pilot-table-wrap { overflow-x: auto; }
+.pilot-table-wrap table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.pilot-table-wrap th {
+  text-align: left; padding: 10px 8px; color: var(--text-muted);
+  border-bottom: 1px solid var(--border-strong); position: sticky; top: 0;
+  background: var(--panel);
+}
+.pilot-table-wrap td { padding: 10px 8px; border-bottom: 1px solid var(--border); }
+.pilot-table-wrap tbody tr:hover { background: var(--surface-hover); }
+.pilot-footer { display: flex; gap: 12px; align-items: center; margin-top: 14px; }
+.pilot-tag-ok { color: var(--ok); }
+.pilot-tag-fail { color: var(--fail); }

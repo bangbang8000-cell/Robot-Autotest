@@ -705,12 +705,12 @@ body.print-mode {
 }
 
 .btn.danger:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--fail) 88%, #000);
-  border-color: color-mix(in srgb, var(--fail) 88%, #000);
+  background: var(--fail-hover);
+  border-color: var(--fail-hover);
 }
 
 .btn.danger:active:not(:disabled) {
-  background: color-mix(in srgb, var(--fail) 78%, #000);
+  background: var(--fail-active);
 }
 
 /* 必须排在上面两条之后：`.btn-ghost.danger` 与 `.btn.danger` 同权重，靠顺序决出胜负 */
