@@ -11,6 +11,7 @@ import com.qa.autotest.application.execution.RunLogService;
 import com.qa.autotest.application.execution.RunService;
 import com.qa.autotest.application.execution.RunService.CreateRunCommand;
 import com.qa.autotest.application.execution.TestSetRunService;
+import com.qa.autotest.application.repository.RunRetryOrigin;
 import com.qa.autotest.api.GlobalExceptionHandler;
 import com.qa.autotest.common.BusinessException;
 import com.qa.autotest.common.ErrorCode;
@@ -180,6 +181,28 @@ class RunControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.state").value("waiting"))
                 .andExpect(jsonPath("$.data.maxParallel").value(4));
+    }
+
+    @Test
+    @DisplayName("retry-origin：带出上一次尝试的失败结论；首次尝试 data 为 null（FR-v0.4-29）")
+    void retryOrigin_上一次尝试() throws Exception {
+        when(runs.retryOrigin(1L, "RUN-2")).thenReturn(new RunRetryOrigin("RUN-1", RunState.FAILED,
+                "ENV", "dut_unreachable", "SSH 连接超时",
+                Instant.parse("2026-11-05T00:50:00Z")));
+
+        mvc.perform(get("/api/execution/runs/RUN-2/retry-origin").param("projectId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.runId").value("RUN-1"))
+                .andExpect(jsonPath("$.data.state").value("FAILED"))
+                .andExpect(jsonPath("$.data.failureClass").value("ENV"))
+                .andExpect(jsonPath("$.data.failureReason").value("dut_unreachable"))
+                .andExpect(jsonPath("$.data.failureMessage").value("SSH 连接超时"));
+
+        // 首次尝试没有上一条记录：200 + data=null，调用方按「没有上一次」处理即可
+        when(runs.retryOrigin(1L, "RUN-1")).thenReturn(null);
+        mvc.perform(get("/api/execution/runs/RUN-1/retry-origin").param("projectId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 
     @Test

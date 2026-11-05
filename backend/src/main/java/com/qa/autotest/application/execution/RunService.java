@@ -3,6 +3,7 @@ package com.qa.autotest.application.execution;
 import com.qa.autotest.application.iam.AccessControlService;
 import com.qa.autotest.application.iam.AuditService;
 import com.qa.autotest.application.repository.RunRepository;
+import com.qa.autotest.application.repository.RunRetryOrigin;
 import com.qa.autotest.common.BusinessException;
 import com.qa.autotest.common.ErrorCode;
 import com.qa.autotest.common.tenant.TenantContext;
@@ -158,6 +159,18 @@ public class RunService {
      */
     public int recordLeaseWait(String runId, long waitMs) {
         return runs.recordLeaseWait(runId, waitMs);
+    }
+
+    /**
+     * 上一次尝试（FR-v0.4-29）：把 {@code retry_of_run_id} 背后的运行读出来，
+     * 运行详情才能回答「为什么重试」。没有重试来源时返回 {@code null}。
+     */
+    public RunRetryOrigin retryOrigin(long projectId, String runId) {
+        access.bindProject(projectId);
+        access.require(PermissionResource.EXECUTION, PermissionAction.READ);
+        runs.findByRunId(projectId, runId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "运行不存在: " + runId));
+        return runs.findRetryOrigin(projectId, runId).orElse(null);
     }
 
     public PageResult<RunRecord> page(long projectId, RunState state, int page, int size) {

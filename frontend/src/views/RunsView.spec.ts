@@ -68,6 +68,19 @@ vi.mock('@/api/execution', () => ({
     })),
     quickRun: vi.fn(async () => ({ runId: 'RUN-MANUAL-1', state: 'QUEUED' })),
     runTestSet: vi.fn(async () => ({ runId: 'RUN-SET-1', state: 'QUEUED' })),
+    // 上一次尝试（EXEC-13 残余 / FR-v0.4-29）：只为 RUN-AAA（第 2 次尝试）准备
+    retryOrigin: vi.fn(async (_projectId: number, runId: string) =>
+      runId === 'RUN-AAA'
+        ? {
+            runId: 'RUN-AAA-1',
+            state: 'FAILED',
+            failureClass: 'ENV',
+            failureReason: 'dut_unreachable',
+            failureMessage: 'SSH 连接超时',
+            finishedAt: '2026-11-05T00:50:00Z',
+          }
+        : null,
+    ),
   },
 }))
 
@@ -495,6 +508,13 @@ describe('RunsView 手动执行', () => {
 
     // RUN-AAA 是第 2 次尝试，重试可追溯
     expect(root.textContent).toContain(i18n.global.t('execution.attemptLine', { n: 2 }))
+    // 并且要直接说明「为什么重试」：上一次的 runId + 失败原因（EXEC-13 残余）
+    expect(root.textContent).toContain(
+      i18n.global.t('execution.retryOriginLine', {
+        runId: 'RUN-AAA-1',
+        reason: 'dut_unreachable',
+      }),
+    )
 
     viewButtons[1].click()
     await new Promise((resolve) => setTimeout(resolve, 0))
@@ -502,6 +522,8 @@ describe('RunsView 手动执行', () => {
 
     // RUN-BBB 是首次尝试，标记不应出现——否则正常记录会被同一句提示占满
     expect(root.textContent).not.toContain(i18n.global.t('execution.attemptLine', { n: 1 }))
+    // 首次尝试不请求重试来源，避免每看一次日志都多打一次空接口
+    expect(executionApi.retryOrigin).toHaveBeenCalledTimes(1)
   })
 
   it('日志按级别过滤：取消「信息」后 INFO 行隐藏，ERROR / WARN 保留（FR-v0.4-20）', async () => {

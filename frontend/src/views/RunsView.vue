@@ -12,7 +12,7 @@ import {
   NSelect,
   type DataTableColumns,
 } from 'naive-ui'
-import { executionApi, runLogSocketUrl, type ExecutionRun, type PendingActivity, type RunLogLine } from '@/api/execution'
+import { executionApi, runLogSocketUrl, type ExecutionRun, type PendingActivity, type RunLogLine, type RunRetryOrigin } from '@/api/execution'
 import { caseSetApi, type TestSet } from '@/api/cases'
 import { deviceApi, type Device } from '@/api/asset'
 import { useAuthStore } from '@/stores/auth'
@@ -41,6 +41,8 @@ const selected = ref<ExecutionRun | null>(null)
 const logLines = ref<RunLogLine[]>([])
 /** 排队位次（EXEC-10 残余）：只有 state=QUEUED 时才轮询，结束后不再请求。 */
 const pending = ref<PendingActivity | null>(null)
+/** 上一次尝试（EXEC-13 残余 / FR-v0.4-29）：只有重试记录才有值。 */
+const retryOrigin = ref<RunRetryOrigin | null>(null)
 let pendingTimer: number | undefined
 const socketState = ref<'idle' | 'connecting' | 'open' | 'closed'>('idle')
 const logPanel = ref<HTMLElement | null>(null)
@@ -313,7 +315,8 @@ async function selectRun(run: ExecutionRun): Promise<void> {
   logLines.value = []
   stopPendingPoll()
   pending.value = null
-  await loadRecentLog()
+  retryOrigin.value = null
+  await Promise.all([loadRecentLog(), loadRetryOrigin(run)])
   if (run.state === 'QUEUED' || run.state === 'PREPARING') {
     await loadPending()
     // 5 秒一轮：位次会随前面的 run 结束而前进；等设备租约时也能看到「等待资源」到自动消失
@@ -347,6 +350,19 @@ async function loadPending(): Promise<void> {
     }
   } catch {
     pending.value = null
+  }
+}
+
+/**
+ * 上一次尝试（EXEC-13 残余 / FR-v0.4-29）。辅助信息：失败不弹错、不挡日志面板，
+ * 拿不到就退化为只显示「第 N 次尝试」。首次尝试不请求，避免每次看日志都多打一次空接口。
+ */
+async function loadRetryOrigin(run: ExecutionRun): Promise<void> {
+  if (run.attemptNo <= 1 || !projectId.value) return
+  try {
+    retryOrigin.value = await executionApi.retryOrigin(projectId.value, run.runId)
+  } catch {
+    retryOrigin.value = null
   }
 }
 
@@ -676,6 +692,18 @@ onBeforeUnmount(() => {
         <!-- 重试可追溯（FR-v0.4-29）：首次尝试不渲染，只有重试记录才带「第 N 次尝试」 -->
         <span v-if="selected.attemptNo > 1" class="muted">
           {{ t('execution.attemptLine', { n: selected.attemptNo }) }}
+        </span>
+        <!-- 重试来源（EXEC-13 残余）：把「为什么重试」直接写在面板上，不用再翻上一次的日志 -->
+        <span v-if="retryOrigin" class="muted">
+          {{
+            t('execution.retryOriginLine', {
+              runId: retryOrigin.runId,
+              reason:
+                retryOrigin.failureReason ||
+                retryOrigin.failureClass ||
+                t('execution.retryOriginUnknown'),
+            })
+          }}
         </span>
         <NCheckbox
           v-for="option in levelOptions"

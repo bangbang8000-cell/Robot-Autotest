@@ -485,6 +485,8 @@ export default {
     allDevices: '全部设备（不互斥）',
     deviceScopeLine: '设备范围：{scope}',
     attemptLine: '第 {n} 次尝试',
+    retryOriginLine: '重试自 {runId} · 上次失败：{reason}',
+    retryOriginUnknown: '未记录原因',
     /** 排队位次（EXEC-10 残余）：position=0 表示后端重启过、位次未知，不假装知道。 */
     queuePosition: '排队中 · 第 {position} 位 / 共 {waiting} 个',
     queueUnknown: '排队中 · 位次暂不可用',

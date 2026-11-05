@@ -1,6 +1,7 @@
 package com.qa.autotest.infrastructure;
 
 import com.qa.autotest.application.repository.RunRepository;
+import com.qa.autotest.application.repository.RunRetryOrigin;
 import com.qa.autotest.common.tenant.TenantGuard;
 import com.qa.autotest.domain.common.PageResult;
 import com.qa.autotest.domain.execution.RunOrigin;
@@ -52,6 +53,15 @@ public class RunRepositoryJdbc implements RunRepository {
             instant(rs.getTimestamp("enqueued_at")),
             instant(rs.getTimestamp("started_at")),
             instant(rs.getTimestamp("finished_at")), rs.getString("device_scope"));
+
+    private static final RowMapper<RunRetryOrigin> RETRY_ORIGIN_MAPPER = (rs, rowNum) ->
+            new RunRetryOrigin(
+                    rs.getString("run_id"),
+                    RunState.fromDb(rs.getString("run_status")),
+                    rs.getString("failure_class"),
+                    rs.getString("failure_reason"),
+                    rs.getString("failure_message"),
+                    instant(rs.getTimestamp("finished_at")));
 
     private final JdbcTemplate jdbc;
 
@@ -243,6 +253,23 @@ public class RunRepositoryJdbc implements RunRepository {
                 """;
         TenantGuard.requireProjectScope(sql, "run");
         return jdbc.update(sql, attemptNo, retryOf, runId);
+    }
+
+    /**
+     * 上一次尝试（FR-v0.4-29）：{@code retry_of_run_id} 自连接 {@code run}，
+     * 一并取回原运行的状态与失败结论。两表都限定 {@code project_id}，跨项目的历史 ID 不会被拼进来。
+     */
+    @Override
+    public Optional<RunRetryOrigin> findRetryOrigin(long projectId, String runId) {
+        String sql = """
+                SELECT p.run_id, p.run_status, p.failure_class, p.failure_reason,
+                       p.failure_message, p.finished_at
+                  FROM run r
+                  JOIN run p ON p.project_id = r.project_id AND p.run_id = r.retry_of_run_id
+                 WHERE r.project_id = ? AND r.run_id = ?
+                """;
+        TenantGuard.requireProjectScope(sql, "run");
+        return jdbc.query(sql, RETRY_ORIGIN_MAPPER, projectId, runId).stream().findFirst();
     }
 
     private static Integer valueOrZero(Object value) {

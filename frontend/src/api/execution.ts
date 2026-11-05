@@ -32,6 +32,21 @@ export interface RunLogLine {
   text: string
 }
 
+/**
+ * 上一次尝试（FR-v0.4-29）：`retry_of_run_id` 指向的原运行及其失败结论。
+ * 首次尝试没有上一次，接口返回 `data = null`。
+ */
+export interface RunRetryOrigin {
+  /** 上一次尝试的 runId（本次运行的重试来源） */
+  runId: string
+  state: string
+  /** 失败分类，如 ENV / CASE；上一次成功时为 null */
+  failureClass: string | null
+  failureReason: string | null
+  failureMessage: string | null
+  finishedAt: string | null
+}
+
 /** 租约只读视图（FR-v0.4-09）：后端只返回生效中的租约（`lease_state = held`）。 */
 export interface LeaseView {
   resourceKey: string
@@ -198,6 +213,16 @@ export const executionApi = {
   pendingActivity(projectId: number, runId: string): Promise<PendingActivity> {
     return request<PendingActivity>(
       `/execution/runs/${encodeURIComponent(runId)}/pending-activity${toQuery({ projectId })}`,
+    )
+  },
+
+  /**
+   * 上一次尝试（EXEC-13 残余 / FR-v0.4-29）：前端据此显示「重试自 … · 上次失败原因」。
+   * 首次尝试返回 `null`（不是 404），调用方按「没有上一次」处理即可。
+   */
+  retryOrigin(projectId: number, runId: string): Promise<RunRetryOrigin | null> {
+    return request<RunRetryOrigin | null>(
+      `/execution/runs/${encodeURIComponent(runId)}/retry-origin${toQuery({ projectId })}`,
     )
   },
 

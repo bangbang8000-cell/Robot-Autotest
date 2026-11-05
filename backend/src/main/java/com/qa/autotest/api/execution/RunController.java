@@ -11,6 +11,7 @@ import com.qa.autotest.application.execution.RunLogService;
 import com.qa.autotest.application.execution.RunService;
 import com.qa.autotest.application.execution.RunService.CreateRunCommand;
 import com.qa.autotest.application.execution.TestSetRunService;
+import com.qa.autotest.application.repository.RunRetryOrigin;
 import com.qa.autotest.common.ApiResponse;
 import com.qa.autotest.domain.common.PageResult;
 import com.qa.autotest.domain.execution.RunOrigin;
@@ -216,6 +217,19 @@ public class RunController {
             };
             return new RunDispatcher.QueueStatus(runId, state, 0, 0, 0, maxParallel);
         }));
+    }
+
+    /**
+     * 上一次尝试（EXEC-13 残余 / FR-v0.4-29）。
+     *
+     * <p>返回 {@code retry_of_run_id} 指向的原运行及其失败结论，运行详情据此显示
+     * 「重试自 … · 上次失败原因」。没有重试来源时 {@code data = null}（不是 404：
+     * 首次尝试本来就没有上一次）。
+     */
+    @GetMapping("/runs/{runId}/retry-origin")
+    public ApiResponse<RunRetryOrigin> retryOrigin(@PathVariable String runId,
+                                                   @RequestParam long projectId) {
+        return ApiResponse.ok(runs.retryOrigin(projectId, runId));
     }
 
     public record CancelRequest(String reason) {

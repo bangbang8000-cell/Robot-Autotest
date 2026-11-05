@@ -66,4 +66,14 @@ public interface RunRepository {
     PageResult<RunRecord> page(long projectId, RunState state, int page, int size);
 
     int markAttempt(String runId, int attemptNo, String retryOf);
+
+    /**
+     * 上一次尝试（FR-v0.4-29）：把 {@code retry_of_run_id} 连成可读记录，
+     * 运行详情才能回答「为什么重试」。没有重试来源时返回空。
+     *
+     * <p>默认空实现，保证内存仓储与既有测试无需改动；JDBC 实现按 {@code retry_of_run_id} 自连接。
+     */
+    default Optional<RunRetryOrigin> findRetryOrigin(long projectId, String runId) {
+        return Optional.empty();
+    }
 }

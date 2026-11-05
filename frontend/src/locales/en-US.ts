@@ -476,6 +476,8 @@ export default {
     allDevices: 'All devices (no exclusion)',
     deviceScopeLine: 'Device scope: {scope}',
     attemptLine: 'Attempt {n}',
+    retryOriginLine: 'Retried from {runId} · previous failure: {reason}',
+    retryOriginUnknown: 'no reason recorded',
     queuePosition: 'Queued · #{position} of {waiting}',
     queueUnknown: 'Queued · position unavailable',
     leaseWaiting: 'Waiting for resources · device is leased by another run; starts automatically',
