@@ -7,6 +7,8 @@ import {
   NInput,
   NInputNumber,
   NPagination,
+  NRadioButton,
+  NRadioGroup,
   NSelect,
   type DataTableColumns,
 } from 'naive-ui'
@@ -569,8 +571,12 @@ onBeforeUnmount(() => {
           <NInput v-model:value="manualEnv" />
         </FormField>
 
-        <FormField :label="t('execution.manual.concurrency')">
-          <NInputNumber v-model:value="manualConcurrency" :min="1" :max="16" />
+        <FormField :label="t('execution.manual.concurrency')" :hint="t('execution.manual.concurrencyHint')">
+          <NRadioGroup v-model:value="manualConcurrency">
+            <NRadioButton :value="1">1</NRadioButton>
+            <NRadioButton :value="2">2</NRadioButton>
+            <NRadioButton :value="4">4</NRadioButton>
+          </NRadioGroup>
         </FormField>
 
         <FormField

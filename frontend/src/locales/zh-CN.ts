@@ -503,6 +503,7 @@ export default {
       environment: '环境 ID（可选）',
       environmentHint: '留空表示使用默认环境',
       concurrency: '并发度',
+      concurrencyHint: '固定 1/2/4 三档；实际分片数取 min(并发度, 套件数)，并受可用端口数限制',
       timeout: '超时（秒）',
       testTimeout: '单用例超时（秒）',
       testTimeoutHint: '0 表示沿用后端默认（默认 1800）；只注入到本次运行的脚本副本，不改原脚本',

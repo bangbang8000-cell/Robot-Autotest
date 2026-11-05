@@ -65,6 +65,25 @@
 
 ## 4. 已知缺口（未在本包做）
 
-1. **并发度三档选择**：PRD 要求 1 / 2 / 4 三档，当前仍是 1~`MAX_PARALLEL` 数字输入。解除方式明确（前端换成 `NRadioGroup` 或 `NSelect` 固定三档 + 后端校验白名单），下一包可直接做。
+1. ~~**并发度三档选择**~~ → **2026-11-06 已补，见第 5 节**
 2. **运行列表「设备范围」列**：只在日志面板展示，列表页未加列（列宽紧张，需评估截断与悬浮全文）。
 3. **执行期设备互斥**：`device_scope` 目前只做「记录 + 展示」，未参与调度判重。若要做「同一设备不允许并行」，需要与 `ProjectRunDispatcher` 的排队键联动，属独立包。
+
+## 5. 2026-11-06 补记：并发度改 1/2/4 三档
+
+PRD FR-v0.4-01 要求并发度为 1 / 2 / 4 三档，原实现是 1~`MAX_PARALLEL` 的数字输入，易填出无意义值。
+
+| 位置 | 改动 |
+|---|---|
+| `frontend/src/views/RunsView.vue` | 手动执行表单 `NInputNumber` → `NRadioGroup` + 三个 `NRadioButton`（1 / 2 / 4），默认 1；加提示「实际分片数取 min(并发度, 套件数)，并受可用端口数限制」 |
+| `frontend/src/views/CasesView.vue` | 「执行所选」卡片同样改三档，并在组前加文字标签 |
+| `frontend/src/locales/{zh-CN,en-US}.ts` | 新增 `execution.manual.concurrencyHint` |
+| `frontend/src/views/RunsView.spec.ts` | 新增「并发度固定 1/2/4 三档，选 4 后按 4 提交（EXEC-11）」：断言渲染恰好三档且提交 `concurrency: 4` |
+
+后端不变：`RunService` 已有 `1..MAX_PARALLEL` 校验，三档不会越界；分片数仍由执行期 `min(并发度, 套件数)` 决定。
+
+门禁（2026-11-06）：前端 **198** 用例通过（197 + 1，28 个测试文件）；`npm run build` exit 0（构建 8.96s）；
+字体子集 **1028 字 / 178610 B gzip**（预算 800 KiB，新增提示文案带来的 16 B）；`bash scripts/lint.sh` PASS；
+`check_release_docs.py` FAIL 0 / WARN 0；WBS 自洽 PASS（96 包 / 待验 83 / 已完成 13）。
+日志见 `frontend-test-20261106.log`、`frontend-build-20261106.log`、`font-20261106.log`、`lint-20261106.log`、
+`release-docs-20261106.log`、`wbs-20261106.log`（同目录，可复跑）。

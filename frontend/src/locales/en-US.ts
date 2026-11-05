@@ -493,6 +493,7 @@ export default {
       environment: 'Environment ID (optional)',
       environmentHint: 'Leave empty to use the default environment',
       concurrency: 'Concurrency',
+      concurrencyHint: 'Fixed 1/2/4 tiers; actual shards = min(concurrency, suites), capped by available ports',
       timeout: 'Timeout (seconds)',
       testTimeout: 'Per-test timeout (seconds)',
       testTimeoutHint: '0 uses the backend default (1800). Injected only into this run\'s script copies; originals stay unchanged',

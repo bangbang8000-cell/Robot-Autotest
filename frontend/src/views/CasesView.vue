@@ -7,6 +7,8 @@ import {
   NInput,
   NInputNumber,
   NPagination,
+  NRadioButton,
+  NRadioGroup,
   NSelect,
   type DataTableColumns,
 } from 'naive-ui'
@@ -725,13 +727,12 @@ async function runCommit(): Promise<void> {
           style="width: 140px"
           :placeholder="t('cases.run.environment')"
         />
-        <NInputNumber
-          v-model:value="runConcurrency"
-          :min="1"
-          :max="32"
-          style="width: 120px"
-          :placeholder="t('cases.run.concurrency')"
-        />
+        <span class="muted">{{ t('cases.run.concurrency') }}</span>
+        <NRadioGroup v-model:value="runConcurrency">
+          <NRadioButton :value="1">1</NRadioButton>
+          <NRadioButton :value="2">2</NRadioButton>
+          <NRadioButton :value="4">4</NRadioButton>
+        </NRadioGroup>
         <NInputNumber
           v-model:value="runTimeout"
           :min="60"

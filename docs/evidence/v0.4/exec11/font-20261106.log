@@ -1,0 +1,8 @@
+[OK] 已生成 /home/evergreen/robot-autotest/frontend/src/assets/fonts 与 /home/evergreen/robot-autotest/frontend/src/styles/fonts.css
+扫描到界面汉字 1028 个（下限 200）
+  noto-sans-sc-latin.woff2                 13304 B  gzip     13327 B
+  noto-sans-sc-ui.woff2                   144024 B  gzip    144087 B
+  jetbrains-mono-latin.woff2               21168 B  gzip     21196 B
+  中文字体 cmap 覆盖 1028 / 1028 字
+  合计（gzip）                                            178610 B  / 预算 819200 B
+[PASS] 字体子集 1028 字 / 178610 B gzip，未超 800 KiB 预算

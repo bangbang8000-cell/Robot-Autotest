@@ -332,6 +332,26 @@ describe('RunsView 手动执行', () => {
     expect(submitButton(root).disabled).toBe(false)
   })
 
+  it('并发度固定 1/2/4 三档，选 4 后按 4 提交（EXEC-11）', async () => {
+    const root = await mountView()
+    manualButton(root).click()
+    await nextTick()
+
+    const options = [...root.querySelectorAll<HTMLElement>('.form-card .n-radio-button')]
+    expect(options.map((item) => item.textContent?.trim())).toEqual(['1', '2', '4'])
+
+    options[2].click()
+    await nextTick()
+
+    submitButton(root).click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(executionApi.quickRun).toHaveBeenCalledWith(
+      expect.objectContaining({ concurrency: 4 }),
+    )
+  })
+
   it('套件路径按行解析并原样提交给 quick-run', async () => {
     const root = await mountView()
     manualButton(root).click()
