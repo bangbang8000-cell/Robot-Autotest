@@ -29,6 +29,13 @@ const router = createRouter({
       component: () => import('@/views/CasesView.vue'),
     },
     {
+      // 用例集管理（CAS-02 前端部分）：仍属「用例」一级菜单的子页面，
+      // 不新增一级菜单，入口在用例库工具栏与执行计划的用例集下拉旁。
+      path: '/cases/sets',
+      name: 'case-sets',
+      component: () => import('@/views/CaseSetsView.vue'),
+    },
+    {
       path: '/runs',
       name: 'runs',
       component: () => import('@/views/RunsView.vue'),

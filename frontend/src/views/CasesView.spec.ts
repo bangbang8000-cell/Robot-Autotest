@@ -9,7 +9,7 @@
  * 这里只断言接线，不重复测 useSelection 的内部逻辑。
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createApp, nextTick, type App } from 'vue'
+import { createApp, h, nextTick, type App, type Slots } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { i18n } from '@/locales'
 import { useAuthStore } from '@/stores/auth'
@@ -67,6 +67,14 @@ async function mountView(): Promise<HTMLElement> {
   // projectId 回到默认 0，load() 直接短路，页面停在「请先选择项目」
   app.use(pinia!)
   app.use(i18n)
+  // 「用例集」入口用 `<RouterLink v-slot custom>` 包了按钮；单测没有真 router，给同契约的桩
+  app.component('RouterLink', {
+    name: 'RouterLink',
+    props: { to: { type: [String, Object], default: '' } },
+    setup(_props: unknown, { slots }: { slots: Slots }) {
+      return () => h('a', slots.default?.({ navigate: () => {} }))
+    },
+  })
   app.mount(root)
   // 先让 watch(immediate) 发请求，再让 Promise.all 的结果渲染进表格
   await new Promise((resolve) => setTimeout(resolve, 0))

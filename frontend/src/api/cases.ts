@@ -212,10 +212,35 @@ export const caseSetApi = {
       body: JSON.stringify(body),
     })
   },
+  update(projectId: number, id: number, body: { name: string; description?: string }) {
+    return request<TestSet>(`${base(projectId)}/case-sets/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    })
+  },
   remove(projectId: number, id: number) {
     return request<void>(`${base(projectId)}/case-sets/${id}`, { method: 'DELETE' })
   },
   items(projectId: number, id: number) {
     return request<TestCase[]>(`${base(projectId)}/case-sets/${id}/items`)
+  },
+  /** 加入用例：后端校验用例属于同项目且未重复（重复返回 409）。 */
+  addItem(projectId: number, id: number, caseId: number) {
+    return request<void>(`${base(projectId)}/case-sets/${id}/items`, {
+      method: 'POST',
+      body: JSON.stringify({ caseId }),
+    })
+  },
+  removeItem(projectId: number, id: number, caseId: number) {
+    return request<void>(`${base(projectId)}/case-sets/${id}/items/${caseId}`, {
+      method: 'DELETE',
+    })
+  },
+  /** 重排：`caseIds` 必须是当前集合的完整成员列表（后端据此整体覆盖顺序）。 */
+  reorder(projectId: number, id: number, caseIds: number[]) {
+    return request<void>(`${base(projectId)}/case-sets/${id}/order`, {
+      method: 'PUT',
+      body: JSON.stringify({ caseIds }),
+    })
   },
 }

@@ -571,6 +571,9 @@ async function runCommit(): Promise<void> {
         {{ showForm ? t('common.cancel') : t('common.create') }}
       </NButton>
       <NButton quaternary @click="showImport = !showImport">{{ t('cases.import.title') }}</NButton>
+      <RouterLink v-slot="{ navigate }" to="/cases/sets" custom>
+        <NButton quaternary @click="navigate">{{ t('caseSets.title') }}</NButton>
+      </RouterLink>
       <NButton quaternary :loading="loading" @click="load">{{ t('common.refresh') }}</NButton>
     </div>
 
