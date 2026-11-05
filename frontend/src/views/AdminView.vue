@@ -4,7 +4,6 @@ import { useI18n } from 'vue-i18n'
 import {
   NButton,
   NCheckbox,
-  NDataTable,
   NInput,
   NPagination,
   NSelect,
@@ -20,8 +19,8 @@ import {
   type UserSummary,
 } from '@/api/iam'
 import { useAuthStore } from '@/stores/auth'
+import DataTable from '@/components/DataTable.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
-import EmptyState from '@/components/EmptyState.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { EMPTY } from '@/utils/format'
@@ -573,19 +572,16 @@ async function removeMember(member: ProjectMember): Promise<void> {
         </NButton>
       </SelectionBar>
 
-      <NDataTable
+      <DataTable
         :columns="userColumns"
         :data="users"
         :loading="loading"
         :row-key="(row: UserSummary) => row.id"
-        :scroll-x="1020"
-        :bordered="false"
-        size="small"
-      >
-        <template #empty>
-          <EmptyState v-if="!loading && !error" :title="t('common.noData')" icon="users" />
-        </template>
-      </NDataTable>
+        :empty-title="t('common.noData')"
+        empty-icon="users"
+        :error="Boolean(error)"
+        :empty-illustration="keyword ? 'no-result' : 'no-data'"
+      />
 
       <NPagination
         v-if="total > 0"
@@ -612,18 +608,15 @@ async function removeMember(member: ProjectMember): Promise<void> {
         <NButton type="primary" attr-type="submit">{{ t('common.save') }}</NButton>
       </form>
 
-      <NDataTable
+      <DataTable
         :columns="projectColumns"
         :data="auth.projects"
         :row-key="(row: Project) => row.id"
-        :scroll-x="760"
-        :bordered="false"
-        size="small"
-      >
-        <template #empty>
-          <EmptyState :title="t('common.noData')" :description="t('project.emptyHint')" icon="boxes" />
-        </template>
-      </NDataTable>
+        :empty-title="t('common.noData')"
+        :empty-description="t('project.emptyHint')"
+        empty-icon="boxes"
+        :error="Boolean(error)"
+      />
     </section>
 
     <section class="card wide-card">
@@ -659,41 +652,29 @@ async function removeMember(member: ProjectMember): Promise<void> {
         </form>
         <p class="muted">{{ t('admin.ownerHint') }}</p>
 
-        <NDataTable
+        <DataTable
           :columns="memberColumns"
           :data="members"
           :loading="memberLoading"
           :row-key="(row: ProjectMember) => row.userId"
-          :scroll-x="820"
-          :bordered="false"
-          size="small"
-        >
-          <template #empty>
-            <EmptyState
-              v-if="!memberLoading && !error"
-              :title="t('admin.noMembers')"
-              icon="users"
-            />
-          </template>
-        </NDataTable>
+          :empty-title="t('admin.noMembers')"
+          empty-icon="users"
+          :error="Boolean(error)"
+        />
       </template>
       <p v-else class="muted">{{ t('project.emptyHint') }}</p>
     </section>
 
     <section class="card wide-card">
       <h2 class="card-title">{{ t('admin.roles') }}</h2>
-      <NDataTable
+      <DataTable
         :columns="roleColumns"
         :data="roles"
         :row-key="(row: Role) => row.id"
-        :scroll-x="760"
-        :bordered="false"
-        size="small"
-      >
-        <template #empty>
-          <EmptyState :title="t('common.noData')" icon="audit" />
-        </template>
-      </NDataTable>
+        :empty-title="t('common.noData')"
+        empty-icon="audit"
+        :error="Boolean(error)"
+      />
     </section>
   </div>
 </template>

@@ -56,8 +56,13 @@ TEMPLATE_RE = re.compile(r"<template>(.*)</template>", re.S)
 
 def imported_names(script: str) -> set[str]:
     names: set[str] = set()
-    # import Foo from '...'
-    names.update(re.findall(r"^\s*import\s+([A-Z][A-Za-z0-9]*)\s+from\s", script, re.M))
+    # import Foo from '...'，以及 `import Foo, { type Bar } from '...'` 这种默认名与具名同行的写法
+    # （UX-05 第一次这么写时漏检：正则要求默认名后面直接是 ` from`，遇到 `,` 就不匹配了）
+    names.update(
+        re.findall(
+            r"^\s*import\s+([A-Z][A-Za-z0-9]*)\s*(?:,\s*\{[^}]*\})?\s*from\s", script, re.M
+        )
+    )
     # import { A, B as C } from '...'
     for block in re.findall(r"^\s*import\s*\{([^}]*)\}\s*from\s", script, re.M):
         for item in block.split(","):

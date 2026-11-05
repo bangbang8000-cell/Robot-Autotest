@@ -5,7 +5,6 @@ import { useI18n } from 'vue-i18n'
 import {
   NButton,
   NCheckbox,
-  NDataTable,
   NRadioButton,
   NRadioGroup,
   NSelect,
@@ -28,11 +27,13 @@ import {
   type ReportSuiteNode,
 } from '@/api/reports'
 import { useAuthStore } from '@/stores/auth'
+import DataTable from '@/components/DataTable.vue'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import SuiteTree from '@/components/report/SuiteTree.vue'
 import TrendChart from '@/components/report/TrendChart.vue'
 import type { TrendChartSeries } from '@/components/report/trendChart'
 import ErrorLineView from '@/components/ErrorLine.vue'
+import EmptyState from '@/components/EmptyState.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { formatBytes, formatDateTime, formatDuration } from '@/utils/format'
@@ -628,13 +629,12 @@ watch(granularity, () => {
         <p v-else-if="!exportHistory.length" class="muted">
           {{ t('reports.exportSection.historyEmpty') }}
         </p>
-        <NDataTable
+        <DataTable
           v-else
           :columns="exportHistoryColumns"
           :data="exportHistory"
           :row-key="(row: ReportExportHistoryItem) => row.exportId"
-          :bordered="false"
-          size="small"
+          :error="Boolean(exportHistoryError)"
         />
       </section>
 
@@ -702,7 +702,7 @@ watch(granularity, () => {
             <TrendChart v-else :series="passRateSeries" unit="%" />
           </div>
         </template>
-        <p v-else class="muted">{{ t('reports.trend.empty') }}</p>
+        <EmptyState v-else :title="t('reports.trend.empty')" icon="reports" />
       </section>
 
       <section class="card wide-card">
@@ -776,12 +776,11 @@ watch(granularity, () => {
             />
           </div>
 
-          <NDataTable
+          <DataTable
             :columns="compareColumns"
             :data="compare.rows"
             :row-key="(row: CompareRow) => row.caseKey"
-            :bordered="false"
-            size="small"
+            :error="Boolean(compareError)"
           />
         </template>
       </section>

@@ -70,4 +70,14 @@ python3 tools/check_component_imports.py
 echo "[lint]   - tools/check_wbs_consistency.py（WBS 汇总数字 ↔ 逐行状态）"
 python3 tools/check_wbs_consistency.py
 
+# 表格规范：数据网格必须走 DataTable 壳；原生 <table> 只许留在三处白名单。
+# 壳是"可选"的，绕过它页面照样能跑（naive-ui 内部类名不变），所以只能静态对账。
+echo "[lint]   - tools/check_tables.py（数据网格 ↔ DataTable 壳 / 原生 table 白名单）"
+python3 tools/check_tables.py
+
+# 品牌：favicon 可辨性（16px 近似机检）+ 侧栏/登录页都挂了标记 + 版本号只在「关于」。
+# 这三件事都属"一次验收之后就没人再看"的类别，退化时页面完全正常。
+echo "[lint]   - tools/check_brand.py（favicon 可辨 / 品牌区挂载 / 版本号归位）"
+python3 tools/check_brand.py
+
 echo "[lint] PASS"

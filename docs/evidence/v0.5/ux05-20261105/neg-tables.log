@@ -1,0 +1,16 @@
+[NEG] 注入后 check_tables rc = 1
+扫描 32 个 .vue；DataTable 壳实例 19 处 / 9 个文件
+  views/AdminView.vue                          4
+  views/AssetsView.vue                         4
+  views/AuditView.vue                          1
+  views/CasesView.vue                          1
+  views/OverviewView.vue                       3
+  views/PlansView.vue                          1
+  views/ReportDetailView.vue                   2
+  views/ReportsView.vue                        2
+  views/RunsView.vue                           1
+[FAIL] views/RunsView.vue 直接使用 NDataTable 1 处：数据网格必须走 @/components/DataTable.vue（否则骨架/空态/横滚宽度/表头底色这套规范被绕过）
+
+[FAIL] 共 1 项表格规范问题
+[NEG] 通过：注入后被拦，且报错指向 RunsView.vue
+[NEG] 已还原 RunsView.vue

@@ -10,6 +10,8 @@ import { useAccent } from '@/composables/useAccent'
 import { useNaiveTheme } from '@/composables/naiveTheme'
 import { preferenceApi } from '@/api/preferences'
 import AppIcon from '@/components/AppIcon.vue'
+import AppLogo from '@/components/AppLogo.vue'
+import AboutDialog from '@/components/AboutDialog.vue'
 import AppearanceDialog from '@/components/AppearanceDialog.vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import type { IconName } from '@/components/iconMap'
@@ -47,6 +49,7 @@ const THEME_ICONS: Record<ThemeMode, IconName> = {
 const themeIcon = computed<IconName>(() => THEME_ICONS[theme.mode.value])
 const themeLabel = computed(() => t('theme.switchTo', { mode: t(`theme.${theme.mode.value}`) }))
 const appearanceOpen = ref(false)
+const aboutOpen = ref(false)
 
 // 两级导航：结构在 config/navigation.ts，这里只管「按权限过滤 + 展开态」。
 const nav = computed<NavNode[]>(() => visibleNav(auth.isAdmin))
@@ -165,7 +168,7 @@ onMounted(async () => {
 
     <div v-else class="app-shell">
       <aside class="app-side">
-        <div class="app-brand">{{ t('app.title') }}</div>
+        <div class="app-brand"><AppLogo with-wordmark /></div>
         <nav class="app-nav" :aria-label="t('menu.label')">
           <template v-for="node in nav" :key="node.key">
             <RouterLink
@@ -236,6 +239,16 @@ onMounted(async () => {
             >
               <AppIcon name="palette" :size="16" />
             </button>
+            <!-- 版本号从顶部副标题移到「关于」（UX-05）：副标题只放定位语 -->
+            <button
+              class="btn btn-ghost"
+              type="button"
+              :aria-label="t('about.open')"
+              :title="t('about.open')"
+              @click="aboutOpen = true"
+            >
+              <AppIcon name="help" :size="16" />
+            </button>
             <select
               class="app-lang"
               :value="localeStore.locale"
@@ -258,6 +271,7 @@ onMounted(async () => {
       </main>
 
       <AppearanceDialog v-model:open="appearanceOpen" />
+      <AboutDialog v-model:open="aboutOpen" />
       <ConfirmModal />
     </div>
   </NConfigProvider>

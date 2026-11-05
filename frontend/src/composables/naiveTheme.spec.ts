@@ -62,6 +62,17 @@ describe('naiveTheme 对接层', () => {
     expect(changed.common?.bodyColor).toBe('bg-token')
   })
 
+  it('表格表头/单元格色接回 token（不留在库默认的亮白常量上）', () => {
+    const table = buildThemeOverrides(sample).DataTable
+    expect(table?.thColor).toBe('surface2-token')
+    expect(table?.thTextColor).toBe('muted-token')
+    expect(table?.tdColor).toBe('panel-token')
+    expect(table?.tdTextColor).toBe('text-token')
+    expect(table?.borderColor).toBe('border-token')
+    // 表头与正文必须不同色：同色等于放弃层级（UX-01b 判据）
+    expect(table?.thTextColor).not.toBe(table?.tdTextColor)
+  })
+
   it('展示清单覆盖全部语义名，且都是 CSS 变量名', () => {
     expect(SEMANTIC_CSS_VARS.length).toBeGreaterThanOrEqual(18)
     expect(new Set(SEMANTIC_CSS_VARS).size).toBe(SEMANTIC_CSS_VARS.length)

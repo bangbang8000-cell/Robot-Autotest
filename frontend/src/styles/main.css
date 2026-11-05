@@ -30,10 +30,14 @@ body {
   padding: 16px 12px;
 }
 
+/*
+ * 品牌区（UX-05）：内容改成 `<AppLogo with-wordmark />`（标记 + 字标），
+ * 字号与字重由 AppLogo 内部承担，这里只管外框间距。
+ */
 .app-brand {
-  font-weight: 600;
-  font-size: 15px;
   margin-bottom: 20px;
+  /* 侧栏 200px 宽，长产品名要能截断而不是把导航挤窄 */
+  min-width: 0;
 }
 
 .app-nav {

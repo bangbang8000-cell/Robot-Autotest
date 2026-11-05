@@ -2,7 +2,7 @@
 import { computed, h, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
-import { NButton, NDataTable, type DataTableColumns } from 'naive-ui'
+import { NButton, type DataTableColumns } from 'naive-ui'
 import {
   digestApi,
   overviewApi,
@@ -15,9 +15,9 @@ import {
   type ReportDigest,
 } from '@/api/overview'
 import { useAuthStore } from '@/stores/auth'
+import DataTable from '@/components/DataTable.vue'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
-import EmptyState from '@/components/EmptyState.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { EMPTY, formatDateTime, formatDuration, formatPercent } from '@/utils/format'
@@ -430,32 +430,24 @@ function rateBarClass(point: DigestTrendPoint): string {
           <p v-else class="muted">{{ t('overview.digest.trendEmpty') }}</p>
 
           <h3 class="card-title">{{ t('overview.digest.recentTitle') }}</h3>
-          <NDataTable
+          <DataTable
             :columns="digestReportColumns"
             :data="digest.recentReports"
             :row-key="(row: DigestReportRow) => row.runId"
-            :scroll-x="770"
-            :bordered="false"
-            size="small"
-          >
-            <template #empty>
-              <EmptyState :title="t('overview.digest.recentEmpty')" icon="reports" />
-            </template>
-          </NDataTable>
+            :empty-title="t('overview.digest.recentEmpty')"
+            empty-icon="reports"
+            :error="Boolean(digestError)"
+          />
 
           <h3 class="card-title">{{ t('overview.digest.failedTitle') }}</h3>
-          <NDataTable
+          <DataTable
             :columns="digestFailedColumns"
             :data="digest.topFailedCases"
             :row-key="(row: DigestFailedCase) => row.caseKey"
-            :scroll-x="500"
-            :bordered="false"
-            size="small"
-          >
-            <template #empty>
-              <EmptyState :title="t('overview.digest.failedEmpty')" icon="warn" />
-            </template>
-          </NDataTable>
+            :empty-title="t('overview.digest.failedEmpty')"
+            empty-icon="warn"
+            :error="Boolean(digestError)"
+          />
         </template>
       </section>
 
@@ -463,22 +455,15 @@ function rateBarClass(point: DigestTrendPoint): string {
         <div class="section-head">
           <h2 class="card-title">{{ t('overview.recent.title') }}</h2>
         </div>
-        <NDataTable
+        <DataTable
           :columns="recentRunColumns"
           :data="data.recentRuns"
           :row-key="(row: OverviewRecentRun) => row.runId"
-          :scroll-x="1140"
-          :bordered="false"
-          size="small"
-        >
-          <template #empty>
-            <EmptyState
-              :title="t('overview.recent.empty')"
-              :description="t('overview.recent.emptyHint')"
-              icon="runs"
-            />
-          </template>
-        </NDataTable>
+          :empty-title="t('overview.recent.empty')"
+          :empty-description="t('overview.recent.emptyHint')"
+          empty-icon="runs"
+          :error="Boolean(error)"
+        />
       </section>
     </template>
   </div>

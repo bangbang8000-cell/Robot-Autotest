@@ -1,0 +1,6 @@
+[SELFTEST] 开始：临时目录内构造最小树，不触碰真实 frontend/src
+[SELFTEST] 通过：干净基线不假红（2 处引用全部有定义）
+[SELFTEST] 通过：注入未定义名 `shield` 后被拦截
+[SELFTEST] 通过：图标表为空时按「解析失败」报错，不当通过
+[SELFTEST] 通过：动态绑定不误报为图标名（跳过 2 处）
+[SELFTEST] 通过：四类场景均符合预期

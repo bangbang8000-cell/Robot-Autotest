@@ -4,7 +4,6 @@ import { useI18n } from 'vue-i18n'
 import {
   NButton,
   NCheckbox,
-  NDataTable,
   NInput,
   NInputNumber,
   NSelect,
@@ -13,9 +12,9 @@ import {
 import { planApi, type ExecutionPlan, type PlanPayload } from '@/api/plans'
 import { caseSetApi, type TestSet } from '@/api/cases'
 import { useAuthStore } from '@/stores/auth'
+import DataTable from '@/components/DataTable.vue'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
-import EmptyState from '@/components/EmptyState.vue'
 import FormField from '@/components/FormField.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
@@ -383,24 +382,16 @@ void load()
     <ErrorLineView v-if="error" :error="error" />
     <p v-if="message" class="text-ok">{{ message }}</p>
 
-    <NDataTable
+    <DataTable
       :columns="columns"
       :data="plans"
       :loading="loading"
       :row-key="(row: ExecutionPlan) => row.id"
-      :scroll-x="1200"
-      :bordered="false"
-      size="small"
-    >
-      <template #empty>
-        <EmptyState
-          v-if="!loading && !error"
-          :title="t('plans.empty')"
-          :description="projectId ? undefined : t('overview.noProject')"
-          icon="runs"
-        />
-      </template>
-    </NDataTable>
+      :empty-title="t('plans.empty')"
+      :empty-description="projectId ? undefined : t('overview.noProject')"
+      empty-icon="runs"
+      :error="Boolean(error)"
+    />
 
     <div v-if="formOpen" class="card form-card">
       <h2 class="card-title">

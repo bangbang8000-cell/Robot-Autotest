@@ -98,6 +98,26 @@ export function buildThemeOverrides(t: SemanticTokens): GlobalThemeOverrides {
       tabBorderColor: t.border,
       tabFontWeightActiveLine: 500,
     },
+    /*
+     * 表格（UX-05）。这两条是**修缺陷**，不是调样式：
+     *
+     * ① 表头底色。库默认 `thColor = composite(cardColor, tableHeaderColor)`，而
+     *    `tableHeaderColor` 是 light 主题里的亮白常量。我们只覆盖了 semantic token，
+     *    暗色页面上表头就被叠成一片浅灰白，浅色表头文字压在上面几乎看不见。
+     * ② 表头字色。默认 `thTextColor` 接的是 `textColor1`（正文色），于是表头与正文同色，
+     *    失去了「辅助信息」该有的弱化层级 —— UX-01b 的判据（表头为灰阶弱化色）
+     *    在迁库之后静默失效，脚本查不到，只有肉眼看暗色截图才发现。
+     */
+    DataTable: {
+      thColor: t.surface2,
+      thColorHover: t.surfaceSelected,
+      thColorSorting: t.surfaceSelected,
+      thTextColor: t.textMuted,
+      tdColor: t.panel,
+      tdTextColor: t.text,
+      borderColor: t.border,
+      thFontWeight: '500',
+    },
   } as GlobalThemeOverrides
 }
 

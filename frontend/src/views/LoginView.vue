@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { NButton, NInput } from 'naive-ui'
 import { useAuthStore } from '@/stores/auth'
+import AppLogo from '@/components/AppLogo.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import FormField from '@/components/FormField.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
@@ -53,7 +54,12 @@ async function submit(): Promise<void> {
 <template>
   <div class="login-wrap">
     <form class="login-card" @submit.prevent="submit">
-      <h1 class="login-title">{{ t('app.title') }}</h1>
+      <!-- 品牌区（UX-05）：登录页是唯一没有侧边导航的整屏页面，标记 + 定位语是它唯一的身份线索 -->
+      <div class="login-brand">
+        <AppLogo :size="44" />
+        <h1 class="login-title">{{ t('app.title') }}</h1>
+        <p class="login-tagline">{{ t('app.subtitle') }}</p>
+      </div>
       <p class="muted">{{ t('login.subtitle') }}</p>
 
       <FormField v-slot="{ describedBy }" :label="t('login.username')" required>
@@ -91,3 +97,25 @@ async function submit(): Promise<void> {
     </form>
   </div>
 </template>
+
+<style scoped>
+.login-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  text-align: center;
+}
+
+.login-tagline {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* main.css 里 `.login-title` 还留着给别的场景用的下边距，品牌区靠 gap 排版，这里清掉 */
+.login-brand .login-title {
+  margin: 0;
+}
+</style>

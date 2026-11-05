@@ -4,16 +4,15 @@ import { useI18n } from 'vue-i18n'
 import {
   NButton,
   NCheckbox,
-  NDataTable,
   NPagination,
   NSelect,
   type DataTableColumns,
 } from 'naive-ui'
 import { executionApi, runLogSocketUrl, type ExecutionRun, type RunLogLine } from '@/api/execution'
 import { useAuthStore } from '@/stores/auth'
+import DataTable from '@/components/DataTable.vue'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
-import EmptyState from '@/components/EmptyState.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { EMPTY, formatDateTime } from '@/utils/format'
@@ -312,25 +311,17 @@ onBeforeUnmount(() => {
     <ErrorLineView v-if="error" :error="error" />
     <p v-if="message" class="text-ok">{{ message }}</p>
 
-    <NDataTable
+    <DataTable
       :columns="columns"
       :data="runs"
       :loading="loading"
       :row-key="(row: ExecutionRun) => row.id"
       :row-class-name="rowClassName"
-      :scroll-x="1000"
-      :bordered="false"
-      size="small"
-    >
-      <template #empty>
-        <EmptyState
-          v-if="!loading && !error"
-          :title="t('common.noData')"
-          :description="projectId ? undefined : t('overview.noProject')"
-          icon="runs"
-        />
-      </template>
-    </NDataTable>
+      :empty-title="t('common.noData')"
+      :empty-description="projectId ? undefined : t('overview.noProject')"
+      empty-icon="runs"
+      :error="Boolean(error)"
+    />
 
     <NPagination
       v-if="total > 0"

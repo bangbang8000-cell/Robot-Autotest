@@ -1,0 +1,66 @@
+扫描产物目录：/home/evergreen/robot-autotest/frontend/dist
+产物概览：共 51 个文件（JS 30 / CSS 16 / woff2 3 / 其它 2）
+全量 JS ：原始   1957153 B / gzip    596277 B（30 个文件）
+全量 CSS：原始    121160 B / gzip     23202 B（16 个文件）
+
+=== 产物文件清单（原始字节 / gzip 字节 / 文件名）===
+      13598 B / gzip      3965 B  assets/AdminView-BjDCGCx-.js
+        244 B / gzip       169 B  assets/AdminView-BjfRemK4.css
+        391 B / gzip       194 B  assets/AssetsView-BeK0cWqd.css
+      56206 B / gzip     15224 B  assets/AssetsView-DeYIlDv8.js
+     171218 B / gzip     38649 B  assets/AuditView-DivAgCkG.js
+         64 B / gzip        84 B  assets/CasesView-C-8uYUki.css
+      12539 B / gzip      3922 B  assets/CasesView-DOFB8r5D.js
+     283015 B / gzip     80169 B  assets/DataTable-7qoxlK67.js
+       1388 B / gzip       449 B  assets/DataTable-CPlosvs8.css
+      86589 B / gzip     13247 B  assets/EditorView-DIZyKwLM.css
+     857958 B / gzip    263737 B  assets/EditorView-NB8WbOwW.js
+        739 B / gzip       435 B  assets/ErrorLine-CmAzYGRd.js
+        707 B / gzip       341 B  assets/ErrorLine-D-aJ6yPk.css
+        680 B / gzip       255 B  assets/FormField-CwkPrgJO.css
+       1007 B / gzip       549 B  assets/FormField-Doo5vaG7.js
+      46861 B / gzip     14314 B  assets/Input-DI7MSB_-.js
+      10901 B / gzip      3772 B  assets/InputNumber-DKKsRYIB.js
+       2119 B / gzip      1033 B  assets/LoginView-Bzk3B86l.js
+        298 B / gzip       188 B  assets/LoginView-Xnuo_bJL.css
+        569 B / gzip       384 B  assets/NotFoundView-BStCiv4E.js
+      12507 B / gzip      3517 B  assets/OverviewView-DNeHYBys.js
+        959 B / gzip       359 B  assets/PlansView-CVcSiCec.css
+      10544 B / gzip      3463 B  assets/PlansView-Coclefom.js
+        822 B / gzip       488 B  assets/ProjectPicker.vue_vue_type_script_setup_true_lang-CQCvZwg1.js
+       4492 B / gzip      1256 B  assets/ReportDetailView-BsM18Rhd.css
+      23459 B / gzip      7791 B  assets/ReportDetailView-DoAhAYyQ.js
+       2051 B / gzip       661 B  assets/ReportPrintView-CHqipGbz.css
+       4624 B / gzip      1806 B  assets/ReportPrintView-DwcCJqf9.js
+       5410 B / gzip      2106 B  assets/ReportsView-BX-53ja4.js
+        140 B / gzip       129 B  assets/ReportsView-Co3-ycdp.css
+        741 B / gzip       360 B  assets/RunsView-Bw5XNc7Q.css
+       6558 B / gzip      2840 B  assets/RunsView-C7_WmvW9.js
+        729 B / gzip       295 B  assets/StatusTag-BkZKYVEF.css
+        598 B / gzip       418 B  assets/StatusTag-DIiTFuvu.js
+       1211 B / gzip       423 B  assets/cases-DaXfSoE0.js
+        584 B / gzip       345 B  assets/errors-CjwqeZVZ.js
+       1117 B / gzip       598 B  assets/format-CBrabcGv.js
+      21173 B / gzip      4947 B  assets/index-BKhdSGc5.css
+     323714 B / gzip    106520 B  assets/index-BgqG5UeP.js
+      21168 B / gzip     21196 B  assets/jetbrains-mono-latin-V6pRDFza.woff2
+      19616 B / gzip      4207 B  assets/lucide-DIB1JHl6.js
+      13304 B / gzip     13327 B  assets/noto-sans-sc-latin-C8q2FS1w.woff2
+     141228 B / gzip    141291 B  assets/noto-sans-sc-ui-nZJSby5b.woff2
+       1273 B / gzip       515 B  assets/reports-B1rEuMYQ.js
+       1007 B / gzip       461 B  assets/statusLabels-XqXBqTaX.js
+        562 B / gzip       392 B  assets/useBatchAction-nrf-TD1Y.js
+        514 B / gzip       268 B  assets/useSelection-Cge7ZJsy.css
+       2099 B / gzip       977 B  assets/useSelection-D4Gc8XPk.js
+      84718 B / gzip     33257 B  assets/vue-DhGmyL_7.js
+
+=== 各项判定 ===
+[INFO] 图标 chunk 1 个，gzip 合计 4207 B ≤ 15360 B（15 KiB），达标
+[INFO] 组件库 vendor chunk 1 个，gzip 合计 106520 B ≤ 204800 B（200 KiB），达标
+[INFO] 懒加载共享分包 14 个，gzip 合计 103856 B ≤ 122880 B（120 KiB），达标（最大 assets/DataTable-7qoxlK67.js 80169 B）
+[INFO] 字体 3 个 woff2：原始合计 175700 B、gzip 合计 175814 B ≤ 819200 B（800 KiB），达标
+[INFO] CSS 中存在 font-display: swap，首帧不被字体阻塞，达标
+[INFO] styleguide 标记在源码中存在（StyleguideView.vue），产物侧 grep 因此具备判定力
+[INFO] 生产产物中未找到 __STYLEGUIDE_DEV_ONLY__ 标记，且源码侧标记确认存在（DEV 条件挂载 + tree-shaking 生效），本项已被反向验证
+
+[PASS] 构建产物体积守门通过：图标 ≤15 KiB / 组件库 ≤200 KiB / 字体 ≤800 KiB / 无 styleguide 标记泄漏

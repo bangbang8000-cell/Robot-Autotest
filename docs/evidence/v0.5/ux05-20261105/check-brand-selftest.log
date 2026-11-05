@@ -1,0 +1,8 @@
+[SELFTEST] 开始：临时目录内构造最小树，不触碰真实 frontend/
+[SELFTEST] 通过：干净基线不假红（3 项判定）
+[SELFTEST] 通过：favicon 含文字被拦截
+[SELFTEST] 通过：细描边被拦截
+[SELFTEST] 通过：index.html 缺 favicon 引用被拦截
+[SELFTEST] 通过：版本号写回副标题被拦截
+[SELFTEST] 通过：品牌区未挂载 / 关于不读版本 都被拦截
+[SELFTEST] 通过：六类场景均符合预期

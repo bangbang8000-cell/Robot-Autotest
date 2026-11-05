@@ -2,12 +2,12 @@
 import { computed, h, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { NButton, NDataTable, NPagination, type DataTableColumns } from 'naive-ui'
+import { NButton, NPagination, type DataTableColumns } from 'naive-ui'
 import { reportsApi, type ReportListItem, type RetentionResult } from '@/api/reports'
 import { useAuthStore } from '@/stores/auth'
+import DataTable from '@/components/DataTable.vue'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
-import EmptyState from '@/components/EmptyState.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import AppIcon from '@/components/AppIcon.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
@@ -230,12 +230,11 @@ watch(
               })
             }}
           </p>
-          <NDataTable
+          <DataTable
             :columns="retentionColumns"
             :data="retention.items"
             :row-key="(row: RetentionResult['items'][number]) => row.runId"
-            :bordered="false"
-            size="small"
+            :error="Boolean(retentionError)"
           />
           <div v-if="retention.dryRun" class="toolbar">
             <NButton type="primary" :loading="retentionLoading" @click="executeRetention">
@@ -250,24 +249,16 @@ watch(
 
     <ErrorLineView v-if="error" :error="error" />
 
-    <NDataTable
+    <DataTable
       :columns="columns"
       :data="items"
       :loading="loading"
       :row-key="(row: ReportListItem) => row.runId"
-      :scroll-x="1000"
-      :bordered="false"
-      size="small"
-    >
-      <template #empty>
-        <EmptyState
-          v-if="!loading && !error"
-          :title="t('common.noData')"
-          :description="projectId ? undefined : t('overview.noProject')"
-          icon="reports"
-        />
-      </template>
-    </NDataTable>
+      :empty-title="t('common.noData')"
+      :empty-description="projectId ? undefined : t('overview.noProject')"
+      empty-icon="reports"
+      :error="Boolean(error)"
+    />
 
     <NPagination
       v-if="total > 0"

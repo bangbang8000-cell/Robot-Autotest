@@ -57,6 +57,8 @@ REQUIRED: list[tuple[str, tuple[str, ...]]] = [
     (".table tbody tr", (".table tbody tr:focus-within", ".table tbody tr:focus-visible")),
     # 套件树的展开/收起整行（scoped style，靠上面的扫描范围扩大才看得见）
     (".tree-toggle", (".tree-toggle:focus-visible", "*:focus-visible")),
+    # 趋势图的图例开关（UX-05）：能点却没有任何反馈的话，用户不会发现线是可以关掉的
+    (".legend-item", (".legend-item:focus-visible", "*:focus-visible")),
 ]
 
 MIN_RULES = 120

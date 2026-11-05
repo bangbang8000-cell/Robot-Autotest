@@ -1,8 +1,22 @@
 export default {
   app: {
     title: 'AIDC自动化测试',
-    subtitle: 'v0.2 台账版',
+    /**
+     * 副标题只放**定位语**（UX-05）：版本号原先写在这里（"v0.2 台账版"），
+     * 每发一版要改 i18n 文案、忘了就对外报旧版本，且天天占着视野。版本号已移入「关于」，
+     * 且从后端 `/_ping` 读，保证页面与服务端实际版本一致。
+     */
+    subtitle: 'AIDC 硬件与网络自动化测试平台',
     logout: '退出登录',
+  },
+  about: {
+    title: '关于',
+    open: '关于本产品',
+    version: '版本',
+    versionUnknown: '未知（后端未响应）',
+    service: '服务',
+    description:
+      '用例资产、执行编排、报告追溯一体化的测试平台。版本号取自服务端 /_ping，与页面显示的构建版本始终一致。',
   },
   theme: {
     system: '跟随系统',
@@ -208,6 +222,10 @@ export default {
     delete: '删除',
     actions: '操作',
     noData: '暂无数据',
+    loadFailed: '数据加载失败',
+    loadFailedHint: '检查网络或后端服务后重试',
+    noResult: '没有匹配的记录',
+    noResultHint: '换个关键词，或清空筛选条件',
     yes: '是',
     no: '否',
     prev: '上一页',
@@ -535,6 +553,9 @@ export default {
       week: '按周',
       baselineLine: '基线 {ms} ms',
       deviatedLegend: '偏离基线',
+      allHidden: '所有系列都被隐藏了，点上方图例可重新显示',
+      showSeries: '显示该系列',
+      hideSeries: '隐藏该系列',
       envHint: '环境变化处自动断线',
       currentHint: '点击数据点可跳到对应运行',
     },

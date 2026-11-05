@@ -1,0 +1,12 @@
+扫描 32 个 .vue；DataTable 壳实例 19 处 / 9 个文件
+  views/AdminView.vue                          4
+  views/AssetsView.vue                         4
+  views/AuditView.vue                          1
+  views/CasesView.vue                          1
+  views/OverviewView.vue                       3
+  views/PlansView.vue                          1
+  views/ReportDetailView.vue                   2
+  views/ReportsView.vue                        2
+  views/RunsView.vue                           1
+
+[PASS] 表格规范：19 处数据网格全部走壳；原生 <table> 仅出现在白名单 3 个文件

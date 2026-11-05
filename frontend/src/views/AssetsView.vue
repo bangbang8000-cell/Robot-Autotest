@@ -5,7 +5,6 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   NButton,
   NCheckbox,
-  NDataTable,
   NInput,
   NInputNumber,
   NPagination,
@@ -24,9 +23,9 @@ import {
   type Link,
 } from '@/api/asset'
 import { useAuthStore } from '@/stores/auth'
+import DataTable from '@/components/DataTable.vue'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
-import EmptyState from '@/components/EmptyState.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { EMPTY } from '@/utils/format'
@@ -815,25 +814,18 @@ async function removeCredential(credential: Credential): Promise<void> {
       <span class="muted">{{ t('assets.credential.noEcho') }}</span>
     </form>
 
-    <NDataTable
+    <DataTable
       v-if="tab === 'devices'"
       :columns="deviceColumns"
       :data="devices"
       :loading="loading"
       :row-key="(row: Device) => row.id"
-      :scroll-x="1080"
-      :bordered="false"
-      size="small"
-    >
-      <template #empty>
-        <EmptyState
-          v-if="!loading && !error"
-          :title="t('common.noData')"
-          :description="projectId ? undefined : t('overview.noProject')"
-          icon="boxes"
-        />
-      </template>
-    </NDataTable>
+      :empty-title="t('common.noData')"
+      :empty-description="projectId ? undefined : t('overview.noProject')"
+      empty-icon="boxes"
+      :error="Boolean(error)"
+      :empty-illustration="keyword ? 'no-result' : 'no-data'"
+    />
 
     <div v-if="tab === 'devices' && portsDevice" class="card port-card">
       <div class="port-head">
@@ -842,18 +834,17 @@ async function removeCredential(credential: Credential): Promise<void> {
           {{ t('assets.device.hidePorts') }}
         </NButton>
       </div>
-      <NDataTable
+      <DataTable
         :columns="portColumns"
         :data="ports"
         :row-key="(row: DevicePort) => row.id"
-        :scroll-x="480"
-        :bordered="false"
-        size="small"
       >
         <template #empty>
           <p class="muted port-empty">{{ t('common.noData') }}</p>
         </template>
-      </NDataTable>
+        :error="Boolean(error)"
+        :empty-illustration="keyword ? 'no-result' : 'no-data'"
+      </DataTable>
       <form class="inline-form port-form" @submit.prevent="addPort">
         <NInput v-model:value="portForm.portName" style="width: 180px" :placeholder="t('assets.port.name')" />
         <NInput v-model:value="portForm.portType" style="width: 140px" :placeholder="t('assets.port.type')" />
@@ -868,45 +859,31 @@ async function removeCredential(credential: Credential): Promise<void> {
       </form>
     </div>
 
-    <NDataTable
+    <DataTable
       v-if="tab === 'links'"
       :columns="linkColumns"
       :data="links"
       :loading="loading"
       :row-key="(row: Link) => row.id"
-      :scroll-x="1000"
-      :bordered="false"
-      size="small"
-    >
-      <template #empty>
-        <EmptyState
-          v-if="!loading && !error"
-          :title="t('common.noData')"
-          :description="projectId ? undefined : t('overview.noProject')"
-          icon="boxes"
-        />
-      </template>
-    </NDataTable>
+      :empty-title="t('common.noData')"
+      :empty-description="projectId ? undefined : t('overview.noProject')"
+      empty-icon="boxes"
+      :error="Boolean(error)"
+      :empty-illustration="keyword ? 'no-result' : 'no-data'"
+    />
 
-    <NDataTable
+    <DataTable
       v-if="tab === 'credentials'"
       :columns="credentialColumns"
       :data="credentialRows"
       :loading="loading"
       :row-key="(row: Credential) => row.id"
-      :scroll-x="820"
-      :bordered="false"
-      size="small"
-    >
-      <template #empty>
-        <EmptyState
-          v-if="!loading && !error"
-          :title="t('common.noData')"
-          :description="projectId ? undefined : t('overview.noProject')"
-          icon="boxes"
-        />
-      </template>
-    </NDataTable>
+      :empty-title="t('common.noData')"
+      :empty-description="projectId ? undefined : t('overview.noProject')"
+      empty-icon="boxes"
+      :error="Boolean(error)"
+      :empty-illustration="keyword ? 'no-result' : 'no-data'"
+    />
 
     <NPagination
       v-if="tab !== 'credentials' && total > 0"

@@ -45,9 +45,13 @@ MIN_KEYS = 20  # 当前 49 个；低于 20 说明解析失败或表被误改，�
 ICONS_BLOCK_RE = re.compile(r"const ICONS = \{(.*?)\}\s*as const", re.S)
 KEY_RE = re.compile(r"^\s*([A-Za-z][\w]*)\s*:", re.M)
 
-# icon="x" / :icon="'x'" —— 只认小写开头的裸标识符，避免把表达式当名字
-ICON_ATTR_RE = re.compile(r"""\bicon\s*=\s*["']([a-z][\w]*)["']""")
+# icon="x" / :icon="'x'" —— 只认小写开头的裸标识符，避免把表达式当名字。
+# `(?<!:)` 是必须的：`:icon="emptyIcon"` 是**变量**，没有这个后顾，`\b` 会在 `:` 与 `i`
+# 之间成立，于是把一个变量名当成图标名报「未定义」（UX-05 表格壳第一次用动态 icon 时踩到）。
+ICON_ATTR_RE = re.compile(r"""(?<!:)\bicon\s*=\s*["']([a-z][\w]*)["']""")
 ICON_BIND_RE = re.compile(r""":icon\s*=\s*["']'([a-z][\w]*)'["']""")
+# 动态绑定（`:icon="expr"`）：无法静态判定，只计数上报，不假装检查过
+ICON_EXPR_RE = re.compile(r""":icon\s*=\s*"([^"]*)\"""")
 APPICON_TAG_RE = re.compile(r"<AppIcon\b[^>]*>", re.S)
 APPICON_NAME_RE = re.compile(r"""\sname\s*=\s*["']([a-z][\w]*)["']""")
 APPICON_BIND_RE = re.compile(r"""\s:name\s*=\s*["']'([a-z][\w]*)'["']""")
@@ -87,6 +91,10 @@ def scan(src: Path, keys: set[str]) -> Result:
             names.append((m.group(1), text.count("\n", 0, m.start()) + 1))
         for m in ICON_BIND_RE.finditer(text):
             names.append((m.group(1), text.count("\n", 0, m.start()) + 1))
+        for m in ICON_EXPR_RE.finditer(text):
+            inner = m.group(1).strip()
+            if not (inner.startswith("'") and inner.endswith("'")):
+                r.dynamic += 1
         for tag in APPICON_TAG_RE.finditer(text):
             line = text.count("\n", 0, tag.start()) + 1
             for m in APPICON_NAME_RE.finditer(tag.group(0)):
@@ -192,7 +200,25 @@ def self_test() -> int:
             ok = False
             print(f"[SELFTEST] FAIL 空表没被拦：{r.violations}")
 
-    print("[SELFTEST] " + ("通过：三类问题均可拦截" if ok else "存在未拦截场景"))
+    # 4) 动态绑定不得被当成图标名（`:icon="emptyIcon"` 是变量）
+    #    这是 UX-05 表格壳第一次用动态 icon 时的真实误报：`\b` 在 `:` 与 `i` 之间成立，
+    #    `emptyIcon` 就被当成未定义图标名。误报的代价是「守门一响就得改对的代码」，
+    #    所以给它一条用例，防止后顾断言被谁顺手删掉。
+    with tempfile.TemporaryDirectory() as d:
+        dyn_vue = (
+            '<template><AppIcon name="audit" />'
+            '<EmptyState :icon="emptyIcon" :description="t(\'x\')" />'
+            '<StatusTag :icon="row.icon" /></template>\n'
+        )
+        icon_map, src = build(Path(d), good_keys, dyn_vue)
+        r = evaluate(icon_map, src)
+        if not r.violations and r.dynamic >= 1:
+            print(f"[SELFTEST] 通过：动态绑定不误报为图标名（跳过 {r.dynamic} 处）")
+        else:
+            ok = False
+            print(f"[SELFTEST] FAIL 动态绑定被误判：{r.violations}")
+
+    print("[SELFTEST] " + ("通过：四类场景均符合预期" if ok else "存在未拦截场景"))
     return 0 if ok else 1
 
 

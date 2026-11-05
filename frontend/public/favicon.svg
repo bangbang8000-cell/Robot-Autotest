@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="AIDC AutoTest">
+  <!--
+    品牌标记（UX-05）：一个根节点 + 一个缩进分支 = 「套件 → 用例」的层级树。
+    与 src/components/AppLogo.vue 同形，但这里必须写**固定色**：favicon 不继承页面 CSS 变量，
+    用 var(--accent) 会渲染成透明/黑色。取强调色默认值 blue 的亮色档 #1567c9。
+    16px 下可辨的约束：只有 4 条 2.6px 圆头线，没有文字、没有细过 2px 的描边。
+  -->
+  <rect x="0.5" y="0.5" width="31" height="31" rx="9" fill="#1567c9"/>
+  <g stroke="#ffffff" stroke-width="2.6" stroke-linecap="round">
+    <line x1="9.5" y1="10.5" x2="23" y2="10.5"/>
+    <line x1="9.5" y1="10.5" x2="9.5" y2="21.5" stroke-width="2.2"/>
+    <line x1="13" y1="16" x2="23" y2="16"/>
+    <line x1="13" y1="21.5" x2="19.5" y2="21.5"/>
+  </g>
+</svg>

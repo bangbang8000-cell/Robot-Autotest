@@ -1,8 +1,18 @@
 export default {
   app: {
     title: 'AIDC AutoTest',
-    subtitle: 'v0.2 ledger edition',
+    /** Positioning line only — the version moved to "About" and is read from `/_ping` (UX-05). */
+    subtitle: 'AIDC hardware & network test automation',
     logout: 'Sign out',
+  },
+  about: {
+    title: 'About',
+    open: 'About this product',
+    version: 'Version',
+    versionUnknown: 'Unknown (backend not responding)',
+    service: 'Service',
+    description:
+      'One platform for case assets, execution orchestration and report traceability. The version is read from the server /_ping so the page always matches the build actually running.',
   },
   theme: {
     system: 'System',
@@ -206,6 +216,10 @@ export default {
     delete: 'Delete',
     actions: 'Actions',
     noData: 'No data',
+    loadFailed: 'Failed to load data',
+    loadFailedHint: 'Check the network or backend service and retry',
+    noResult: 'No matching records',
+    noResultHint: 'Try another keyword, or clear the filters',
     yes: 'Yes',
     no: 'No',
     prev: 'Previous',
@@ -529,6 +543,9 @@ export default {
       week: 'Weekly',
       baselineLine: 'Baseline {ms} ms',
       deviatedLegend: 'Deviated',
+      allHidden: 'All series are hidden — click a legend item to show it again',
+      showSeries: 'Show this series',
+      hideSeries: 'Hide this series',
       envHint: 'Line breaks when the environment changes',
       currentHint: 'Click a point to open that run',
     },

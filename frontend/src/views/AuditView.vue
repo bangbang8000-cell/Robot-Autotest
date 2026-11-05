@@ -3,7 +3,6 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   NButton,
-  NDataTable,
   NDatePicker,
   NPagination,
   NSelect,
@@ -11,8 +10,8 @@ import {
 } from 'naive-ui'
 import { auditApi, type AuditEntry } from '@/api/audit'
 import { useAuthStore } from '@/stores/auth'
+import DataTable from '@/components/DataTable.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
-import EmptyState from '@/components/EmptyState.vue'
 import AppIcon from '@/components/AppIcon.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { formatDateTime } from '@/utils/format'
@@ -200,20 +199,16 @@ onMounted(() => {
         </NButton>
       </div>
 
-      <NDataTable
+      <DataTable
         :columns="columns"
         :data="rows"
         :loading="loading"
         :row-key="(row: AuditEntry) => row.id"
-        :scroll-x="1000"
-        :bordered="false"
-        size="small"
         class="audit-table"
-      >
-        <template #empty>
-          <EmptyState :title="t('audit.empty')" icon="audit" />
-        </template>
-      </NDataTable>
+        :empty-title="t('audit.empty')"
+        empty-icon="audit"
+        :error="Boolean(error)"
+      />
 
       <NPagination
         v-if="total > 0"

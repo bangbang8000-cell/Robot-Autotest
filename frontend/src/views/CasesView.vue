@@ -4,7 +4,6 @@ import { useI18n } from 'vue-i18n'
 import {
   NButton,
   NCheckbox,
-  NDataTable,
   NInput,
   NPagination,
   NSelect,
@@ -20,10 +19,10 @@ import {
   type TestCase,
 } from '@/api/cases'
 import { useAuthStore } from '@/stores/auth'
+import DataTable from '@/components/DataTable.vue'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import SelectionBar from '@/components/SelectionBar.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
-import EmptyState from '@/components/EmptyState.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { EMPTY } from '@/utils/format'
@@ -576,24 +575,17 @@ async function runCommit(): Promise<void> {
       </NButton>
     </SelectionBar>
 
-    <NDataTable
+    <DataTable
       :columns="columns"
       :data="cases"
       :loading="loading"
       :row-key="(row: TestCase) => row.id"
-      :scroll-x="1080"
-      :bordered="false"
-      size="small"
-    >
-      <template #empty>
-        <EmptyState
-          v-if="!loading && !error"
-          :title="t('common.noData')"
-          :description="projectId ? undefined : t('overview.noProject')"
-          icon="cases"
-        />
-      </template>
-    </NDataTable>
+      :empty-title="t('common.noData')"
+      :empty-description="projectId ? undefined : t('overview.noProject')"
+      empty-icon="cases"
+      :error="Boolean(error)"
+      :empty-illustration="keyword ? 'no-result' : 'no-data'"
+    />
 
     <NPagination
       v-if="total > 0"
