@@ -54,7 +54,7 @@
 | 15 | AST-04 | 技术域标签体系与筛选器 | B2 | 待验 | `application/asset/LabelService.java`、`api/asset/LabelController.java`；设备列表按 `domain` 筛选、用例页按技术域筛选；`docs/evidence/v1.0/g2-6/`（2026-11-06 本机界面走查：用例 `roce` → 10 行 / 清空 → 226，设备下拉来自 `/device-domains` 且 `domain=roce` → 3 行，含 3 张截图） | 标签与用例共用标签集需集成测试确认；**台账无「技术域」列，226 条 `domain_tag` 全空**，真实数据上筛选等价于空结果，需先定数据来源（加列 / 按一级分类映射 / 平台内批量标注） |
 | 16 | CAS-01 | 双模用例模型（台账 + 脚本）建模与评审 | B2 | 待验 | `docs/adr/0005-dual-mode-case-model.md`、`docs/release/v0.2-ledger/CAS-01-评审纪要.md`；`V2_3__case_fields.sql` | 待人工签字冻结（G2 后改模型需 ADR） |
 | 17 | CAS-02 | 用例库 / 用例集 CRUD | B2 | 待验 | `application/caseasset/{TestCaseService,TestSetService}.java`、`api/caseasset/{CaseController,TestSetController}.java`；前端 `views/CasesView.vue`（筛选/新建/提审/审核/删除） | 用例集前端页面未做（仅后端 API） |
-| 18 | CAS-03 | 台账导入（字段映射 + 校验 + 回滚） | B2 | 待验 | `application/caseasset/CaseImportService.java`（POI 5.2.5，中英文表头别名、整批事务、行级错误）、`CaseController` preview/commit；前端导入面板。**安全分级已做**：`tools/classify_cases.py` 对 226 条样本产出 L0 10 / L1 89 / L2 32 / LX 95，证据 `docs/evidence/v0.2/cas03-classify.log` + `cas03-ledger-classification.csv`（见 ADR-0013） | **只做导入、不做执行**：`preview` 按 226 条跑通、重导幂等；条数口径待定（461 vs 226），**不得据 226 置 `已完成`**；`CaseImportService` 无执行路径（已核 `robot/exec/ssh/pabot` 0 命中） **2026-11-04 解除阻断（大师定「补别名，接受命令列丢失」）**：`HEADER_ALIASES` 补入「测试编号 / 测试用例 / 一级分类 / 测试类型 / 预置条件」，静态对账从 **1/14 → 6/14 且 `[PASS]`**（证据 `docs/evidence/v0.1/env04-header-check.log`）。三点必须记住：① **测试步骤 / A端命令 / B端命令 / 交换机配置 4 列无处存放，导入时静默丢弃**（`ImportRow` 无对应字段，属定案取舍）；② 台账**无优先级列** → 226 条全部落 `P2`；③ 「执行顺序」（"第二优先：其余70项"）**故意不映射**到 priority，否则 `Priority.from` 抛「非法优先级」把全表判错。**2026-11-04 真跑通过（判据达成）**：新增 `CaseImportIT`（`@Tag("it")`，连真库 `robot_it`）端到端验证 —— `preview totalRows=226 validRows=226 errors=0` → `commit imported=226` → 重导 `validRows=0 errors=226`（逐行「编号已存在于项目」），首末条 `TN-IMP-001` / `TN-IMP-226` 完整。证据 `docs/evidence/v0.2/cas03-import-it.log`。**未覆盖项（勿读成已验）**：不起 Spring 上下文故 `@Transactional` 不生效 → **「整批回滚」未验证**；403 拒绝路径、并发导入未验证 |
+| 18 | CAS-03 | 台账导入（字段映射 + 校验 + 回滚） | B2 | 待验 | `application/caseasset/CaseImportService.java`（POI 5.2.5，中英文表头别名、整批事务、行级错误）、`CaseController` preview/commit；前端导入面板。**安全分级已做**：`tools/classify_cases.py` 对 226 条样本产出 L0 10 / L1 89 / L2 32 / LX 95，证据 `docs/evidence/v0.2/cas03-classify.log` + `cas03-ledger-classification.csv`（见 ADR-0013） | **只做导入、不做执行**：`preview` 按 226 条跑通、重导幂等；条数口径待定（461 vs 226），**不得据 226 置 `已完成`**；`CaseImportService` 无执行路径（已核 `robot/exec/ssh/pabot` 0 命中） **2026-11-04 解除阻断（大师定「补别名，接受命令列丢失」）**：`HEADER_ALIASES` 补入「测试编号 / 测试用例 / 一级分类 / 测试类型 / 预置条件」，静态对账从 **1/14 → 6/14 且 `[PASS]`**（证据 `docs/evidence/v0.1/env04-header-check.log`）。三点必须记住：① **测试步骤 / A端命令 / B端命令 / 交换机配置 4 列无处存放，导入时静默丢弃**（`ImportRow` 无对应字段，属定案取舍）；② 台账**无优先级列** → 226 条全部落 `P2`；③ 「执行顺序」（"第二优先：其余70项"）**故意不映射**到 priority，否则 `Priority.from` 抛「非法优先级」把全表判错。**2026-11-04 真跑通过（判据达成）**：新增 `CaseImportIT`（`@Tag("it")`，连真库 `robot_it`）端到端验证 —— `preview totalRows=226 validRows=226 errors=0` → `commit imported=226` → 重导 `validRows=0 errors=226`（逐行「编号已存在于项目」），首末条 `TN-IMP-001` / `TN-IMP-226` 完整。证据 `docs/evidence/v0.2/cas03-import-it.log`。**未覆盖项（勿读成已验）**：不起 Spring 上下文故 `@Transactional` 不生效 → **「整批回滚」未验证**；403 拒绝路径、并发导入未验证。**2026-11-06 补齐**：新增 `CaseImportTxIT`（最小 Spring 上下文 `AnnotationConfigApplicationContext` + `@EnableTransactionManagement` + `DataSourceTransactionManager`，不起 Boot/Web/Flyway，连真库 `robot_it`）——整批回滚（第 3 行撞编号 → `CONFLICT`，前两行不留）、`viewer` 与非成员两条 403、两线程并发（只一批落库、库里恰好 5 行，连跑 3 次一致）；顺带修行并发撞唯一键抛 `DuplicateKeyException` 会落兜底 500 的问题 → `CaseImportService.commit` 内翻译为 `CONFLICT`(409)。证据 `docs/evidence/v1.0/cas03-tx/cas03-tx-it-20261106.md`。仍未覆盖：HTTP 层 403 状态码/响应体、多实例并发规模 |
 | 19 | CAS-04 | 文件工作区 6 端点（树/上传/下载/移动/重命名/删除） | B2 | 待验 | `application/caseasset/FileWorkspaceService.java`、`api/caseasset/FileController.java`（tree/content/versions/save/upload/move/delete）、`FilePathTest` 5 条 | 6 端点集成测试待跑；编辑器 UI 属 v0.3 |
 | 20 | CAS-05 | 能力索引（关键词能力清单） | B2 | 待验 | `application/caseasset/CapabilityService.java`、`api/caseasset/CaseController#capabilities`；前端用例页能力索引展示 | 按能力反查非空需真实数据验证 |
 | 21 | EDT-01 | 依赖闭包抽取（39 文件 / 15,946 行）+ monorepo 化 | B3 | 待验 | `packages/editor/`（40 个上游文件 + 9 个适配缝）、`scripts/closure.mjs`、`UPSTREAM.md`、`NOTICE.md`、`LICENSE-roboscope`；`npm run build` exit 0（82 modules / 403.6 kB / gzip 81 kB）；HTTP 扫描 `docs/evidence/v0.3/http-scan.log` 0 命中 | 需评审认定「api 模块重写为适配缝而非物理删除」这一偏差（理由见 `packages/editor/UPSTREAM.md` §4）；19 个上游测试已于 EDT-06 接入（见 #26） |
@@ -496,7 +496,7 @@
 8. **残余（写进包内阻塞列）**：现场仍需真实触发一次 L2 用例并留存 403 响应；跨页选中不可见；
    台账补判仍需人工逐条。本包按纪律留 **`待验`**。
 
-### 2026-11-06 补记（G2-6 界面走查 + IAM-02 前端定时续补齐）
+### 2026-11-06 补记（G2-6 界面走查 + IAM-02 前端定时续 + CAS-03 事务语义）
 
 1. **G2-6 本机界面走查已过**（`#15 / AST-04`，证据 `docs/evidence/v1.0/g2-6/`，含 3 张截图与可复跑脚本
    `prep-domain.py`）：用例页技术域填 `roce` → 表格 10 行、首行 `TN-IMP-226`，清空 → 226 行；
@@ -519,6 +519,14 @@
 5. 汇总不变：**96 包 = 0 / 0 / 83 / 0 / 13**。`#15 AST-04`、`#8 IAM-02` 均留 `待验`（本机证据不能替代现场签字）。
 6. 观察项（不影响判定）：首次进 `/cases` 默认项目是 `AST05-B`（0 条用例），用户先看到空表；
    技术域筛选不随刷新/URL 保留（用例页与设备页一致）。
+7. **CAS-03 的三项「未覆盖」已补集成测试**（`#18`）：`CaseImportTxIT` 用最小 Spring 上下文
+   （`AnnotationConfigApplicationContext` + `@EnableTransactionManagement` + `DataSourceTransactionManager`，
+   不起 Boot / Web / Flyway，连真库 `robot_it`）让 `@Transactional` 真正生效，四条用例全绿：
+   整批回滚（第 3 行撞编号 → `CONFLICT`，前两行不留）、`viewer` 与非成员两条 403、
+   两线程并发导同一批（只一批落库、库里恰好 5 行，连跑 3 次一致）。
+   **顺带修一个缺陷**：并发撞唯一键原本抛 `DuplicateKeyException`，会落到兜底 **500**；
+   现于 `CaseImportService.commit` 翻译成 `CONFLICT`（409）。证据 `docs/evidence/v1.0/cas03-tx/cas03-tx-it-20261106.md`。
+   仍未覆盖：HTTP 层 403 状态码/响应体、多实例并发规模。**本包仍留 `待验`**——卡的是 461 vs 226 条数口径。
 
 ## 更新方式
 

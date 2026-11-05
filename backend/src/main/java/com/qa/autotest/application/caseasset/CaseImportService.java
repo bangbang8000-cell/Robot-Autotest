@@ -23,6 +23,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -208,17 +209,26 @@ public class CaseImportService {
             throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "没有可导入的数据");
         }
         int imported = 0;
-        for (ImportRow row : rows) {
-            if (cases.codeExists(projectId, row.caseCode(), null)) {
-                throw new BusinessException(ErrorCode.CONFLICT,
-                        "第 " + row.rowNum() + " 行编号已存在：" + row.caseCode());
+        try {
+            for (ImportRow row : rows) {
+                if (cases.codeExists(projectId, row.caseCode(), null)) {
+                    throw new BusinessException(ErrorCode.CONFLICT,
+                            "第 " + row.rowNum() + " 行编号已存在：" + row.caseCode());
+                }
+                TestCase entity = new TestCase(null, projectId, row.caseCode().trim(), row.title(),
+                        row.category(), Priority.from(row.priority()).name(), row.precondition(),
+                        row.expected(), row.domainTag(), ReviewStatus.DRAFT.code(), "excel",
+                        row.capability(), row.description(), SafetyLevel.from(row.safetyLevel()).name());
+                cases.insert(entity, TenantContext.userId());
+                imported++;
             }
-            TestCase entity = new TestCase(null, projectId, row.caseCode().trim(), row.title(),
-                    row.category(), Priority.from(row.priority()).name(), row.precondition(),
-                    row.expected(), row.domainTag(), ReviewStatus.DRAFT.code(), "excel",
-                    row.capability(), row.description(), SafetyLevel.from(row.safetyLevel()).name());
-            cases.insert(entity, TenantContext.userId());
-            imported++;
+        } catch (DataIntegrityViolationException race) {
+            // 两个导入同时提交时，两边都能通过 codeExists 预检，真正兜住重复的是
+            // uk_test_case_project_code。不翻译就会落到兜底 500「服务内部错误」，
+            // 对外看着像服务故障，实际只是「有人同时在导同一批编号」。
+            // 抛 RuntimeException 即让 @Transactional 整批回滚，不留半批。
+            throw new BusinessException(ErrorCode.CONFLICT,
+                    "并发导入冲突：编号已被另一批次占用，请重新预览后再提交");
         }
         audit.record("case.import", "test_case", String.valueOf(projectId), "imported=" + imported);
         return new ImportResult(imported, 0);
