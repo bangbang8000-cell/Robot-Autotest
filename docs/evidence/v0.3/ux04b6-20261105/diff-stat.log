@@ -1,7 +1,11 @@
- frontend/src/assets/fonts/noto-sans-sc-ui.woff2 | Bin 134948 -> 135388 bytes
- frontend/src/styles/main.css                    |  21 ++-------
- frontend/src/views/EditorView.vue               |  60 +++++++++---------------
- frontend/src/views/LoginView.vue                |  53 +++++++++++++++++----
- frontend/src/views/NotFoundView.vue             |  10 +++-
- frontend/src/views/OverviewView.vue             |   6 +--
- 6 files changed, 82 insertions(+), 68 deletions(-)
+ docs/evidence/v0.3/ux04b6-20261105/README.md       |   27 +-
+ .../v0.3/ux04b6-20261105/backend-mvn-test.log      | 1018 ++++++++++----------
+ docs/evidence/v0.3/ux04b6-20261105/diff-stat.log   |    7 -
+ docs/evidence/v0.3/ux04b6-20261105/fe-build.log    |    2 +-
+ docs/evidence/v0.3/ux04b6-20261105/fe-test.log     |  103 +-
+ docs/evidence/v0.3/ux04b6-20261105/lint-sh.log     |    2 +
+ docs/evidence/v0.3/ux04b6-20261105/run-all.sh      |   10 +-
+ docs/evidence/v0.3/ux04b6-20261105/view-test.log   |   78 +-
+ docs/plan/WBS-STATUS.md                            |   27 +-
+ scripts/lint.sh                                    |    6 +
+ 10 files changed, 653 insertions(+), 627 deletions(-)

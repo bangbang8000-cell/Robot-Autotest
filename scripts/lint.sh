@@ -64,4 +64,10 @@ python3 tools/check_icons.py
 echo "[lint]   - tools/check_component_imports.py（模板组件 ↔ import 对账）"
 python3 tools/check_component_imports.py
 
+# WBS 进度表自洽：汇总数字必须等于逐行数出来的分布。
+# 2026-11-05 真实发生过：F2 裁决改了汇总行/分组表/修订记录三处，唯独 8 个单包行
+# 的状态格没改，汇总显示"待现场 0 / 已完成 13"，逐行数出来是"待现场 8 / 已完成 5"。
+echo "[lint]   - tools/check_wbs_consistency.py（WBS 汇总数字 ↔ 逐行状态）"
+python3 tools/check_wbs_consistency.py
+
 echo "[lint] PASS"

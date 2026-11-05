@@ -467,4 +467,6 @@ Excel      : fixtures/case-ledger/ledger-sample-226.xlsx
 [PASS] 图标名对账通过：28 处静态引用全部在 41 个定义内
 [lint]   - tools/check_component_imports.py（模板组件 ↔ import 对账）
 [PASS] 28 个 .vue：模板用到的自建组件全部有 import
+[lint]   - tools/check_wbs_consistency.py（WBS 汇总数字 ↔ 逐行状态）
+[PASS] WBS 自洽：82 个包 / 未开始 3 / 进行中 0 / 待验 66 / 待现场 0 / 已完成 13
 [lint] PASS

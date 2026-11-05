@@ -63,7 +63,15 @@ printf '%-30s rc=%s\n' 'component-imports' "$?"
 ( cd backend && mvn -B -q test ) > "$OUT/backend-mvn-test.log" 2>&1
 printf '%-30s rc=%s\n' 'backend-mvn-test' "$?"
 
-# 13) 本轮改动清单
+# 13) WBS 进度表自洽（汇总数字 vs 逐行状态，本批新增守门）
+python3 tools/check_wbs_consistency.py > "$OUT/check-wbs.log" 2>&1
+printf '%-30s rc=%s\n' 'check-wbs' "$?"
+
+# 14) 上一条的负向证据：注入一处不一致必须报 FAIL（否则守门没有判定力）
+python3 docs/evidence/v0.3/ux04b6-20261105/neg-wbs.py > "$OUT/neg-wbs.log" 2>&1
+printf '%-30s rc=%s\n' 'neg-wbs' "$?"
+
+# 15) 本轮改动清单
 git -C /home/evergreen/robot-autotest diff --stat > "$OUT/diff-stat.log" 2>&1
 printf '%-30s rc=%s\n' 'diff-stat' "$?"
 
