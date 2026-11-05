@@ -84,6 +84,20 @@ export function buildThemeOverrides(t: SemanticTokens): GlobalThemeOverrides {
       fontSize: t.fontSizeBase,
       fontSizeMedium: t.fontSizeBase,
     },
+    /*
+     * 页签（UX-04b：资产页的 `.tabs` 原生按钮换成 NTabs 后才需要这段）。
+     * 库默认的 line 型页签用 primaryColor 做指示条，换强调色时能跟上，但**未选中文字**
+     * 走的是它自己的灰阶，与 `--text-muted` 不是同一个值；选中文字也不会变色。
+     * 这里显式接回语义 token，页签才和全站其余文字同一套灰阶。
+     */
+    Tabs: {
+      barColor: t.accent,
+      tabTextColorLine: t.textMuted,
+      tabTextColorHoverLine: t.text,
+      tabTextColorActiveLine: t.accent,
+      tabBorderColor: t.border,
+      tabFontWeightActiveLine: 500,
+    },
   } as GlobalThemeOverrides
 }
 

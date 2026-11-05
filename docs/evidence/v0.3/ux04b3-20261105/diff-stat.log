@@ -1,0 +1,10 @@
+ docs/plan/WBS-STATUS.md                         |   1 +
+ frontend/src/assets/fonts/noto-sans-sc-ui.woff2 | Bin 130376 -> 133252 bytes
+ frontend/src/composables/naiveTheme.ts          |  14 +
+ frontend/src/styles/main.css                    |  38 +-
+ frontend/src/views/AdminView.vue                | 553 ++++++++++------
+ frontend/src/views/AssetsView.vue               | 828 ++++++++++++++++--------
+ frontend/src/views/OverviewView.vue             | 229 ++++---
+ frontend/src/views/PlansView.vue                | 464 ++++++-------
+ tools/check_states.py                           |   5 +-
+ 9 files changed, 1297 insertions(+), 835 deletions(-)

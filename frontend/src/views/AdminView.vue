@@ -1,10 +1,20 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, h, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import {
+  NButton,
+  NCheckbox,
+  NDataTable,
+  NInput,
+  NPagination,
+  NSelect,
+  type DataTableColumns,
+} from 'naive-ui'
 import {
   roleApi,
   userApi,
   projectApi,
+  type Project,
   type ProjectMember,
   type Role,
   type UserSummary,
@@ -12,12 +22,15 @@ import {
 import { useAuthStore } from '@/stores/auth'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
+import { EMPTY } from '@/utils/format'
 import { batchApi } from '@/api/batch'
 import SelectionBar from '@/components/SelectionBar.vue'
 import { useBatchAction } from '@/composables/useBatchAction'
 import { useSelection } from '@/composables/useSelection'
 import { confirmAction } from '@/composables/useConfirm'
+import type { StatusTone } from '@/utils/statusLabels'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -58,6 +71,27 @@ const selectedProject = computed(
 )
 
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / size)))
+
+const roleOptions = computed(() =>
+  roles.value.map((role) => ({ label: `${role.code} · ${role.name}`, value: role.id })))
+
+const projectRoleOptions = computed(() =>
+  PROJECT_ROLES.map((code) => ({ label: roleLabel(code), value: code })))
+
+const projectOptions = computed(() =>
+  auth.projects.map((project) => ({ label: `${project.code} · ${project.name}`, value: project.id })))
+
+/**
+ * 候选人下拉保留「已停用」标注：把停用用户混进来又不标，是管理员最常见的误操作来源。
+ * NSelect 不支持在 label 里放多段样式，所以直接在文案里拼。
+ */
+const candidateOptions = computed(() =>
+  candidates.value.map((user) => ({
+    label: user.enabled
+      ? `${user.username} · ${user.displayName ?? ''}`.trim()
+      : `${user.username} · ${user.displayName ?? ''} (${t('admin.disabledUser')})`.trim(),
+    value: user.id,
+  })))
 
 // ---- UX-02b 用户批量：与资产页复用同一选择模型 / 执行器 / 批量条 ----
 const pageUserIds = computed<number[]>(() => users.value.map((u) => u.id))
@@ -103,6 +137,182 @@ async function runUserBatch(action: UserBatchAction, enabled?: boolean): Promise
   await userBatch.execute([...userSelection.selectedIds.value], userSelection)
 }
 
+/** 「启用 / 停用」是布尔事实：启用是 ok，停用只是一条中性事实，不是告警。 */
+function enabledTone(value: boolean): StatusTone {
+  return value ? 'ok' : 'neutral'
+}
+
+/**
+ * 勾选列自渲染 `NCheckbox`（不用内置 `type: 'selection'`：内置列只认
+ * `checked-row-keys`，数据刷新会丢掉不在当前页的键，与跨页保留契约冲突）。
+ */
+function userSelectionColumn(): DataTableColumns<UserSummary>[number] {
+  return {
+    key: 'selection',
+    width: 36,
+    align: 'center',
+    title: () =>
+      h(NCheckbox, {
+        checked: userPageAll.value,
+        indeterminate: userPageIndeterminate.value,
+        'aria-label': t('cases.batch.barLabel'),
+        onUpdateChecked: () => userTogglePage(),
+      }),
+    render: (row) =>
+      h(NCheckbox, {
+        checked: userIsSelected(row.id),
+        'aria-label': `${t('cases.batch.barLabel')}: ${row.username}`,
+        onUpdateChecked: () => userToggle(row.id),
+      }),
+  }
+}
+
+const userColumns = computed<DataTableColumns<UserSummary>>(() => [
+  userSelectionColumn(),
+  { title: t('admin.username'), key: 'username', minWidth: 140, ellipsis: { tooltip: true } },
+  {
+    title: t('admin.displayName'),
+    key: 'displayName',
+    minWidth: 140,
+    render: (row) => row.displayName || EMPTY,
+  },
+  {
+    title: t('admin.email'),
+    key: 'email',
+    minWidth: 180,
+    ellipsis: { tooltip: true },
+    render: (row) => row.email || EMPTY,
+  },
+  {
+    title: t('admin.roles'),
+    key: 'roles',
+    minWidth: 150,
+    render: (row) => row.roles.join(', ') || EMPTY,
+  },
+  {
+    title: t('admin.enabled'),
+    key: 'enabled',
+    width: 110,
+    render: (row) =>
+      h(StatusTag, {
+        label: row.enabled ? t('common.yes') : t('common.no'),
+        tone: enabledTone(row.enabled),
+      }),
+  },
+  {
+    title: t('common.actions'),
+    key: 'actions',
+    width: 110,
+    render: (row) =>
+      h(
+        NButton,
+        {
+          text: true,
+          type: row.enabled ? 'error' : 'primary',
+          size: 'small',
+          onClick: () => void toggleUser(row),
+        },
+        { default: () => (row.enabled ? t('admin.disable') : t('admin.enable')) },
+      ),
+  },
+])
+
+const projectColumns = computed<DataTableColumns<Project>>(() => [
+  { title: t('admin.projectCode'), key: 'code', width: 160, ellipsis: { tooltip: true } },
+  { title: t('admin.projectName'), key: 'name', minWidth: 180, ellipsis: { tooltip: true } },
+  {
+    title: t('admin.description'),
+    key: 'description',
+    minWidth: 220,
+    ellipsis: { tooltip: true },
+    render: (row) => row.description || EMPTY,
+  },
+  {
+    title: t('admin.enabled'),
+    key: 'enabled',
+    width: 110,
+    render: (row) =>
+      h(StatusTag, {
+        label: row.enabled ? t('common.yes') : t('common.no'),
+        tone: enabledTone(row.enabled),
+      }),
+  },
+])
+
+const memberColumns = computed<DataTableColumns<ProjectMember>>(() => [
+  { title: t('admin.username'), key: 'username', minWidth: 140, ellipsis: { tooltip: true } },
+  {
+    title: t('admin.displayName'),
+    key: 'displayName',
+    minWidth: 140,
+    render: (row) => row.displayName || EMPTY,
+  },
+  {
+    title: t('admin.memberRole'),
+    key: 'roleCode',
+    width: 200,
+    // 所有者不允许改角色（后端也会拒），所以直接显示只读文本，不给一个会失败的下拉
+    render: (row) =>
+      isOwner(row)
+        ? h('span', { class: 'muted' }, `${roleLabel(row.roleCode)} · ${t('admin.owner')}`)
+        : h(NSelect, {
+          value: row.roleCode,
+          options: projectRoleOptions.value,
+          size: 'small',
+          'aria-label': t('admin.memberRole'),
+          'onUpdate:value': (value: string) => void changeMemberRole(row, value),
+        }),
+  },
+  {
+    title: t('admin.memberStatus'),
+    key: 'enabled',
+    width: 130,
+    render: (row) =>
+      row.enabled
+        ? h(StatusTag, { label: t('common.yes'), tone: 'ok' as StatusTone })
+        : h('span', { class: 'muted' }, t('admin.disabledUser')),
+  },
+  {
+    title: t('common.actions'),
+    key: 'actions',
+    width: 130,
+    render: (row) =>
+      isOwner(row)
+        ? h('span', { class: 'muted' }, t('admin.ownerLocked'))
+        : h(
+          NButton,
+          {
+            text: true,
+            type: 'error',
+            size: 'small',
+            onClick: () => void removeMember(row),
+          },
+          { default: () => t('admin.removeMember') },
+        ),
+  },
+])
+
+const roleColumns = computed<DataTableColumns<Role>>(() => [
+  { title: t('admin.roleCode'), key: 'code', width: 160, ellipsis: { tooltip: true } },
+  { title: t('admin.roleName'), key: 'name', minWidth: 160, ellipsis: { tooltip: true } },
+  {
+    title: t('admin.description'),
+    key: 'description',
+    minWidth: 240,
+    ellipsis: { tooltip: true },
+    render: (row) => row.description || EMPTY,
+  },
+  {
+    title: t('admin.builtIn'),
+    key: 'builtIn',
+    width: 110,
+    render: (row) =>
+      h(StatusTag, {
+        label: row.builtIn ? t('common.yes') : t('common.no'),
+        tone: enabledTone(row.builtIn),
+      }),
+  },
+])
 
 async function loadUsers(): Promise<void> {
   loading.value = true
@@ -242,6 +452,12 @@ async function loadMembers(): Promise<void> {
   }
 }
 
+/** 换项目下拉直接打后端：`memberProjectId` 变了就必须重拉成员，不能只改显示值。 */
+async function changeMemberProject(value: number | null): Promise<void> {
+  memberProjectId.value = value
+  await loadMembers()
+}
+
 async function addMember(): Promise<void> {
   error.value = null
   message.value = ''
@@ -263,8 +479,7 @@ async function addMember(): Promise<void> {
 }
 
 /** 改角色失败时仍重载列表：把下拉框还原成服务端的真实值，不留下「看起来改了」的假象。 */
-async function changeMemberRole(member: ProjectMember, event: Event): Promise<void> {
-  const roleCode = (event.target as HTMLSelectElement).value
+async function changeMemberRole(member: ProjectMember, roleCode: string): Promise<void> {
   error.value = null
   message.value = ''
   try {
@@ -301,38 +516,43 @@ async function removeMember(member: ProjectMember): Promise<void> {
       <div class="section-head">
         <h2 class="card-title">{{ t('admin.users') }}</h2>
         <div class="toolbar">
-          <input
-            v-model="keyword"
-            class="input"
+          <NInput
+            v-model:value="keyword"
+            clearable
+            style="width: 180px"
             :placeholder="t('common.searchPlaceholder')"
+            :aria-label="t('common.searchPlaceholder')"
             @keyup.enter="loadUsers"
           />
-          <button class="btn" type="button" @click="showUserForm = !showUserForm">
+          <NButton :type="showUserForm ? 'default' : 'primary'" @click="showUserForm = !showUserForm">
             {{ showUserForm ? t('common.cancel') : t('common.create') }}
-          </button>
+          </NButton>
         </div>
       </div>
 
       <form v-if="showUserForm" class="inline-form" @submit.prevent="createUser">
-        <input v-model="userForm.username" class="input" :placeholder="t('admin.username')" />
-        <input v-model="userForm.displayName" class="input" :placeholder="t('admin.displayName')" />
-        <input v-model="userForm.email" class="input" :placeholder="t('admin.email')" />
-        <input
-          v-model="userForm.password"
-          class="input"
+        <NInput v-model:value="userForm.username" style="width: 140px" :placeholder="t('admin.username')" />
+        <NInput v-model:value="userForm.displayName" style="width: 140px" :placeholder="t('admin.displayName')" />
+        <NInput v-model:value="userForm.email" style="width: 180px" :placeholder="t('admin.email')" />
+        <NInput
+          v-model:value="userForm.password"
           type="password"
+          show-password-on="click"
+          style="width: 180px"
           :placeholder="t('admin.password')"
           autocomplete="new-password"
         />
-        <select v-model.number="userForm.roleId" class="input">
-          <option :value="null">{{ t('admin.noRole') }}</option>
-          <option v-for="r in roles" :key="r.id" :value="r.id">{{ r.code }} · {{ r.name }}</option>
-        </select>
-        <button class="btn" type="submit">{{ t('common.save') }}</button>
+        <NSelect
+          v-model:value="userForm.roleId"
+          :options="roleOptions"
+          clearable
+          style="width: 180px"
+          :placeholder="t('admin.noRole')"
+          :aria-label="t('admin.roles')"
+        />
+        <NButton type="primary" attr-type="submit">{{ t('common.save') }}</NButton>
       </form>
       <p class="muted">{{ t('admin.passwordHint') }}</p>
-
-      <p v-if="loading" class="muted">{{ t('common.loading') }}</p>
 
       <SelectionBar
         v-if="userSelectedCount > 0"
@@ -342,211 +562,156 @@ async function removeMember(member: ProjectMember): Promise<void> {
         :loading="userBatch.loading.value"
         @clear="clearUserSelection(); userBatch.clear()"
       >
-        <button class="btn" type="button" :disabled="userBatch.loading.value" @click="runUserBatch('setEnabled', false)">
+        <NButton quaternary :disabled="userBatch.loading.value" @click="runUserBatch('setEnabled', false)">
           {{ t('batch.disableUsers') }}
-        </button>
-        <button class="btn" type="button" :disabled="userBatch.loading.value" @click="runUserBatch('setEnabled', true)">
+        </NButton>
+        <NButton quaternary :disabled="userBatch.loading.value" @click="runUserBatch('setEnabled', true)">
           {{ t('batch.enableUsers') }}
-        </button>
-        <button class="btn" type="button" :disabled="userBatch.loading.value" @click="runUserBatch('delete')">
+        </NButton>
+        <NButton quaternary type="error" :disabled="userBatch.loading.value" @click="runUserBatch('delete')">
           {{ t('batch.deleteUsers') }}
-        </button>
+        </NButton>
       </SelectionBar>
 
-      <table v-if="users.length" class="table">
-        <thead>
-          <tr>
-            <th>
-              <input
-                type="checkbox"
-                :checked="userPageAll"
-                :indeterminate.prop="userPageIndeterminate"
-                :aria-label="t('cases.batch.barLabel')"
-                @change="userTogglePage()"
-              />
-            </th>
-            <th>{{ t('admin.username') }}</th>
-            <th>{{ t('admin.displayName') }}</th>
-            <th>{{ t('admin.email') }}</th>
-            <th>{{ t('admin.roles') }}</th>
-            <th>{{ t('admin.enabled') }}</th>
-            <th>{{ t('common.actions') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="u in users" :key="u.id">
-            <td>
-              <input
-                type="checkbox"
-                :checked="userIsSelected(u.id)"
-                :aria-label="t('cases.batch.barLabel')"
-                @change="userToggle(u.id)"
-              />
-            </td>
-            <td>{{ u.username }}</td>
-            <td>{{ u.displayName }}</td>
-            <td>{{ u.email }}</td>
-            <td>{{ u.roles.join(', ') }}</td>
-            <td>{{ u.enabled ? t('common.yes') : t('common.no') }}</td>
-            <td>
-              <button class="link-btn" type="button" @click="toggleUser(u)">
-                {{ u.enabled ? t('admin.disable') : t('admin.enable') }}
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <EmptyState v-if="!loading && total === 0" :title="t('common.noData')" icon="users" />
+      <NDataTable
+        :columns="userColumns"
+        :data="users"
+        :loading="loading"
+        :row-key="(row: UserSummary) => row.id"
+        :scroll-x="1020"
+        :bordered="false"
+        size="small"
+      >
+        <template #empty>
+          <EmptyState v-if="!loading && !error" :title="t('common.noData')" icon="users" />
+        </template>
+      </NDataTable>
 
-      <div v-if="total > 0" class="pager">
-        <button class="btn btn-ghost" type="button" :disabled="page <= 1" @click="turnPage(page - 1)">
-          {{ t('common.prev') }}
-        </button>
-        <span class="muted">{{ t('common.pageInfo', { page, total: pageCount }) }}</span>
-        <button
-          class="btn btn-ghost"
-          type="button"
-          :disabled="page >= pageCount"
-          @click="turnPage(page + 1)"
-        >
-          {{ t('common.next') }}
-        </button>
-      </div>
+      <NPagination
+        v-if="total > 0"
+        class="pager"
+        :page="page"
+        :page-count="pageCount"
+        :page-slot="7"
+        @update:page="turnPage"
+      />
     </section>
 
     <section class="card wide-card">
       <div class="section-head">
         <h2 class="card-title">{{ t('admin.projects') }}</h2>
-        <button class="btn" type="button" @click="showProjectForm = !showProjectForm">
+        <NButton :type="showProjectForm ? 'default' : 'primary'" @click="showProjectForm = !showProjectForm">
           {{ showProjectForm ? t('common.cancel') : t('common.create') }}
-        </button>
+        </NButton>
       </div>
 
       <form v-if="showProjectForm" class="inline-form" @submit.prevent="createProject">
-        <input v-model="projectForm.code" class="input" :placeholder="t('admin.projectCode')" />
-        <input v-model="projectForm.name" class="input" :placeholder="t('admin.projectName')" />
-        <input v-model="projectForm.description" class="input" :placeholder="t('admin.description')" />
-        <button class="btn" type="submit">{{ t('common.save') }}</button>
+        <NInput v-model:value="projectForm.code" style="width: 140px" :placeholder="t('admin.projectCode')" />
+        <NInput v-model:value="projectForm.name" style="width: 180px" :placeholder="t('admin.projectName')" />
+        <NInput v-model:value="projectForm.description" style="width: 220px" :placeholder="t('admin.description')" />
+        <NButton type="primary" attr-type="submit">{{ t('common.save') }}</NButton>
       </form>
 
-      <table v-if="auth.projects.length" class="table">
-        <thead>
-          <tr>
-            <th>{{ t('admin.projectCode') }}</th>
-            <th>{{ t('admin.projectName') }}</th>
-            <th>{{ t('admin.description') }}</th>
-            <th>{{ t('admin.enabled') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="p in auth.projects" :key="p.id">
-            <td>{{ p.code }}</td>
-            <td>{{ p.name }}</td>
-            <td>{{ p.description }}</td>
-            <td>{{ p.enabled ? t('common.yes') : t('common.no') }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <p v-else class="muted">{{ t('common.noData') }}</p>
+      <NDataTable
+        :columns="projectColumns"
+        :data="auth.projects"
+        :row-key="(row: Project) => row.id"
+        :scroll-x="760"
+        :bordered="false"
+        size="small"
+      >
+        <template #empty>
+          <EmptyState :title="t('common.noData')" :description="t('project.emptyHint')" icon="boxes" />
+        </template>
+      </NDataTable>
     </section>
 
     <section class="card wide-card">
       <div class="section-head">
         <h2 class="card-title">{{ t('admin.projectMembers') }}</h2>
-        <div class="toolbar">
-          <select v-model.number="memberProjectId" class="input" @change="loadMembers()">
-            <option :value="null" disabled>{{ t('admin.selectProject') }}</option>
-            <option v-for="p in auth.projects" :key="p.id" :value="p.id">
-              {{ p.code }} · {{ p.name }}
-            </option>
-          </select>
-        </div>
+        <NSelect
+          :value="memberProjectId"
+          :options="projectOptions"
+          style="width: 220px"
+          :placeholder="t('admin.selectProject')"
+          :aria-label="t('admin.selectProject')"
+          @update:value="(value: number | null) => void changeMemberProject(value)"
+        />
       </div>
 
-      <p v-if="auth.projects.length === 0" class="muted">{{ t('project.emptyHint') }}</p>
-      <template v-else>
+      <template v-if="auth.projects.length > 0">
         <form class="inline-form" @submit.prevent="addMember">
-          <select v-model.number="memberForm.userId" class="input">
-            <option :value="null" disabled>{{ t('admin.selectUser') }}</option>
-            <option v-for="u in candidates" :key="u.id" :value="u.id">
-              {{ u.username }} · {{ u.displayName }}
-              {{ u.enabled ? '' : ` (${t('admin.disabledUser')})` }}
-            </option>
-          </select>
-          <select v-model="memberForm.roleCode" class="input">
-            <option v-for="r in PROJECT_ROLES" :key="r" :value="r">{{ roleLabel(r) }}</option>
-          </select>
-          <button class="btn" type="submit">{{ t('admin.addMember') }}</button>
+          <NSelect
+            v-model:value="memberForm.userId"
+            :options="candidateOptions"
+            filterable
+            style="width: 220px"
+            :placeholder="t('admin.selectUser')"
+            :aria-label="t('admin.selectUser')"
+          />
+          <NSelect
+            v-model:value="memberForm.roleCode"
+            :options="projectRoleOptions"
+            style="width: 140px"
+            :aria-label="t('admin.memberRole')"
+          />
+          <NButton type="primary" attr-type="submit">{{ t('admin.addMember') }}</NButton>
         </form>
         <p class="muted">{{ t('admin.ownerHint') }}</p>
 
-        <p v-if="memberLoading" class="muted">{{ t('common.loading') }}</p>
-        <table v-if="members.length" class="table">
-          <thead>
-            <tr>
-              <th>{{ t('admin.username') }}</th>
-              <th>{{ t('admin.displayName') }}</th>
-              <th>{{ t('admin.memberRole') }}</th>
-              <th>{{ t('admin.memberStatus') }}</th>
-              <th>{{ t('common.actions') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="m in members" :key="m.userId">
-              <td>{{ m.username }}</td>
-              <td>{{ m.displayName }}</td>
-              <td>
-                <div v-if="isOwner(m)" class="member-role">
-                  <span class="muted">{{ roleLabel(m.roleCode) }} · {{ t('admin.owner') }}</span>
-                </div>
-                <select
-                  v-else
-                  class="input"
-                  :value="m.roleCode"
-                  @change="changeMemberRole(m, $event)"
-                >
-                  <option v-for="r in PROJECT_ROLES" :key="r" :value="r">{{ roleLabel(r) }}</option>
-                </select>
-              </td>
-              <td>{{ m.enabled ? t('common.yes') : t('admin.disabledUser') }}</td>
-              <td>
-                <button
-                  v-if="!isOwner(m)"
-                  class="link-btn danger"
-                  type="button"
-                  @click="removeMember(m)"
-                >
-                  {{ t('admin.removeMember') }}
-                </button>
-                <span v-else class="muted">{{ t('admin.ownerLocked') }}</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <p v-if="!memberLoading && members.length === 0" class="muted">{{ t('admin.noMembers') }}</p>
+        <NDataTable
+          :columns="memberColumns"
+          :data="members"
+          :loading="memberLoading"
+          :row-key="(row: ProjectMember) => row.userId"
+          :scroll-x="820"
+          :bordered="false"
+          size="small"
+        >
+          <template #empty>
+            <EmptyState
+              v-if="!memberLoading && !error"
+              :title="t('admin.noMembers')"
+              icon="users"
+            />
+          </template>
+        </NDataTable>
       </template>
+      <p v-else class="muted">{{ t('project.emptyHint') }}</p>
     </section>
 
     <section class="card wide-card">
       <h2 class="card-title">{{ t('admin.roles') }}</h2>
-      <table v-if="roles.length" class="table">
-        <thead>
-          <tr>
-            <th>{{ t('admin.roleCode') }}</th>
-            <th>{{ t('admin.roleName') }}</th>
-            <th>{{ t('admin.description') }}</th>
-            <th>{{ t('admin.builtIn') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="r in roles" :key="r.id">
-            <td>{{ r.code }}</td>
-            <td>{{ r.name }}</td>
-            <td>{{ r.description }}</td>
-            <td>{{ r.builtIn ? t('common.yes') : t('common.no') }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <NDataTable
+        :columns="roleColumns"
+        :data="roles"
+        :row-key="(row: Role) => row.id"
+        :scroll-x="760"
+        :bordered="false"
+        size="small"
+      >
+        <template #empty>
+          <EmptyState :title="t('common.noData')" icon="audit" />
+        </template>
+      </NDataTable>
     </section>
   </div>
 </template>
+
+<style scoped>
+.wide-card {
+  margin-bottom: var(--space-4);
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.section-head .card-title {
+  margin-bottom: 0;
+}
+</style>

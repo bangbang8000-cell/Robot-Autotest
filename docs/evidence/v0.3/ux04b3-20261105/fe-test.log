@@ -1,0 +1,60 @@
+
+> robot-autotest-frontend@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 /home/evergreen/robot-autotest/frontend
+
+(node:318511) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:318493) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:318519) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:318496) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:318492) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:318505) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:318620) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:318526) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:318517) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:318639) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:318646) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:318666) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:318636) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:318634) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/composables/useConfirm.spec.ts (3 tests) 5ms
+ ✓ src/composables/useAccent.spec.ts (8 tests) 24ms
+ ✓ src/composables/useBatchAction.spec.ts (5 tests) 15ms
+ ✓ src/composables/naiveTheme.spec.ts (3 tests) 4ms
+ ✓ src/composables/useSelection.spec.ts (8 tests) 9ms
+ ✓ src/utils/statusLabels.spec.ts (6 tests) 6ms
+ ✓ src/config/navigation.spec.ts (12 tests) 9ms
+ ✓ src/utils/format.spec.ts (8 tests) 27ms
+ ✓ src/views/OverviewView.spec.ts (4 tests) 746ms
+ ✓ src/views/RunsView.spec.ts (4 tests) 857ms
+   ✓ RunsView 列表与日志联动 > 渲染两行运行记录  339ms
+ ✓ src/views/CasesView.spec.ts (4 tests) 1066ms
+   ✓ CasesView 勾选接线 > 渲染出接口返回的行  397ms
+ ✓ src/views/PlansView.spec.ts (7 tests) 1209ms
+ ✓ src/views/AssetsView.spec.ts (8 tests) 1911ms
+   ✓ AssetsView 设备页 > 渲染设备行，空值列显示统一占位而不是空白  488ms
+ ✓ src/views/AdminView.spec.ts (8 tests) 2667ms
+   ✓ AdminView 用户列表 > 渲染用户行，空邮箱显示统一占位  793ms
+   ✓ AdminView 用户列表 > 启用状态走 StatusTag，图标 + 文字双编码  386ms
+
+ Test Files  14 passed (14)
+      Tests  88 passed (88)
+   Start at  09:16:40
+   Duration  5.78s (transform 2.88s, setup 377ms, collect 15.45s, tests 8.55s, environment 7.38s, prepare 1.98s)
+

@@ -1,20 +1,32 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, h, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
+import { NDataTable, type DataTableColumns } from 'naive-ui'
 import {
   digestApi,
   overviewApi,
   type CountItem,
+  type DigestFailedCase,
+  type DigestReportRow,
   type DigestTrendPoint,
+  type OverviewRecentRun,
   type ProjectOverview,
   type ReportDigest,
 } from '@/api/overview'
 import { useAuthStore } from '@/stores/auth'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
+import EmptyState from '@/components/EmptyState.vue'
+import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
-import { formatDateTime, formatDuration, formatPercent } from '@/utils/format'
-import { reviewStatusLabel, runStatusLabel, triggerTypeLabel } from '@/utils/statusLabels'
+import { EMPTY, formatDateTime, formatDuration, formatPercent } from '@/utils/format'
+import {
+  reviewStatusLabel,
+  runStatusLabel,
+  runStatusTone,
+  triggerTypeLabel,
+} from '@/utils/statusLabels'
 
 /**
  * 项目总览（OVW-01）。
@@ -82,12 +94,103 @@ async function load(): Promise<void> {
 // 不加 immediate 时 watch 不触发，load() 永不执行——页面会一直停在「加载中」。
 watch(projectId, () => void load(), { immediate: true })
 
-function stateClass(state: string): string {
-  if (state === 'finished') return 'badge verdict-pass'
-  if (state === 'failed') return 'badge verdict-fail'
-  if (state === 'canceled') return 'badge verdict-unknown'
-  return 'badge verdict-skip'
-}
+/**
+ * 三张表的列定义（UX-04b 逐页迁移）。
+ *
+ * 状态列原来是一个按 class 上色的 `<span>`（`badge verdict-pass`），**只有颜色没有图标**：
+ * 六预设里 crimson/gold 与 fail/warn 同色相，色觉障碍下等于没有状态信息。
+ * 统一换成 `StatusTag`（图标 + 文字双编码），与执行页/报告页口径一致。
+ */
+const digestReportColumns = computed<DataTableColumns<DigestReportRow>>(() => [
+  {
+    title: t('overview.digest.runId'),
+    key: 'runId',
+    width: 220,
+    ellipsis: { tooltip: true },
+    render: (row) => h(RouterLink, { to: `/reports/${row.runId}` }, () => row.runId),
+  },
+  {
+    title: t('overview.digest.state'),
+    key: 'state',
+    width: 120,
+    render: (row) => h(StatusTag, { label: runStatusLabel(row.state), tone: runStatusTone(row.state) }),
+  },
+  {
+    title: t('overview.digest.finishedAt'),
+    key: 'finishedAt',
+    width: 180,
+    render: (row) => formatDateTime(row.finishedAt),
+  },
+  {
+    title: t('overview.digest.cases'),
+    key: 'cases',
+    width: 140,
+    render: (row) => `${row.pass} / ${row.fail} / ${row.skip}`,
+  },
+  {
+    title: t('overview.digest.passRate'),
+    key: 'passRateBp',
+    width: 110,
+    render: (row) => formatPercent(row.passRateBp),
+  },
+])
+
+const digestFailedColumns = computed<DataTableColumns<DigestFailedCase>>(() => [
+  { title: t('overview.digest.caseKey'), key: 'caseKey', minWidth: 200, ellipsis: { tooltip: true } },
+  { title: t('overview.digest.failures'), key: 'failures', width: 120 },
+  {
+    title: t('overview.digest.lastFailedAt'),
+    key: 'lastFailedAt',
+    width: 180,
+    render: (row) => formatDateTime(row.lastFailedAt),
+  },
+])
+
+const recentRunColumns = computed<DataTableColumns<OverviewRecentRun>>(() => [
+  { title: t('overview.recent.runId'), key: 'runId', width: 220, ellipsis: { tooltip: true } },
+  {
+    title: t('overview.recent.state'),
+    key: 'state',
+    width: 120,
+    render: (row) => h(StatusTag, { label: runStatusLabel(row.state), tone: runStatusTone(row.state) }),
+  },
+  {
+    title: t('overview.recent.startedAt'),
+    key: 'startedAt',
+    width: 180,
+    render: (row) => formatDateTime(row.startedAt),
+  },
+  {
+    title: t('overview.recent.duration'),
+    key: 'durationMs',
+    width: 110,
+    render: (row) => formatDuration(row.durationMs),
+  },
+  { title: t('overview.recent.cases'), key: 'total', width: 100 },
+  {
+    title: t('overview.recent.passRate'),
+    key: 'passRateBp',
+    width: 110,
+    render: (row) => formatPercent(row.passRateBp),
+  },
+  {
+    title: t('overview.recent.device'),
+    key: 'dut',
+    minWidth: 200,
+    ellipsis: { tooltip: true },
+    render: (row) =>
+      h('span', null, [
+        row.dut || EMPTY,
+        row.link ? h('span', { class: 'muted' }, ` · ${row.link}`) : null,
+      ]),
+  },
+  {
+    title: t('overview.recent.trigger'),
+    key: 'triggerType',
+    width: 120,
+    render: (row) => triggerTypeLabel(row.triggerType),
+  },
+])
 
 function chips(items: CountItem[]): string {
   return items.map((item) => `${item.key} ${item.count}`).join(' · ')
@@ -327,46 +430,32 @@ function rateBarClass(point: DigestTrendPoint): string {
           <p v-else class="muted">{{ t('overview.digest.trendEmpty') }}</p>
 
           <h3 class="card-title">{{ t('overview.digest.recentTitle') }}</h3>
-          <table v-if="digest.recentReports.length > 0" class="table">
-            <thead>
-              <tr>
-                <th>{{ t('overview.digest.runId') }}</th>
-                <th>{{ t('overview.digest.state') }}</th>
-                <th>{{ t('overview.digest.finishedAt') }}</th>
-                <th>{{ t('overview.digest.cases') }}</th>
-                <th>{{ t('overview.digest.passRate') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in digest.recentReports" :key="row.runId">
-                <td><RouterLink :to="`/reports/${row.runId}`">{{ row.runId }}</RouterLink></td>
-                <td><span :class="stateClass(row.state)">{{ runStatusLabel(row.state) }}</span></td>
-                <td>{{ formatDateTime(row.finishedAt) }}</td>
-                <td>{{ row.pass }} / {{ row.fail }} / {{ row.skip }}</td>
-                <td>{{ formatPercent(row.passRateBp) }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <p v-else class="muted">{{ t('overview.digest.recentEmpty') }}</p>
+          <NDataTable
+            :columns="digestReportColumns"
+            :data="digest.recentReports"
+            :row-key="(row: DigestReportRow) => row.runId"
+            :scroll-x="770"
+            :bordered="false"
+            size="small"
+          >
+            <template #empty>
+              <EmptyState :title="t('overview.digest.recentEmpty')" icon="reports" />
+            </template>
+          </NDataTable>
 
           <h3 class="card-title">{{ t('overview.digest.failedTitle') }}</h3>
-          <table v-if="digest.topFailedCases.length > 0" class="table">
-            <thead>
-              <tr>
-                <th>{{ t('overview.digest.caseKey') }}</th>
-                <th>{{ t('overview.digest.failures') }}</th>
-                <th>{{ t('overview.digest.lastFailedAt') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in digest.topFailedCases" :key="item.caseKey">
-                <td>{{ item.caseKey }}</td>
-                <td>{{ item.failures }}</td>
-                <td>{{ formatDateTime(item.lastFailedAt) }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <p v-else class="muted">{{ t('overview.digest.failedEmpty') }}</p>
+          <NDataTable
+            :columns="digestFailedColumns"
+            :data="digest.topFailedCases"
+            :row-key="(row: DigestFailedCase) => row.caseKey"
+            :scroll-x="500"
+            :bordered="false"
+            size="small"
+          >
+            <template #empty>
+              <EmptyState :title="t('overview.digest.failedEmpty')" icon="warn" />
+            </template>
+          </NDataTable>
         </template>
       </section>
 
@@ -374,36 +463,22 @@ function rateBarClass(point: DigestTrendPoint): string {
         <div class="section-head">
           <h2 class="card-title">{{ t('overview.recent.title') }}</h2>
         </div>
-        <table v-if="data.recentRuns.length > 0" class="table">
-          <thead>
-            <tr>
-              <th>{{ t('overview.recent.runId') }}</th>
-              <th>{{ t('overview.recent.state') }}</th>
-              <th>{{ t('overview.recent.startedAt') }}</th>
-              <th>{{ t('overview.recent.duration') }}</th>
-              <th>{{ t('overview.recent.cases') }}</th>
-              <th>{{ t('overview.recent.passRate') }}</th>
-              <th>{{ t('overview.recent.device') }}</th>
-              <th>{{ t('overview.recent.trigger') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="run in data.recentRuns" :key="run.runId">
-              <td>{{ run.runId }}</td>
-              <td><span :class="stateClass(run.state)">{{ runStatusLabel(run.state) }}</span></td>
-              <td>{{ formatDateTime(run.startedAt) }}</td>
-              <td>{{ formatDuration(run.durationMs) }}</td>
-              <td>{{ run.total }}</td>
-              <td>{{ formatPercent(run.passRateBp) }}</td>
-              <td>{{ run.dut || '—' }}<span v-if="run.link" class="muted"> · {{ run.link }}</span></td>
-              <td>{{ triggerTypeLabel(run.triggerType) }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <div v-else class="empty-box">
-          <p>{{ t('overview.recent.empty') }}</p>
-          <p class="muted">{{ t('overview.recent.emptyHint') }}</p>
-        </div>
+        <NDataTable
+          :columns="recentRunColumns"
+          :data="data.recentRuns"
+          :row-key="(row: OverviewRecentRun) => row.runId"
+          :scroll-x="1140"
+          :bordered="false"
+          size="small"
+        >
+          <template #empty>
+            <EmptyState
+              :title="t('overview.recent.empty')"
+              :description="t('overview.recent.emptyHint')"
+              icon="runs"
+            />
+          </template>
+        </NDataTable>
       </section>
     </template>
   </div>

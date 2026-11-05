@@ -1,15 +1,26 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, h, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import {
+  NButton,
+  NCheckbox,
+  NDataTable,
+  NInput,
+  NInputNumber,
+  NSelect,
+  type DataTableColumns,
+} from 'naive-ui'
 import { planApi, type ExecutionPlan, type PlanPayload } from '@/api/plans'
 import { caseSetApi, type TestSet } from '@/api/cases'
 import { useAuthStore } from '@/stores/auth'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
+import EmptyState from '@/components/EmptyState.vue'
+import FormField from '@/components/FormField.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
-import { formatDateTime } from '@/utils/format'
-import { runStatusLabel } from '@/utils/statusLabels'
+import { EMPTY, formatDateTime } from '@/utils/format'
+import { runStatusLabel, type StatusTone } from '@/utils/statusLabels'
 import { confirmAction } from '@/composables/useConfirm'
 
 const { t, te } = useI18n()
@@ -62,6 +73,9 @@ const availableDependencies = computed(() =>
   plans.value.filter((plan) => plan.id !== editingId.value),
 )
 
+const testSetOptions = computed(() =>
+  testSets.value.map((set) => ({ label: `${set.name} (${set.setCode})`, value: set.id })))
+
 const canSubmit = computed(() => {
   return (
     form.value.name.trim().length > 0 &&
@@ -71,15 +85,110 @@ const canSubmit = computed(() => {
   )
 })
 
-
 function statusLabel(status: string): string {
   const key = `plans.status.${status}`
   return te(key) ? t(key) : status
 }
 
+/** 「暂停」是人为停下，用中性色；只有真在跑的才算 ok —— 用色块说「停」比说「好」重要。 */
+function planStatusTone(status: string): StatusTone {
+  return status === 'paused' ? 'neutral' : 'ok'
+}
+
 function runStateLabel(state: string | null): string {
   return state ? runStatusLabel(state) : t('plans.noRun')
 }
+
+/**
+ * 计划列表列定义（UX-04b 逐页迁移）。
+ *
+ * 窄屏不再另渲染一套卡片：`scroll-x` 已经能在 760px 以下横向滚动，而双份 markup
+ * 意味着两份都要跟着迁移、两份都可能只改一边（本页原来的卡片版就是纯复制）。
+ */
+const columns = computed<DataTableColumns<ExecutionPlan>>(() => [
+  {
+    title: t('plans.name'),
+    key: 'name',
+    minWidth: 200,
+    render: (row) =>
+      h('div', null, [
+        h('div', { class: 'plan-name' }, row.name),
+        h('div', { class: 'muted small' }, row.suitePaths.join(', ') || EMPTY),
+      ]),
+  },
+  {
+    title: t('plans.statusLabel'),
+    key: 'status',
+    width: 110,
+    render: (row) =>
+      h(StatusTag, { label: statusLabel(row.status), tone: planStatusTone(row.status) }),
+  },
+  {
+    title: t('plans.cron'),
+    key: 'cron',
+    width: 190,
+    render: (row) =>
+      h('div', null, [
+        h('code', null, row.cron),
+        h('div', { class: 'muted small' }, row.timezone),
+      ]),
+  },
+  {
+    title: t('plans.nextFire'),
+    key: 'nextFire',
+    width: 190,
+    render: (row) => {
+      const times = row.nextFireTimes ?? []
+      const first = times[0] ?? row.nextFireAt
+      // 「未来 3 次」这个标签放进列头就够，逐行重复只会把每行撑高一行
+      return h('div', null, [
+        h('div', null, formatDateTime(first)),
+        ...times.slice(1).map((time) => h('div', { class: 'muted small' }, formatDateTime(time))),
+      ])
+    },
+  },
+  {
+    title: t('plans.lastResult'),
+    key: 'lastRunState',
+    width: 190,
+    render: (row) =>
+      h('div', null, [
+        h('div', null, runStateLabel(row.lastRunState)),
+        row.lastRunId ? h('div', { class: 'muted small' }, row.lastRunId) : null,
+        row.lastRunFinishedAt
+          ? h('div', { class: 'muted small' }, formatDateTime(row.lastRunFinishedAt))
+          : null,
+      ]),
+  },
+  {
+    title: t('common.actions'),
+    key: 'actions',
+    width: 300,
+    render: (row) =>
+      h('div', { class: 'row-actions' }, [
+        h(
+          NButton,
+          { text: true, type: 'primary', size: 'small', onClick: () => openEdit(row) },
+          { default: () => t('plans.edit') },
+        ),
+        h(
+          NButton,
+          { text: true, size: 'small', onClick: () => void toggleStatus(row) },
+          { default: () => (row.status === 'paused' ? t('plans.resume') : t('plans.pause')) },
+        ),
+        h(
+          NButton,
+          { text: true, size: 'small', onClick: () => void triggerNow(row) },
+          { default: () => t('plans.triggerNow') },
+        ),
+        h(
+          NButton,
+          { text: true, type: 'error', size: 'small', onClick: () => void removePlan(row) },
+          { default: () => t('common.delete') },
+        ),
+      ]),
+  },
+])
 
 async function load(): Promise<void> {
   error.value = null
@@ -264,109 +373,34 @@ void load()
     </div>
 
     <div class="toolbar">
-      <button class="btn" type="button" @click="openCreate">{{ t('plans.create') }}</button>
-      <button class="btn btn-ghost" type="button" @click="load">{{ t('common.refresh') }}</button>
-      <RouterLink class="btn btn-ghost" to="/runs">{{ t('plans.backToRuns') }}</RouterLink>
+      <NButton type="primary" @click="openCreate">{{ t('plans.create') }}</NButton>
+      <NButton quaternary :loading="loading" @click="load">{{ t('common.refresh') }}</NButton>
+      <RouterLink v-slot="{ navigate }" to="/runs" custom>
+        <NButton quaternary @click="navigate">{{ t('plans.backToRuns') }}</NButton>
+      </RouterLink>
     </div>
 
     <ErrorLineView v-if="error" :error="error" />
     <p v-if="message" class="text-ok">{{ message }}</p>
-    <p v-if="loading" class="muted">{{ t('common.loading') }}</p>
-    <p v-if="!loading && !error && plans.length === 0" class="muted">{{ t('plans.empty') }}</p>
 
-    <table v-if="plans.length" class="table plans-table">
-      <thead>
-        <tr>
-          <th>{{ t('plans.name') }}</th>
-          <th>{{ t('plans.statusLabel') }}</th>
-          <th>{{ t('plans.cron') }}</th>
-          <th>{{ t('plans.nextFire') }}</th>
-          <th>{{ t('plans.lastResult') }}</th>
-          <th>{{ t('common.actions') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="plan in plans" :key="plan.id">
-          <td>
-            <div>{{ plan.name }}</div>
-            <div class="muted small">{{ plan.suitePaths.join(', ') || '—' }}</div>
-          </td>
-          <td>
-            <StatusTag
-              :label="statusLabel(plan.status)"
-              :tone="plan.status === 'paused' ? 'neutral' : 'ok'"
-            />
-          </td>
-          <td>
-            <code>{{ plan.cron }}</code>
-            <div class="muted small">{{ plan.timezone }}</div>
-          </td>
-          <td>
-            {{ formatDateTime(plan.nextFireTimes?.[0] ?? plan.nextFireAt) }}
-            <div class="muted small">{{ t('plans.nextThree') }}</div>
-            <div v-for="time in plan.nextFireTimes" :key="time" class="muted small">
-              {{ formatDateTime(time) }}
-            </div>
-          </td>
-          <td>
-            <div>{{ runStateLabel(plan.lastRunState) }}</div>
-            <div v-if="plan.lastRunId" class="muted small">{{ plan.lastRunId }}</div>
-            <div v-if="plan.lastRunFinishedAt" class="muted small">
-              {{ formatDateTime(plan.lastRunFinishedAt) }}
-            </div>
-          </td>
-          <td>
-            <button class="link-btn" type="button" @click="openEdit(plan)">
-              {{ t('plans.edit') }}
-            </button>
-            <button class="link-btn" type="button" @click="toggleStatus(plan)">
-              {{ plan.status === 'paused' ? t('plans.resume') : t('plans.pause') }}
-            </button>
-            <button class="link-btn" type="button" @click="triggerNow(plan)">
-              {{ t('plans.triggerNow') }}
-            </button>
-            <button class="link-btn danger" type="button" @click="removePlan(plan)">
-              {{ t('common.delete') }}
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div v-if="plans.length" class="plans-cards">
-      <div v-for="plan in plans" :key="plan.id" class="card">
-        <div class="card-head">
-          <h2 class="card-title">{{ plan.name }}</h2>
-          <StatusTag
-            :label="statusLabel(plan.status)"
-            :tone="plan.status === 'paused' ? 'neutral' : 'ok'"
-          />
-        </div>
-        <p class="muted small">{{ plan.suitePaths.join(', ') || '—' }}</p>
-        <dl class="facts">
-          <dt>{{ t('plans.cron') }}</dt>
-          <dd>{{ plan.cron }} · {{ plan.timezone }}</dd>
-          <dt>{{ t('plans.nextFire') }}</dt>
-          <dd>{{ formatDateTime(plan.nextFireTimes?.[0] ?? plan.nextFireAt) }}</dd>
-          <dt>{{ t('plans.lastResult') }}</dt>
-          <dd>{{ runStateLabel(plan.lastRunState) }} {{ plan.lastRunId ?? '' }}</dd>
-        </dl>
-        <div class="card-actions">
-          <button class="btn btn-ghost" type="button" @click="openEdit(plan)">
-            {{ t('plans.edit') }}
-          </button>
-          <button class="btn btn-ghost" type="button" @click="toggleStatus(plan)">
-            {{ plan.status === 'paused' ? t('plans.resume') : t('plans.pause') }}
-          </button>
-          <button class="btn btn-ghost" type="button" @click="triggerNow(plan)">
-            {{ t('plans.triggerNow') }}
-          </button>
-          <button class="btn btn-ghost danger" type="button" @click="removePlan(plan)">
-            {{ t('common.delete') }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <NDataTable
+      :columns="columns"
+      :data="plans"
+      :loading="loading"
+      :row-key="(row: ExecutionPlan) => row.id"
+      :scroll-x="1200"
+      :bordered="false"
+      size="small"
+    >
+      <template #empty>
+        <EmptyState
+          v-if="!loading && !error"
+          :title="t('plans.empty')"
+          :description="projectId ? undefined : t('overview.noProject')"
+          icon="runs"
+        />
+      </template>
+    </NDataTable>
 
     <div v-if="formOpen" class="card form-card">
       <h2 class="card-title">
@@ -374,75 +408,58 @@ void load()
       </h2>
 
       <div class="form-grid">
-        <label>
-          <span>{{ t('plans.name') }}</span>
-          <input v-model="form.name" class="input" type="text" maxlength="128" />
-        </label>
+        <FormField :label="t('plans.name')" required>
+          <NInput v-model:value="form.name" :maxlength="128" />
+        </FormField>
 
-        <label>
-          <span>{{ t('plans.testSet') }}</span>
-          <select v-model="form.testSetId" class="input">
-            <option :value="null">{{ t('plans.noTestSet') }}</option>
-            <option v-for="set in testSets" :key="set.id" :value="set.id">
-              {{ set.name }} ({{ set.setCode }})
-            </option>
-          </select>
-        </label>
-
-        <label>
-          <span>{{ t('plans.environment') }}</span>
-          <input
-            v-model="form.environmentIdText"
-            class="input"
-            type="number"
-            min="1"
-            :placeholder="t('plans.environmentHint')"
+        <FormField :label="t('plans.testSet')">
+          <NSelect
+            v-model:value="form.testSetId"
+            :options="testSetOptions"
+            clearable
+            :placeholder="t('plans.noTestSet')"
           />
-        </label>
+        </FormField>
 
-        <label>
-          <span>{{ t('plans.concurrency') }}</span>
-          <input v-model.number="form.concurrency" class="input" type="number" min="1" max="16" />
-        </label>
+        <FormField :label="t('plans.environment')" :hint="t('plans.environmentHint')">
+          <NInput v-model:value="form.environmentIdText" />
+        </FormField>
 
-        <label>
-          <span>{{ t('plans.timeout') }}</span>
-          <input
-            v-model.number="form.timeoutSeconds"
-            class="input"
-            type="number"
-            min="1"
-            max="86400"
-          />
-        </label>
+        <FormField :label="t('plans.concurrency')">
+          <NInputNumber v-model:value="form.concurrency" :min="1" :max="16" />
+        </FormField>
 
-        <label>
-          <span>{{ t('plans.includeTag') }}</span>
-          <input v-model="form.includeTag" class="input" type="text" maxlength="64" />
-        </label>
+        <FormField :label="t('plans.timeout')">
+          <NInputNumber v-model:value="form.timeoutSeconds" :min="1" :max="86400" />
+        </FormField>
 
-        <label>
-          <span>{{ t('plans.cron') }}</span>
-          <input v-model="form.cron" class="input" type="text" maxlength="64" />
-        </label>
+        <FormField :label="t('plans.includeTag')">
+          <NInput v-model:value="form.includeTag" :maxlength="64" />
+        </FormField>
 
-        <label>
-          <span>{{ t('plans.timezone') }}</span>
-          <input v-model="form.timezone" class="input" type="text" maxlength="64" />
-        </label>
+        <FormField :label="t('plans.cron')">
+          <NInput v-model:value="form.cron" :maxlength="64" />
+        </FormField>
+
+        <FormField :label="t('plans.timezone')">
+          <NInput v-model:value="form.timezone" :maxlength="64" />
+        </FormField>
       </div>
 
-      <label class="full">
-        <span>{{ t('plans.suitePaths') }}</span>
-        <textarea v-model="form.suitePathsText" class="input" rows="3" />
-      </label>
+      <FormField :label="t('plans.suitePaths')">
+        <NInput
+          v-model:value="form.suitePathsText"
+          type="textarea"
+          :autosize="{ minRows: 3, maxRows: 6 }"
+        />
+      </FormField>
 
       <div class="preview-row">
-        <button class="btn btn-ghost" type="button" @click="previewCron">
-          {{ t('plans.preview') }}
-        </button>
-        <span class="muted">{{ t('plans.nextThree') }}:</span>
-        <span v-for="time in previewTimes" :key="time" class="preview-time">{{ formatDateTime(time) }}</span>
+        <NButton quaternary @click="previewCron">{{ t('plans.preview') }}</NButton>
+        <span class="muted">{{ t('plans.nextThree') }}</span>
+        <span v-for="time in previewTimes" :key="time" class="preview-time">
+          {{ formatDateTime(time) }}
+        </span>
         <ErrorLineView v-if="previewError" :error="previewError" />
       </div>
 
@@ -450,138 +467,85 @@ void load()
         <legend>{{ t('plans.dependencies') }}</legend>
         <p class="muted small">{{ t('plans.dependencyHint') }}</p>
         <div v-if="availableDependencies.length" class="dep-list">
-          <label v-for="plan in availableDependencies" :key="plan.id" class="dep-item">
-            <input
-              type="checkbox"
-              :checked="form.dependencyIds.includes(plan.id)"
-              @change="toggleDependency(plan.id)"
-            />
+          <NCheckbox
+            v-for="plan in availableDependencies"
+            :key="plan.id"
+            :checked="form.dependencyIds.includes(plan.id)"
+            @update:checked="toggleDependency(plan.id)"
+          >
             {{ plan.name }}
-          </label>
+          </NCheckbox>
         </div>
         <p v-else class="muted small">{{ t('plans.noDependencies') }}</p>
       </fieldset>
 
       <div class="form-actions">
-        <button class="btn" type="button" :disabled="!canSubmit" @click="submit">
-          {{ saving ? t('common.loading') : t('common.save') }}
-        </button>
-        <button class="btn btn-ghost" type="button" @click="closeForm">
-          {{ t('common.cancel') }}
-        </button>
+        <NButton type="primary" :disabled="!canSubmit" :loading="saving" @click="submit">
+          {{ t('common.save') }}
+        </NButton>
+        <NButton quaternary @click="closeForm">{{ t('common.cancel') }}</NButton>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.plans-cards {
-  display: none;
+.small {
+  font-size: var(--font-size-xs);
 }
 
-.small {
-  font-size: 12px;
+.plan-name {
+  font-weight: 600;
 }
 
 .form-card {
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }
 
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-}
-
-.form-grid label,
-.full {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.full {
-  margin-top: 12px;
+  gap: var(--space-3) var(--space-4);
 }
 
 .preview-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  margin: 12px 0;
+  gap: var(--space-3);
+  margin: var(--space-3) 0;
 }
 
 .preview-time {
-  padding: 2px 8px;
-  border-radius: 6px;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
   background: var(--surface-2);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
 }
 
 .deps {
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
 }
 
 .dep-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 6px;
+  gap: var(--space-2);
   max-height: 180px;
   overflow: auto;
 }
 
-.dep-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .form-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 14px;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 }
 
-.facts {
-  display: grid;
-  grid-template-columns: 90px 1fr;
-  gap: 4px 10px;
-  margin: 10px 0;
-  font-size: 13px;
-}
-
-.facts dt {
-  color: var(--text-muted);
-}
-
-.facts dd {
-  margin: 0;
-}
-
-.card-head {
+/* 操作列多个 text 按钮并排：h() 渲染的节点拿不到 scoped 类，用 :deep 兜 */
+:deep(.row-actions) {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.card-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-@media (max-width: 760px) {
-  .plans-table {
-    display: none;
-  }
-
-  .plans-cards {
-    display: grid;
-    gap: 12px;
-  }
+  gap: var(--space-2);
 }
 </style>

@@ -35,13 +35,16 @@ BLOCK_RE = re.compile(r"([^{}]+)\{([^{}]*)\}", re.S)
 COMMENT_RE = re.compile(r"/\*.*?\*/", re.S)
 
 # 需要交互态的元素：基础选择器 → 允许的焦点兜底写法
+#
+# `.tab`（原生页签按钮）已于 UX-04b 期间退场：资产页是全站唯一使用处，换成 `NTabs` 后
+# 这两条原生规则就没有消费者了。页签的三态改由库主题承担（composables/naiveTheme.ts
+# 派生 Tab 的 hoverColor / barColor / textColor），不归本守门管辖 —— 本守门只扫自建 CSS。
 REQUIRED: list[tuple[str, tuple[str, ...]]] = [
     (".btn", (".btn:focus-visible", "*:focus-visible")),
     (".btn-ghost", (".btn-ghost:focus-visible", "*:focus-visible")),
     (".link-btn", (".link-btn:focus-visible", "*:focus-visible")),
     (".input", (".input:focus-visible", "*:focus-visible")),
     ("select", ("select:focus-visible", "*:focus-visible")),
-    (".tab", (".tab:focus-visible", "*:focus-visible")),
     (".app-nav-item", (".app-nav-item:focus-visible", "*:focus-visible")),
     (".table tbody tr", (".table tbody tr:focus-within", ".table tbody tr:focus-visible")),
 ]

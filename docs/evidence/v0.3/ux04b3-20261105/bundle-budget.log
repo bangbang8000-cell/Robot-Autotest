@@ -1,0 +1,62 @@
+扫描产物目录：/home/evergreen/robot-autotest/frontend/dist
+产物概览：共 46 个文件（JS 28 / CSS 14 / woff2 3 / 其它 1）
+全量 JS ：原始   1944611 B / gzip    590621 B（28 个文件）
+全量 CSS：原始    117859 B / gzip     22299 B（14 个文件）
+
+=== 产物文件清单（原始字节 / gzip 字节 / 文件名）===
+      13680 B / gzip      3974 B  assets/AdminView-C4TY3xke.js
+        244 B / gzip       167 B  assets/AdminView-u-mtf44L.css
+      56059 B / gzip     15164 B  assets/AssetsView-CbxAxIQQ.js
+        391 B / gzip       194 B  assets/AssetsView-DSzc7mu8.css
+     171226 B / gzip     38651 B  assets/AuditView-l6LXAzrb.js
+      12499 B / gzip      3916 B  assets/CasesView-BGCyPA1r.js
+         64 B / gzip        84 B  assets/CasesView-BnzfV2wH.css
+     857926 B / gzip    263757 B  assets/EditorView-CkOmcfCh.js
+      87035 B / gzip     13314 B  assets/EditorView-EUMMeTD4.css
+     325461 B / gzip     91872 B  assets/EmptyState-CLqxHoe8.js
+        398 B / gzip       203 B  assets/EmptyState-DYeETmea.css
+        707 B / gzip       341 B  assets/ErrorLine-D-aJ6yPk.css
+        738 B / gzip       433 B  assets/ErrorLine-bbKtentw.js
+      10906 B / gzip      3780 B  assets/InputNumber-DgIU39YS.js
+       1684 B / gzip       857 B  assets/LoginView-C3phQMy6.js
+        481 B / gzip       333 B  assets/NotFoundView-BvZAxXdb.js
+      12530 B / gzip      3537 B  assets/OverviewView-BwTRKvfL.js
+       1638 B / gzip       506 B  assets/PlansView-C50SJjGi.css
+      11409 B / gzip      3821 B  assets/PlansView-qQ75BAkZ.js
+        821 B / gzip       487 B  assets/ProjectPicker.vue_vue_type_script_setup_true_lang-CZbspBb3.js
+       3928 B / gzip      1107 B  assets/ReportDetailView-C6fb1cun.css
+      21077 B / gzip      6660 B  assets/ReportDetailView-LYKkXnwC.js
+       4623 B / gzip      1806 B  assets/ReportPrintView-Bk90qS_h.js
+       2051 B / gzip       661 B  assets/ReportPrintView-CHqipGbz.css
+       5445 B / gzip      2119 B  assets/ReportsView-Dtowq_3P.js
+        140 B / gzip       130 B  assets/ReportsView-gNfVmg-y.css
+        741 B / gzip       359 B  assets/RunsView-BIuZp6XS.css
+       6594 B / gzip      2859 B  assets/RunsView-D7fPNW_U.js
+        729 B / gzip       295 B  assets/StatusTag-BkZKYVEF.css
+        597 B / gzip       413 B  assets/StatusTag-Dptb6d1g.js
+       1211 B / gzip       425 B  assets/cases-Eu9escW1.js
+        584 B / gzip       346 B  assets/errors-BWSTEWZJ.js
+       1117 B / gzip       597 B  assets/format-DGAK20rr.js
+     318881 B / gzip    105054 B  assets/index-Diz3r77G.js
+      19279 B / gzip      4670 B  assets/index-PSwDq0g3.css
+      21168 B / gzip     21196 B  assets/jetbrains-mono-latin-V6pRDFza.woff2
+      19616 B / gzip      4208 B  assets/lucide-YON79-zA.js
+      13304 B / gzip     13327 B  assets/noto-sans-sc-latin-C8q2FS1w.woff2
+     133252 B / gzip    133315 B  assets/noto-sans-sc-ui-C9PlC8Ru.woff2
+       1273 B / gzip       516 B  assets/reports-BUsSCyQt.js
+        863 B / gzip       430 B  assets/statusLabels-piv7aJlc.js
+        562 B / gzip       391 B  assets/useBatchAction-BTLRJa3p.js
+       2103 B / gzip       978 B  assets/useSelection-BeqJiAe8.js
+        514 B / gzip       268 B  assets/useSelection-Cge7ZJsy.css
+      84645 B / gzip     33237 B  assets/vue-TpZrEKr_.js
+
+=== 各项判定 ===
+[INFO] 图标 chunk 1 个，gzip 合计 4208 B ≤ 15360 B（15 KiB），达标
+[INFO] 组件库 vendor chunk 1 个，gzip 合计 105054 B ≤ 204800 B（200 KiB），达标
+[INFO] 懒加载共享分包 12 个，gzip 合计 100668 B ≤ 122880 B（120 KiB），达标（最大 assets/EmptyState-CLqxHoe8.js 91872 B）
+[INFO] 字体 3 个 woff2：原始合计 167724 B、gzip 合计 167838 B ≤ 819200 B（800 KiB），达标
+[INFO] CSS 中存在 font-display: swap，首帧不被字体阻塞，达标
+[INFO] styleguide 标记在源码中存在（StyleguideView.vue），产物侧 grep 因此具备判定力
+[INFO] 生产产物中未找到 __STYLEGUIDE_DEV_ONLY__ 标记，且源码侧标记确认存在（DEV 条件挂载 + tree-shaking 生效），本项已被反向验证
+
+[PASS] 构建产物体积守门通过：图标 ≤15 KiB / 组件库 ≤200 KiB / 字体 ≤800 KiB / 无 styleguide 标记泄漏

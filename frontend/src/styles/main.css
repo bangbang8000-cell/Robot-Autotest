@@ -264,27 +264,11 @@ textarea.input {
   resize: vertical;
 }
 
-.tabs {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.tab {
-  background: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 6px 14px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.tab.active {
-  color: var(--text);
-  background: var(--panel);
-  border-color: var(--accent);
-}
+/*
+ * `.tabs` / `.tab`（原生页签按钮）已于 UX-04b 资产页迁移时删除：
+ * 全站唯一使用处换成 `NTabs`，页签的默认/悬停/选中态改由库主题派生
+ * （见 composables/naiveTheme.ts）。留着会是无消费者样式，早晚腐成误导。
+ */
 
 .toolbar {
   display: flex;
@@ -828,17 +812,7 @@ textarea:focus-visible {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-ring) 24%, transparent);
 }
 
-/* ---- 页签 / 侧栏导航 ---- */
-
-.tab {
-  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
-}
-
-.tab:hover {
-  color: var(--text);
-  background: var(--surface-hover);
-  border-color: var(--border-strong);
-}
+/* ---- 侧栏导航 ---- */
 
 .app-nav-item {
   transition: background-color 120ms ease, color 120ms ease;

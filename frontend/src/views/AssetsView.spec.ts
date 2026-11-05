@@ -1,0 +1,304 @@
+/**
+ * `AssetsView` 视图级回归（UX-04b 逐页迁移，第三批）。
+ *
+ * 这一页比前两页多两件事，都是「构建与类型检查发现不了」的接线：
+ * ① 三个页签共用一个 path（`?tab=`），页签一换就要整表换数据源 + 清空选择；
+ * ② 端口面板从行内展开改成表格下方的卡片，`端口` 按钮 → `portsDeviceId` → 卡片标题
+ *    与端口列表，中间任何一环断了页面都只是「点了没反应」。
+ *
+ * 只验接线，不重复测 `useSelection` / `useBatchAction` 的内部逻辑。
+ */
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createApp, nextTick, type App } from 'vue'
+import { createPinia, setActivePinia } from 'pinia'
+import { i18n } from '@/locales'
+import { useAuthStore } from '@/stores/auth'
+import AssetsView from '@/views/AssetsView.vue'
+
+// 工厂内写死数据（vi.mock 提升到 import 之前，引用外部 const 会 TDZ）
+vi.mock('@/api/asset', () => ({
+  deviceApi: {
+    page: vi.fn(async () => ({
+      items: [
+        {
+          id: 1,
+          projectId: 1,
+          name: 'DUT-A',
+          deviceType: 'server',
+          model: null,
+          vendor: null,
+          serialNo: null,
+          managementIp: '10.0.0.1',
+          location: null,
+          rackNo: null,
+          domainTag: 'roce',
+          enabled: true,
+          ownerId: null,
+          lastCheckedAt: null,
+        },
+        {
+          id: 2,
+          projectId: 1,
+          name: 'DUT-B',
+          deviceType: 'switch',
+          model: null,
+          vendor: null,
+          serialNo: null,
+          managementIp: null,
+          location: null,
+          rackNo: null,
+          domainTag: 'roce',
+          enabled: true,
+          ownerId: null,
+          lastCheckedAt: null,
+        },
+      ],
+      total: 2,
+      page: 1,
+      size: 10,
+    })),
+    domains: vi.fn(async () => ['roce']),
+    ports: vi.fn(async () => [
+      { id: 11, deviceId: 1, portName: 'eth0', portType: 'sfp28', speedGbps: 100 },
+    ]),
+    create: vi.fn(),
+    remove: vi.fn(),
+    addPort: vi.fn(),
+  },
+  linkApi: {
+    page: vi.fn(async () => ({
+      items: [
+        {
+          id: 21,
+          projectId: 1,
+          name: 'LINK-AB',
+          linkType: 'ethernet',
+          protocol: 'roce',
+          speedGbps: 100,
+          mtu: 9000,
+          aDeviceId: 1,
+          aDeviceName: 'DUT-A',
+          aPortId: 11,
+          aPortName: 'eth0',
+          bDeviceId: 2,
+          bDeviceName: 'DUT-B',
+          bPortId: null,
+          bPortName: null,
+          description: null,
+          enabled: true,
+        },
+      ],
+      total: 1,
+      page: 1,
+      size: 10,
+    })),
+    create: vi.fn(),
+    remove: vi.fn(),
+  },
+  credentialApi: {
+    list: vi.fn(async () => [
+      {
+        id: 31,
+        projectId: 1,
+        name: 'dut-root',
+        credType: 'ssh',
+        username: 'root',
+        configured: true,
+        keyVersion: 1,
+        lastRotatedAt: null,
+      },
+    ]),
+    create: vi.fn(),
+    remove: vi.fn(),
+  },
+}))
+
+vi.mock('@/api/batch', () => ({
+  batchApi: { run: vi.fn(async () => ({ items: [] })) },
+}))
+
+// 项目选择器依赖 auth.projects，与本测试无关
+vi.mock('@/components/ProjectPicker.vue', () => ({
+  default: { name: 'ProjectPicker', template: '<div />' },
+}))
+
+// 本页用 useRoute 读 `?tab=`、useRouter 回写；只做最小桩，不装整个 vue-router
+const routerMock = vi.hoisted(() => ({
+  replace: vi.fn(async () => {}),
+  route: { query: { tab: 'devices' } as Record<string, string> },
+}))
+
+vi.mock('vue-router', () => ({
+  useRoute: () => routerMock.route,
+  useRouter: () => ({ replace: routerMock.replace }),
+}))
+
+let app: App | null = null
+let host: HTMLElement | null = null
+let pinia: ReturnType<typeof createPinia> | null = null
+
+/** 挂载并等首屏请求落定（load() 是 async，且加载分支里有 Promise.all）。 */
+async function mountView(): Promise<HTMLElement> {
+  const root = document.createElement('div')
+  document.body.appendChild(root)
+  host = root
+  app = createApp(AssetsView)
+  // 必须复用 beforeEach 里那个 pinia：重新 createPinia() 会让 projectId 回 0，load() 短路
+  app.use(pinia!)
+  app.use(i18n)
+  app.mount(root)
+  await flush()
+  return root
+}
+
+/** 让 watch → 异步 load → nextTick 的整条链走完。 */
+async function flush(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  await nextTick()
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  await nextTick()
+}
+
+function buttonsByText(root: HTMLElement, text: string): HTMLButtonElement[] {
+  return [...root.querySelectorAll<HTMLButtonElement>('button')].filter(
+    (btn) => btn.textContent?.trim() === text,
+  )
+}
+
+function clickByText(root: HTMLElement, text: string): void {
+  const [first] = buttonsByText(root, text)
+  if (!first) throw new Error(`button not found: ${text}`)
+  first.click()
+}
+
+/** 页签是 `.n-tabs-tab`（不是 button），按标签文字点。 */
+function clickTab(root: HTMLElement, tabKey: 'devices' | 'links' | 'credentials'): void {
+  const label = i18n.global.t(`assets.tabs.${tabKey}`)
+  const tab = [...root.querySelectorAll<HTMLElement>('.n-tabs-tab')].find(
+    (item) => item.textContent?.trim() === label,
+  )
+  if (!tab) throw new Error(`tab not found: ${label}`)
+  tab.click()
+}
+
+beforeEach(() => {
+  routerMock.route.query = { tab: 'devices' }
+  routerMock.replace.mockClear()
+  pinia = createPinia()
+  setActivePinia(pinia)
+  useAuthStore().projectId = 1
+})
+
+afterEach(() => {
+  app?.unmount()
+  host?.remove()
+  app = null
+  host = null
+  pinia = null
+})
+
+describe('AssetsView 设备页', () => {
+  it('渲染设备行，空值列显示统一占位而不是空白', async () => {
+    const root = await mountView()
+    expect(root.textContent).toContain('DUT-A')
+    expect(root.textContent).toContain('DUT-B')
+    // model 为 null：必须有占位符，否则整列看起来像渲染失败
+    expect(root.textContent).toContain('—')
+  })
+
+  it('勾一行出现批量条，计数为 1', async () => {
+    const root = await mountView()
+    const boxes = [...root.querySelectorAll<HTMLElement>('.n-checkbox')]
+    // 1 个表头 + 2 行
+    expect(boxes).toHaveLength(3)
+
+    boxes[1].click()
+    await nextTick()
+    expect(root.textContent).toContain(i18n.global.t('cases.batch.selected', { count: 1 }))
+  })
+
+  it('端口按钮打开下方卡片，含设备名与端口行', async () => {
+    const root = await mountView()
+    // 未点击前没有端口卡片
+    expect(root.querySelector('.port-card')).toBeNull()
+
+    clickByText(root, i18n.global.t('assets.device.ports'))
+    await flush()
+
+    const card = root.querySelector('.port-card')
+    expect(card).not.toBeNull()
+    expect(card?.textContent).toContain('DUT-A')
+    expect(card?.textContent).toContain('eth0')
+    expect(card?.textContent).toContain('100')
+  })
+
+  it('再点一次收起端口卡片', async () => {
+    const root = await mountView()
+    clickByText(root, i18n.global.t('assets.device.ports'))
+    await flush()
+    expect(root.querySelector('.port-card')).not.toBeNull()
+
+    clickByText(root, i18n.global.t('assets.device.hidePorts'))
+    await flush()
+    expect(root.querySelector('.port-card')).toBeNull()
+  })
+})
+
+describe('AssetsView 页签切换', () => {
+  it('切到链路页签后换数据源，且设备表不再渲染', async () => {
+    const root = await mountView()
+    expect(root.textContent).toContain('DUT-A')
+
+    clickTab(root, 'links')
+    await flush()
+
+    expect(root.textContent).toContain('LINK-AB')    // A 端拼装成「设备 / 端口」
+    expect(root.textContent).toContain('DUT-A / eth0')
+    // B 端只有设备名，不能拼出悬空的「 / 」
+    expect(root.textContent).toContain('DUT-B')
+    expect(root.textContent).not.toContain('DUT-B /')
+  })
+
+  it('切页签会清空上一页的勾选', async () => {
+    const root = await mountView()
+    const boxes = [...root.querySelectorAll<HTMLElement>('.n-checkbox')]
+    boxes[1].click()
+    await nextTick()
+    expect(root.textContent).toContain(i18n.global.t('cases.batch.selected', { count: 1 }))
+
+    clickTab(root, 'credentials')
+    await flush()
+
+    // 凭据 id(31) 若没清掉，会带着旧 id 去发表单外的批量删除请求
+    expect(root.textContent).not.toContain(i18n.global.t('cases.batch.selected', { count: 1 }))
+  })
+})
+
+describe('AssetsView 凭据页', () => {
+  it('「已配置」走 StatusTag，图标与文字双编码', async () => {
+    const root = await mountView()
+    clickTab(root, 'credentials')
+    await flush()
+
+    const tags = [...root.querySelectorAll<HTMLElement>('.status-tag')]
+    expect(tags).toHaveLength(1)
+    expect(tags[0].textContent).toContain(i18n.global.t('common.yes'))
+    expect(tags[0].querySelector('svg')).not.toBeNull()
+  })
+
+  it('搜索在前端过滤（后端 /credentials 不支持关键词）', async () => {
+    const root = await mountView()
+    clickTab(root, 'credentials')
+    await flush()
+    expect(root.textContent).toContain('dut-root')
+
+    const input = root.querySelector<HTMLInputElement>('input.n-input__input-el')
+    if (!input) throw new Error('search input not found')
+    input.value = 'zzz'
+    input.dispatchEvent(new Event('input'))
+    await flush()
+
+    // 搜不到就必须真的空掉：留着旧行等于「输入了但没反应」
+    expect(root.textContent).not.toContain('dut-root')
+  })
+})

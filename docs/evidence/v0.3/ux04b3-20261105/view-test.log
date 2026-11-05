@@ -1,0 +1,31 @@
+
+ RUN  v3.2.7 /home/evergreen/robot-autotest/frontend
+
+(node:319202) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:319214) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:319201) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:319208) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:319215) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:319221) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/views/OverviewView.spec.ts (4 tests) 590ms
+ ✓ src/views/RunsView.spec.ts (4 tests) 632ms
+ ✓ src/views/CasesView.spec.ts (4 tests) 881ms
+   ✓ CasesView 勾选接线 > 渲染出接口返回的行  300ms
+ ✓ src/views/PlansView.spec.ts (7 tests) 1006ms
+ ✓ src/views/AssetsView.spec.ts (8 tests) 1683ms
+   ✓ AssetsView 设备页 > 渲染设备行，空值列显示统一占位而不是空白  405ms
+ ✓ src/views/AdminView.spec.ts (8 tests) 2320ms
+   ✓ AdminView 用户列表 > 渲染用户行，空邮箱显示统一占位  609ms
+   ✓ AdminView 用户列表 > 启用状态走 StatusTag，图标 + 文字双编码  356ms
+
+ Test Files  6 passed (6)
+      Tests  35 passed (35)
+   Start at  09:16:46
+   Duration  4.66s (transform 1.80s, setup 83ms, collect 10.17s, tests 7.11s, environment 1.67s, prepare 796ms)
+

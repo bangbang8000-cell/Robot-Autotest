@@ -1,7 +1,19 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, h, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import {
+  NButton,
+  NCheckbox,
+  NDataTable,
+  NInput,
+  NInputNumber,
+  NPagination,
+  NSelect,
+  NTabPane,
+  NTabs,
+  type DataTableColumns,
+} from 'naive-ui'
 import {
   credentialApi,
   deviceApi,
@@ -14,12 +26,16 @@ import {
 import { useAuthStore } from '@/stores/auth'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
+import EmptyState from '@/components/EmptyState.vue'
+import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
+import { EMPTY } from '@/utils/format'
 import { batchApi, type BatchResource } from '@/api/batch'
 import SelectionBar from '@/components/SelectionBar.vue'
 import { useBatchAction } from '@/composables/useBatchAction'
 import { useSelection } from '@/composables/useSelection'
 import { confirmAction } from '@/composables/useConfirm'
+import type { StatusTone } from '@/utils/statusLabels'
 
 type Tab = 'devices' | 'links' | 'credentials'
 const TABS: Tab[] = ['devices', 'links', 'credentials']
@@ -58,7 +74,15 @@ const credentials = ref<Credential[]>([])
 const domains = ref<string[]>([])
 const domainFilter = ref('')
 
-const expandedDeviceId = ref<number | null>(null)
+/**
+ * 端口面板独立在表格下方（同 RunsView 的日志面板），不做行内展开。
+ *
+ * 行内展开要往 NDataTable 里塞一张子表和一张表单，单元格里既没有宽度也没有焦点管理余量；
+ * 而「点一行 → 下方出详情」是本项目已统一的交互语言（执行页日志、报告页明细都这样），
+ * 同一套心智比省一次滚动更值。
+ */
+const portsDeviceId = ref<number | null>(null)
+const portsDevice = computed(() => devices.value.find((d) => d.id === portsDeviceId.value) ?? null)
 const ports = ref<DevicePort[]>([])
 const showForm = ref(false)
 
@@ -100,11 +124,24 @@ const credentialForm = reactive({
 const projectId = computed(() => auth.projectId ?? 0)
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / size)))
 
+/**
+ * 凭据在后端没有分页也没有关键词参数（`GET /credentials` 只按项目全量返回），
+ * 所以关键词必须在前端过滤 —— 否则在凭据页签里输入搜索词是个**静默无效**的控件：
+ * 有输入框、有回车、列表纹丝不动，用户会以为系统坏了。
+ */
+const credentialRows = computed(() => {
+  const kw = keyword.value.trim().toLowerCase()
+  if (!kw) return credentials.value
+  return credentials.value.filter((item) =>
+    [item.name, item.credType, item.username].some((value) =>
+      (value ?? '').toLowerCase().includes(kw)))
+})
+
 // ---- UX-02b 通用批量：三个 tab 共用一套选择模型与执行器（复用而非各写一套）----
 const pageAssetIds = computed<number[]>(() => {
   if (tab.value === 'devices') return devices.value.map((d) => d.id)
   if (tab.value === 'links') return links.value.map((l) => l.id)
-  return credentials.value.map((c) => c.id)
+  return credentialRows.value.map((c) => c.id)
 })
 const assetSelection = useSelection(pageAssetIds)
 const {
@@ -137,6 +174,242 @@ async function batchDeleteAssets(): Promise<void> {
   await assetBatch.execute([...assetSelection.selectedIds.value], assetSelection)
 }
 
+const domainOptions = computed(() => [
+  { label: t('common.allDomains'), value: '' },
+  ...domains.value.map((item) => ({ label: item, value: item })),
+])
+
+const deviceSelectOptions = computed(() =>
+  deviceOptions.value.map((item) => ({ label: item.name, value: item.id })))
+
+const aPortOptions = computed(() =>
+  aPorts.value.map((item) => ({ label: item.portName, value: item.id })))
+const bPortOptions = computed(() =>
+  bPorts.value.map((item) => ({ label: item.portName, value: item.id })))
+
+/** 「已配置」是布尔事实，不是流程状态：配好了是 ok，没配只是 neutral，不是 warn。 */
+function configuredTone(value: boolean): StatusTone {
+  return value ? 'ok' : 'neutral'
+}
+
+/**
+ * 勾选列一律自渲染 `NCheckbox`，不用 NDataTable 内置的 `type: 'selection'`：
+ * 内置列只认 `checked-row-keys`，`data` 一变就把不在当前页的键丢掉，与
+ * `useSelection` 的**跨页保留**契约（FR-v0.2-35）静默冲突 —— 用户翻页后前面勾的全没，
+ * 而且不报错。表头半选态照旧从 `pageIndeterminate` 派生。
+ */
+function selectionColumn<T extends { id: number }>(): DataTableColumns<T>[number] {
+  return {
+    key: 'selection',
+    width: 36,
+    // 勾选框在单元格里默认左贴边，与表头框对不齐；居中后上下两排才在一条竖线上
+    align: 'center',
+    title: () =>
+      h(NCheckbox, {
+        checked: pageAllSelected.value,
+        indeterminate: pageIndeterminate.value,
+        'aria-label': t('cases.batch.barLabel'),
+        onUpdateChecked: () => togglePage(),
+      }),
+    render: (row) =>
+      h(NCheckbox, {
+        checked: isSelected(row.id),
+        'aria-label': `${t('cases.batch.barLabel')}: ${row.id}`,
+        onUpdateChecked: () => toggle(row.id),
+      }),
+  }
+}
+
+const deviceColumns = computed<DataTableColumns<Device>>(() => [
+  selectionColumn<Device>(),
+  {
+    title: t('assets.device.name'),
+    key: 'name',
+    minWidth: 160,
+    ellipsis: { tooltip: true },
+  },
+  {
+    title: t('assets.device.type'),
+    key: 'deviceType',
+    width: 110,
+    render: (row) => row.deviceType || EMPTY,
+  },
+  {
+    title: t('assets.device.model'),
+    key: 'model',
+    width: 130,
+    ellipsis: { tooltip: true },
+    render: (row) => row.model || EMPTY,
+  },
+  {
+    title: t('assets.device.serialNo'),
+    key: 'serialNo',
+    width: 140,
+    ellipsis: { tooltip: true },
+    render: (row) => row.serialNo || EMPTY,
+  },
+  {
+    title: t('assets.device.managementIp'),
+    key: 'managementIp',
+    width: 150,
+    render: (row) => row.managementIp || EMPTY,
+  },
+  {
+    title: t('assets.device.domain'),
+    key: 'domainTag',
+    width: 110,
+    render: (row) => row.domainTag || EMPTY,
+  },
+  {
+    title: t('common.actions'),
+    key: 'actions',
+    width: 160,
+    render: (row) =>
+      h('div', { class: 'row-actions' }, [
+        h(
+          NButton,
+          {
+            text: true,
+            type: 'primary',
+            size: 'small',
+            onClick: () => void togglePorts(row),
+          },
+          {
+            default: () =>
+              portsDeviceId.value === row.id
+                ? t('assets.device.hidePorts')
+                : t('assets.device.ports'),
+          },
+        ),
+        h(
+          NButton,
+          {
+            text: true,
+            type: 'error',
+            size: 'small',
+            onClick: () => void removeDevice(row),
+          },
+          { default: () => t('common.delete') },
+        ),
+      ]),
+  },
+])
+
+const linkColumns = computed<DataTableColumns<Link>>(() => [
+  selectionColumn<Link>(),
+  {
+    title: t('assets.link.name'),
+    key: 'name',
+    minWidth: 160,
+    ellipsis: { tooltip: true },
+  },
+  {
+    title: t('assets.link.endpointA'),
+    key: 'aEndpoint',
+    minWidth: 180,
+    ellipsis: { tooltip: true },
+    render: (row) => [row.aDeviceName, row.aPortName].filter(Boolean).join(' / ') || EMPTY,
+  },
+  {
+    title: t('assets.link.endpointB'),
+    key: 'bEndpoint',
+    minWidth: 180,
+    ellipsis: { tooltip: true },
+    render: (row) => [row.bDeviceName, row.bPortName].filter(Boolean).join(' / ') || EMPTY,
+  },
+  {
+    title: t('assets.link.protocol'),
+    key: 'protocol',
+    width: 110,
+    render: (row) => row.protocol || EMPTY,
+  },
+  {
+    title: t('assets.link.speed'),
+    key: 'speedGbps',
+    width: 120,
+    render: (row) => row.speedGbps ?? EMPTY,
+  },
+  {
+    title: t('common.actions'),
+    key: 'actions',
+    width: 110,
+    render: (row) =>
+      h(
+        NButton,
+        {
+          text: true,
+          type: 'error',
+          size: 'small',
+          onClick: () => void removeLink(row),
+        },
+        { default: () => t('common.delete') },
+      ),
+  },
+])
+
+const credentialColumns = computed<DataTableColumns<Credential>>(() => [
+  selectionColumn<Credential>(),
+  {
+    title: t('assets.credential.name'),
+    key: 'name',
+    minWidth: 160,
+    ellipsis: { tooltip: true },
+  },
+  {
+    title: t('assets.credential.type'),
+    key: 'credType',
+    width: 110,
+    render: (row) => row.credType || EMPTY,
+  },
+  {
+    title: t('assets.credential.username'),
+    key: 'username',
+    width: 150,
+    render: (row) => row.username || EMPTY,
+  },
+  {
+    title: t('assets.credential.configured'),
+    key: 'configured',
+    width: 120,
+    render: (row) =>
+      h(StatusTag, {
+        label: row.configured ? t('common.yes') : t('common.no'),
+        tone: configuredTone(row.configured),
+      }),
+  },
+  {
+    title: t('common.actions'),
+    key: 'actions',
+    width: 110,
+    render: (row) =>
+      h(
+        NButton,
+        {
+          text: true,
+          type: 'error',
+          size: 'small',
+          onClick: () => void removeCredential(row),
+        },
+        { default: () => t('common.delete') },
+      ),
+  },
+])
+
+const portColumns = computed<DataTableColumns<DevicePort>>(() => [
+  { title: t('assets.port.name'), key: 'portName', minWidth: 160 },
+  {
+    title: t('assets.port.type'),
+    key: 'portType',
+    width: 130,
+    render: (row) => row.portType || EMPTY,
+  },
+  {
+    title: t('assets.port.speed'),
+    key: 'speedGbps',
+    width: 130,
+    render: (row) => row.speedGbps ?? EMPTY,
+  },
+])
 
 async function load(): Promise<void> {
   error.value = null
@@ -188,7 +461,7 @@ watch([projectId, tab], () => {
   page.value = 1
   clearSelection()
   assetBatch.clear()
-  expandedDeviceId.value = null
+  portsDeviceId.value = null
   ports.value = []
   showForm.value = false
   void load()
@@ -196,6 +469,8 @@ watch([projectId, tab], () => {
 
 watch([keyword, domainFilter], () => {
   page.value = 1
+  // 凭据是全量拉回后本地过滤，关键词变化不必再打后端
+  if (tab.value === 'credentials') return
   void load()
 })
 
@@ -222,6 +497,7 @@ if (route.query.tab !== tab.value) {
 function turnPage(next: number): void {
   if (next < 1 || next > pageCount.value) return
   page.value = next
+  // 选择跨页保留（FR-v0.2-35），翻页不清空
   void load()
 }
 
@@ -251,6 +527,11 @@ async function removeDevice(device: Device): Promise<void> {
   if (!(await confirmAction(t('common.confirmDelete'), { tone: 'danger' }))) return
   try {
     await deviceApi.remove(projectId.value, device.id)
+    // 删的正是当前展开的那台设备时，端口面板留着会指向已不存在的对象
+    if (portsDeviceId.value === device.id) {
+      portsDeviceId.value = null
+      ports.value = []
+    }
     await load()
   } catch (e) {
     error.value = localizeError(e)
@@ -258,17 +539,25 @@ async function removeDevice(device: Device): Promise<void> {
 }
 
 async function togglePorts(device: Device): Promise<void> {
-  if (expandedDeviceId.value === device.id) {
-    expandedDeviceId.value = null
+  error.value = null
+  if (portsDeviceId.value === device.id) {
+    portsDeviceId.value = null
+    ports.value = []
     return
   }
-  expandedDeviceId.value = device.id
-  ports.value = await deviceApi.ports(projectId.value, device.id)
+  portsDeviceId.value = device.id
+  ports.value = []
+  try {
+    ports.value = await deviceApi.ports(projectId.value, device.id)
+  } catch (e) {
+    error.value = localizeError(e)
+  }
 }
 
 async function addPort(): Promise<void> {
-  const deviceId = expandedDeviceId.value
+  const deviceId = portsDeviceId.value
   if (!deviceId) return
+  error.value = null
   if (!portForm.portName.trim()) {
     error.value = { summary: t('assets.requiredPortName'), detail: null }
     return
@@ -286,15 +575,33 @@ async function addPort(): Promise<void> {
   }
 }
 
-async function loadPortsFor(side: 'a' | 'b', deviceId: number | null): Promise<void> {
+/**
+ * 换设备时必须把已选端口清掉。
+ *
+ * 旧实现在这里只重载端口列表、不动 `aPortId`：从设备 A 换成设备 B 后，`aPortId` 仍指向
+ * A 的端口，提交出去就是一条「A 端设备是 B、A 端端口是 A 的端口」的错链，而界面上
+ * 下拉框还显示着上一次的端口名，看不出已经错位。
+ */
+async function changeLinkDevice(side: 'a' | 'b', deviceId: number | null): Promise<void> {
+  if (side === 'a') {
+    linkForm.aDeviceId = deviceId
+    linkForm.aPortId = null
+  } else {
+    linkForm.bDeviceId = deviceId
+    linkForm.bPortId = null
+  }
   if (!deviceId) {
     if (side === 'a') aPorts.value = []
     else bPorts.value = []
     return
   }
-  const list = await deviceApi.ports(projectId.value, deviceId)
-  if (side === 'a') aPorts.value = list
-  else bPorts.value = list
+  try {
+    const list = await deviceApi.ports(projectId.value, deviceId)
+    if (side === 'a') aPorts.value = list
+    else bPorts.value = list
+  } catch (e) {
+    error.value = localizeError(e)
+  }
 }
 
 async function createLink(): Promise<void> {
@@ -368,39 +675,43 @@ async function removeCredential(credential: Credential): Promise<void> {
       <ProjectPicker />
     </div>
 
-    <div class="tabs">
-      <button
-        v-for="item in (['devices', 'links', 'credentials'] as Tab[])"
-        :key="item"
-        class="tab"
-        :class="{ active: tab === item }"
-        type="button"
-        @click="tab = item"
-      >
-        {{ t(`assets.tabs.${item}`) }}
-      </button>
-    </div>
+    <!--
+      页签只用 NTabs 的表头，内容仍在下面按 `tab` 分支：三张表各有自己的工具栏、
+      面板与分页，塞进 NTabPane 会把同一段工具栏复制三份。空 pane 不占高度。
+
+      标签必须走 `#tab` 插槽：本版 naive-ui 从 pane 的 `children.tab` 取标题，
+      只给 `:tab` prop 会渲染出三个空白标签（页签在、字没了，且没有任何报错）。
+    -->
+    <NTabs v-model:value="tab" type="line" class="asset-tabs">
+      <NTabPane v-for="item in TABS" :key="item" :name="item">
+        <template #tab>{{ t(`assets.tabs.${item}`) }}</template>
+      </NTabPane>
+    </NTabs>
 
     <div class="toolbar">
-      <input
-        v-model="keyword"
-        class="input"
+      <NInput
+        v-model:value="keyword"
+        clearable
+        style="width: 200px"
         :placeholder="t('common.searchPlaceholder')"
+        :aria-label="t('common.searchPlaceholder')"
         @keyup.enter="load"
       />
-      <select v-if="tab === 'devices'" v-model="domainFilter" class="input">
-        <option value="">{{ t('common.allDomains') }}</option>
-        <option v-for="d in domains" :key="d" :value="d">{{ d }}</option>
-      </select>
-      <button class="btn" type="button" @click="showForm = !showForm">
+      <NSelect
+        v-if="tab === 'devices'"
+        v-model:value="domainFilter"
+        :options="domainOptions"
+        style="width: 180px"
+        :aria-label="t('assets.device.domain')"
+      />
+      <NButton :type="showForm ? 'default' : 'primary'" @click="showForm = !showForm">
         {{ showForm ? t('common.cancel') : t('common.create') }}
-      </button>
-      <button class="btn btn-ghost" type="button" @click="load">{{ t('common.refresh') }}</button>
+      </NButton>
+      <NButton quaternary :loading="loading" @click="load">{{ t('common.refresh') }}</NButton>
     </div>
 
     <ErrorLineView v-if="error" :error="error" />
     <p v-if="message" class="text-ok">{{ message }}</p>
-    <p v-if="loading" class="muted">{{ t('common.loading') }}</p>
 
     <SelectionBar
       v-if="selectedCount > 0"
@@ -410,67 +721,78 @@ async function removeCredential(credential: Credential): Promise<void> {
       :loading="assetBatch.loading.value"
       @clear="clearSelection(); assetBatch.clear()"
     >
-      <button
-        class="btn"
-        type="button"
+      <NButton
+        quaternary
+        type="error"
         :disabled="assetBatch.loading.value"
         @click="batchDeleteAssets"
       >
         {{ t('batch.deleteAssets') }}
-      </button>
+      </NButton>
     </SelectionBar>
 
     <form v-if="showForm && tab === 'devices'" class="inline-form" @submit.prevent="createDevice">
-      <input v-model="deviceForm.name" class="input" :placeholder="t('assets.device.name')" />
-      <input v-model="deviceForm.deviceType" class="input" :placeholder="t('assets.device.type')" />
-      <input v-model="deviceForm.model" class="input" :placeholder="t('assets.device.model')" />
-      <input v-model="deviceForm.vendor" class="input" :placeholder="t('assets.device.vendor')" />
-      <input v-model="deviceForm.serialNo" class="input" :placeholder="t('assets.device.serialNo')" />
-      <input
-        v-model="deviceForm.managementIp"
-        class="input"
+      <NInput v-model:value="deviceForm.name" style="width: 180px" :placeholder="t('assets.device.name')" />
+      <NInput v-model:value="deviceForm.deviceType" style="width: 120px" :placeholder="t('assets.device.type')" />
+      <NInput v-model:value="deviceForm.model" style="width: 140px" :placeholder="t('assets.device.model')" />
+      <NInput v-model:value="deviceForm.vendor" style="width: 140px" :placeholder="t('assets.device.vendor')" />
+      <NInput v-model:value="deviceForm.serialNo" style="width: 140px" :placeholder="t('assets.device.serialNo')" />
+      <NInput
+        v-model:value="deviceForm.managementIp"
+        style="width: 180px"
         :placeholder="t('assets.device.managementIp')"
       />
-      <input v-model="deviceForm.location" class="input" :placeholder="t('assets.device.location')" />
-      <input v-model="deviceForm.domainTag" class="input" :placeholder="t('assets.device.domain')" />
-      <button class="btn" type="submit">{{ t('common.save') }}</button>
+      <NInput v-model:value="deviceForm.location" style="width: 140px" :placeholder="t('assets.device.location')" />
+      <NInput v-model:value="deviceForm.domainTag" style="width: 140px" :placeholder="t('assets.device.domain')" />
+      <NButton type="primary" attr-type="submit">{{ t('common.save') }}</NButton>
     </form>
 
     <form v-if="showForm && tab === 'links'" class="inline-form" @submit.prevent="createLink">
-      <input v-model="linkForm.name" class="input" :placeholder="t('assets.link.name')" />
-      <input v-model="linkForm.protocol" class="input" :placeholder="t('assets.link.protocol')" />
-      <input
-        v-model.number="linkForm.speedGbps"
-        class="input"
-        type="number"
+      <NInput v-model:value="linkForm.name" style="width: 180px" :placeholder="t('assets.link.name')" />
+      <NInput v-model:value="linkForm.protocol" style="width: 120px" :placeholder="t('assets.link.protocol')" />
+      <NInputNumber
+        v-model:value="linkForm.speedGbps"
+        style="width: 140px"
+        :min="1"
+        :show-button="false"
         :placeholder="t('assets.link.speed')"
       />
-      <select
-        v-model.number="linkForm.aDeviceId"
-        class="input"
-        @change="loadPortsFor('a', linkForm.aDeviceId)"
-      >
-        <option :value="null">{{ t('assets.link.aDevice') }}</option>
-        <option v-for="d in deviceOptions" :key="d.id" :value="d.id">{{ d.name }}</option>
-      </select>
-      <select v-model.number="linkForm.aPortId" class="input">
-        <option :value="null">{{ t('assets.link.aPort') }}</option>
-        <option v-for="p in aPorts" :key="p.id" :value="p.id">{{ p.portName }}</option>
-      </select>
-      <select
-        v-model.number="linkForm.bDeviceId"
-        class="input"
-        @change="loadPortsFor('b', linkForm.bDeviceId)"
-      >
-        <option :value="null">{{ t('assets.link.bDevice') }}</option>
-        <option v-for="d in deviceOptions" :key="d.id" :value="d.id">{{ d.name }}</option>
-      </select>
-      <select v-model.number="linkForm.bPortId" class="input">
-        <option :value="null">{{ t('assets.link.bPort') }}</option>
-        <option v-for="p in bPorts" :key="p.id" :value="p.id">{{ p.portName }}</option>
-      </select>
-      <input v-model="linkForm.description" class="input" :placeholder="t('assets.link.description')" />
-      <button class="btn" type="submit">{{ t('common.save') }}</button>
+      <NSelect
+        :value="linkForm.aDeviceId"
+        :options="deviceSelectOptions"
+        clearable
+        style="width: 180px"
+        :placeholder="t('assets.link.aDevice')"
+        :aria-label="t('assets.link.aDevice')"
+        @update:value="(value: number | null) => void changeLinkDevice('a', value)"
+      />
+      <NSelect
+        v-model:value="linkForm.aPortId"
+        :options="aPortOptions"
+        clearable
+        style="width: 140px"
+        :placeholder="t('assets.link.aPort')"
+        :aria-label="t('assets.link.aPort')"
+      />
+      <NSelect
+        :value="linkForm.bDeviceId"
+        :options="deviceSelectOptions"
+        clearable
+        style="width: 180px"
+        :placeholder="t('assets.link.bDevice')"
+        :aria-label="t('assets.link.bDevice')"
+        @update:value="(value: number | null) => void changeLinkDevice('b', value)"
+      />
+      <NSelect
+        v-model:value="linkForm.bPortId"
+        :options="bPortOptions"
+        clearable
+        style="width: 140px"
+        :placeholder="t('assets.link.bPort')"
+        :aria-label="t('assets.link.bPort')"
+      />
+      <NInput v-model:value="linkForm.description" style="width: 180px" :placeholder="t('assets.link.description')" />
+      <NButton type="primary" attr-type="submit">{{ t('common.save') }}</NButton>
     </form>
 
     <form
@@ -478,212 +800,156 @@ async function removeCredential(credential: Credential): Promise<void> {
       class="inline-form"
       @submit.prevent="createCredential"
     >
-      <input v-model="credentialForm.name" class="input" :placeholder="t('assets.credential.name')" />
-      <input
-        v-model="credentialForm.credType"
-        class="input"
-        :placeholder="t('assets.credential.type')"
-      />
-      <input
-        v-model="credentialForm.username"
-        class="input"
-        :placeholder="t('assets.credential.username')"
-      />
-      <input
-        v-model="credentialForm.secret"
-        class="input"
+      <NInput v-model:value="credentialForm.name" style="width: 180px" :placeholder="t('assets.credential.name')" />
+      <NInput v-model:value="credentialForm.credType" style="width: 120px" :placeholder="t('assets.credential.type')" />
+      <NInput v-model:value="credentialForm.username" style="width: 140px" :placeholder="t('assets.credential.username')" />
+      <NInput
+        v-model:value="credentialForm.secret"
         type="password"
+        show-password-on="click"
+        style="width: 180px"
         :placeholder="t('assets.credential.secret')"
         autocomplete="new-password"
       />
-      <button class="btn" type="submit">{{ t('common.save') }}</button>
+      <NButton type="primary" attr-type="submit">{{ t('common.save') }}</NButton>
       <span class="muted">{{ t('assets.credential.noEcho') }}</span>
     </form>
 
-    <table v-if="tab === 'devices' && devices.length" class="table">
-      <thead>
-        <tr>
-          <th>
-            <input
-              type="checkbox"
-              :checked="pageAllSelected"
-              :indeterminate.prop="pageIndeterminate"
-              :aria-label="t('cases.batch.barLabel')"
-              @change="togglePage()"
-            />
-          </th>
-          <th>{{ t('assets.device.name') }}</th>
-          <th>{{ t('assets.device.type') }}</th>
-          <th>{{ t('assets.device.model') }}</th>
-          <th>{{ t('assets.device.serialNo') }}</th>
-          <th>{{ t('assets.device.managementIp') }}</th>
-          <th>{{ t('assets.device.domain') }}</th>
-          <th>{{ t('common.actions') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="d in devices" :key="d.id">
-          <td>
-            <input
-              type="checkbox"
-              :checked="isSelected(d.id)"
-              :aria-label="t('cases.batch.barLabel')"
-              @change="toggle(d.id)"
-            />
-          </td>
-          <td>{{ d.name }}</td>
-          <td>{{ d.deviceType }}</td>
-          <td>{{ d.model }}</td>
-          <td>{{ d.serialNo }}</td>
-          <td>{{ d.managementIp }}</td>
-          <td>{{ d.domainTag }}</td>
-          <td>
-            <button class="link-btn" type="button" @click="togglePorts(d)">
-              {{ expandedDeviceId === d.id ? t('assets.device.hidePorts') : t('assets.device.ports') }}
-            </button>
-            <button class="link-btn danger" type="button" @click="removeDevice(d)">
-              {{ t('common.delete') }}
-            </button>
-          </td>
-        </tr>
-        <tr v-if="expandedDeviceId !== null">
-          <td colspan="8" class="port-cell">
-            <table class="table table-inner">
-              <thead>
-                <tr>
-                  <th>{{ t('assets.port.name') }}</th>
-                  <th>{{ t('assets.port.type') }}</th>
-                  <th>{{ t('assets.port.speed') }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="p in ports" :key="p.id">
-                  <td>{{ p.portName }}</td>
-                  <td>{{ p.portType }}</td>
-                  <td>{{ p.speedGbps }}</td>
-                </tr>
-                <tr v-if="!ports.length">
-                  <td colspan="3" class="muted">{{ t('common.noData') }}</td>
-                </tr>
-              </tbody>
-            </table>
-            <form class="inline-form" @submit.prevent="addPort">
-              <input v-model="portForm.portName" class="input" :placeholder="t('assets.port.name')" />
-              <input v-model="portForm.portType" class="input" :placeholder="t('assets.port.type')" />
-              <input
-                v-model.number="portForm.speedGbps"
-                class="input"
-                type="number"
-                :placeholder="t('assets.port.speed')"
-              />
-              <button class="btn" type="submit">{{ t('common.add') }}</button>
-            </form>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <NDataTable
+      v-if="tab === 'devices'"
+      :columns="deviceColumns"
+      :data="devices"
+      :loading="loading"
+      :row-key="(row: Device) => row.id"
+      :scroll-x="1080"
+      :bordered="false"
+      size="small"
+    >
+      <template #empty>
+        <EmptyState
+          v-if="!loading && !error"
+          :title="t('common.noData')"
+          :description="projectId ? undefined : t('overview.noProject')"
+          icon="boxes"
+        />
+      </template>
+    </NDataTable>
 
-    <table v-if="tab === 'links' && links.length" class="table">
-      <thead>
-        <tr>
-          <th>
-            <input
-              type="checkbox"
-              :checked="pageAllSelected"
-              :indeterminate.prop="pageIndeterminate"
-              :aria-label="t('cases.batch.barLabel')"
-              @change="togglePage()"
-            />
-          </th>
-          <th>{{ t('assets.link.name') }}</th>
-          <th>{{ t('assets.link.endpointA') }}</th>
-          <th>{{ t('assets.link.endpointB') }}</th>
-          <th>{{ t('assets.link.protocol') }}</th>
-          <th>{{ t('assets.link.speed') }}</th>
-          <th>{{ t('common.actions') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="l in links" :key="l.id">
-          <td>
-            <input
-              type="checkbox"
-              :checked="isSelected(l.id)"
-              :aria-label="t('cases.batch.barLabel')"
-              @change="toggle(l.id)"
-            />
-          </td>
-          <td>{{ l.name }}</td>
-          <td>{{ l.aDeviceName }} / {{ l.aPortName }}</td>
-          <td>{{ l.bDeviceName }} / {{ l.bPortName }}</td>
-          <td>{{ l.protocol }}</td>
-          <td>{{ l.speedGbps }}</td>
-          <td>
-            <button class="link-btn danger" type="button" @click="removeLink(l)">
-              {{ t('common.delete') }}
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <table v-if="tab === 'credentials' && credentials.length" class="table">
-      <thead>
-        <tr>
-          <th>
-            <input
-              type="checkbox"
-              :checked="pageAllSelected"
-              :indeterminate.prop="pageIndeterminate"
-              :aria-label="t('cases.batch.barLabel')"
-              @change="togglePage()"
-            />
-          </th>
-          <th>{{ t('assets.credential.name') }}</th>
-          <th>{{ t('assets.credential.type') }}</th>
-          <th>{{ t('assets.credential.username') }}</th>
-          <th>{{ t('assets.credential.configured') }}</th>
-          <th>{{ t('common.actions') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="c in credentials" :key="c.id">
-          <td>
-            <input
-              type="checkbox"
-              :checked="isSelected(c.id)"
-              :aria-label="t('cases.batch.barLabel')"
-              @change="toggle(c.id)"
-            />
-          </td>
-          <td>{{ c.name }}</td>
-          <td>{{ c.credType }}</td>
-          <td>{{ c.username }}</td>
-          <td>{{ c.configured ? t('common.yes') : t('common.no') }}</td>
-          <td>
-            <button class="link-btn danger" type="button" @click="removeCredential(c)">
-              {{ t('common.delete') }}
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p v-if="!loading && !error && total === 0" class="muted">{{ t('common.noData') }}</p>
-
-    <div v-if="tab !== 'credentials' && total > 0" class="pager">
-      <button class="btn btn-ghost" type="button" :disabled="page <= 1" @click="turnPage(page - 1)">
-        {{ t('common.prev') }}
-      </button>
-      <span class="muted">{{ t('common.pageInfo', { page, total: pageCount }) }}</span>
-      <button
-        class="btn btn-ghost"
-        type="button"
-        :disabled="page >= pageCount"
-        @click="turnPage(page + 1)"
+    <div v-if="tab === 'devices' && portsDevice" class="card port-card">
+      <div class="port-head">
+        <h2 class="card-title">{{ t('assets.device.ports') }} · {{ portsDevice.name }}</h2>
+        <NButton text @click="togglePorts(portsDevice)">
+          {{ t('assets.device.hidePorts') }}
+        </NButton>
+      </div>
+      <NDataTable
+        :columns="portColumns"
+        :data="ports"
+        :row-key="(row: DevicePort) => row.id"
+        :scroll-x="480"
+        :bordered="false"
+        size="small"
       >
-        {{ t('common.next') }}
-      </button>
+        <template #empty>
+          <p class="muted port-empty">{{ t('common.noData') }}</p>
+        </template>
+      </NDataTable>
+      <form class="inline-form port-form" @submit.prevent="addPort">
+        <NInput v-model:value="portForm.portName" style="width: 180px" :placeholder="t('assets.port.name')" />
+        <NInput v-model:value="portForm.portType" style="width: 140px" :placeholder="t('assets.port.type')" />
+        <NInputNumber
+          v-model:value="portForm.speedGbps"
+          style="width: 180px"
+          :min="1"
+          :show-button="false"
+          :placeholder="t('assets.port.speed')"
+        />
+        <NButton attr-type="submit">{{ t('common.add') }}</NButton>
+      </form>
     </div>
+
+    <NDataTable
+      v-if="tab === 'links'"
+      :columns="linkColumns"
+      :data="links"
+      :loading="loading"
+      :row-key="(row: Link) => row.id"
+      :scroll-x="1000"
+      :bordered="false"
+      size="small"
+    >
+      <template #empty>
+        <EmptyState
+          v-if="!loading && !error"
+          :title="t('common.noData')"
+          :description="projectId ? undefined : t('overview.noProject')"
+          icon="boxes"
+        />
+      </template>
+    </NDataTable>
+
+    <NDataTable
+      v-if="tab === 'credentials'"
+      :columns="credentialColumns"
+      :data="credentialRows"
+      :loading="loading"
+      :row-key="(row: Credential) => row.id"
+      :scroll-x="820"
+      :bordered="false"
+      size="small"
+    >
+      <template #empty>
+        <EmptyState
+          v-if="!loading && !error"
+          :title="t('common.noData')"
+          :description="projectId ? undefined : t('overview.noProject')"
+          icon="boxes"
+        />
+      </template>
+    </NDataTable>
+
+    <NPagination
+      v-if="tab !== 'credentials' && total > 0"
+      class="pager"
+      :page="page"
+      :page-count="pageCount"
+      :page-slot="7"
+      @update:page="turnPage"
+    />
   </div>
 </template>
+
+<style scoped>
+.asset-tabs {
+  margin-bottom: 12px;
+}
+
+.port-card {
+  margin-top: 16px;
+}
+
+.port-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.port-head .card-title {
+  margin: 0;
+}
+
+.port-empty {
+  margin: 0;
+  padding: var(--space-4) 0;
+}
+
+.port-form {
+  margin-top: 12px;
+}
+
+/* 操作列多个 text 按钮并排：h() 渲染的节点拿不到 scoped 类，用 :deep 兜 */
+:deep(.row-actions) {
+  display: flex;
+  gap: var(--space-2);
+}
+</style>
