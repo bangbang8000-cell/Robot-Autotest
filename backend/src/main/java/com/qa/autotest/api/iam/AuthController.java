@@ -25,6 +25,9 @@ public class AuthController {
                                 boolean passwordExpired) {
     }
 
+    public record RenewResponse(Instant expiresAt) {
+    }
+
     private final AuthService auth;
 
     public AuthController(AuthService auth) {
@@ -48,5 +51,12 @@ public class AuthController {
     @GetMapping("/me")
     public ApiResponse<UserSummary> me() {
         return ApiResponse.ok(auth.me(TenantContext.requireUserId()));
+    }
+
+    /** 会话续期（FR-v0.2-04）：前端在过期前 5 分钟调用，把有效期再推一个 TTL。 */
+    @PostMapping("/renew")
+    public ApiResponse<RenewResponse> renew(HttpServletRequest request) {
+        Object token = request.getAttribute(AuthInterceptor.ATTR_TOKEN);
+        return ApiResponse.ok(new RenewResponse(auth.renew(token == null ? null : token.toString())));
     }
 }

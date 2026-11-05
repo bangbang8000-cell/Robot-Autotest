@@ -13,5 +13,8 @@ public interface SessionTokenRepository {
 
     void touch(String tokenHash, Instant usedAt);
 
+    /** 续期：把未撤销令牌的过期时间推到 {@code expiresAt}，同时记一次使用。 */
+    void extend(String tokenHash, Instant expiresAt, Instant usedAt);
+
     void revoke(String tokenHash, Instant revokedAt);
 }

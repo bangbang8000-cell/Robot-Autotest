@@ -1,0 +1,56 @@
+== 1) 后端运行时是否存在安全级校验 ==
+java 源码命中 safetyLevel|safety_level|SAFETY_LEVEL: 0
+java 源码命中 "L2"（字符串比较）: 0
+== 2) 数据库是否有安全级字段 ==
+db/migration 命中 security_level|safety_level: 0
+-- test_case 列清单 --
+270-  id            BIGINT       NOT NULL AUTO_INCREMENT,
+271-  project_id    BIGINT       NOT NULL,
+272-  case_code     VARCHAR(64)  NOT NULL COMMENT '台账编号，如 PERF-IPERF-200G-001',
+273-  title         VARCHAR(256) NOT NULL,
+274-  case_kind     VARCHAR(32)  NULL COMMENT 'func/perf/rdma/...',
+275-  source_type   VARCHAR(16)  NOT NULL DEFAULT 'ledger' COMMENT 'ledger/script',
+276-  priority      VARCHAR(8)   NULL,
+277-  domain_tag    VARCHAR(64)  NULL COMMENT '技术域标签',
+278-  status        TINYINT      NOT NULL DEFAULT 1,
+279-  description   TEXT         NULL,
+280-  created_at    DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+281-  created_by    BIGINT       NULL,
+282-  updated_at    DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+283-  updated_by    BIGINT       NULL,
+291-  id            BIGINT       NOT NULL AUTO_INCREMENT,
+292-  test_case_id  BIGINT       NOT NULL,
+293-  step_no       INT          NOT NULL,
+294-  action        TEXT         NOT NULL,
+295-  expectation   TEXT         NULL,
+296-  created_at    DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+297-  created_by    BIGINT       NULL,
+298-  updated_at    DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+299-  updated_by    BIGINT       NULL,
+306-  id            BIGINT       NOT NULL AUTO_INCREMENT,
+307-  project_id    BIGINT       NOT NULL,
+308-  set_code      VARCHAR(64)  NOT NULL,
+309-  name          VARCHAR(128) NOT NULL,
+310-  description   VARCHAR(512) NULL,
+311-  created_at    DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+312-  created_by    BIGINT       NULL,
+== 3) 分级实现位置 ==
+tools/classify_cases.py
+6:用途：读入台账 Excel，按「命令白名单」给每条用例打 L0 / L1 / L2 / LX 四档，
+16:    L2  高危·不可逆 —— 改交换机配置 / 刷固件BIOS / 装卸驱动 / 重启下电 / 删除格式化 / 断链
+38:# L2：命中任一即高危。宁可误判为高危，不可漏判。
+185:    分四处看，任一处命中高危即 L2：
+196:        return "L2", "L2:switch-config", "交换机列要求变更端口/速率：" + sw[:48]
+== 4) 会话续期实现 ==
+backend/src/main/java/com/qa/autotest/application/iam/AuthService.java:119:    public Instant renew(String token) {
+frontend/src/stores/auth.ts:71:        void this.renewSession()
+frontend/src/stores/auth.ts:74:    async renewSession() {
+frontend/src/api/iam.ts:91:    return request<{ expiresAt: string }>('/auth/renew', { method: 'POST' })
+== 5) 新增测试条数 ==
+3
+== 6) 弱口令实现 ==
+29:    private final PasswordPolicy passwordPolicy;
+32:                       AuditService audit, PasswordPolicy passwordPolicy) {
+37:        this.passwordPolicy = passwordPolicy;
+68:        passwordPolicy.validate(rawPassword, name);
+71:                orgId, true, passwordPolicy.expiresAt(now), 0, null, null);

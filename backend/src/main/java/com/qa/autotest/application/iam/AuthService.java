@@ -108,4 +108,25 @@ public class AuthService {
     public void touch(String token) {
         sessions.touch(PasswordHasher.sha256Hex(token), Instant.now());
     }
+
+    /**
+     * 会话续期（FR-v0.2-04：过期前 5 分钟由前端调用）。
+     *
+     * <p>只续「仍有效」的令牌——已过期或已撤销一律要求重新登录，不做宽限。
+     *
+     * @return 新的过期时间
+     */
+    public Instant renew(String token) {
+        if (token == null || token.isBlank()) {
+            throw new BusinessException(ErrorCode.UNAUTHENTICATED, "会话已过期，请重新登录");
+        }
+        String hash = PasswordHasher.sha256Hex(token);
+        Instant now = Instant.now();
+        if (sessions.findValidUserId(hash, now).isEmpty()) {
+            throw new BusinessException(ErrorCode.UNAUTHENTICATED, "会话已过期，请重新登录");
+        }
+        Instant expiresAt = now.plus(SESSION_TTL);
+        sessions.extend(hash, expiresAt, now);
+        return expiresAt;
+    }
 }

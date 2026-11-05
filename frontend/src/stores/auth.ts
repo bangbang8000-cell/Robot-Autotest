@@ -3,7 +3,12 @@ import { setTokenProvider } from '@/api/http'
 import { authApi, projectApi, type Project, type UserSummary } from '@/api/iam'
 
 const TOKEN_KEY = 'auth_token'
+const EXPIRES_KEY = 'auth_expires_at'
 const PROJECT_KEY = 'current_project_id'
+/** FR-v0.2-04：会话过期前 5 分钟自动续。 */
+const RENEW_AHEAD_MS = 5 * 60 * 1000
+
+let renewTimer: ReturnType<typeof setTimeout> | undefined
 
 // 请求层只认 tokenProvider：把「取令牌子」做成函数，登录 / 登出后无需重装 http
 setTokenProvider(() => localStorage.getItem(TOKEN_KEY))
@@ -18,6 +23,7 @@ function readProjectId(): number | null {
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: localStorage.getItem(TOKEN_KEY),
+    expiresAt: localStorage.getItem(EXPIRES_KEY),
     user: null as UserSummary | null,
     projects: [] as Project[],
     projectId: readProjectId(),
@@ -35,11 +41,45 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem(TOKEN_KEY, result.token)
       this.user = result.user
       this.passwordExpired = result.passwordExpired
+      this.setExpiresAt(result.expiresAt)
       await this.loadProjects()
     },
     async loadMe() {
       if (!this.token) return
       this.user = await authApi.me()
+      // 刷新页面后内存里没有定时器，靠持久化的过期时间重新排一次
+      this.armRenewal()
+    },
+    setExpiresAt(value: string | null) {
+      this.expiresAt = value
+      if (value) {
+        localStorage.setItem(EXPIRES_KEY, value)
+      } else {
+        localStorage.removeItem(EXPIRES_KEY)
+      }
+      this.armRenewal()
+    },
+    /** 按「过期前 5 分钟」排一次续期；未登录则不动。 */
+    armRenewal() {
+      if (renewTimer) {
+        clearTimeout(renewTimer)
+        renewTimer = undefined
+      }
+      if (!this.token || !this.expiresAt) return
+      const due = new Date(this.expiresAt).getTime() - RENEW_AHEAD_MS - Date.now()
+      renewTimer = setTimeout(() => {
+        void this.renewSession()
+      }, Math.max(due, 0))
+    },
+    async renewSession() {
+      if (!this.token) return
+      try {
+        const result = await authApi.renew()
+        this.setExpiresAt(result.expiresAt)
+      } catch {
+        // 已过期或已撤销：本地清干净，由路由拦截带回登录页
+        this.clear()
+      }
     },
     async loadProjects() {
       this.projects = await projectApi.list()
@@ -68,11 +108,17 @@ export const useAuthStore = defineStore('auth', {
       this.clear()
     },
     clear() {
+      if (renewTimer) {
+        clearTimeout(renewTimer)
+        renewTimer = undefined
+      }
       this.token = null
+      this.expiresAt = null
       this.user = null
       this.projects = []
       this.passwordExpired = false
       localStorage.removeItem(TOKEN_KEY)
+      localStorage.removeItem(EXPIRES_KEY)
       this.setProject(null)
     },
   },

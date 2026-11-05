@@ -42,6 +42,14 @@ public class SessionTokenRepositoryJdbc implements SessionTokenRepository {
     }
 
     @Override
+    public void extend(String tokenHash, Instant expiresAt, Instant usedAt) {
+        jdbc.update("""
+                UPDATE api_token SET expires_at = ?, last_used_at = ?
+                 WHERE token_hash = ? AND token_kind = 'session' AND revoked_at IS NULL
+                """, Timestamp.from(expiresAt), Timestamp.from(usedAt), tokenHash);
+    }
+
+    @Override
     public void revoke(String tokenHash, Instant revokedAt) {
         jdbc.update("UPDATE api_token SET revoked_at = ? WHERE token_hash = ?",
                 Timestamp.from(revokedAt), tokenHash);

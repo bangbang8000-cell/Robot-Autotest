@@ -86,6 +86,10 @@ export const authApi = {
   me(): Promise<UserSummary> {
     return request<UserSummary>('/auth/me')
   },
+  /** 会话续期（FR-v0.2-04）：过期前 5 分钟调用，后端把有效期再推一个 TTL。 */
+  renew(): Promise<{ expiresAt: string }> {
+    return request<{ expiresAt: string }>('/auth/renew', { method: 'POST' })
+  },
 }
 
 export const userApi = {

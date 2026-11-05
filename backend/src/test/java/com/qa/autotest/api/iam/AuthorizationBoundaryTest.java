@@ -835,6 +835,13 @@ class AuthorizationBoundaryTest {
         }
 
         @Override
+        public void extend(String tokenHash, Instant expiresAt, Instant usedAt) {
+            if (expiryByHash.containsKey(tokenHash)) {
+                expiryByHash.put(tokenHash, expiresAt);
+            }
+        }
+
+        @Override
         public void revoke(String tokenHash, Instant revokedAt) {
             userIdByHash.remove(tokenHash);
             expiryByHash.remove(tokenHash);

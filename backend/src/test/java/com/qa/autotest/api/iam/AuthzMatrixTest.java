@@ -730,6 +730,10 @@ class AuthzMatrixTest {
         }
 
         @Override
+        public void extend(String tokenHash, Instant expiresAt, Instant usedAt) {
+        }
+
+        @Override
         public void revoke(String tokenHash, Instant revokedAt) {
         }
     }
