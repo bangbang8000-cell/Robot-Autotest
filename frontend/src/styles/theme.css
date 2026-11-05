@@ -108,6 +108,9 @@
   --z-overlay: 100;
   --z-modal: 200;
   --z-toast: 300;
+
+  /* 数据网格行高（UX-06 密度）：舒适档 44，紧凑档 36 见文件末尾的 [data-density='compact']。 */
+  --table-row-h: 44px;
 }
 
 /* ============ 2. semantic：暗色（默认） ============ */
@@ -382,4 +385,15 @@
   --accent-contrast: #06131f;
   --surface-selected: #153533;
   --focus-ring: #34d399;
+}
+
+/* ============ 5. 密度（UX-06） ============ */
+
+/*
+ * 只覆盖行高，不碰字号与间距：密度的诉求是"一屏多两行"，
+ * 缩字号会连带破坏 13px 正文的可读性结论（见美术评估 §305）。
+ * <html data-density> 由 composables/useDensity.ts 与 index.html 首帧脚本写入。
+ */
+:root[data-density='compact'] {
+  --table-row-h: 36px;
 }

@@ -13,6 +13,7 @@ import { i18n } from '@/locales'
 import { useAuthStore } from '@/stores/auth'
 import { runStatusLabel } from '@/utils/statusLabels'
 import RunsView from '@/views/RunsView.vue'
+import { executionApi } from '@/api/execution'
 
 vi.mock('@/api/execution', () => ({
   runLogSocketUrl: (runId: string) => `ws://test/runs/${runId}/log`,
@@ -24,6 +25,8 @@ vi.mock('@/api/execution', () => ({
           runId: 'RUN-AAA',
           projectId: 1,
           state: 'FINISHED',
+          deviceScope: 'DUT-01/mlx5_0,DUT-02/mlx5_1',
+          attemptNo: 2,
           passedTests: 3,
           totalTests: 3,
           failureReason: null,
@@ -35,6 +38,7 @@ vi.mock('@/api/execution', () => ({
           runId: 'RUN-BBB',
           projectId: 1,
           state: 'FAILED',
+          attemptNo: 1,
           passedTests: 1,
           totalTests: 3,
           failureReason: 'assertion failed',
@@ -46,12 +50,38 @@ vi.mock('@/api/execution', () => ({
       page: 1,
       size: 10,
     })),
+    downloadLog: vi.fn(async () => new Blob(['line1'])),
     recentLog: vi.fn(async () => [
       { seq: 1, tsGen: '01:00:01', source: 'robot', level: 'info', text: 'started' },
       { seq: 2, tsGen: '01:00:02', source: 'robot', level: 'error', text: 'FAIL boom' },
+      { seq: 3, tsGen: '01:00:03', source: 'robot', level: 'warn', text: 'slow step' },
     ]),
     cancel: vi.fn(),
     get: vi.fn(),
+    quickRun: vi.fn(async () => ({ runId: 'RUN-MANUAL-1', state: 'QUEUED' })),
+    runTestSet: vi.fn(async () => ({ runId: 'RUN-SET-1', state: 'QUEUED' })),
+  },
+}))
+
+vi.mock('@/api/asset', () => ({
+  deviceApi: {
+    page: vi.fn(async () => ({
+      items: [{ id: 1, projectId: 1, name: 'DUT-01' }],
+      total: 1,
+      page: 1,
+      size: 100,
+    })),
+  },
+}))
+
+vi.mock('@/api/cases', () => ({
+  caseSetApi: {
+    page: vi.fn(async () => ({
+      items: [{ id: 7, projectId: 1, setCode: 'SMOKE', name: '冒烟集', description: null }],
+      total: 1,
+      page: 1,
+      size: 100,
+    })),
   },
 }))
 
@@ -109,6 +139,7 @@ afterEach(() => {
   app?.unmount()
   host?.remove()
   vi.unstubAllGlobals()
+  vi.clearAllMocks()
   app = null
   host = null
   pinia = null
@@ -147,6 +178,36 @@ describe('RunsView 列表与日志联动', () => {
     expect(activeRows[0].textContent).toContain('RUN-BBB')
   })
 
+  it('日志面板可下载完整日志（EXEC-06）', async () => {
+    const root = await mountView()
+    const rows = [...root.querySelectorAll<HTMLElement>('.n-data-table-tbody .n-data-table-tr')]
+    const viewLog = [...rows[1].querySelectorAll<HTMLButtonElement>('button')].find(
+      (btn) => btn.textContent?.trim() === i18n.global.t('execution.viewLog'),
+    )
+    viewLog!.click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    Object.defineProperty(URL, 'createObjectURL', {
+      value: vi.fn(() => 'blob:test'),
+      configurable: true,
+    })
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      value: vi.fn(),
+      configurable: true,
+    })
+
+    const download = [...root.querySelectorAll<HTMLButtonElement>('button')].find(
+      (btn) => btn.textContent?.trim() === i18n.global.t('execution.downloadLog'),
+    )
+    expect(download).toBeTruthy()
+    download!.click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(executionApi.downloadLog).toHaveBeenCalledWith(1, 'RUN-BBB')
+  })
+
   it('状态列是图标 + 文字双编码，不是只靠颜色', async () => {
     const root = await mountView()
     const tags = [...root.querySelectorAll<HTMLElement>('.status-tag')]
@@ -166,5 +227,185 @@ describe('RunsView 列表与日志联动', () => {
       const texts = [...row.querySelectorAll('button')].map((btn) => btn.textContent?.trim())
       expect(texts).not.toContain(cancelText)
     }
+  })
+})
+
+/**
+ * EXEC-01 手动执行表单。
+ *
+ * 后端接口另有单测；这里守前端接线：按钮开表单、套件路径按行解析后原样提交、
+ * 空路径时提交按钮禁用（不能把空列表打到后端再吃 400）。
+ */
+describe('RunsView 手动执行', () => {
+  function manualButton(root: HTMLElement): HTMLButtonElement {
+    const button = [...root.querySelectorAll<HTMLButtonElement>('.toolbar button')].find(
+      (item) => item.textContent?.trim() === i18n.global.t('execution.manual.open'),
+    )
+    if (!button) throw new Error('toolbar manual button not found')
+    return button
+  }
+
+  function submitButton(root: HTMLElement): HTMLButtonElement {
+    const button = [...root.querySelectorAll<HTMLButtonElement>('.form-actions button')].find(
+      (item) => item.textContent?.trim() === i18n.global.t('execution.manual.submit'),
+    )
+    if (!button) throw new Error('submit button not found')
+    return button
+  }
+
+  it('点「手动执行」打开表单，默认带一套可改的套件路径', async () => {
+    const root = await mountView()
+    expect(root.querySelector('.form-card')).toBeNull()
+
+    manualButton(root).click()
+    await nextTick()
+
+    const card = root.querySelector('.form-card')
+    expect(card).not.toBeNull()
+    const textarea = card!.querySelector<HTMLTextAreaElement>('textarea')
+    expect(textarea?.value).toBe('suites')
+    expect(submitButton(root).disabled).toBe(false)
+  })
+
+  it('套件路径按行解析并原样提交给 quick-run', async () => {
+    const root = await mountView()
+    manualButton(root).click()
+    await nextTick()
+
+    const textarea = root.querySelector<HTMLTextAreaElement>('.form-card textarea')!
+    textarea.value = 'suites/perf\n\n suites/rdma '
+    textarea.dispatchEvent(new Event('input'))
+    await nextTick()
+
+    submitButton(root).click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(executionApi.quickRun).toHaveBeenCalledTimes(1)
+    expect(executionApi.quickRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        projectId: 1,
+        suitePaths: ['suites/perf', 'suites/rdma'],
+        source: 'runs-view',
+      }),
+    )
+    expect(root.textContent).toContain(
+      i18n.global.t('execution.manual.created', { runId: 'RUN-MANUAL-1' }),
+    )
+  })
+
+  it('套件路径清空后提交按钮禁用，不会把空列表打到后端', async () => {
+    const root = await mountView()
+    manualButton(root).click()
+    await nextTick()
+
+    const textarea = root.querySelector<HTMLTextAreaElement>('.form-card textarea')!
+    textarea.value = '   \n\n '
+    textarea.dispatchEvent(new Event('input'))
+    await nextTick()
+
+    expect(submitButton(root).disabled).toBe(true)
+    expect(executionApi.quickRun).not.toHaveBeenCalled()
+  })
+
+  it('手动执行表单可声明设备范围，并随 quick-run 提交（FR-v0.4-01）', async () => {
+    const root = await mountView()
+    manualButton(root).click()
+    await nextTick()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(root.textContent).toContain(i18n.global.t('execution.manual.deviceScope'))
+
+    // 设备范围支持手填端口键（tag 模式），不能只局限于设备名下拉
+    const inputs = [...root.querySelectorAll<HTMLInputElement>('.form-card .n-select input')]
+    const scopeInput = inputs[inputs.length - 1]
+    scopeInput.focus()
+    scopeInput.value = 'DUT-03/mlx5_2'
+    scopeInput.dispatchEvent(new Event('input', { bubbles: true }))
+    await nextTick()
+    scopeInput.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'Enter',
+      code: 'Enter',
+      keyCode: 13,
+      bubbles: true,
+    }))
+    await nextTick()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    submitButton(root).click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(executionApi.quickRun).toHaveBeenCalledWith(
+      expect.objectContaining({ deviceKeys: ['DUT-03/mlx5_2'] }),
+    )
+  })
+
+  it('日志面板显示运行的设备范围，未声明时明确写「全部设备」', async () => {
+    const root = await mountView()
+    const viewButtons = [...root.querySelectorAll<HTMLButtonElement>('button')].filter(
+      (item) => item.textContent?.trim() === i18n.global.t('execution.viewLog'),
+    )
+    viewButtons[0].click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(root.textContent).toContain(
+      i18n.global.t('execution.deviceScopeLine', { scope: 'DUT-01/mlx5_0,DUT-02/mlx5_1' }),
+    )
+  })
+
+  it('日志面板显示「第 N 次尝试」，首次尝试不渲染该标记（FR-v0.4-29）', async () => {
+    const root = await mountView()
+    const viewButtons = [...root.querySelectorAll<HTMLButtonElement>('button')].filter(
+      (item) => item.textContent?.trim() === i18n.global.t('execution.viewLog'),
+    )
+    viewButtons[0].click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    // RUN-AAA 是第 2 次尝试，重试可追溯
+    expect(root.textContent).toContain(i18n.global.t('execution.attemptLine', { n: 2 }))
+
+    viewButtons[1].click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    // RUN-BBB 是首次尝试，标记不应出现——否则正常记录会被同一句提示占满
+    expect(root.textContent).not.toContain(i18n.global.t('execution.attemptLine', { n: 1 }))
+  })
+
+  it('日志按级别过滤：取消「信息」后 INFO 行隐藏，ERROR / WARN 保留（FR-v0.4-20）', async () => {
+    const root = await mountView()
+    const viewButtons = [...root.querySelectorAll<HTMLButtonElement>('button')].filter(
+      (item) => item.textContent?.trim() === i18n.global.t('execution.viewLog'),
+    )
+    viewButtons[0].click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(root.textContent).toContain('started')
+    expect(root.textContent).toContain('FAIL boom')
+    expect(root.textContent).toContain('slow step')
+
+    const boxes = [...root.querySelectorAll<HTMLElement>('.level-filter')]
+    expect(boxes).toHaveLength(3)
+    const boxOf = (key: string) =>
+      boxes.find((box) => box.textContent?.includes(i18n.global.t(key))) as HTMLElement
+
+    boxOf('execution.levelInfo').click()
+    await nextTick()
+    expect(root.textContent).not.toContain('started')
+    expect(root.textContent).toContain('FAIL boom')
+    expect(root.textContent).toContain('slow step')
+
+    // 三档全关不能说成「这份 run 没日志」，要明说是被过滤掉了
+    boxOf('execution.levelError').click()
+    boxOf('execution.levelWarn').click()
+    await nextTick()
+    expect(root.textContent).not.toContain('FAIL boom')
+    expect(root.textContent).toContain(i18n.global.t('execution.logFilteredEmpty'))
   })
 })

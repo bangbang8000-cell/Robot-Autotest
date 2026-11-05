@@ -44,11 +44,13 @@ const error = ref<ErrorLine | null>(null)
 const message = ref('')
 
 // 空串代表「全部项目」：管理员可查全局，项目所有者只查本项目
+// from / to 必须初始化为 null 而不是 ''：NDatePicker 的 formatted-value 会把 '' 交给
+// date-fns 解析，直接抛 RangeError: Invalid time value，整页 setup 失败变成白屏。
 const filter = reactive({
   projectId: '' as string,
   action: '',
-  from: '',
-  to: '',
+  from: null as string | null,
+  to: null as string | null,
 })
 
 const projectOptions = computed(() => [
@@ -98,8 +100,9 @@ function params(nextPage = page.value) {
   return {
     projectId: filter.projectId ? Number(filter.projectId) : null,
     action: filter.action,
-    from: filter.from,
-    to: filter.to,
+    // 清空的日期控件是 null，不进查询串（后端把空串也当未筛选，但 null 更直白）
+    from: filter.from ?? undefined,
+    to: filter.to ?? undefined,
     page: nextPage,
     size,
   }

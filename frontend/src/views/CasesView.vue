@@ -5,6 +5,7 @@ import {
   NButton,
   NCheckbox,
   NInput,
+  NInputNumber,
   NPagination,
   NSelect,
   type DataTableColumns,
@@ -19,6 +20,7 @@ import {
   type TestCase,
 } from '@/api/cases'
 import { useAuthStore } from '@/stores/auth'
+import { executionApi } from '@/api/execution'
 import DataTable from '@/components/DataTable.vue'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import SelectionBar from '@/components/SelectionBar.vue'
@@ -59,6 +61,7 @@ const showImport = ref(false)
 const pageCaseIds = computed(() => cases.value.map((c) => c.id))
 const selection = useSelection(pageCaseIds)
 const {
+  selectedIds,
   count: selectedCount,
   crossPageCount,
   pageAllSelected,
@@ -73,6 +76,15 @@ const batchResult = ref<BatchResult | null>(null)
 const batchLoading = ref(false)
 const batchPriority = ref('P1')
 const batchDomain = ref('')
+
+// 勾选用例执行（EXEC-02）：绑定解析在后端，前端只负责收集参数
+const runOpen = ref(false)
+const runLoading = ref(false)
+const runEnv = ref<number | null>(null)
+const runConcurrency = ref(1)
+const runTimeout = ref(3600)
+const runTag = ref('')
+const runError = ref<ErrorLine | null>(null)
 
 const form = reactive({
   caseCode: '',
@@ -281,6 +293,41 @@ function turnPage(next: number): void {
   if (next < 1 || next > pageCount.value) return
   page.value = next
   void load() // 选择跨页保留（FR-v0.2-35），翻页不清空
+}
+
+/** 展开/收起勾选用例的执行表单（EXEC-02）。 */
+function toggleRunForm(): void {
+  runOpen.value = !runOpen.value
+  runError.value = null
+  message.value = ''
+}
+
+/**
+ * 勾选用例执行（EXEC-02，v0.4 候选提前实现）：只传用例 id，绑定与未绑定校验都由后端完成。
+ * 未绑定的用例由后端整单 400 并列出编号，这里原样把错误展示出来。
+ */
+async function submitRun(): Promise<void> {
+  if (selectedCount.value === 0) return
+  runLoading.value = true
+  runError.value = null
+  message.value = ''
+  try {
+    const run = await executionApi.runCases(projectId.value, {
+      caseIds: [...selectedIds.value],
+      environmentId: runEnv.value,
+      concurrency: runConcurrency.value,
+      timeoutSeconds: runTimeout.value,
+      includeTag: runTag.value.trim() || null,
+    })
+    runOpen.value = false
+    batchResult.value = null
+    clearSelection()
+    message.value = t('cases.run.created', { runId: run.runId })
+  } catch (e) {
+    runError.value = localizeError(e)
+  } finally {
+    runLoading.value = false
+  }
 }
 
 /**
@@ -542,6 +589,9 @@ async function runCommit(): Promise<void> {
       :loading="batchLoading"
       @clear="clearSelection(); batchResult = null"
     >
+      <NButton type="primary" :disabled="batchLoading" @click="toggleRunForm">
+        {{ t('cases.run.open') }}
+      </NButton>
       <NButton quaternary :disabled="batchLoading" @click="runBatch('submit')">
         {{ t('cases.batch.submit') }}
       </NButton>
@@ -574,6 +624,45 @@ async function runCommit(): Promise<void> {
         {{ t('cases.batch.delete') }}
       </NButton>
     </SelectionBar>
+
+    <div v-if="runOpen && selectedCount > 0" class="card run-card">
+      <h2 class="card-title">{{ t('cases.run.title', { count: selectedCount }) }}</h2>
+      <p class="muted">{{ t('cases.run.hint') }}</p>
+      <div class="toolbar">
+        <NInputNumber
+          v-model:value="runEnv"
+          :min="1"
+          style="width: 140px"
+          :placeholder="t('cases.run.environment')"
+        />
+        <NInputNumber
+          v-model:value="runConcurrency"
+          :min="1"
+          :max="32"
+          style="width: 120px"
+          :placeholder="t('cases.run.concurrency')"
+        />
+        <NInputNumber
+          v-model:value="runTimeout"
+          :min="60"
+          :max="86400"
+          style="width: 140px"
+          :placeholder="t('cases.run.timeout')"
+        />
+        <NInput
+          v-model:value="runTag"
+          style="width: 140px"
+          :placeholder="t('cases.run.tag')"
+        />
+        <NButton type="primary" :loading="runLoading" @click="submitRun">
+          {{ t('cases.run.submit') }}
+        </NButton>
+        <NButton quaternary :disabled="runLoading" @click="runOpen = false">
+          {{ t('common.cancel') }}
+        </NButton>
+      </div>
+      <ErrorLineView v-if="runError" :error="runError" />
+    </div>
 
     <DataTable
       :columns="columns"

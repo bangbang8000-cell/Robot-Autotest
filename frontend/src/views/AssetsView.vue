@@ -22,6 +22,7 @@ import {
   type DevicePort,
   type Link,
 } from '@/api/asset'
+import { executionApi, type LeaseView } from '@/api/execution'
 import { useAuthStore } from '@/stores/auth'
 import DataTable from '@/components/DataTable.vue'
 import ProjectPicker from '@/components/ProjectPicker.vue'
@@ -36,8 +37,8 @@ import { useSelection } from '@/composables/useSelection'
 import { confirmAction } from '@/composables/useConfirm'
 import type { StatusTone } from '@/utils/statusLabels'
 
-type Tab = 'devices' | 'links' | 'credentials'
-const TABS: Tab[] = ['devices', 'links', 'credentials']
+type Tab = 'devices' | 'links' | 'credentials' | 'leases'
+const TABS: Tab[] = ['devices', 'links', 'credentials', 'leases']
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -70,6 +71,7 @@ const devices = ref<Device[]>([])
 const deviceOptions = ref<Device[]>([])
 const links = ref<Link[]>([])
 const credentials = ref<Credential[]>([])
+const leases = ref<LeaseView[]>([])
 const domains = ref<string[]>([])
 const domainFilter = ref('')
 
@@ -140,7 +142,9 @@ const credentialRows = computed(() => {
 const pageAssetIds = computed<number[]>(() => {
   if (tab.value === 'devices') return devices.value.map((d) => d.id)
   if (tab.value === 'links') return links.value.map((l) => l.id)
-  return credentialRows.value.map((c) => c.id)
+  if (tab.value === 'credentials') return credentialRows.value.map((c) => c.id)
+  // 租约没有资产 id，也不支持批量：返回空让选择模型自然禁用整列勾选框
+  return []
 })
 const assetSelection = useSelection(pageAssetIds)
 const {
@@ -394,6 +398,72 @@ const credentialColumns = computed<DataTableColumns<Credential>>(() => [
   },
 ])
 
+/**
+ * 租约页是**只读**的：这里不提供申请/释放入口，唯一动作是管理员强制释放（FR-v0.4-10）。
+ *
+ * 剩余时间按 `m s` 展示而不是直接打秒数：一个 "3600" 的单元格没人能一眼换算成"还有一小时"。
+ * 到点即 `0`，显示为「已到期」——留个 0 会让人以为是「立刻可用」，实际是租约该被回收了。
+ */
+function remainingText(seconds: number): string {
+  if (seconds <= 0) return t('assets.lease.expired')
+  const minutes = Math.floor(seconds / 60)
+  const rest = seconds % 60
+  return minutes > 0 ? `${minutes}m ${rest}s` : `${rest}s`
+}
+
+const releasingKey = ref('')
+
+const leaseColumns = computed<DataTableColumns<LeaseView>>(() => [
+  {
+    title: t('assets.lease.resource'),
+    key: 'resourceKey',
+    minWidth: 200,
+    ellipsis: { tooltip: true },
+  },
+  {
+    title: t('assets.lease.run'),
+    key: 'runId',
+    minWidth: 180,
+    ellipsis: { tooltip: true },
+  },
+  {
+    title: t('assets.lease.remaining'),
+    key: 'remainingSeconds',
+    width: 120,
+    render: (row) => remainingText(row.remainingSeconds),
+  },
+  {
+    title: t('assets.lease.state'),
+    key: 'state',
+    width: 110,
+    render: (row) =>
+      h(StatusTag, {
+        label: row.state === 'held' ? t('assets.lease.held') : row.state,
+        tone: 'ok',
+      }),
+  },
+  {
+    title: t('common.actions'),
+    key: 'actions',
+    width: 120,
+    // 只读视图对普通用户连按钮都不渲染：摆一个点了报 403 的按钮比没有更糟
+    render: (row) =>
+      auth.isAdmin
+        ? h(
+            NButton,
+            {
+              text: true,
+              type: 'error',
+              size: 'small',
+              loading: releasingKey.value === row.resourceKey,
+              onClick: () => void forceRelease(row),
+            },
+            { default: () => t('assets.lease.forceRelease') },
+          )
+        : EMPTY,
+  },
+])
+
 const portColumns = computed<DataTableColumns<DevicePort>>(() => [
   { title: t('assets.port.name'), key: 'portName', minWidth: 160 },
   {
@@ -417,6 +487,7 @@ async function load(): Promise<void> {
     devices.value = []
     links.value = []
     credentials.value = []
+    leases.value = []
     return
   }
   loading.value = true
@@ -444,9 +515,12 @@ async function load(): Promise<void> {
       links.value = result.items
       total.value = result.total
       deviceOptions.value = options.items
-    } else {
+    } else if (tab.value === 'credentials') {
       credentials.value = await credentialApi.list(projectId.value)
       total.value = credentials.value.length
+    } else {
+      leases.value = await executionApi.listLeases(projectId.value)
+      total.value = leases.value.length
     }
   } catch (e) {
     error.value = localizeError(e)
@@ -665,6 +739,40 @@ async function removeCredential(credential: Credential): Promise<void> {
     error.value = localizeError(e)
   }
 }
+
+/**
+ * 强制释放（FR-v0.4-10）。
+ *
+ * 确认文案里把「占用者 runId」和「资源」都念出来：只说"确定释放吗"的操作者，
+ * 十有八九是在资产页顺手点的，并不知道这一下会把谁的运行打成失败。
+ * confirm 参数取该租约的 runId —— 与后端二次确认口径一致，前端不另造一套。
+ */
+async function forceRelease(lease: LeaseView): Promise<void> {
+  const ok = await confirmAction(
+    t('assets.lease.forceReleaseConfirm', { run: lease.runId, key: lease.resourceKey }),
+    { tone: 'danger' },
+  )
+  if (!ok) return
+  error.value = null
+  message.value = ''
+  releasingKey.value = lease.resourceKey
+  try {
+    const result = await executionApi.forceReleaseLease(
+      projectId.value,
+      lease.resourceKey,
+      lease.runId,
+    )
+    message.value = t('assets.lease.forceReleased', {
+      run: result.runId,
+      state: result.runState,
+    })
+    await load()
+  } catch (e) {
+    error.value = localizeError(e)
+  } finally {
+    releasingKey.value = ''
+  }
+}
 </script>
 
 <template>
@@ -689,6 +797,7 @@ async function removeCredential(credential: Credential): Promise<void> {
 
     <div class="toolbar">
       <NInput
+        v-if="tab !== 'leases'"
         v-model:value="keyword"
         clearable
         style="width: 200px"
@@ -703,7 +812,11 @@ async function removeCredential(credential: Credential): Promise<void> {
         style="width: 180px"
         :aria-label="t('assets.device.domain')"
       />
-      <NButton :type="showForm ? 'default' : 'primary'" @click="showForm = !showForm">
+      <NButton
+        v-if="tab !== 'leases'"
+        :type="showForm ? 'default' : 'primary'"
+        @click="showForm = !showForm"
+      >
         {{ showForm ? t('common.cancel') : t('common.create') }}
       </NButton>
       <NButton quaternary :loading="loading" @click="load">{{ t('common.refresh') }}</NButton>
@@ -838,12 +951,12 @@ async function removeCredential(credential: Credential): Promise<void> {
         :columns="portColumns"
         :data="ports"
         :row-key="(row: DevicePort) => row.id"
+        :error="Boolean(error)"
+        :empty-illustration="keyword ? 'no-result' : 'no-data'"
       >
         <template #empty>
           <p class="muted port-empty">{{ t('common.noData') }}</p>
         </template>
-        :error="Boolean(error)"
-        :empty-illustration="keyword ? 'no-result' : 'no-data'"
       </DataTable>
       <form class="inline-form port-form" @submit.prevent="addPort">
         <NInput v-model:value="portForm.portName" style="width: 180px" :placeholder="t('assets.port.name')" />
@@ -885,8 +998,24 @@ async function removeCredential(credential: Credential): Promise<void> {
       :empty-illustration="keyword ? 'no-result' : 'no-data'"
     />
 
+    <!--
+      租约只读（FR-v0.4-09）：搜索框与「新建」在这一页无意义——后端没有关键词参数，
+      租约也只能由执行产生，所以工具栏里两个控件都隐掉，只留刷新。
+    -->
+    <DataTable
+      v-if="tab === 'leases'"
+      :columns="leaseColumns"
+      :data="leases"
+      :loading="loading"
+      :row-key="(row: LeaseView) => row.resourceKey"
+      :empty-title="t('common.noData')"
+      :empty-description="projectId ? t('assets.lease.emptyHint') : t('overview.noProject')"
+      empty-icon="boxes"
+      :error="Boolean(error)"
+    />
+
     <NPagination
-      v-if="tab !== 'credentials' && total > 0"
+      v-if="tab !== 'credentials' && tab !== 'leases' && total > 0"
       class="pager"
       :page="page"
       :page-count="pageCount"

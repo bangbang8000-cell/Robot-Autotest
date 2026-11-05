@@ -253,6 +253,14 @@ onUnmounted(() => {
   margin: 0 0 18px;
 }
 
+/*
+ * 全局 `.muted` 取的是 `var(--text-muted)`：暗色主题下是 #8b9bb0，压在白纸上只有 2.83:1。
+ * 打印页既然是固定白纸，弱化色也得跟着固定，不能让它跟着平台主题漂。
+ */
+.print-page .muted {
+  color: #666;
+}
+
 h2 {
   font-size: 15px;
   border-bottom: 1px solid #999;

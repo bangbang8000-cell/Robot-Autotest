@@ -13,6 +13,8 @@ import { createApp, nextTick, type App } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { i18n } from '@/locales'
 import { useAuthStore } from '@/stores/auth'
+import { executionApi } from '@/api/execution'
+import { useConfirmHost } from '@/composables/useConfirm'
 import AssetsView from '@/views/AssetsView.vue'
 
 // 工厂内写死数据（vi.mock 提升到 import 之前，引用外部 const 会 TDZ）
@@ -117,6 +119,29 @@ vi.mock('@/api/batch', () => ({
   batchApi: { run: vi.fn(async () => ({ items: [] })) },
 }))
 
+// 租约页签（FR-v0.4-09）与强制释放（FR-v0.4-10）：只验接线，不重复后端校验逻辑
+vi.mock('@/api/execution', () => ({
+  executionApi: {
+    listLeases: vi.fn(async () => [
+      {
+        resourceKey: 'port:DUT-A:eth0',
+        runId: 'RUN-LEASE',
+        jobId: 7,
+        projectId: 1,
+        acquiredAt: '2026-11-05T08:00:00Z',
+        expiresAt: '2026-11-05T09:00:00Z',
+        remainingSeconds: 125,
+        state: 'held',
+      },
+    ]),
+    forceReleaseLease: vi.fn(async () => ({
+      runId: 'RUN-LEASE',
+      runState: 'FAILED',
+      releasedLeases: 1,
+    })),
+  },
+}))
+
 // 项目选择器依赖 auth.projects，与本测试无关
 vi.mock('@/components/ProjectPicker.vue', () => ({
   default: { name: 'ProjectPicker', template: '<div />' },
@@ -172,7 +197,10 @@ function clickByText(root: HTMLElement, text: string): void {
 }
 
 /** 页签是 `.n-tabs-tab`（不是 button），按标签文字点。 */
-function clickTab(root: HTMLElement, tabKey: 'devices' | 'links' | 'credentials'): void {
+function clickTab(
+  root: HTMLElement,
+  tabKey: 'devices' | 'links' | 'credentials' | 'leases',
+): void {
   const label = i18n.global.t(`assets.tabs.${tabKey}`)
   const tab = [...root.querySelectorAll<HTMLElement>('.n-tabs-tab')].find(
     (item) => item.textContent?.trim() === label,
@@ -192,6 +220,8 @@ beforeEach(() => {
 afterEach(() => {
   app?.unmount()
   host?.remove()
+  // 调用记录跨用例累积会让「调用几次」的断言全部错位（租约强制释放就踩过）
+  vi.clearAllMocks()
   app = null
   host = null
   pinia = null
@@ -271,6 +301,84 @@ describe('AssetsView 页签切换', () => {
 
     // 凭据 id(31) 若没清掉，会带着旧 id 去发表单外的批量删除请求
     expect(root.textContent).not.toContain(i18n.global.t('cases.batch.selected', { count: 1 }))
+  })
+})
+
+describe('AssetsView 租约页', () => {
+  it('切到租约页签后列出占用资源与剩余时间', async () => {
+    const root = await mountView()
+    clickTab(root, 'leases')
+    await flush()
+
+    expect(root.textContent).toContain('port:DUT-A:eth0')
+    expect(root.textContent).toContain('RUN-LEASE')
+    // 125 秒要说人话：2m 5s，而不是裸露的 125
+    expect(root.textContent).toContain('2m 5s')
+    // 只读视图：没有「新建」，也没有搜索框
+    expect(buttonsByText(root, i18n.global.t('common.create'))).toHaveLength(0)
+    expect(root.querySelector('input.n-input__input-el')).toBeNull()
+  })
+
+  it('非管理员看不到强制释放按钮', async () => {
+    const root = await mountView()
+    clickTab(root, 'leases')
+    await flush()
+    expect(buttonsByText(root, i18n.global.t('assets.lease.forceRelease'))).toHaveLength(0)
+  })
+
+  it('管理员强制释放以 runId 作二次确认，成功后刷新列表', async () => {
+    useAuthStore().user = {
+      id: 1,
+      username: 'admin',
+      displayName: 'admin',
+      email: null,
+      orgId: 1,
+      enabled: true,
+      passwordExpiresAt: null,
+      lastLoginAt: null,
+      roles: ['admin'],
+    }
+    const root = await mountView()
+    clickTab(root, 'leases')
+    await flush()
+
+    clickByText(root, i18n.global.t('assets.lease.forceRelease'))
+    await nextTick()
+    // confirmAction 是模块级单例：直接结算「确定」，不等 Modal 挂载
+    useConfirmHost().settle(true)
+    await flush()
+
+    expect(executionApi.forceReleaseLease).toHaveBeenCalledWith(
+      1,
+      'port:DUT-A:eth0',
+      'RUN-LEASE',
+    )
+    // 释放后必须重新拉列表：留着已释放的行等于让操作员以为没生效
+    expect(executionApi.listLeases).toHaveBeenCalledTimes(2)
+  })
+
+  it('取消二次确认时一个请求都不发', async () => {
+    useAuthStore().user = {
+      id: 1,
+      username: 'admin',
+      displayName: 'admin',
+      email: null,
+      orgId: 1,
+      enabled: true,
+      passwordExpiresAt: null,
+      lastLoginAt: null,
+      roles: ['admin'],
+    }
+    const root = await mountView()
+    clickTab(root, 'leases')
+    await flush()
+
+    clickByText(root, i18n.global.t('assets.lease.forceRelease'))
+    await nextTick()
+    useConfirmHost().settle(false)
+    await flush()
+
+    expect(executionApi.forceReleaseLease).not.toHaveBeenCalled()
   })
 })
 

@@ -265,6 +265,13 @@ export const reportsApi = {
     )
   },
 
+  /** 手动基线候选（RPT-03 补口）：后端只返回同项目同环境的 finished 运行。 */
+  baselineCandidates(projectId: number, runId: string): Promise<CompareBaseline[]> {
+    return request<CompareBaseline[]>(
+      `/reports/${encodeURIComponent(runId)}/baseline-candidates${toQuery({ projectId })}`,
+    )
+  },
+
   trend(
     projectId: number,
     runId: string,

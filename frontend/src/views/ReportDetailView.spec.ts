@@ -89,9 +89,12 @@ vi.mock('@/api/reports', async (importOriginal) => {
         ],
         summary: { newFail: 1, newPass: 1, bothFail: 1, notRun: 0 },
       })),
+      baselineCandidates: vi.fn(async () => [
+        { runId: 'RUN-OLD', startedAt: '2026-11-04T07:00:00+08:00' },
+        { runId: 'RUN-OLDER', startedAt: null },
+      ]),
       trend: vi.fn(async () => ({
         caseKey: 'TC-001',
-        currentEnvKey: 'DUT-A|LINK-AB',
         baselineMs: 1150,
         deviated: false,
         points: [
@@ -300,6 +303,41 @@ describe('ReportDetailView 对比', () => {
     expect(root.textContent).toContain(i18n.global.t('reports.compare.changes.BOTH_FAIL'))
     // TC-002 是持续失败；TC-001 才是真正的"无变化"，两者文案不能混
     expect(root.textContent).toContain(i18n.global.t('reports.compare.changes.SAME'))
+  })
+
+  it('手动基线：候选由后端给出，选中后带 baselineRunId 重新对比（RPT-03 补口）', async () => {
+    const root = await mountView()
+    await openCompare(root)
+    // 候选只拉一次，且带上 projectId / runId
+    expect(reportsApi.baselineCandidates).toHaveBeenCalledTimes(1)
+    expect(reportsApi.baselineCandidates).toHaveBeenCalledWith(1, 'RUN-AAA')
+    // 首次对比不带 baselineRunId —— 默认走后端自动基线
+    expect(reportsApi.compare).toHaveBeenLastCalledWith(1, 'RUN-AAA', undefined)
+
+    /**
+     * Naive 的下拉浮层要真实布局才展开，jsdom 里点不开，所以这里直接取 NSelect 实例上
+     * 的 `onUpdate:value` 回调来派发选中 —— 覆盖的是「选中 → 重新对比」这条接线，
+     * 浮层本身不在本用例的覆盖范围内。
+     */
+    const picker = root.querySelector<HTMLElement>('.baseline-select') as
+      | (HTMLElement & {
+          __vueParentComponent?: {
+            props: Record<string, unknown>
+          }
+        })
+      | null
+    expect(picker).not.toBeNull()
+    const onUpdate = picker!.__vueParentComponent?.props['onUpdate:value']
+    expect(typeof onUpdate).toBe('function')
+
+    ;(onUpdate as (value: string) => void)('RUN-OLD')
+    await flush()
+    expect(reportsApi.compare).toHaveBeenLastCalledWith(1, 'RUN-AAA', 'RUN-OLD')
+
+    // 选回「自动」时不能把字符串 "undefined" 传下去
+    ;(onUpdate as (value: string) => void)('')
+    await flush()
+    expect(reportsApi.compare).toHaveBeenLastCalledWith(1, 'RUN-AAA', undefined)
   })
 
   it('两侧结论与变化列都是图标 + 文字双编码', async () => {

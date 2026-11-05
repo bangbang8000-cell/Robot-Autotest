@@ -99,6 +99,36 @@ export function buildThemeOverrides(t: SemanticTokens): GlobalThemeOverrides {
       tabFontWeightActiveLine: 500,
     },
     /*
+     * 按钮（UX-06 暗色走查）。库的 `textColorPrimary` 是 light 主题里的写死白色，
+     * 而按钮底色由我们接成了 `--accent`。暗色档的强调色是浅蓝，白字压上去只有 2.57:1，
+     * 实心按钮几乎糊成一片。`--accent-contrast` 本来就是给「强调色底上的文字」准备的
+     * （亮色白字 / 暗色近黑），这里四个态统一接回它。
+     */
+    Button: {
+      textColorPrimary: t.accentContrast,
+      textColorHoverPrimary: t.accentContrast,
+      textColorPressedPrimary: t.accentContrast,
+      textColorFocusPrimary: t.accentContrast,
+      // 禁用态同样取库里的写死白色，暗色下白字压在浅蓝底上完全读不出（报告页 Export PDF 未就绪时）
+      textColorDisabledPrimary: t.accentContrast,
+    },
+    /*
+     * 单选按钮组（UX-06 暗色走查，报告页的 Daily/Weekly 切换）。
+     * 库默认 `buttonColor` / `buttonColorActive` 都取 light 主题的 `baseColor`（纯白），
+     * 于是暗色页面上会出现一块白底 + 浅蓝文字的选中项（2.57:1）。
+     * 底色接 panel / surface-2，文字接 text-muted / accent，亮色档取值与库默认一致，视觉不变。
+     */
+    Radio: {
+      buttonColor: t.panel,
+      buttonColorActive: t.surface2,
+      buttonTextColor: t.textMuted,
+      buttonTextColorActive: t.accent,
+      buttonTextColorHover: t.accent,
+      buttonBorderColor: t.border,
+      buttonBorderColorActive: t.accent,
+      buttonBorderColorHover: t.border,
+    },
+    /*
      * 表格（UX-05）。这两条是**修缺陷**，不是调样式：
      *
      * ① 表头底色。库默认 `thColor = composite(cardColor, tableHeaderColor)`，而

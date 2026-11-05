@@ -14,6 +14,14 @@ import { createPinia, setActivePinia } from 'pinia'
 import { i18n } from '@/locales'
 import { useAuthStore } from '@/stores/auth'
 import CasesView from '@/views/CasesView.vue'
+import { executionApi } from '@/api/execution'
+
+// EXEC-02：执行所选只依赖 runCases，绑定解析在后端；这里只断言前端把 id 与参数发出去
+vi.mock('@/api/execution', () => ({
+  executionApi: {
+    runCases: vi.fn(async () => ({ runId: 'RUN-9' })),
+  },
+}))
 
 // 工厂内直接写死数据：vi.mock 会被提升到 import 之前，引用外部 const 会 TDZ 报错
 vi.mock('@/api/cases', () => ({
@@ -97,6 +105,7 @@ afterEach(() => {
   app = null
   host = null
   pinia = null
+  vi.clearAllMocks()
 })
 
 describe('CasesView 勾选接线', () => {
@@ -137,5 +146,54 @@ describe('CasesView 勾选接线', () => {
   it('状态列走 StatusTag，图标与文字双编码', async () => {
     const root = await mountView()
     expect(root.querySelectorAll('.status-tag').length).toBe(2)
+  })
+})
+
+describe('CasesView 执行所选（EXEC-02）', () => {
+  /** 按 i18n 文案找按钮，避免硬编码中文。 */
+  function button(root: HTMLElement, label: string): HTMLButtonElement {
+    const found = [...root.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes(label),
+    )
+    expect(found).toBeTruthy()
+    return found as HTMLButtonElement
+  }
+
+  async function openRunForm(root: HTMLElement): Promise<void> {
+    checkboxes(root)[1].click()
+    await nextTick()
+    button(root, i18n.global.t('cases.run.open')).click()
+    await nextTick()
+    expect(root.textContent).toContain(i18n.global.t('cases.run.title', { count: 1 }))
+  }
+
+  it('提交只传所选 id 与执行参数，成功提示运行号', async () => {
+    const root = await mountView()
+    await openRunForm(root)
+
+    button(root, i18n.global.t('cases.run.submit')).click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(executionApi.runCases).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({ caseIds: [1], concurrency: 1, timeoutSeconds: 3600 }),
+    )
+    expect(root.textContent).toContain(i18n.global.t('cases.run.created', { runId: 'RUN-9' }))
+  })
+
+  it('后端未绑定 400：错误原文展示在表单内，勾选不丢', async () => {
+    vi.mocked(executionApi.runCases).mockRejectedValueOnce(
+      new Error('存在未绑定脚本的用例（1 条）：TC-001'),
+    )
+    const root = await mountView()
+    await openRunForm(root)
+
+    button(root, i18n.global.t('cases.run.submit')).click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(root.textContent).toContain('TC-001')
+    expect(root.textContent).toContain(i18n.global.t('cases.batch.selected', { count: 1 }))
   })
 })

@@ -23,6 +23,8 @@
         var ACCENTS = ['crimson', 'blue', 'gold', 'orange', 'violet', 'jade'];
         // prettier-ignore
         var LEGACY = { cyan: 'blue', indigo: 'blue', teal: 'jade', fuchsia: 'violet' };
+        // prettier-ignore
+        var DENSITIES = ['comfortable', 'compact'];
         try {
           var saved = localStorage.getItem('theme');
           var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -39,10 +41,16 @@
             'data-accent',
             ACCENTS.indexOf(savedAccent) >= 0 ? savedAccent : 'blue'
           );
+          var savedDensity = localStorage.getItem('density');
+          document.documentElement.setAttribute(
+            'data-density',
+            DENSITIES.indexOf(savedDensity) >= 0 ? savedDensity : 'comfortable'
+          );
         } catch (e) {
           // 存储被禁用等异常：给历史默认（暗色 + 蓝），保证至少有主题，不至于无样式
           document.documentElement.setAttribute('data-theme', 'dark');
           document.documentElement.setAttribute('data-accent', 'blue');
+          document.documentElement.setAttribute('data-density', 'comfortable');
         }
       })();
     </script>

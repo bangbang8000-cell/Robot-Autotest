@@ -179,8 +179,26 @@ const skeletonData = computed<T[]>(() =>
 
 /*
  * 表头底色与弱化色由 `naiveTheme.ts` 的 DataTable 覆盖项接管（暗色下表头曾因
- * 库默认 `tableHeaderColor` 是亮色而发白）；这里只处理骨架条。
+ * 库默认 `tableHeaderColor` 是亮色而发白）。
  */
+
+/*
+ * 行高双档（UX-06 密度）：舒适 44 / 紧凑 36，取 theme.css 的 `--table-row-h`，
+ * 这里只"用"不"定"。上下 padding 归零是刻意的——naive-ui 默认 td 有上下内边距，
+ * 留着会变成 44 + 16，档位就不可控；内容靠 vertical-align 居中，两行文本的单元格
+ * 仍会按内容撑高（没有 overflow 裁切），不会出现"字被切掉"。
+ * 选择器多写一层 `.n-data-table-table`，是为了压过库运行时注入的 `.n-data-table-td`
+ * （同权重时谁后注入谁赢，库是运行时插 <style>，不能赌顺序）。
+ */
+.data-table :deep(.n-data-table-table .n-data-table-th),
+.data-table :deep(.n-data-table-table .n-data-table-td) {
+  height: var(--table-row-h);
+  padding-top: 0;
+  padding-bottom: 0;
+  vertical-align: middle;
+}
+
+/* 骨架条 */
 .data-table__bar {
   display: block;
   height: 10px;

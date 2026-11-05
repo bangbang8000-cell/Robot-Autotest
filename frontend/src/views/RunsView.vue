@@ -4,15 +4,20 @@ import { useI18n } from 'vue-i18n'
 import {
   NButton,
   NCheckbox,
+  NInput,
+  NInputNumber,
   NPagination,
   NSelect,
   type DataTableColumns,
 } from 'naive-ui'
 import { executionApi, runLogSocketUrl, type ExecutionRun, type RunLogLine } from '@/api/execution'
+import { caseSetApi, type TestSet } from '@/api/cases'
+import { deviceApi, type Device } from '@/api/asset'
 import { useAuthStore } from '@/stores/auth'
 import DataTable from '@/components/DataTable.vue'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
+import FormField from '@/components/FormField.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { EMPTY, formatDateTime } from '@/utils/format'
@@ -37,6 +42,128 @@ const logPanel = ref<HTMLElement | null>(null)
 
 const projectId = computed(() => auth.projectId ?? 0)
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / size)))
+
+/* ---------- EXEC-01 手动执行表单 ---------- */
+
+const manualOpen = ref(false)
+/** 'suite' = 直接填套件路径；'testSet' = 交给后端按用例编号解析套件。 */
+const manualMode = ref('suite')
+const manualSuites = ref('suites')
+const manualTestSetId = ref<number | null>(null)
+const manualEnv = ref('')
+const manualConcurrency = ref(1)
+const manualTimeout = ref(3600)
+const manualDeviceKeys = ref<string[]>([])
+const manualTag = ref('')
+const manualBusy = ref(false)
+const testSets = ref<TestSet[]>([])
+const devices = ref<Device[]>([])
+
+const manualSourceOptions = computed(() => [
+  { label: t('execution.manual.sourceSuite'), value: 'suite' },
+  { label: t('execution.manual.sourceTestSet'), value: 'testSet' },
+])
+const testSetOptions = computed(() =>
+  testSets.value.map((set) => ({ label: `${set.name} (${set.setCode})`, value: set.id })))
+/**
+ * 设备范围选项：默认列本项目设备名，同时 `tag` 允许手填端口键（`DUT-01/mlx5_0`）。
+ * 端口级互斥才是实际需求的粒度，只给设备名会让两台机器共用一块网卡时判错。
+ */
+const deviceOptions = computed(() =>
+  devices.value.map((device) => ({ label: device.name, value: device.name })))
+const manualPaths = computed(() =>
+  manualSuites.value.split('\n').map((path) => path.trim()).filter((path) => path.length > 0))
+const canManualSubmit = computed(() => {
+  if (!projectId.value || manualBusy.value) return false
+  return manualMode.value === 'suite'
+    ? manualPaths.value.length > 0
+    : manualTestSetId.value !== null
+})
+
+function openManual(): void {
+  manualOpen.value = true
+  void loadTestSets()
+  void loadDevices()
+}
+
+function closeManual(): void {
+  manualOpen.value = false
+}
+
+async function loadTestSets(): Promise<void> {
+  if (!projectId.value) {
+    testSets.value = []
+    return
+  }
+  try {
+    const result = await caseSetApi.page(projectId.value, { page: 1, size: 100 })
+    testSets.value = result.items
+  } catch (e) {
+    error.value = localizeError(e)
+  }
+}
+
+async function loadDevices(): Promise<void> {
+  if (!projectId.value) {
+    devices.value = []
+    return
+  }
+  try {
+    const result = await deviceApi.page(projectId.value, { page: 1, size: 100 })
+    devices.value = result.items
+  } catch (e) {
+    error.value = localizeError(e)
+  }
+}
+
+function parsedEnv(): number | null {
+  const value = Number.parseInt(manualEnv.value.trim(), 10)
+  return Number.isNaN(value) ? null : value
+}
+
+async function submitManual(): Promise<void> {
+  if (!canManualSubmit.value) return
+  error.value = null
+  message.value = ''
+  if (manualMode.value === 'suite' && manualPaths.value.length === 0) {
+    error.value = { summary: t('execution.manual.needSuites'), detail: null }
+    return
+  }
+  if (manualMode.value === 'testSet' && manualTestSetId.value === null) {
+    error.value = { summary: t('execution.manual.needTestSet'), detail: null }
+    return
+  }
+  manualBusy.value = true
+  const testSetId = manualTestSetId.value
+  try {
+    const common = {
+      environmentId: parsedEnv(),
+      deviceKeys: manualDeviceKeys.value.length > 0 ? [...manualDeviceKeys.value] : undefined,
+      concurrency: Number(manualConcurrency.value) || 1,
+      timeoutSeconds: Number(manualTimeout.value) || 3600,
+      includeTag: manualTag.value.trim() || null,
+    }
+    const run =
+      manualMode.value === 'suite'
+        ? await executionApi.quickRun({
+            projectId: projectId.value,
+            suitePaths: manualPaths.value,
+            ...common,
+            source: 'runs-view',
+          })
+        : await executionApi.runTestSet(projectId.value, testSetId as number, common)
+    manualOpen.value = false
+    page.value = 1
+    await load()
+    await selectRun(run)
+    // load() 会清空 message，提示必须放在刷新之后
+    message.value = t('execution.manual.created', { runId: run.runId })
+  } catch (e) {
+    error.value = localizeError(e)
+  } finally {
+    manualBusy.value = false
+  }
+}
 
 const stateOptions = computed(() => [
   { label: t('execution.allStates'), value: '' },
@@ -231,14 +358,61 @@ function disconnect(): void {
   socketState.value = 'idle'
 }
 
-const onlyFail = ref(false)
+/**
+ * 日志级别过滤（FR-v0.4-20）：后端只产出 ERROR / WARN / INFO 三档（FAIL 在 RunLogService 里已归到
+ * ERROR），所以这里给三个可独立勾选的档位，默认全开。三档全关也允许——面板会明说「当前级别过滤下
+ * 没有日志」，而不是假装这份 run 没日志。
+ */
+type LogLevelFilter = 'error' | 'warn' | 'info'
 
-/** 只看失败：匹配文本含 FAIL/FAILED，或服务端判定的 error 级别。 */
+const enabledLevels = ref<LogLevelFilter[]>(['error', 'warn', 'info'])
+const downloadingLog = ref(false)
+
+const levelOptions = computed<{ value: LogLevelFilter; label: string }[]>(() => [
+  { value: 'error', label: t('execution.levelError') },
+  { value: 'warn', label: t('execution.levelWarn') },
+  { value: 'info', label: t('execution.levelInfo') },
+])
+
+/** 未知级别按 info 处理：宁可多显示一行，也不要把没见过的 level 藏掉。 */
+function lineLevel(level: string): LogLevelFilter {
+  const upper = level.toUpperCase()
+  if (upper === 'ERROR') return 'error'
+  if (upper === 'WARN') return 'warn'
+  return 'info'
+}
+
+function toggleLevel(level: LogLevelFilter, checked: boolean): void {
+  enabledLevels.value = checked
+    ? [...enabledLevels.value, level]
+    : enabledLevels.value.filter((item) => item !== level)
+}
+
 const visibleLines = computed(() =>
-  onlyFail.value
-    ? logLines.value.filter((line) => /fail/i.test(line.text) || line.level === 'error')
-    : logLines.value,
+  logLines.value.filter((line) => enabledLevels.value.includes(lineLevel(line.level))),
 )
+
+async function downloadFullLog(): Promise<void> {
+  const run = selected.value
+  if (!run) return
+  error.value = null
+  message.value = ''
+  downloadingLog.value = true
+  try {
+    const blob = await executionApi.downloadLog(projectId.value, run.runId)
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `run-${run.runId}.log`
+    link.click()
+    URL.revokeObjectURL(url)
+    message.value = t('execution.logDownloaded')
+  } catch (e) {
+    error.value = localizeError(e)
+  } finally {
+    downloadingLog.value = false
+  }
+}
 
 function scrollToBottom(): void {
   requestAnimationFrame(() => {
@@ -273,6 +447,7 @@ function turnPage(next: number): void {
 watch([projectId], () => {
   page.value = 1
   selected.value = null
+  manualOpen.value = false
   disconnect()
   logLines.value = []
   void load()
@@ -296,6 +471,7 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="toolbar">
+      <NButton type="primary" @click="openManual">{{ t('execution.manual.open') }}</NButton>
       <NSelect
         v-model:value="stateFilter"
         :options="stateOptions"
@@ -310,6 +486,85 @@ onBeforeUnmount(() => {
 
     <ErrorLineView v-if="error" :error="error" />
     <p v-if="message" class="text-ok">{{ message }}</p>
+
+    <div v-if="manualOpen" class="card form-card">
+      <div class="form-head">
+        <h2 class="card-title">{{ t('execution.manual.title') }}</h2>
+        <NButton text @click="closeManual">{{ t('common.cancel') }}</NButton>
+      </div>
+
+      <div class="form-grid">
+        <FormField :label="t('execution.manual.source')">
+          <NSelect v-model:value="manualMode" :options="manualSourceOptions" />
+        </FormField>
+
+        <FormField
+          v-if="manualMode === 'testSet'"
+          :label="t('execution.manual.testSet')"
+          required
+          :hint="t('execution.manual.testSetHint')"
+        >
+          <NSelect
+            v-model:value="manualTestSetId"
+            :options="testSetOptions"
+            filterable
+            clearable
+            :placeholder="t('execution.manual.noTestSets')"
+          />
+        </FormField>
+
+        <FormField :label="t('execution.manual.environment')" :hint="t('execution.manual.environmentHint')">
+          <NInput v-model:value="manualEnv" />
+        </FormField>
+
+        <FormField :label="t('execution.manual.concurrency')">
+          <NInputNumber v-model:value="manualConcurrency" :min="1" :max="16" />
+        </FormField>
+
+        <FormField
+          :label="t('execution.manual.deviceScope')"
+          :hint="t('execution.manual.deviceScopeHint')"
+        >
+          <NSelect
+            v-model:value="manualDeviceKeys"
+            :options="deviceOptions"
+            multiple
+            filterable
+            tag
+            clearable
+            :placeholder="t('execution.allDevices')"
+          />
+        </FormField>
+
+        <FormField :label="t('execution.manual.timeout')">
+          <NInputNumber v-model:value="manualTimeout" :min="1" :max="86400" />
+        </FormField>
+
+        <FormField :label="t('execution.manual.includeTag')">
+          <NInput v-model:value="manualTag" :maxlength="64" />
+        </FormField>
+      </div>
+
+      <FormField
+        v-if="manualMode === 'suite'"
+        :label="t('execution.manual.suitePaths')"
+        required
+        :hint="t('execution.manual.suitePathsHint')"
+      >
+        <NInput
+          v-model:value="manualSuites"
+          type="textarea"
+          :autosize="{ minRows: 3, maxRows: 6 }"
+        />
+      </FormField>
+
+      <div class="form-actions">
+        <NButton type="primary" :disabled="!canManualSubmit" :loading="manualBusy" @click="submitManual">
+          {{ t('execution.manual.submit') }}
+        </NButton>
+        <NButton quaternary @click="closeManual">{{ t('common.cancel') }}</NButton>
+      </div>
+    </div>
 
     <DataTable
       :columns="columns"
@@ -340,9 +595,30 @@ onBeforeUnmount(() => {
           :tone="runStatusTone(selected.state)"
         />
         <span class="muted">{{ t(`execution.socket.${socketState}`) }}</span>
-        <NCheckbox v-model:checked="onlyFail" class="only-fail">
-          {{ t('execution.onlyFail') }}
+        <span class="muted">
+          {{ t('execution.deviceScopeLine', { scope: selected.deviceScope || t('execution.allDevices') }) }}
+        </span>
+        <!-- 重试可追溯（FR-v0.4-29）：首次尝试不渲染，只有重试记录才带「第 N 次尝试」 -->
+        <span v-if="selected.attemptNo > 1" class="muted">
+          {{ t('execution.attemptLine', { n: selected.attemptNo }) }}
+        </span>
+        <NCheckbox
+          v-for="option in levelOptions"
+          :key="option.value"
+          :checked="enabledLevels.includes(option.value)"
+          class="level-filter"
+          @update:checked="(checked: boolean) => toggleLevel(option.value, checked)"
+        >
+          {{ option.label }}
         </NCheckbox>
+        <NButton
+          quaternary
+          size="tiny"
+          :loading="downloadingLog"
+          @click="downloadFullLog"
+        >
+          {{ t('execution.downloadLog') }}
+        </NButton>
       </div>
       <pre v-if="visibleLines.length" ref="logPanel" class="log-lines">
 <span
@@ -352,12 +628,40 @@ onBeforeUnmount(() => {
   :class="`level-${line.level.toLowerCase()}`"
 >{{ line.tsGen }} [{{ line.source }}] {{ line.text }}
 </span></pre>
-      <p v-else class="muted">{{ t('execution.emptyLog') }}</p>
+      <p v-else class="muted">
+        {{ t(enabledLevels.length < 3 ? 'execution.logFilteredEmpty' : 'execution.emptyLog') }}
+      </p>
     </div>
   </div>
 </template>
 
 <style scoped>
+.form-card {
+  margin-bottom: 16px;
+}
+
+.form-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-head .card-title {
+  margin: 0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3) var(--space-4);
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
 .log-card {
   margin-top: 16px;
 }

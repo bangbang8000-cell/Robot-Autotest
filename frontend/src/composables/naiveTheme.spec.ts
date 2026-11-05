@@ -73,6 +73,23 @@ describe('naiveTheme 对接层', () => {
     expect(table?.thTextColor).not.toBe(table?.tdTextColor)
   })
 
+  it('按钮与单选按钮组接回 token（暗色下不再沿用库默认的白字/白底）', () => {
+    const overrides = buildThemeOverrides(sample)
+    // 实心按钮：强调色底上的文字必须是 accentContrast，不能停在库的写死白色
+    expect(overrides.Button?.textColorPrimary).toBe('on-accent')
+    expect(overrides.Button?.textColorHoverPrimary).toBe('on-accent')
+    // 单选按钮组：选中态底色不能是库的 baseColor（纯白）
+    expect(overrides.Radio?.buttonColor).toBe('panel-token')
+    expect(overrides.Radio?.buttonColorActive).toBe('surface2-token')
+    expect(overrides.Radio?.buttonTextColorActive).toBe('accent-default')
+    const allowed = new Set(Object.values(sample))
+    for (const value of [...Object.values(overrides.Button ?? {}), ...Object.values(overrides.Radio ?? {})]) {
+      if (typeof value === 'string' && value !== '') {
+        expect(allowed.has(value)).toBe(true)
+      }
+    }
+  })
+
   it('展示清单覆盖全部语义名，且都是 CSS 变量名', () => {
     expect(SEMANTIC_CSS_VARS.length).toBeGreaterThanOrEqual(18)
     expect(new Set(SEMANTIC_CSS_VARS).size).toBe(SEMANTIC_CSS_VARS.length)

@@ -7,6 +7,7 @@ import { useLocaleStore } from '@/stores/locale'
 import { useAuthStore } from '@/stores/auth'
 import { useTheme, type ThemeMode } from '@/composables/useTheme'
 import { useAccent } from '@/composables/useAccent'
+import { useDensity } from '@/composables/useDensity'
 import { useNaiveTheme } from '@/composables/naiveTheme'
 import { preferenceApi } from '@/api/preferences'
 import AppIcon from '@/components/AppIcon.vue'
@@ -33,12 +34,14 @@ const localeStore = useLocaleStore()
 const auth = useAuthStore()
 const theme = useTheme()
 const accent = useAccent()
+const density = useDensity()
 const { overrides } = useNaiveTheme()
 
 // index.html 的内联脚本已设过 data-theme / data-accent（防闪）；这里再跑一次是兜底：
 // 万一内联脚本被 CSP 拦掉，或 localStorage 里的值与当前状态不一致，也需要纠正。
 theme.init()
 accent.init()
+density.init()
 
 const THEME_ICONS: Record<ThemeMode, IconName> = {
   system: 'system',
@@ -155,6 +158,7 @@ onMounted(async () => {
     const prefs = await preferenceApi.get()
     theme.applyRemote(prefs.theme)
     accent.applyRemote(prefs.accent)
+    density.applyRemote(prefs.density)
   } catch {
     // 用本地值继续
   }

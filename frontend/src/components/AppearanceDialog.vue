@@ -1,6 +1,7 @@
 <script setup lang="ts">
 /**
  * UX-04 步骤 6：外观面板（主题三态 + 强调色六预设）。
+ * UX-06 追加：表格密度双档（舒适 44 / 紧凑 36）。
  *
  * 六枚色板的颜色不写在组件里：`--preset-*` 定义在 theme.css 的 primitives 层，
  * 与 12 套运行时主题共用同一份色值真源（`check_colors.py` 只允许 theme.css 定义色值）。
@@ -9,6 +10,7 @@
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { ACCENTS, useAccent, type AccentName } from '@/composables/useAccent'
+import { DENSITIES, useDensity, type DensityName } from '@/composables/useDensity'
 import { useTheme, type ThemeMode } from '@/composables/useTheme'
 import { preferenceApi } from '@/api/preferences'
 import AppIcon from './AppIcon.vue'
@@ -20,6 +22,7 @@ const emit = defineEmits<{ 'update:open': [value: boolean] }>()
 const { t } = useI18n()
 const auth = useAuthStore()
 const accent = useAccent()
+const density = useDensity()
 const theme = useTheme()
 
 const THEME_MODES: ThemeMode[] = ['system', 'light', 'dark']
@@ -62,6 +65,16 @@ async function chooseTheme(mode: ThemeMode): Promise<void> {
   if (!auth.authenticated) return
   try {
     await preferenceApi.put({ theme: mode })
+  } catch {
+    // 同上
+  }
+}
+
+async function chooseDensity(name: DensityName): Promise<void> {
+  if (!density.setDensity(name)) return
+  if (!auth.authenticated) return
+  try {
+    await preferenceApi.put({ density: name })
   } catch {
     // 同上
   }
@@ -119,6 +132,24 @@ async function chooseTheme(mode: ThemeMode): Promise<void> {
           </button>
         </div>
         <p class="appearance-hint">{{ t('appearance.accentHint') }}</p>
+      </div>
+
+      <div class="appearance-section">
+        <h3>{{ t('appearance.density') }}</h3>
+        <div class="appearance-modes">
+          <button
+            v-for="name in DENSITIES"
+            :key="name"
+            class="mode-btn"
+            :class="{ selected: density.density.value === name }"
+            type="button"
+            :aria-pressed="density.density.value === name"
+            @click="chooseDensity(name)"
+          >
+            <span>{{ t(`appearance.densities.${name}`) }}</span>
+          </button>
+        </div>
+        <p class="appearance-hint">{{ t('appearance.densityHint') }}</p>
       </div>
     </section>
   </div>

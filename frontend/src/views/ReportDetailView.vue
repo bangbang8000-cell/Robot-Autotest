@@ -13,6 +13,7 @@ import {
 import {
   REPORT_METADATA_KEYS,
   reportsApi,
+  type CompareBaseline,
   type CompareResult,
   type CompareRow,
   type CompareSide,
@@ -57,6 +58,10 @@ const showCompare = ref(false)
 const compare = ref<CompareResult | null>(null)
 const compareLoading = ref(false)
 const compareError = ref<ErrorLine | null>(null)
+/** 手动基线（RPT-03 补口）：'' 表示自动基线，其余是同环境候选的 RUN_ID。 */
+const baselineCandidates = ref<CompareBaseline[]>([])
+const selectedBaseline = ref('')
+const candidatesLoading = ref(false)
 
 // 趋势区块（RPT-04）：用例维度 + 环境断线 + 自写 SVG 折线。
 const trend = ref<CaseTrendResult | null>(null)
@@ -128,7 +133,11 @@ async function loadCompare(): Promise<void> {
   compareError.value = null
   compareLoading.value = true
   try {
-    compare.value = await reportsApi.compare(projectId.value, runId.value)
+    compare.value = await reportsApi.compare(
+      projectId.value,
+      runId.value,
+      selectedBaseline.value || undefined,
+    )
   } catch (e) {
     compareError.value = localizeError(e)
   } finally {
@@ -136,11 +145,45 @@ async function loadCompare(): Promise<void> {
   }
 }
 
+/**
+ * 手动基线候选（RPT-03 补口）：拉取失败只让下拉剩「自动」一项，
+ * 不把对比本身一起判红 —— 没有候选不代表对比做不了。
+ */
+async function loadBaselineCandidates(): Promise<void> {
+  candidatesLoading.value = true
+  try {
+    baselineCandidates.value = await reportsApi.baselineCandidates(projectId.value, runId.value)
+  } catch {
+    baselineCandidates.value = []
+  } finally {
+    candidatesLoading.value = false
+  }
+}
+
+const baselineOptions = computed(() => [
+  { label: t('reports.compare.baselineAuto'), value: '' },
+  ...baselineCandidates.value.map((item) => ({
+    label: item.startedAt
+      ? t('reports.compare.baselineOption', {
+          runId: item.runId,
+          at: formatDateTime(item.startedAt),
+        })
+      : item.runId,
+    value: item.runId,
+  })),
+])
+
+/** `NSelect` 的 value 是 `string | number | null`，收敛成字符串再落 ref。 */
+function selectBaseline(value: string | number | null): void {
+  selectedBaseline.value = value == null ? '' : String(value)
+  void loadCompare()
+}
+
 /** 对比开关：换成 `NCheckbox` 后拿到的是布尔值，不再从 `Event` 里刨 `checked`。 */
 async function toggleCompare(checked: boolean): Promise<void> {
   showCompare.value = checked
   if (showCompare.value && !compare.value) {
-    await loadCompare()
+    await Promise.all([loadBaselineCandidates(), loadCompare()])
   }
 }
 
@@ -486,6 +529,8 @@ function exportDownloadUrl(item: ReportExportHistoryItem): string {
 watch([projectId, runId], () => {
   compare.value = null
   showCompare.value = false
+  baselineCandidates.value = []
+  selectedBaseline.value = ''
   logOpen.value = false
   trend.value = null
   passRate.value = null
@@ -747,6 +792,18 @@ watch(granularity, () => {
       <section v-if="showCompare" class="card wide-card">
         <div class="section-head">
           <h2 class="card-title">{{ t('reports.compare.title') }}</h2>
+          <label class="baseline-picker muted">
+            {{ t('reports.compare.baselineLabel') }}
+            <NSelect
+              class="baseline-select"
+              size="small"
+              :value="selectedBaseline"
+              :options="baselineOptions"
+              :loading="candidatesLoading"
+              :placeholder="t('reports.compare.baselineAuto')"
+              @update:value="selectBaseline"
+            />
+          </label>
           <span v-if="compare?.baseline" class="muted">
             {{ t('reports.compare.baseline', { runId: compare.baseline.runId }) }}
           </span>
@@ -807,6 +864,17 @@ watch(granularity, () => {
 
 /* NSelect 不给宽度时按父容器撑满，这里固定成能放下完整 caseKey 的宽度 */
 .trend-select {
+  width: 220px;
+}
+
+.baseline-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 手动基线下拉：与趋势下拉同宽，RUN_ID + 时间放不下时由 NSelect 自身省略 */
+.baseline-select {
   width: 220px;
 }
 
