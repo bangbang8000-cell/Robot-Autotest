@@ -52,6 +52,38 @@
 ## 4. 已知残余（未在本包解决）
 
 - 租约按 **run** 聚合（`execution_job` 每 run 一条），未按分片拆 job；FR-04「每片申请」在语义上以「整 run 覆盖设备集合」实现。
-- FR-08 等待态 UI（`WAITING` + 等待对象与时长）仍缺；本包只补齐后端拒绝原因与资源键清单。
-- `run.lease_wait_ms`（基线列）尚未回写。
+- ~~FR-08 等待态 UI（`WAITING` + 等待对象与时长）仍缺；本包只补齐后端拒绝原因与资源键清单。~~
+  2026-11-06 已补「等待资源」可见态，见第 5 节。
+- ~~`run.lease_wait_ms`（基线列）尚未回写。~~ 2026-11-06 已回写，见第 5 节。
 - 全局单线程派发器未改，队列语义（FR-03 / 05）仍为下一 P0。
+
+## 5. 2026-11-06 补记：等待资源可见 + `lease_wait_ms` 回写（FR-08 收口）
+
+**做法**：不新增 `run_status` 枚举值（`WAITING` 会打乱状态机与既有 SQL 口径），改为「运行期登记 + 落库耗时」两层：
+
+| 层 | 位置 | 改动 |
+|---|---|---|
+| 登记 | 新增 `LeaseWaitRegistry`（`ConcurrentHashMap<runId, Instant>` + 注入 `Clock`） | `begin/end/waiting` 三个方法；只做运行期展示，进程重启即丢，不影响执行 |
+| 执行 | `RunExecutionService` 在 `acquireAll` 前后 `begin`/`end` | 成功、`lease_timeout`、`lease_acquire_failed` 三条路径都会 `end` 并回写，不会漏计时 |
+| 落库 | `RunRepository.recordLeaseWait`（接口默认空实现 + JDBC 覆盖） | `UPDATE run SET lease_wait_ms=?, updated_at=CURRENT_TIMESTAMP(3) WHERE run_id=? AND project_id>0`，走 `TenantGuard` |
+| 接口 | `GET /runs/{runId}/pending-activity` | 等租约时优先返回 `state=waiting`，不被派发器的 `running` 盖住 |
+| 界面 | `RunsView.vue` + `execution.ts` | `PREPARING` 也启动 5s 轮询；`waiting` 显示「等待资源 · 设备被其他运行占用，拿到租约后自动开始」；`running`/`terminal` 才停轮询 |
+
+边界：
+
+- `waiting` 只表示「已出队、正在等租约」，**不等同**于排队位次（那是 `queued`）；两者文案分开，避免又混成一团。
+- 等待时长只落 `run.lease_wait_ms`，暂不从接口回读（`RunRecord` 有 23 处构造点，单独开接口不值当；需要时直接查库或看 `pending-activity` 状态变化）。
+- `execution.lease-max-wait-seconds=0`（不重试）时仍会走登记/回写，值为 0 ms，属于预期。
+
+新增用例：
+
+- 后端 `LeaseWaitRegistryTest`：`begin → waiting → end` 返回 2500ms，重复 `end` 返回 0（用可推进的 `MutableClock`）。
+- 后端 `RunControllerTest`：`waiting` 优先于派发器 `running`，响应 `state=waiting`、`maxParallel=4`。
+- 后端 `RunExecutionServiceTest`：原「持有租约并释放」补断言 `lease_wait_ms` 必须回写（固定时钟下为 0）。
+- 前端 `RunsView.spec`：`PREPARING` 行会调用 `pendingActivity` 并渲染「等待资源」文案。
+
+门禁（2026-11-06）：后端 **557 passed**（555 + 2）；前端 **199 passed**（198 + 1，28 文件）；
+`vue-tsc` 0 error、`vite build` 成功、`lint.sh` PASS、`check_release_docs.py` FAIL 0 / WARN 0、
+WBS 自洽 PASS。日志：`backend-test-20261106.log`、`frontend-test-20261106.log`、
+`frontend-tsc-20261106.log`、`frontend-build-20261106.log`、`font-20261106.log`、
+`lint-20261106.log`、`release-docs-20261106.log`、`wbs-20261106.log`。

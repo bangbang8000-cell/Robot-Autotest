@@ -48,6 +48,7 @@ public class RunExecutionService {
     private final FailureClassifier classifier;
     private final RetryPolicy retryPolicy;
     private final Clock clock;
+    private final LeaseWaitRegistry leaseWaits;
 
     public RunExecutionService(RunService runs,
                                ExecutionProperties props,
@@ -60,7 +61,8 @@ public class RunExecutionService {
                                TestResultWriter results,
                                FailureClassifier classifier,
                                RetryPolicy retryPolicy,
-                               Clock clock) {
+                               Clock clock,
+                               LeaseWaitRegistry leaseWaits) {
         this.runs = runs;
         this.props = props;
         this.precheck = precheck;
@@ -73,6 +75,7 @@ public class RunExecutionService {
         this.classifier = classifier;
         this.retryPolicy = retryPolicy;
         this.clock = clock;
+        this.leaseWaits = leaseWaits;
     }
 
     public RunRecord execute(RunService.CreateRunCommand cmd) {
@@ -158,12 +161,16 @@ public class RunExecutionService {
         }
         Duration maxWait = Duration.ofSeconds(Math.max(0, props.getLeaseMaxWaitSeconds()));
         boolean acquired;
+        // FR-08：等租约期间登记「等待资源」，接口据此显示 waiting；结束（成功/超时/异常）都回写耗时。
+        leaseWaits.begin(created.runId());
         try {
             acquired = leases.acquireAll(requests, maxWait);
         } catch (RuntimeException acquireFailed) {
+            runs.recordLeaseWait(created.runId(), leaseWaits.end(created.runId()));
             return fail(created, "lease_acquire_failed",
                     "申请租约异常: " + acquireFailed.getMessage());
         }
+        runs.recordLeaseWait(created.runId(), leaseWaits.end(created.runId()));
         if (!acquired) {
             return fail(created, "lease_timeout", FailureClass.INFRA,
                     "等待资源 " + String.join(", ", resourceKeys) + " 超过 "

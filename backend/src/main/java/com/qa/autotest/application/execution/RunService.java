@@ -152,6 +152,14 @@ public class RunService {
                         "执行作业不存在: " + runId));
     }
 
+    /**
+     * 回写本次运行等待设备租约的耗时（FR-08）。只在执行线程里调用，失败不阻断执行主流程，
+     * 所以仓储默认实现可以为空；JDBC 实现写 {@code run.lease_wait_ms}。
+     */
+    public int recordLeaseWait(String runId, long waitMs) {
+        return runs.recordLeaseWait(runId, waitMs);
+    }
+
     public PageResult<RunRecord> page(long projectId, RunState state, int page, int size) {
         if (page < 1 || size < 1 || size > 100) {
             throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "分页参数越界");

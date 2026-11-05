@@ -197,6 +197,17 @@ public class RunRepositoryJdbc implements RunRepository {
     }
 
     @Override
+    public int recordLeaseWait(String runId, long waitMs) {
+        String sql = """
+                UPDATE run
+                   SET lease_wait_ms = ?, updated_at = CURRENT_TIMESTAMP(3)
+                 WHERE run_id = ? AND project_id > 0
+                """;
+        TenantGuard.requireProjectScope(sql, "run");
+        return jdbc.update(sql, Math.max(0, waitMs), runId);
+    }
+
+    @Override
     public List<RunRecord> findActive() {
         String sql = SELECT + " WHERE project_id > 0 AND run_status IN ('preparing', 'running')";
         TenantGuard.requireProjectScope(sql, "run");

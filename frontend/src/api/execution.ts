@@ -55,12 +55,14 @@ export interface ForceReleaseResult {
  * 排队位次（EXEC-10 残余 / FR-v0.4-14）。
  *
  * - `state = queued`：在队列中等待，`position` 为 1 起的位次；`position = 0` 表示后端重启过、位次未知。
+ * - `state = waiting`：已出队，正在等设备租约（设备被别的运行占用，FR-08）。
  * - `state = running`：已占用执行线程。
  * - `state = terminal`：已结束（或已取消/失败）。
  */
 export interface PendingActivity {
   runId: string
-  state: 'queued' | 'running' | 'terminal'
+  /** waiting = 已被派发但在等设备租约（FR-08），与 running 区分 */
+  state: 'queued' | 'waiting' | 'running' | 'terminal'
   position: number
   waiting: number
   running: number

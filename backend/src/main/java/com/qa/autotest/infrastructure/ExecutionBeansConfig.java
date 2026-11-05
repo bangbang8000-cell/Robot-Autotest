@@ -7,6 +7,7 @@ import com.qa.autotest.application.execution.FailureClassifier;
 import com.qa.autotest.application.execution.FailureRuleSet;
 import com.qa.autotest.application.execution.FileSystemProbe;
 import com.qa.autotest.application.execution.LeaseService;
+import com.qa.autotest.application.execution.LeaseWaitRegistry;
 import com.qa.autotest.application.execution.NioFileSystemProbe;
 import com.qa.autotest.application.execution.OutputXmlProbe;
 import com.qa.autotest.application.execution.PabotCommandBuilder;
@@ -54,6 +55,12 @@ public class ExecutionBeansConfig {
     @Bean
     public RunIdGenerator runIdGenerator() {
         return new RunIdGenerator();
+    }
+
+    /** 租约等待登记：让「设备被占」在界面显示成等待资源而不是运行中（FR-08）。 */
+    @Bean
+    public LeaseWaitRegistry leaseWaitRegistry(Clock executionClock) {
+        return new LeaseWaitRegistry(executionClock);
     }
 
     @Bean

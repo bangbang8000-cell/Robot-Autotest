@@ -3,6 +3,7 @@ package com.qa.autotest.api.execution;
 import com.qa.autotest.application.execution.CancelService;
 import com.qa.autotest.application.execution.CaseRunService;
 import com.qa.autotest.application.execution.ExecutionProperties;
+import com.qa.autotest.application.execution.LeaseWaitRegistry;
 import com.qa.autotest.application.execution.QuickRunService;
 import com.qa.autotest.application.execution.RunDispatcher;
 import com.qa.autotest.application.execution.RunLogFileService;
@@ -56,11 +57,13 @@ public class RunController {
     private final TestSetRunService testSetRuns;
     private final CaseRunService caseRuns;
     private final RunDispatcher dispatcher;
+    private final LeaseWaitRegistry leaseWaits;
 
     public RunController(RunService runs, CancelService cancels, RunLogService logs,
                          ExecutionProperties props, QuickRunService quickRuns,
                          TestSetRunService testSetRuns, CaseRunService caseRuns,
-                         RunLogFileService logFiles, RunDispatcher dispatcher) {
+                         RunLogFileService logFiles, RunDispatcher dispatcher,
+                         LeaseWaitRegistry leaseWaits) {
         this.runs = runs;
         this.cancels = cancels;
         this.logs = logs;
@@ -70,6 +73,7 @@ public class RunController {
         this.caseRuns = caseRuns;
         this.logFiles = logFiles;
         this.dispatcher = dispatcher;
+        this.leaseWaits = leaseWaits;
     }
 
     /** 页面手动执行（EXEC-01 / FR-v0.2-59~60）。 */
@@ -200,6 +204,10 @@ public class RunController {
                                                                   @RequestParam long projectId) {
         RunRecord run = runs.get(projectId, runId);
         int maxParallel = Math.max(1, props.getMaxParallel());
+        // FR-08：正在等设备租约时优先返回 waiting，避免被派发器的 running 盖住。
+        if (leaseWaits.waiting(runId)) {
+            return ApiResponse.ok(new RunDispatcher.QueueStatus(runId, "waiting", 0, 0, 0, maxParallel));
+        }
         return ApiResponse.ok(dispatcher.status(runId).orElseGet(() -> {
             String state = switch (run.state()) {
                 case QUEUED -> "queued";

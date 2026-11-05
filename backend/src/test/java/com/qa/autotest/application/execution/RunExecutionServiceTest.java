@@ -125,6 +125,8 @@ class RunExecutionServiceTest {
         assertEquals(0, fixture.leaseRepo.size());
         assertTrue(fixture.leaseRepo.history().stream()
                 .anyMatch(row -> "released".equals(row.state()) && "finished".equals(row.reason())));
+        assertEquals(Long.valueOf(0L), fixture.repo.leaseWaitMs(),
+                "固定时钟下耗时为 0，但必须回写 run.lease_wait_ms（FR-08）");
     }
 
     @Test
@@ -256,7 +258,8 @@ class RunExecutionServiceTest {
             this.service = new RunExecutionService(runs, props, precheck, leaseService,
                     new ExecutionWorkspaceMaterializer(ExecutionTestSupport.scriptRepo(scripts)),
                     new PabotCommandBuilder(), orchestrator, artifacts, results,
-                    new FailureClassifier(FailureRuleSet.defaults()), new RetryPolicy(), CLOCK);
+                    new FailureClassifier(FailureRuleSet.defaults()), new RetryPolicy(), CLOCK,
+                    new LeaseWaitRegistry(CLOCK));
         }
     }
 
@@ -414,6 +417,22 @@ class RunExecutionServiceTest {
         public List<RunRecord> findActive() {
             return byRunId.values().stream()
                     .filter(r -> r.state().active()).toList();
+        }
+
+        /** 记录回写的租约等待耗时，供 FR-08 断言；null 表示从未回写。 */
+        private Long leaseWaitMs;
+
+        @Override
+        public int recordLeaseWait(String runId, long waitMs) {
+            if (!byRunId.containsKey(runId)) {
+                return 0;
+            }
+            leaseWaitMs = waitMs;
+            return 1;
+        }
+
+        private Long leaseWaitMs() {
+            return leaseWaitMs;
         }
 
         @Override

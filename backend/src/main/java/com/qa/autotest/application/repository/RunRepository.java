@@ -53,6 +53,14 @@ public interface RunRepository {
 
     int updateCounts(String runId, int total, int passed, int failed, String artifactsDir);
 
+    /**
+     * 回写本次运行的租约等待耗时（{@code run.lease_wait_ms}，FR-08）。
+     * 默认空实现，保证内存仓储与既有测试无需改动；JDBC 实现必须覆盖。
+     */
+    default int recordLeaseWait(String runId, long waitMs) {
+        return 0;
+    }
+
     List<RunRecord> findActive();
 
     PageResult<RunRecord> page(long projectId, RunState state, int page, int size);

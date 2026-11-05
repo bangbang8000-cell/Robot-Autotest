@@ -314,9 +314,9 @@ async function selectRun(run: ExecutionRun): Promise<void> {
   stopPendingPoll()
   pending.value = null
   await loadRecentLog()
-  if (run.state === 'QUEUED') {
+  if (run.state === 'QUEUED' || run.state === 'PREPARING') {
     await loadPending()
-    // 5 秒一轮：位次会随前面的 run 结束而前进，页面不重载也能看到变化
+    // 5 秒一轮：位次会随前面的 run 结束而前进；等设备租约时也能看到「等待资源」到自动消失
     pendingTimer = window.setInterval(() => void loadPending(), 5000)
   }
   connect()
@@ -341,7 +341,8 @@ async function loadPending(): Promise<void> {
   }
   try {
     pending.value = await executionApi.pendingActivity(projectId.value, run.runId)
-    if (pending.value.state !== 'queued') {
+    // queued / waiting 都要继续轮询：位次会变，租约也会在拿到后转 running
+    if (pending.value.state === 'running' || pending.value.state === 'terminal') {
       stopPendingPoll()
     }
   } catch {
@@ -667,6 +668,10 @@ onBeforeUnmount(() => {
               ? t('execution.queuePosition', { position: pending.position, waiting: pending.waiting })
               : t('execution.queueUnknown')
           }}
+        </span>
+        <!-- 等待资源（FR-08）：设备被占时不再显示成「运行中」，单独说明在等租约 -->
+        <span v-if="pending && pending.state === 'waiting'" class="muted queue-hint">
+          {{ t('execution.leaseWaiting') }}
         </span>
         <!-- 重试可追溯（FR-v0.4-29）：首次尝试不渲染，只有重试记录才带「第 N 次尝试」 -->
         <span v-if="selected.attemptNo > 1" class="muted">

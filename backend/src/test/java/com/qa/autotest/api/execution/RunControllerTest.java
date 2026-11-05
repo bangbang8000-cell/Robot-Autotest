@@ -3,6 +3,7 @@ package com.qa.autotest.api.execution;
 import com.qa.autotest.application.execution.CancelService;
 import com.qa.autotest.application.execution.CaseRunService;
 import com.qa.autotest.application.execution.ExecutionProperties;
+import com.qa.autotest.application.execution.LeaseWaitRegistry;
 import com.qa.autotest.application.execution.QuickRunService;
 import com.qa.autotest.application.execution.RunDispatcher;
 import com.qa.autotest.application.execution.RunLogFileService;
@@ -56,6 +57,7 @@ class RunControllerTest {
     private CaseRunService caseRuns;
     private RunLogFileService logFiles;
     private RunDispatcher dispatcher;
+    private LeaseWaitRegistry leaseWaits;
     private MockMvc mvc;
 
     @BeforeEach
@@ -66,9 +68,10 @@ class RunControllerTest {
         caseRuns = mock(CaseRunService.class);
         logFiles = mock(RunLogFileService.class);
         dispatcher = mock(RunDispatcher.class);
+        leaseWaits = mock(LeaseWaitRegistry.class);
         RunController controller = new RunController(runs, mock(CancelService.class),
                 mock(RunLogService.class), new ExecutionProperties(), quickRuns, testSetRuns,
-                caseRuns, logFiles, dispatcher);
+                caseRuns, logFiles, dispatcher, leaseWaits);
         mvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -163,6 +166,20 @@ class RunControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.state").value("queued"))
                 .andExpect(jsonPath("$.data.position").value(0));
+    }
+
+    @Test
+    @DisplayName("pending-activity：等租约时返回 waiting，优先于派发器的 running（FR-08）")
+    void pendingActivity_等待资源优先返回waiting() throws Exception {
+        when(runs.get(1L, "RUN-1")).thenReturn(run("RUN-1"));
+        when(leaseWaits.waiting("RUN-1")).thenReturn(true);
+        when(dispatcher.status("RUN-1")).thenReturn(Optional.of(
+                new RunDispatcher.QueueStatus("RUN-1", "running", 0, 0, 1, 4)));
+
+        mvc.perform(get("/api/execution/runs/RUN-1/pending-activity").param("projectId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.state").value("waiting"))
+                .andExpect(jsonPath("$.data.maxParallel").value(4));
     }
 
     @Test

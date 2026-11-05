@@ -575,7 +575,7 @@ class AuthorizationBoundaryTest {
                 new RunIdGenerator(), props, CLOCK);
         // 取消 / 日志端点不在本测试集范围内；控制器构造需要占位，故仅日志服务给出真实实例。
         RunController runController = new RunController(runService, null, new RunLogService(CLOCK), props,
-                null, null, null, null, null);
+                null, null, null, null, null, null);
 
         ReportRepository reportRepository = stub(ReportRepository.class, (name, args) -> switch (name) {
             case "page" -> PageResult.empty((Integer) args[1], (Integer) args[2]);

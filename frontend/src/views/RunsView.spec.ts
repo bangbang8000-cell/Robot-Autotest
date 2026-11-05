@@ -284,6 +284,47 @@ describe('RunsView 列表与日志联动', () => {
     expect(root.textContent).toContain(i18n.global.t('execution.queueUnknown'))
   })
 
+  it('等设备租约的运行显示「等待资源」而不是运行中（FR-08）', async () => {
+    const waiting = {
+      id: 4,
+      runId: 'RUN-WAITING',
+      projectId: 1,
+      state: 'PREPARING',
+      attemptNo: 1,
+      passedTests: 0,
+      totalTests: 0,
+      failureReason: null,
+      startedAt: null,
+      finishedAt: null,
+    }
+    vi.mocked(executionApi.page).mockResolvedValueOnce({
+      items: [waiting],
+      total: 1,
+      page: 1,
+      size: 10,
+    } as never)
+    vi.mocked(executionApi.pendingActivity).mockResolvedValue({
+      runId: 'RUN-WAITING',
+      state: 'waiting',
+      position: 0,
+      waiting: 0,
+      running: 0,
+      maxParallel: 4,
+    })
+    const root = await mountView()
+
+    const viewLog = [...root.querySelectorAll<HTMLButtonElement>('button')].find(
+      (btn) => btn.textContent?.trim() === i18n.global.t('execution.viewLog'),
+    )
+    viewLog!.click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    // PREPARING 也要开始轮询，否则永远看不到等待态
+    expect(executionApi.pendingActivity).toHaveBeenCalledWith(1, 'RUN-WAITING')
+    expect(root.textContent).toContain(i18n.global.t('execution.leaseWaiting'))
+  })
+
   it('已终止的行不再显示「取消」', async () => {
     const root = await mountView()
     const rows = [...root.querySelectorAll<HTMLElement>('.n-data-table-tbody .n-data-table-tr')]
