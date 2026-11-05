@@ -507,6 +507,7 @@ export default {
         PASS_TO_FAIL: 'Regressed',
         FAIL_TO_PASS: 'Fixed',
         SAME: 'Unchanged',
+        BOTH_FAIL: 'Still failing',
         NOT_RUN: 'Not run',
       },
       summary: {

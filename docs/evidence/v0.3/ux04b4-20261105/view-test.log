@@ -1,0 +1,34 @@
+
+ RUN  v3.2.7 /home/evergreen/robot-autotest/frontend
+
+(node:325388) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:325395) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:325389) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:325370) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:325369) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:325377) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:325372) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/views/OverviewView.spec.ts (4 tests) 650ms
+ ✓ src/views/RunsView.spec.ts (4 tests) 716ms
+ ✓ src/views/CasesView.spec.ts (4 tests) 983ms
+   ✓ CasesView 勾选接线 > 渲染出接口返回的行  342ms
+ ✓ src/views/ReportDetailView.spec.ts (8 tests) 1111ms
+ ✓ src/views/PlansView.spec.ts (7 tests) 1127ms
+ ✓ src/views/AssetsView.spec.ts (8 tests) 1786ms
+   ✓ AssetsView 设备页 > 渲染设备行，空值列显示统一占位而不是空白  430ms
+ ✓ src/views/AdminView.spec.ts (8 tests) 2478ms
+   ✓ AdminView 用户列表 > 渲染用户行，空邮箱显示统一占位  684ms
+   ✓ AdminView 用户列表 > 启用状态走 StatusTag，图标 + 文字双编码  405ms
+
+ Test Files  7 passed (7)
+      Tests  43 passed (43)
+   Start at  09:26:53
+   Duration  4.88s (transform 2.15s, setup 102ms, collect 12.12s, tests 8.85s, environment 2.23s, prepare 968ms)
+

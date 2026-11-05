@@ -1,0 +1,6 @@
+ frontend/src/assets/fonts/noto-sans-sc-ui.woff2 | Bin 133252 -> 134152 bytes
+ frontend/src/locales/en-US.ts                   |   1 +
+ frontend/src/locales/zh-CN.ts                   |   1 +
+ frontend/src/utils/statusLabels.ts              |  22 ++
+ frontend/src/views/ReportDetailView.vue         | 455 ++++++++++++------------
+ 5 files changed, 260 insertions(+), 219 deletions(-)

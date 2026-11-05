@@ -1,7 +1,16 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, h, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import {
+  NButton,
+  NCheckbox,
+  NDataTable,
+  NRadioButton,
+  NRadioGroup,
+  NSelect,
+  type DataTableColumns,
+} from 'naive-ui'
 import {
   REPORT_METADATA_KEYS,
   reportsApi,
@@ -24,8 +33,10 @@ import SuiteTree from '@/components/report/SuiteTree.vue'
 import TrendChart from '@/components/report/TrendChart.vue'
 import type { TrendChartSeries } from '@/components/report/trendChart'
 import ErrorLineView from '@/components/ErrorLine.vue'
+import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { formatBytes, formatDateTime, formatDuration } from '@/utils/format'
+import { verdictTone, type StatusTone } from '@/utils/statusLabels'
 import { confirmAction } from '@/composables/useConfirm'
 
 const { t } = useI18n()
@@ -71,6 +82,13 @@ const exportResult = ref<ReportExportResult | null>(null)
 const exportHistory = ref<ReportExportHistoryItem[]>([])
 const exportHistoryError = ref<ErrorLine | null>(null)
 
+/** 外部导出被门禁挡住时的提示（按钮 title 与下方说明共用一份文案）。 */
+const externalHint = computed(() =>
+  detail.value && !detail.value.exportable
+    ? t('reports.exportSection.missingHint', { keys: detail.value.metadataMissing.join(', ') })
+    : '',
+)
+
 
 function metadataValue(key: string): string {
   const value = detail.value?.metadata?.[key]
@@ -79,10 +97,6 @@ function metadataValue(key: string): string {
 
 function metadataMissing(key: string): boolean {
   return metadataValue(key).trim().length === 0
-}
-
-function verdictClass(verdict: string): string {
-  return `verdict-${(verdict || 'unknown').toLowerCase()}`
 }
 
 async function loadAll(): Promise<void> {
@@ -121,8 +135,9 @@ async function loadCompare(): Promise<void> {
   }
 }
 
-async function toggleCompare(event: Event): Promise<void> {
-  showCompare.value = (event.target as HTMLInputElement).checked
+/** 对比开关：换成 `NCheckbox` 后拿到的是布尔值，不再从 `Event` 里刨 `checked`。 */
+async function toggleCompare(checked: boolean): Promise<void> {
+  showCompare.value = checked
   if (showCompare.value && !compare.value) {
     await loadCompare()
   }
@@ -142,6 +157,22 @@ const caseKeys = computed(() => {
 const currentTrendPoint = computed(
   () => trend.value?.points.find((point) => point.runId === runId.value) ?? null,
 )
+
+/** 趋势用例下拉的选项。`NSelect` 要 `{label,value}` 而不是裸字符串数组。 */
+const caseOptions = computed(() => caseKeys.value.map((key) => ({ label: key, value: key })))
+
+/**
+ * 下面两个 setter 而不是 `v-model`：`NSelect` / `NRadioGroup` 的 `value` 类型是
+ * `string | number | null`，直接 `v-model` 到 `ref<string>` / `ref<'day'|'week'>`
+ * 上会被 vue-tsc 判成不兼容赋值。收敛点写在一处，别在模板里撒 `as`。
+ */
+function selectCase(value: string | null): void {
+  selectedCase.value = value ?? ''
+}
+
+function setGranularity(value: string): void {
+  granularity.value = value === 'week' ? 'week' : 'day'
+}
 
 /** 全局时间顺序：用 points 的升序下标做横轴，避免各环境各自从 0 开始错位。 */
 const pointOrder = computed(() => {
@@ -259,20 +290,124 @@ async function loadMoreLogs(): Promise<void> {
   }
 }
 
-function historyText(side: CompareSide | null): string {
-  return side ? `${side.verdict} · ${formatDuration(side.durationMs)}` : t('reports.compare.noneBaseline')
+/**
+ * 「本轮 vs 基线」里真正的语义是**两轮都是 FAIL**（持续失败），但后端 `changeOf`
+ * 把它归到 `SAME`（因为它只比较「变没变」）。直接显示「无变化」会被读成「通过且没变」，
+ * 于是这里单独给一条 `BOTH_FAIL` 文案 —— 对比表存在的意义就是让人一眼看出哪些在持续坏。
+ */
+function bothFail(row: CompareRow): boolean {
+  return row.history?.verdict === 'FAIL' && row.current?.verdict === 'FAIL'
 }
 
-function currentText(side: CompareSide | null): string {
-  return side ? `${side.verdict} · ${formatDuration(side.durationMs)}` : t('reports.compare.noneThisRun')
+function changeLabel(row: CompareRow): string {
+  return bothFail(row)
+    ? t('reports.compare.changes.BOTH_FAIL')
+    : t(`reports.compare.changes.${row.change}`)
 }
 
-function changeClass(row: CompareRow): string {
-  if (row.history?.verdict === 'FAIL' && row.current?.verdict === 'FAIL') {
-    return 'change-both-fail'
+/**
+ * 变化 → 色档。持续失败用 warn 而不是 fail：它本轮没有**新**坏，
+ * 与刚回归的那条（fail）要分开，否则表里「本次新坏」和「一直都坏」同色，看不出增量。
+ */
+function changeTone(row: CompareRow): StatusTone {
+  if (bothFail(row)) return 'warn'
+  switch (row.change) {
+    case 'PASS_TO_FAIL':
+      return 'fail'
+    case 'FAIL_TO_PASS':
+      return 'ok'
+    default:
+      return 'neutral'
   }
-  return `change-${row.change.toLowerCase()}`
 }
+
+/** 对比表的一侧：结论用徽标（图标 + 文字），耗时留在后面一行读完。 */
+function sideCell(side: CompareSide | null, emptyText: string) {
+  if (!side) return h('span', { class: 'muted' }, emptyText)
+  return h('div', { class: 'verdict-cell' }, [
+    h(StatusTag, { label: side.verdict, tone: verdictTone(side.verdict) }),
+    h('span', { class: 'muted' }, formatDuration(side.durationMs)),
+  ])
+}
+
+/**
+ * 导出历史列（UX-04b 逐页迁移）。
+ *
+ * 「版本」列用徽标而不是红字：内部版是**适用范围提示**，不是错误 —— 之前用 `text-fail`
+ * 的红色，读起来像「导出失败了」。改成 warn 档 + 图标后，一眼能区分「这是内部版」和
+ * 「这次导出有问题」（后者走 `ErrorLineView`）。
+ */
+const exportHistoryColumns = computed<DataTableColumns<ReportExportHistoryItem>>(() => [
+  {
+    title: t('reports.exportSection.historyFormat'),
+    key: 'format',
+    width: 110,
+    render: (row) => row.format.toUpperCase(),
+  },
+  {
+    title: t('reports.exportSection.historyMode'),
+    key: 'mode',
+    width: 120,
+    render: (row) =>
+      h(StatusTag, {
+        label:
+          row.mode === 'internal'
+            ? t('reports.exportSection.internalTag')
+            : t('reports.exportSection.externalTag'),
+        tone: row.mode === 'internal' ? 'warn' : 'ok',
+      }),
+  },
+  {
+    title: t('reports.exportSection.historySize'),
+    key: 'bytes',
+    width: 140,
+    render: (row) => formatBytes(row.bytes),
+  },
+  {
+    title: t('reports.exportSection.historyTime'),
+    key: 'createdAt',
+    width: 190,
+    render: (row) => formatDateTime(row.createdAt),
+  },
+  {
+    title: '',
+    key: 'action',
+    width: 110,
+    render: (row) =>
+      h(
+        NButton,
+        {
+          text: true,
+          type: 'primary',
+          onClick: () => void saveExport(exportDownloadUrl(row), row.fileName),
+        },
+        { default: () => t('reports.exportSection.historyDownload') },
+      ),
+  },
+])
+
+/** 对比表列：用例 / 历史（基线） / 本轮 / 变化。 */
+const compareColumns = computed<DataTableColumns<CompareRow>>(() => [
+  { title: t('reports.case'), key: 'caseKey', minWidth: 240 },
+  {
+    title: t('reports.compare.history'),
+    key: 'history',
+    width: 200,
+    render: (row) => sideCell(row.history, t('reports.compare.noneBaseline')),
+  },
+  {
+    title: t('reports.compare.current'),
+    key: 'current',
+    width: 200,
+    render: (row) => sideCell(row.current, t('reports.compare.noneThisRun')),
+  },
+  {
+    title: t('reports.compare.change'),
+    key: 'change',
+    width: 140,
+    render: (row) => h(StatusTag, { label: changeLabel(row), tone: changeTone(row) }),
+  },
+])
 
 function backToList(): void {
   void router.push({ name: 'reports' })
@@ -380,9 +515,9 @@ watch(granularity, () => {
   <div class="page">
     <div class="page-head">
       <div>
-        <button class="link-btn" type="button" @click="backToList">
+        <NButton text type="primary" class="back-link" @click="backToList">
           ← {{ t('reports.backToList') }}
-        </button>
+        </NButton>
         <h1 class="page-title">{{ runId }}</h1>
       </div>
       <ProjectPicker />
@@ -421,17 +556,11 @@ watch(granularity, () => {
 
       <div class="toolbar export-bar">
         <span class="muted export-title">{{ t('reports.exportSection.title') }}</span>
-        <button
-          class="btn"
-          type="button"
+        <NButton
+          type="primary"
           :disabled="!detail.exportable || Boolean(exportBusy)"
-          :title="
-            !detail.exportable
-              ? t('reports.exportSection.missingHint', {
-                  keys: detail.metadataMissing.join(', '),
-                })
-              : ''
-          "
+          :loading="exportBusy === 'external-pdf'"
+          :title="externalHint"
           @click="doExport('external', 'pdf')"
         >
           {{
@@ -439,18 +568,12 @@ watch(granularity, () => {
               ? t('reports.exportSection.exporting')
               : t('reports.exportSection.externalPdf')
           }}
-        </button>
-        <button
-          class="btn"
-          type="button"
+        </NButton>
+        <NButton
+          type="primary"
           :disabled="!detail.exportable || Boolean(exportBusy)"
-          :title="
-            !detail.exportable
-              ? t('reports.exportSection.missingHint', {
-                  keys: detail.metadataMissing.join(', '),
-                })
-              : ''
-          "
+          :loading="exportBusy === 'external-docx'"
+          :title="externalHint"
           @click="doExport('external', 'docx')"
         >
           {{
@@ -458,11 +581,10 @@ watch(granularity, () => {
               ? t('reports.exportSection.exporting')
               : t('reports.exportSection.externalWord')
           }}
-        </button>
-        <button
-          class="btn btn-ghost"
-          type="button"
+        </NButton>
+        <NButton
           :disabled="Boolean(exportBusy)"
+          :loading="exportBusy === 'internal-pdf'"
           @click="doExport('internal', 'pdf')"
         >
           {{
@@ -470,11 +592,10 @@ watch(granularity, () => {
               ? t('reports.exportSection.exporting')
               : t('reports.exportSection.internalPdf')
           }}
-        </button>
-        <button
-          class="btn btn-ghost"
-          type="button"
+        </NButton>
+        <NButton
           :disabled="Boolean(exportBusy)"
+          :loading="exportBusy === 'internal-docx'"
           @click="doExport('internal', 'docx')"
         >
           {{
@@ -482,14 +603,10 @@ watch(granularity, () => {
               ? t('reports.exportSection.exporting')
               : t('reports.exportSection.internalWord')
           }}
-        </button>
+        </NButton>
       </div>
       <p v-if="!detail.exportable" class="text-fail export-hint">
-        {{
-          t('reports.exportSection.missingHint', {
-            keys: detail.metadataMissing.join(', '),
-          })
-        }}
+        {{ externalHint }}
       </p>
       <ErrorLineView v-if="exportError" :error="exportError" />
       <p v-if="exportResult" class="text-ok export-result">
@@ -500,9 +617,9 @@ watch(granularity, () => {
             sha256: exportResult.sha256,
           })
         }}
-        <button class="link-btn" type="button" @click="saveExport()">
+        <NButton text type="primary" @click="saveExport()">
           {{ t('reports.exportSection.download') }}
-        </button>
+        </NButton>
       </p>
 
       <section class="card wide-card">
@@ -511,42 +628,14 @@ watch(granularity, () => {
         <p v-else-if="!exportHistory.length" class="muted">
           {{ t('reports.exportSection.historyEmpty') }}
         </p>
-        <div v-else class="table-scroll">
-          <table class="table">
-          <thead>
-            <tr>
-              <th>{{ t('reports.exportSection.historyFormat') }}</th>
-              <th>{{ t('reports.exportSection.historyMode') }}</th>
-              <th>{{ t('reports.exportSection.historySize') }}</th>
-              <th>{{ t('reports.exportSection.historyTime') }}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in exportHistory" :key="item.exportId">
-              <td>{{ item.format.toUpperCase() }}</td>
-              <td :class="item.mode === 'internal' ? 'text-fail' : ''">
-                {{
-                  item.mode === 'internal'
-                    ? t('reports.exportSection.internalTag')
-                    : t('reports.exportSection.externalTag')
-                }}
-              </td>
-              <td>{{ formatBytes(item.bytes) }}</td>
-              <td>{{ formatDateTime(item.createdAt) }}</td>
-              <td>
-                <button
-                  class="link-btn"
-                  type="button"
-                  @click="saveExport(exportDownloadUrl(item), item.fileName)"
-                >
-                  {{ t('reports.exportSection.historyDownload') }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
+        <NDataTable
+          v-else
+          :columns="exportHistoryColumns"
+          :data="exportHistory"
+          :row-key="(row: ReportExportHistoryItem) => row.exportId"
+          :bordered="false"
+          size="small"
+        />
       </section>
 
       <section class="card wide-card">
@@ -554,9 +643,13 @@ watch(granularity, () => {
           <h2 class="card-title">{{ t('reports.trend.title') }}</h2>
           <label class="trend-case muted">
             {{ t('reports.trend.case') }}
-            <select v-model="selectedCase" class="input trend-select">
-              <option v-for="key in caseKeys" :key="key" :value="key">{{ key }}</option>
-            </select>
+            <NSelect
+              class="trend-select"
+              size="small"
+              :value="selectedCase"
+              :options="caseOptions"
+              @update:value="selectCase"
+            />
           </label>
         </div>
 
@@ -595,24 +688,14 @@ watch(granularity, () => {
           <div class="pass-rate-block">
             <div class="section-head">
               <h3 class="card-title">{{ t('reports.trend.passRateTitle') }}</h3>
-              <div class="segmented">
-                <button
-                  class="btn btn-ghost"
-                  :class="{ active: granularity === 'day' }"
-                  type="button"
-                  @click="granularity = 'day'"
-                >
-                  {{ t('reports.trend.day') }}
-                </button>
-                <button
-                  class="btn btn-ghost"
-                  :class="{ active: granularity === 'week' }"
-                  type="button"
-                  @click="granularity = 'week'"
-                >
-                  {{ t('reports.trend.week') }}
-                </button>
-              </div>
+              <NRadioGroup
+                :value="granularity"
+                size="small"
+                @update:value="setGranularity"
+              >
+                <NRadioButton value="day">{{ t('reports.trend.day') }}</NRadioButton>
+                <NRadioButton value="week">{{ t('reports.trend.week') }}</NRadioButton>
+              </NRadioGroup>
             </div>
             <ErrorLineView v-if="passRateError" :error="passRateError" />
             <p v-if="passRateLoading" class="muted">{{ t('common.loading') }}</p>
@@ -625,10 +708,9 @@ watch(granularity, () => {
       <section class="card wide-card">
         <div class="section-head">
           <h2 class="card-title">{{ t('reports.treeTitle') }}</h2>
-          <label class="compare-toggle muted">
-            <input type="checkbox" :checked="showCompare" @change="toggleCompare" />
+          <NCheckbox :checked="showCompare" @update:checked="toggleCompare">
             {{ t('reports.compare.toggle') }}
-          </label>
+          </NCheckbox>
         </div>
 
         <SuiteTree v-if="tree" :node="tree" :depth="0" @open-logs="openLogs" />
@@ -651,15 +733,13 @@ watch(granularity, () => {
 </span></pre>
           <p v-else class="muted">{{ t('reports.logEmpty') }}</p>
           <div class="toolbar">
-            <button
+            <NButton
               v-if="nextOffset !== null"
-              class="btn btn-ghost"
-              type="button"
-              :disabled="logLoading"
+              :loading="logLoading"
               @click="loadMoreLogs"
             >
               {{ logLoading ? t('common.loading') : t('reports.loadMore') }}
-            </button>
+            </NButton>
           </div>
         </div>
       </section>
@@ -678,48 +758,31 @@ watch(granularity, () => {
 
         <template v-if="compare">
           <div class="toolbar summary-bar">
-            <span class="change-both-fail">
-              {{ t('reports.compare.summary.bothFail', { count: compare.summary.bothFail }) }}
-            </span>
-            <span class="change-pass_to_fail">
-              {{ t('reports.compare.summary.newFail', { count: compare.summary.newFail }) }}
-            </span>
-            <span class="change-fail_to_pass">
-              {{ t('reports.compare.summary.newPass', { count: compare.summary.newPass }) }}
-            </span>
-            <span class="muted">
-              {{ t('reports.compare.summary.notRun', { count: compare.summary.notRun }) }}
-            </span>
+            <StatusTag
+              tone="warn"
+              :label="t('reports.compare.summary.bothFail', { count: compare.summary.bothFail })"
+            />
+            <StatusTag
+              tone="fail"
+              :label="t('reports.compare.summary.newFail', { count: compare.summary.newFail })"
+            />
+            <StatusTag
+              tone="ok"
+              :label="t('reports.compare.summary.newPass', { count: compare.summary.newPass })"
+            />
+            <StatusTag
+              tone="neutral"
+              :label="t('reports.compare.summary.notRun', { count: compare.summary.notRun })"
+            />
           </div>
 
-          <div class="table-scroll">
-            <table class="table compare-table">
-            <thead>
-              <tr>
-                <th>{{ t('reports.case') }}</th>
-                <th>{{ t('reports.compare.history') }}</th>
-                <th>{{ t('reports.compare.current') }}</th>
-                <th>{{ t('reports.compare.change') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in compare.rows" :key="row.caseKey">
-                <td>{{ row.caseKey }}</td>
-                <td :class="row.history ? verdictClass(row.history.verdict) : 'muted'">
-                  {{ historyText(row.history) }}
-                </td>
-                <td :class="row.current ? verdictClass(row.current.verdict) : 'muted'">
-                  {{ currentText(row.current) }}
-                </td>
-                <td>
-                  <span class="badge" :class="changeClass(row)">
-                    {{ t(`reports.compare.changes.${row.change}`) }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          </div>
+          <NDataTable
+            :columns="compareColumns"
+            :data="compare.rows"
+            :row-key="(row: CompareRow) => row.caseKey"
+            :bordered="false"
+            size="small"
+          />
         </template>
       </section>
     </template>
@@ -737,21 +800,15 @@ watch(granularity, () => {
   font-weight: 500;
 }
 
-.compare-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .trend-case {
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
+/* NSelect 不给宽度时按父容器撑满，这里固定成能放下完整 caseKey 的宽度 */
 .trend-select {
-  width: auto;
-  min-width: 220px;
+  width: 220px;
 }
 
 .trend-hints {
@@ -770,16 +827,6 @@ watch(granularity, () => {
   margin-top: 18px;
   border-top: 1px solid var(--border);
   padding-top: 10px;
-}
-
-.segmented {
-  display: inline-flex;
-  gap: 6px;
-}
-
-.segmented .active {
-  color: var(--text);
-  border-color: var(--accent);
 }
 
 .log-panel {
@@ -816,45 +863,15 @@ watch(granularity, () => {
   color: var(--fail);
 }
 
-.change-both-fail {
-  color: var(--warn);
+/* 对比表的一侧：徽标 + 耗时同排。徽标自身是 inline-flex，这里只负责两者的间距 */
+.verdict-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
 }
 
-.change-pass_to_fail {
-  color: var(--fail);
-}
-
-.change-fail_to_pass {
-  color: var(--ok);
-}
-
-.change-same,
-.change-not_run {
-  color: var(--text-muted);
-}
-
-/* 窄屏：对比表上下堆叠，避免双列被压成单字符宽度 */
-@media (max-width: 760px) {
-  .compare-table thead {
-    display: none;
-  }
-
-  .compare-table,
-  .compare-table tbody,
-  .compare-table tr,
-  .compare-table td {
-    display: block;
-    width: 100%;
-  }
-
-  .compare-table tr {
-    border-bottom: 1px solid var(--border);
-    padding: 6px 0;
-  }
-
-  .compare-table td {
-    border-bottom: none;
-    padding: 3px 10px;
-  }
+/* 返回列表 / 下载这类文字按钮换成 NButton 后需要保留原来的左对齐外观 */
+.back-link {
+  margin-bottom: var(--space-1);
 }
 </style>

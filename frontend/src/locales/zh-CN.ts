@@ -513,6 +513,7 @@ export default {
         PASS_TO_FAIL: '回归',
         FAIL_TO_PASS: '修复',
         SAME: '无变化',
+        BOTH_FAIL: '持续失败',
         NOT_RUN: '本轮未执行',
       },
       summary: {
