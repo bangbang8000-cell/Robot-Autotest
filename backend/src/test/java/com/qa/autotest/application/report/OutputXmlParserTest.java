@@ -1,6 +1,7 @@
 package com.qa.autotest.application.report;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -46,6 +47,19 @@ class OutputXmlParserTest {
         assertEquals("GPU-01", report.metadata().get("DUT"), "DUT 来自第三层子套件");
         assertEquals("Ubuntu 24.04.5 / OFED 24.10", report.metadata().get("SW_BUILD"));
         assertEquals("188~195 Gbps", report.metadata().get("BASELINE"), "旧格式 item 也应合并");
+    }
+
+    @Test
+    @DisplayName("RF 7.5 <meta name>值</meta> 取元素文本，不能读成空串")
+    void rf75的meta标签值取元素文本() throws Exception {
+        ParsedReport report = parser.parse(fixture("rf75-meta.xml"));
+
+        assertEquals("REAL-20261105", report.metadata().get("RUN_ID"));
+        assertEquals("GPU-01", report.metadata().get("DUT"));
+        assertEquals("[https://pabot.org/?ref=log|Pabot] result from 2 executions.",
+                report.metadata().get("Pabot Info"), "含方括号与竖线的值不能被截断");
+        assertEquals("ops", report.metadata().get("OPERATOR"), "子套件的 meta 覆盖父级同名键");
+        assertFalse(report.root().metadata().containsKey("OPERATOR"), "根套件自身不含 OPERATOR");
     }
 
     @Test

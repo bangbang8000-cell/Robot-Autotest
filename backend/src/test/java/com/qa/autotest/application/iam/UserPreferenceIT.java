@@ -139,6 +139,25 @@ class UserPreferenceIT {
     }
 
     @Test
+    @DisplayName("表格密度偏好（UX-06）：舒适/紧凑两档可存取，非法档位被拒")
+    void 密度偏好可存取() {
+        service.put(userId, Map.of("density", "compact"));
+        assertThat(service.get(userId)).containsEntry("density", "compact");
+
+        service.put(userId, Map.of("density", "comfortable"));
+        assertThat(service.get(userId)).containsEntry("density", "comfortable");
+
+        // 前端只发两档；密（dense）/ 大小写变体都不该静默落库，否则换设备后行高会退回默认
+        for (String bad : new String[]{"dense", "Compact", ""}) {
+            assertThatThrownBy(() -> service.put(userId, Map.of("density", bad)))
+                    .as("非法密度值 %s 应被拒", bad)
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("偏好值非法");
+        }
+        assertThat(service.get(userId)).containsEntry("density", "comfortable");
+    }
+
+    @Test
     @DisplayName("跨用户隔离：改 A 的偏好不影响 B")
     void 跨用户隔离() {
         service.put(userId, Map.of("theme", "light"));

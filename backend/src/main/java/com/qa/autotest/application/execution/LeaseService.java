@@ -115,13 +115,24 @@ public class LeaseService {
         repo.release(jobId, reason);
     }
 
-    /** 按 run 释放：取消/超时/重启恢复三条路径共用，避免调用方各自拼 job_id。 */
-    @Audited(action = "lease:force-release", resource = "resource_lease")
+    /**
+     * 按 run 释放（生命周期路径：正常结束 / 失败 / 取消 / 超时 / 重启恢复）。
+     *
+     * <p>这些是运行的正常收尾，不写审计；异常手法（管理员强制释放）走
+     * {@link #forceReleaseRun(String, String)}。
+     */
     public int releaseRun(String runId, String reason) {
         int released = 0;
         for (Lease lease : repo.findByRunId(runId)) {
             released += repo.releaseOne(lease.resourceKey(), lease.jobId(), reason);
         }
+        return released;
+    }
+
+    /** 管理员强制释放：留审计 {@code lease:force-release}（EXEC-07 / FR-v0.4-10）。 */
+    @Audited(action = "lease:force-release", resource = "resource_lease")
+    public int forceReleaseRun(String runId, String reason) {
+        int released = releaseRun(runId, reason);
         if (audit != null && released > 0) {
             audit.recordChange("lease:force-release", "resource_lease", runId,
                     "released=" + released, "reason=" + reason);

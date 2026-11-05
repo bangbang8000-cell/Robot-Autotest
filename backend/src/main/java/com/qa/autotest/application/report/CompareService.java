@@ -71,6 +71,17 @@ public class CompareService {
         this.access = access;
     }
 
+    /**
+     * 手动基线候选（RPT-03 补口）：同项目同环境的 finished 运行，按开始时间倒序。
+     *
+     * @param startedAt 可能为 null（run 未记录开始时间），前端按「未知时间」渲染
+     */
+    public record BaselineCandidate(String runId, Instant startedAt) {
+    }
+
+    /** 候选上限：下拉框只需要近期的几条，不把项目全部历史拉进页面。 */
+    static final int MAX_BASELINE_CANDIDATES = 20;
+
     public CompareResult compare(long projectId, String runId, String baselineRunId) {
         if (projectId <= 0) {
             throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "projectId 非法");
@@ -124,6 +135,32 @@ public class CompareService {
                 .map(run -> new CompareBaseline(run.runId(), run.startedAt()))
                 .orElse(null);
         return new CompareResult(baselineView, rows, new CompareSummary(newFail, newPass, bothFail, notRun));
+    }
+
+    /**
+     * 手动基线下拉的数据源（RPT-03 补口）。
+     *
+     * <p>只返回与本轮同项目同环境的 finished 运行：跨项目/跨环境的运行在前端就不该出现，
+     * 否则用户选完只会收到一条 400。空环境（DUT/LINK 都为 null）不做特殊放行 ——
+     * 与 {@link #resolveBaseline} 的校验口径保持一致。
+     */
+    public List<BaselineCandidate> candidates(long projectId, String runId) {
+        if (projectId <= 0) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "projectId 非法");
+        }
+        if (runId == null || runId.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "runId 不能为空");
+        }
+        access.bindProject(projectId);
+        access.require(PermissionResource.EXECUTION, PermissionAction.READ);
+
+        RunSnapshot current = read.findRun(projectId, runId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "运行不存在: " + runId));
+        return read.listBaselineCandidates(projectId, current.dut(), current.link(), current.runId(),
+                        MAX_BASELINE_CANDIDATES)
+                .stream()
+                .map(run -> new BaselineCandidate(run.runId(), run.startedAt()))
+                .toList();
     }
 
     private Optional<RunSnapshot> resolveBaseline(long projectId, RunSnapshot current, String baselineRunId) {

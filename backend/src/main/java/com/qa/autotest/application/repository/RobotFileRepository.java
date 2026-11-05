@@ -11,6 +11,9 @@ public interface RobotFileRepository {
 
     List<FileNode> nodes(long projectId);
 
+    /** 该项目全部脚本（含内容），执行前落盘与请求期预检共用（EXEC-05）。 */
+    List<RobotFile> listAll(long projectId);
+
     Optional<RobotFile> findByPath(long projectId, String path);
 
     Optional<RobotFile> find(long projectId, long id);

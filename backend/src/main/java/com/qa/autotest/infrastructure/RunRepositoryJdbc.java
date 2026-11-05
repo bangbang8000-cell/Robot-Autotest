@@ -28,7 +28,7 @@ public class RunRepositoryJdbc implements RunRepository {
 
     private static final String SELECT = """
             SELECT id, run_id, project_id, test_set_id, run_status, priority, concurrency,
-                   attempt_no, total_tests, passed_tests, failed_tests, failure_class,
+                   device_scope, attempt_no, total_tests, passed_tests, failed_tests, failure_class,
                    failure_reason, failure_message, artifacts_dir, enqueued_at, started_at, finished_at
               FROM run
             """;
@@ -51,7 +51,7 @@ public class RunRepositoryJdbc implements RunRepository {
             rs.getString("artifacts_dir"),
             instant(rs.getTimestamp("enqueued_at")),
             instant(rs.getTimestamp("started_at")),
-            instant(rs.getTimestamp("finished_at")));
+            instant(rs.getTimestamp("finished_at")), rs.getString("device_scope"));
 
     private final JdbcTemplate jdbc;
 
@@ -90,9 +90,10 @@ public class RunRepositoryJdbc implements RunRepository {
         String runSql = """
                 INSERT INTO run (run_id, run_request_id, project_id, test_set_id, trigger_type,
                                  plan_id, triggered_by_plan_at,
-                                 priority, enqueued_at, concurrency, run_status, total_tests,
-                                 passed_tests, failed_tests, attempt_no, created_by, updated_by)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'queued', 0, 0, 0, 0, ?, ?)
+                                 priority, enqueued_at, concurrency, device_scope, run_status,
+                                 total_tests, passed_tests, failed_tests, attempt_no,
+                                 created_by, updated_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'queued', 0, 0, 0, 0, ?, ?)
                 """;
         TenantGuard.requireProjectScope(runSql, "run");
         KeyHolder runKey = new GeneratedKeyHolder();
@@ -109,14 +110,15 @@ public class RunRepositoryJdbc implements RunRepository {
             ps.setInt(8, draft.priority());
             ps.setTimestamp(9, Timestamp.from(draft.enqueuedAt()));
             ps.setInt(10, draft.concurrency());
-            ps.setObject(11, operatorId, java.sql.Types.BIGINT);
+            ps.setString(11, draft.deviceScope());
             ps.setObject(12, operatorId, java.sql.Types.BIGINT);
+            ps.setObject(13, operatorId, java.sql.Types.BIGINT);
             return ps;
         }, runKey);
         long id = runKey.getKey() == null ? 0 : runKey.getKey().longValue();
         return new RunRecord(id, draft.runId(), draft.projectId(), draft.testSetId(),
                 RunState.QUEUED, draft.priority(), draft.concurrency(), 0,
-                0, 0, 0, null, null, null, null, draft.enqueuedAt(), null, null);
+                0, 0, 0, null, null, null, null, draft.enqueuedAt(), null, null, draft.deviceScope());
     }
 
     @Override
@@ -139,6 +141,18 @@ public class RunRepositoryJdbc implements RunRepository {
         String sql = SELECT + " WHERE project_id = ? AND run_id = ?";
         TenantGuard.requireProjectScope(sql, "run");
         return JdbcSupport.first(jdbc.query(sql, MAPPER, projectId, runId));
+    }
+
+    @Override
+    public Optional<Long> findJobId(long projectId, String runId) {
+        String sql = """
+                SELECT id FROM execution_job
+                 WHERE project_id = ? AND job_no = ?
+                 ORDER BY id DESC LIMIT 1
+                """;
+        TenantGuard.requireProjectScope(sql, "execution_job");
+        List<Long> ids = jdbc.queryForList(sql, Long.class, projectId, runId);
+        return ids.isEmpty() ? Optional.empty() : Optional.of(ids.get(0));
     }
 
     @Override

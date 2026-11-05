@@ -2,10 +2,10 @@ package com.qa.autotest.application.execution;
 
 import com.qa.autotest.application.repository.RunArtifactRepository;
 import com.qa.autotest.application.repository.TestResultWriter;
+import com.qa.autotest.common.BusinessException;
 import com.qa.autotest.domain.execution.FailureClass;
 import com.qa.autotest.domain.execution.RunRecord;
 import com.qa.autotest.domain.execution.RunState;
-import com.qa.autotest.domain.execution.RunStateMachine;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -14,19 +14,33 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * 运行执行编排（W2 最小闭环）：创建 -> 预检 -> 建目录 -> RUNNING -> pabot -> 校验 -> 终态。
- * 租约（EXE-02）与实时日志（EXE-04）在后续任务接入。
+ * 运行执行编排（EXEC-09）：创建 -> 预检 -> 建目录 -> 申请租约 -> RUNNING -> pabot -> 校验 -> 终态 -> 释放租约。
+ *
+ * <p>租约按 run 维度覆盖本次运行要占用的资源键集合：有设备范围时用「设备+端口」键，
+ * 缺省退化为环境（{@code environment:<id>}）或项目（{@code project:<id>}）独占键。
+ * 申请失败不进入 RUNNING，直接 failed(lease_timeout)；任何离开执行段的路径都释放租约。
+ *
+ * <p><b>键口径</b>：只有请求显式给出 {@code deviceKeys}（FR-01 设备范围）时才按「设备+端口」互斥；
+ * 未声明设备范围的运行（工作区与端口已按 run 隔离）用 {@code run:<runId>} 自持，
+ * 避免 MAX_PARALLEL 内的并发运行被一条项目级租约串行化甚至超时失败。
  */
 @Service
 public class RunExecutionService {
 
+    /** {@code resource_lease.resource_key} 列宽（V1 基线 128）。 */
+    static final int MAX_RESOURCE_KEY_LENGTH = 128;
+
     private final RunService runs;
     private final ExecutionProperties props;
     private final ExecutionPrecheck precheck;
+    private final LeaseService leases;
+    private final ExecutionWorkspaceMaterializer workspaces;
     private final PabotCommandBuilder commands;
     private final PabotOrchestrator orchestrator;
     private final RunArtifactRepository artifacts;
@@ -38,6 +52,8 @@ public class RunExecutionService {
     public RunExecutionService(RunService runs,
                                ExecutionProperties props,
                                ExecutionPrecheck precheck,
+                               LeaseService leases,
+                               ExecutionWorkspaceMaterializer workspaces,
                                PabotCommandBuilder commands,
                                PabotOrchestrator orchestrator,
                                RunArtifactRepository artifacts,
@@ -48,6 +64,8 @@ public class RunExecutionService {
         this.runs = runs;
         this.props = props;
         this.precheck = precheck;
+        this.leases = leases;
+        this.workspaces = workspaces;
         this.commands = commands;
         this.orchestrator = orchestrator;
         this.artifacts = artifacts;
@@ -79,6 +97,25 @@ public class RunExecutionService {
             return fail(created, "artifact_dir_failed", "创建产物目录失败: " + ex.getMessage());
         }
 
+        // EXEC-05：数据库 robot_file 是脚本真源，先落盘到本次 run 的独立工作区；
+        // 数据库为空时回落到 execution.workspace-root，兼容仍在磁盘维护脚本的项目。
+        Path workDir;
+        boolean materialized;
+        try {
+            Optional<Path> copy = workspaces.materialize(created.projectId(), runDir);
+            materialized = copy.isPresent();
+            workDir = copy.orElseGet(() -> ExecutionPaths.resolve(props.getWorkspaceRoot()));
+        } catch (Exception ex) {
+            return fail(created, "workspace_materialize_failed",
+                    "执行工作区落盘失败: " + ex.getMessage());
+        }
+        // FR-v0.4-24 单用例超时：RF 没有全局 CLI 开关，只能在套件 `*** Settings ***` 注入
+        // `Test Timeout`。只改本 run 的副本（materialize 成功时），
+        // 不碰数据库脚本与真实 workspace-root（回落分支下那是用户原脚本）。
+        if (materialized) {
+            TestTimeoutInjector.inject(workDir, cmd.suitePaths(), props.getTestTimeoutSeconds());
+        }
+
         List<ExecutionPrecheck.Violation> violations = precheck.check(
                 new ExecutionPrecheck.PrecheckRequest(
                         ExecutionPaths.resolve(props.getVenvBin()),
@@ -97,44 +134,116 @@ public class RunExecutionService {
             return fail(created, reason, message);
         }
 
-        // W2 最小闭环：无租约服务，前置条件以「产物目录已建」为准；W3 接入租约后改为两者都校验。
-        runs.transition(created.runId(), RunState.RUNNING,
-                new RunService.TransitionContext(clock.instant(), null, null, null, null, true, true));
-
-        int processes = Math.min(cmd.concurrency(), cmd.suitePaths().size());
-        PabotCommandBuilder.ShardSpec shard = new PabotCommandBuilder.ShardSpec(
-                0, cmd.suitePaths(), processes, cmd.includeTag(),
-                "run-" + created.runId());
-        PabotCommandBuilder.PabotCommand command = commands.build(shard, props, runDir);
-        PabotOrchestrator.ShardResult result = orchestrator.runShard(
-                created.runId(), command, Duration.ofSeconds(cmd.timeoutSeconds()), line -> {
-                });
-
-        registerArtifacts(created.projectId(), created.id(), command, result);
-
-        int total = result.totalTests();
-        int passed = result.success() ? total : 0;
-        int failed = total - passed;
-        runs.updateCounts(created.runId(), total, passed, failed, runDir.toString());
-
-        if (result.success()) {
-            results.write(created.projectId(), created.id(), "run-" + created.runId(),
-                    "PASS", 0, null, 1);
-            return runs.transition(created.runId(), RunState.FINISHED,
-                    new RunService.TransitionContext(null, clock.instant(), null, null, null, true, true));
+        // EXEC-09：进入 RUNNING 之前必须先持有租约（状态机的前置条件由 RunService 强制校验）。
+        List<String> resourceKeys;
+        try {
+            resourceKeys = resourceKeys(created.runId(), cmd);
+        } catch (IllegalArgumentException invalidKey) {
+            return fail(created, "lease_key_invalid", invalidKey.getMessage());
         }
-        results.write(created.projectId(), created.id(), "run-" + created.runId(),
-                "FAIL", 0, result.reason(), 1);
-        FailureClass cls = classify(result.reason(), result.success());
-        return runs.transition(created.runId(), RunState.FAILED,
-                new RunService.TransitionContext(null, clock.instant(), cls.name(), result.reason(),
-                        "分片执行失败: " + result.reason(), true, true));
+        long jobId;
+        try {
+            jobId = runs.leaseJobId(created.runId());
+        } catch (BusinessException missingJob) {
+            return fail(created, "lease_job_missing",
+                    "找不到执行作业记录，无法申请租约: " + missingJob.getMessage());
+        }
+        List<LeaseService.LeaseRequest> requests = new ArrayList<>();
+        for (String key : resourceKeys) {
+            requests.add(new LeaseService.LeaseRequest(
+                    key, jobId, created.runId(), created.projectId()));
+        }
+        Duration maxWait = Duration.ofSeconds(Math.max(0, props.getLeaseMaxWaitSeconds()));
+        boolean acquired;
+        try {
+            acquired = leases.acquireAll(requests, maxWait);
+        } catch (RuntimeException acquireFailed) {
+            return fail(created, "lease_acquire_failed",
+                    "申请租约异常: " + acquireFailed.getMessage());
+        }
+        if (!acquired) {
+            return fail(created, "lease_timeout", FailureClass.INFRA,
+                    "等待资源 " + String.join(", ", resourceKeys) + " 超过 "
+                            + maxWait.toSeconds() + " 秒仍被占用，本次运行终止");
+        }
+
+        String releaseReason = "failed";
+        try {
+            runs.transition(created.runId(), RunState.RUNNING,
+                    new RunService.TransitionContext(clock.instant(), null, null, null, null, true, true));
+
+            int processes = Math.min(cmd.concurrency(), cmd.suitePaths().size());
+            PabotCommandBuilder.ShardSpec shard = new PabotCommandBuilder.ShardSpec(
+                    0, cmd.suitePaths(), processes, cmd.includeTag(),
+                    "run-" + created.runId(), cmd.testNames());
+            PabotCommandBuilder.PabotCommand command = commands.build(shard, props, runDir, workDir);
+            PabotOrchestrator.ShardResult result = orchestrator.runShard(
+                    created.runId(), command, Duration.ofSeconds(cmd.timeoutSeconds()), line -> {
+                    });
+
+            registerArtifacts(created.projectId(), created.id(), command, result);
+
+            int total = result.totalTests();
+            int passed = result.success() ? total : 0;
+            int failed = total - passed;
+            runs.updateCounts(created.runId(), total, passed, failed, runDir.toString());
+
+            if (result.success()) {
+                results.write(created.projectId(), created.id(), "run-" + created.runId(),
+                        "PASS", 0, null, 1);
+                releaseReason = "finished";
+                return runs.transition(created.runId(), RunState.FINISHED,
+                        new RunService.TransitionContext(null, clock.instant(), null, null, null,
+                                true, true));
+            }
+            results.write(created.projectId(), created.id(), "run-" + created.runId(),
+                    "FAIL", 0, result.reason(), 1);
+            FailureClass cls = classify(result.reason(), result.success());
+            return runs.transition(created.runId(), RunState.FAILED,
+                    new RunService.TransitionContext(null, clock.instant(), cls.name(),
+                            result.reason(), "分片执行失败: " + result.reason(), true, true));
+        } finally {
+            // 成功、失败、异常、并发取消（transition 抛错）都走同一条释放路径。
+            leases.releaseRun(created.runId(), releaseReason);
+        }
+    }
+
+    /**
+     * 本次运行的资源键：声明了设备范围就用「设备+端口」键（FR-v0.4-06），否则用 {@code run:<runId>} 自持。
+     *
+     * <p>未声明设备范围时不做互斥：执行工作区已按 run 隔离（EXEC-05），端口由预检保证，
+     * 若再叠加环境/项目级独占键，会让 {@code MAX_PARALLEL} 内的并发运行互相等待直至 lease_timeout。
+     */
+    static List<String> resourceKeys(String runId, RunService.CreateRunCommand cmd) {
+        List<String> keys = new ArrayList<>();
+        if (cmd.deviceKeys() != null) {
+            for (String raw : cmd.deviceKeys()) {
+                if (raw == null || raw.isBlank()) {
+                    continue;
+                }
+                String key = raw.trim();
+                if (key.length() > MAX_RESOURCE_KEY_LENGTH) {
+                    throw new IllegalArgumentException(
+                            "资源键超过 " + MAX_RESOURCE_KEY_LENGTH + " 字符: " + key);
+                }
+                if (!keys.contains(key)) {
+                    keys.add(key);
+                }
+            }
+        }
+        if (keys.isEmpty()) {
+            keys.add("run:" + runId);
+        }
+        return keys;
     }
 
     private RunRecord fail(RunRecord created, String reason, String message) {
+        return fail(created, reason, classify(reason, false), message);
+    }
+
+    private RunRecord fail(RunRecord created, String reason, FailureClass cls, String message) {
         results.write(created.projectId(), created.id(), "run-" + created.runId(),
                 "FAIL", 0, reason, 1);
-        FailureClass cls = classify(reason, false);
         return runs.transition(created.runId(), RunState.FAILED,
                 new RunService.TransitionContext(null, clock.instant(), cls.name(), reason,
                         message, false, false));

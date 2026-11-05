@@ -217,6 +217,11 @@ class EditorSaveServiceTest {
         }
 
         @Override
+        public List<RobotFile> listAll(long projectId) {
+            return byId.values().stream().filter(f -> f.projectId() == projectId).toList();
+        }
+
+        @Override
         public Optional<RobotFile> findByPath(long projectId, String path) {
             return byId.values().stream()
                     .filter(f -> f.projectId() == projectId && f.path().equals(path))

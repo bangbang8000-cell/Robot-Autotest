@@ -187,6 +187,12 @@ class ReportLogServiceTest {
         }
 
         @Override
+        public List<RunSnapshot> listBaselineCandidates(long projectId, String dut, String link,
+                                                        String excludeRunId, int limit) {
+            return List.of();
+        }
+
+        @Override
         public List<CaseVerdict> listCaseVerdicts(long projectId, String runId) {
             return List.of();
         }

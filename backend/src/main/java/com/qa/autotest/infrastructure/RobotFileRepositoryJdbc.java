@@ -46,6 +46,16 @@ public class RobotFileRepositoryJdbc implements RobotFileRepository {
     }
 
     @Override
+    public List<RobotFile> listAll(long projectId) {
+        String sql = """
+                SELECT id, project_id, path, content, content_sha256, current_version
+                  FROM robot_file WHERE project_id = ? ORDER BY path
+                """;
+        TenantGuard.requireProjectScope(sql, "robot_file");
+        return jdbc.query(sql, MAPPER, projectId);
+    }
+
+    @Override
     public Optional<RobotFile> findByPath(long projectId, String path) {
         String sql = """
                 SELECT id, project_id, path, content, content_sha256, current_version

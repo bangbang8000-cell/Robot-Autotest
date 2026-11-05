@@ -88,12 +88,20 @@ public class PabotOrchestrator {
         // 分片完整性：被杀分片的 output.xml 是 0 字节，合并后的 totalTests 只会变小、
         // 不会变错，所以必须单独查一遍分片，否则「用例凭空消失」会被判成全绿。
         ArtifactVerifier.ShardIntegrity shards = verifier.checkShards(outputDir);
+        // FR-v0.4-24：单用例超时（套件级 Test Timeout）不是整体超时，但 run 原因要能区分。
+        boolean testTimedOut = !timeoutHit && verifier.testTimedOut(outputXml);
         String reason = timeoutHit ? "timeout"
-                : (!shards.ok() ? shards.reason() : verified.reason());
-        boolean success = !timeoutHit && exitCode == 0 && verified.success() && shards.ok();
+                : (!shards.ok() ? shards.reason()
+                : (testTimedOut ? "test_timeout" : verified.reason()));
+        boolean success = !timeoutHit && !testTimedOut && exitCode == 0
+                && verified.success() && shards.ok();
         if (!shards.ok()) {
             emit(runId, runLog, logSink, "[system] 分片不完整: reason=" + shards.reason()
                     + ", 空分片=" + shards.emptyShards());
+        }
+        if (testTimedOut) {
+            emit(runId, runLog, logSink,
+                    "[system] 存在单用例超时（Test Timeout 命中），run 记为 test_timeout");
         }
         if (success) {
             emit(runId, runLog, logSink, "[system] 产物校验通过，totalTests=" + verified.totalTests());

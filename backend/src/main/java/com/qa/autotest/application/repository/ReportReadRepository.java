@@ -29,6 +29,17 @@ public interface ReportReadRepository {
     Optional<RunSnapshot> findBaseline(long projectId, String dut, String link,
                                        Instant before, String excludeRunId);
 
+    /**
+     * 手动基线候选：同项目 + 同 DUT/LINK + state=finished + 排除本轮，按开始时间倒序。
+     *
+     * <p>不限制「早于本轮」—— 手动基线允许拿新一轮当对照，由调用方自行判断；
+     * 也不做「必须早于本轮」之外的排序假设，避免和 {@link #findBaseline} 的语义混在一起。
+     *
+     * @param limit 最多返回条数，调用方负责夹取范围
+     */
+    List<RunSnapshot> listBaselineCandidates(long projectId, String dut, String link,
+                                             String excludeRunId, int limit);
+
     /** 某次运行的全部用例结论（RPT-03 双列数据源）。 */
     List<CaseVerdict> listCaseVerdicts(long projectId, String runId);
 

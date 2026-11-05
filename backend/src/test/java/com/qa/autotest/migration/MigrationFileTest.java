@@ -62,6 +62,21 @@ class MigrationFileTest {
     }
 
     @Test
+    @DisplayName("V7_4 运行设备范围与 down 脚本齐全")
+    void 设备范围字段() throws IOException {
+        assertTrue(Files.exists(ROOT.resolve("migration/V7_4__run_device_scope.sql")),
+                "缺少 migration/V7_4__run_device_scope.sql");
+        assertTrue(Files.exists(ROOT.resolve("down/V7_4__run_device_scope.down.sql")),
+                "缺少 down/V7_4__run_device_scope.down.sql");
+
+        String sql = read("migration/V7_4__run_device_scope.sql");
+        assertTrue(sql.contains("`device_scope`"), "V7_4 缺少 device_scope 列");
+        assertTrue(sql.contains("VARCHAR(512)"), "V7_4 列宽必须与 RunService 常量一致");
+        String down = read("down/V7_4__run_device_scope.down.sql");
+        assertTrue(down.contains("DROP COLUMN `device_scope`"), "V7_4 down 缺少列删除");
+    }
+
+    @Test
     @DisplayName("V5_1 报告字段与 down 脚本齐全")
     void 报告字段() throws IOException {
         assertTrue(Files.exists(ROOT.resolve("migration/V5_1__report_fields.sql")),

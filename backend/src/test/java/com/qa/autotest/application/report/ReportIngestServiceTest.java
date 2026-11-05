@@ -52,7 +52,7 @@ class ReportIngestServiceTest {
                 new AccessControlService(adminUsers(), emptyProjects()), new OutputXmlParser());
         RunRecord stored = runs.insert(new RunRecord(0, RUN_ID, PROJECT, null, RunState.FINISHED,
                 0, 1, 1, 0, 0, 0, null, null, null, null,
-                Instant.parse("2026-10-31T05:00:00Z"), null, null), null, null, null);
+                Instant.parse("2026-10-31T05:00:00Z"), null, null, null), null, null, null);
         reports.bindRunId(stored.id(), RUN_ID);
     }
 
@@ -157,7 +157,7 @@ class ReportIngestServiceTest {
             RunRecord stored = new RunRecord(id, draft.runId(), draft.projectId(),
                     draft.testSetId(), draft.state(), draft.priority(), draft.concurrency(),
                     draft.attemptNo(), 0, 0, 0, null, null, null, draft.artifactsDir(),
-                    draft.enqueuedAt(), draft.startedAt(), draft.finishedAt());
+                    draft.enqueuedAt(), draft.startedAt(), draft.finishedAt(), draft.deviceScope());
             byRunId.put(stored.runId(), stored);
             return stored;
         }

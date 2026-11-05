@@ -32,11 +32,15 @@ public class UserPreferenceService {
      * 首版键名 cyan/indigo/teal/fuchsia 不再接受：前端 {@code useAccent.normalizeAccent}
      * 会把库里的旧值归一成新值并在下一次写入时覆盖，所以服务端不需要为兼容留旧值。
      * 保留旧值反而会让"六预设"的定义在两侧不一致，是更坏的长期债。
+     *
+     * <p>density（UX-06 表格密度）只有舒适/紧凑两档，与前端
+     * {@code useDensity.DENSITIES} 一一对应；前端只发这两个值，多一个都不收。
      */
     private static final Map<String, Set<String>> ALLOWED = Map.of(
             "theme", Set.of("system", "light", "dark"),
             "locale", Set.of("zh-CN", "en-US"),
-            "accent", Set.of("crimson", "blue", "gold", "orange", "violet", "jade"));
+            "accent", Set.of("crimson", "blue", "gold", "orange", "violet", "jade"),
+            "density", Set.of("comfortable", "compact"));
 
     /** 单次提交的键数上限：偏好项就几项，超过说明调用方写错了。 */
     private static final int MAX_KEYS_PER_REQUEST = 10;

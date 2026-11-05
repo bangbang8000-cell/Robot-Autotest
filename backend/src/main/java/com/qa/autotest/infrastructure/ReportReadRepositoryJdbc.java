@@ -98,6 +98,24 @@ public class ReportReadRepositoryJdbc implements ReportReadRepository {
     }
 
     @Override
+    public List<RunSnapshot> listBaselineCandidates(long projectId, String dut, String link,
+                                                    String excludeRunId, int limit) {
+        String sql = RUN_SNAPSHOT + """
+                 WHERE project_id = ?
+                   AND run_status = 'finished'
+                   AND COALESCE(`dut`, '') = ?
+                   AND COALESCE(`link`, '') = ?
+                   AND run_id <> ?
+                 ORDER BY started_at DESC, id DESC
+                 LIMIT ?
+                """;
+        TenantGuard.requireProjectScope(sql, "run");
+        return jdbc.query(sql, (rs, rowNum) -> mapRun(rs),
+                projectId, dut == null ? "" : dut, link == null ? "" : link,
+                excludeRunId == null ? "" : excludeRunId, limit);
+    }
+
+    @Override
     public List<CaseVerdict> listCaseVerdicts(long projectId, String runId) {
         TenantGuard.requireProjectScope(CASE_VERDICTS, "run");
         return jdbc.query(CASE_VERDICTS, (rs, rowNum) -> new CaseVerdict(

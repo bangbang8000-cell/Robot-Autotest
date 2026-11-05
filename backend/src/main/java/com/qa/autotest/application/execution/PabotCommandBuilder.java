@@ -14,6 +14,13 @@ import java.util.Map;
 public final class PabotCommandBuilder {
 
     public PabotCommand build(ShardSpec spec, ExecutionProperties props, Path artifactsRoot) {
+        return build(spec, props, artifactsRoot,
+                ExecutionPaths.resolve(props.getWorkspaceRoot()));
+    }
+
+    /** 指定工作目录（EXEC-05：数据库脚本落盘的 run 独立工作区）。 */
+    public PabotCommand build(ShardSpec spec, ExecutionProperties props, Path artifactsRoot,
+                              Path workDir) {
         if (spec == null) {
             throw new IllegalArgumentException("分片规格不能为空");
         }
@@ -40,6 +47,15 @@ public final class PabotCommandBuilder {
         argv.add(Integer.toString(processes));
         argv.add("--name");
         argv.add(spec.displayName());
+        if (spec.testNames() != null) {
+            for (String testName : spec.testNames()) {
+                if (testName == null || testName.isBlank()) {
+                    continue;
+                }
+                argv.add("--test");
+                argv.add(testName.trim());
+            }
+        }
         if (spec.includeTag() != null && !spec.includeTag().isBlank()) {
             argv.add("--include");
             argv.add(spec.includeTag().trim());
@@ -54,15 +70,15 @@ public final class PabotCommandBuilder {
         env.put("LANG", "C.UTF-8");
         env.put("PYTHONUNBUFFERED", "1");
 
-        return new PabotCommand(List.copyOf(argv), Map.copyOf(env),
-                ExecutionPaths.resolve(props.getWorkspaceRoot()), outputDir);
+        return new PabotCommand(List.copyOf(argv), Map.copyOf(env), workDir, outputDir);
     }
 
     public record ShardSpec(int shardNo,
                             List<String> suitePaths,
                             int processes,
                             String includeTag,
-                            String displayName) {
+                            String displayName,
+                            List<String> testNames) {
     }
 
     public record PabotCommand(List<String> argv,

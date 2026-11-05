@@ -60,7 +60,7 @@ final class CiTestSupport {
                 null, null, null, "/tmp/" + runId,
                 Instant.parse("2026-11-03T02:00:00Z"),
                 state == RunState.QUEUED ? null : Instant.parse("2026-11-03T02:01:00Z"),
-                state.terminal() ? Instant.parse("2026-11-03T02:02:00Z") : null);
+                state.terminal() ? Instant.parse("2026-11-03T02:02:00Z") : null, null);
     }
 
     static CiProperties properties() {
@@ -344,7 +344,7 @@ final class CiTestSupport {
                     current.testSetId(), to, current.priority(), current.concurrency(),
                     current.attemptNo(), current.totalTests(), current.passedTests(),
                     current.failedTests(), failureClass, failureReason, failureMessage,
-                    current.artifactsDir(), current.enqueuedAt(), startedAt, finishedAt);
+                    current.artifactsDir(), current.enqueuedAt(), startedAt, finishedAt, current.deviceScope());
             return 1;
         }
 

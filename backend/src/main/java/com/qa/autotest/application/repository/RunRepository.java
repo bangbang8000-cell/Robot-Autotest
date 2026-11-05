@@ -35,6 +35,14 @@ public interface RunRepository {
         return Optional.empty();
     }
 
+    /**
+     * {@code execution_job} 主键（租约 {@code job_id} 外键）。默认实现表示仓储未建模该表，
+     * JDBC 实现按 {@code job_no = run_id} 反查。
+     */
+    default Optional<Long> findJobId(long projectId, String runId) {
+        return Optional.empty();
+    }
+
     Optional<RunRecord> findByRunId(long projectId, String runId);
 
     Optional<RunRecord> findByRequestId(long projectId, String requestId);

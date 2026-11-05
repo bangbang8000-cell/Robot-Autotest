@@ -1,6 +1,7 @@
 package com.qa.autotest.application.plan;
 
 import com.qa.autotest.application.execution.ExecutionProperties;
+import com.qa.autotest.application.execution.RunDispatcher;
 import com.qa.autotest.application.execution.RunService;
 import com.qa.autotest.application.iam.AuditService;
 import com.qa.autotest.application.repository.PlanRepository;
@@ -46,7 +47,7 @@ final class PlanTestSupport {
         return new RunRecord(id, runId, PROJECT, null, state, 5, 1, 0,
                 1, state == RunState.FINISHED ? 1 : 0, state == RunState.FAILED ? 1 : 0,
                 null, null, null, "/tmp/" + runId,
-                Instant.parse("2026-11-03T02:00:00Z"), null, null);
+                Instant.parse("2026-11-03T02:00:00Z"), null, null, null);
     }
 
     /** 内存计划仓储，模拟 JDBC 的关键语义（到期过滤、last/next 推进、依赖表）。 */
@@ -239,7 +240,8 @@ final class PlanTestSupport {
         final List<String> runIds = new ArrayList<>();
 
         @Override
-        public synchronized void submit(long projectId, Long planId, String runId, Runnable task) {
+        public synchronized void submit(long projectId, Long planId, String runId,
+                                        int priority, Runnable task) {
             runIds.add(runId);
         }
     }

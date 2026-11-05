@@ -137,6 +137,27 @@ class ArtifactVerifierTest {
     }
 
     @Test
+    void 识别单用例超时的失败消息() throws Exception {
+        // FR-v0.4-24：RF 命中 Test Timeout 的固定文案落在 test > status > msg 上
+        StringBuilder body = new StringBuilder(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><robot><suite name=\"S\"><test name=\"T\">"
+                        + "<status status=\"FAIL\"><msg level=\"FAIL\">"
+                        + "Test timeout 30 seconds exceeded.</msg></status>"
+                        + "</test></suite>");
+        for (int i = 0; i < 100; i++) {
+            body.append("<!-- padding line ").append(i).append(" -->");
+        }
+        body.append("</robot>");
+        Path xml = tmp.resolve("timeout.xml");
+        Files.writeString(xml, body.toString(), StandardCharsets.UTF_8);
+
+        assertEquals(1, new OutputXmlProbe().timedOutTests(xml));
+        assertTrue(verifier.testTimedOut(xml));
+        assertEquals(0, new OutputXmlProbe().timedOutTests(fixture("ok.xml")));
+        assertFalse(verifier.testTimedOut(tmp.resolve("none.xml")));
+    }
+
+    @Test
     void 没有分片目录时不判失败_避免误伤单分片与替身() {
         // 单分片执行、测试替身、换用别的执行器都可能没有 pabot_results，
         // 这里判失败会误伤一大片；只在「有分片」时校验它们是否完整。

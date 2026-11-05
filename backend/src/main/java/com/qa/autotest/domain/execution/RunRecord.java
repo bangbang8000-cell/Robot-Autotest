@@ -22,5 +22,6 @@ public record RunRecord(long id,
                         String artifactsDir,
                         Instant enqueuedAt,
                         Instant startedAt,
-                        Instant finishedAt) {
+                        Instant finishedAt,
+                        String deviceScope) {
 }

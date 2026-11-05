@@ -88,6 +88,12 @@ public class OutputXmlParser {
         boolean oldMetadataBlock = false;
         StringBuilder message = null;
         String messageLevel = null;
+        // RF 7.5 的 <meta name="X">值</meta> 把值放在元素文本里，必须等到 END_ELEMENT 才能落库；
+        // 也有 <meta name="X" value="Y"/> 的写法（既有夹具与部分版本），两种都要认。
+        String metaName = null;
+        String metaAttrValue = null;
+        StringBuilder metaText = null;
+        Map<String, String> metaTarget = null;
         // RPT-02：<msg> 的全局序号（文档顺序，0 基）。入库只存偏移，正文留在 output.xml。
         long messageSeq = 0L;
 
@@ -114,11 +120,10 @@ public class OutputXmlParser {
                         }
                     }
                     case "meta" -> {
-                        if (suites.isEmpty()) {
-                            putMetadata(rootMetadata, attribute(reader, "name"), attribute(reader, "value"));
-                        } else {
-                            putMetadata(suites.peek(), attribute(reader, "name"), attribute(reader, "value"));
-                        }
+                        metaName = attribute(reader, "name");
+                        metaAttrValue = attribute(reader, "value");
+                        metaText = new StringBuilder();
+                        metaTarget = suites.isEmpty() ? rootMetadata : suites.peek().metadata;
                     }
                     case "test" -> {
                         currentCase = new CaseBuilder(attribute(reader, "name"));
@@ -168,8 +173,21 @@ public class OutputXmlParser {
                 if (message != null) {
                     message.append(reader.getText());
                 }
+                if (metaText != null) {
+                    metaText.append(reader.getText());
+                }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 switch (reader.getLocalName()) {
+                    case "meta" -> {
+                        String value = metaAttrValue != null
+                                ? metaAttrValue
+                                : (metaText == null ? "" : metaText.toString());
+                        putMetadata(metaTarget, metaName, value);
+                        metaName = null;
+                        metaAttrValue = null;
+                        metaText = null;
+                        metaTarget = null;
+                    }
                     case "metadata" -> oldMetadataBlock = false;
                     case "msg" -> {
                         if (message != null) {

@@ -1,5 +1,6 @@
 package com.qa.autotest.application.plan;
 
+import com.qa.autotest.application.execution.RunDispatcher;
 import com.qa.autotest.application.execution.RunExecutionService;
 import com.qa.autotest.application.execution.RunService;
 import com.qa.autotest.application.iam.AuditService;
@@ -290,7 +291,7 @@ public class PlanScheduleService {
     }
 
     private void dispatch(PlanRecord plan, RunRecord created, RunService.CreateRunCommand command) {
-        dispatcher.submit(plan.projectId(), plan.id(), created.runId(), () -> {
+        dispatcher.submit(plan.projectId(), plan.id(), created.runId(), command.priority(), () -> {
             RunRecord result;
             try {
                 result = executions.execute(created, command);
@@ -318,7 +319,8 @@ public class PlanScheduleService {
                 requestId,
                 5,
                 plan.timeoutSeconds(),
-                plan.includeTag());
+                plan.includeTag(),
+                null);
     }
 
     private void audit(String action, PlanRecord plan, String detail) {

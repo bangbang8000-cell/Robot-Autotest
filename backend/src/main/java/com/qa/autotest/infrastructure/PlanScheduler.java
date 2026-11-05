@@ -3,7 +3,7 @@ package com.qa.autotest.infrastructure;
 import com.qa.autotest.application.execution.RunExecutionService;
 import com.qa.autotest.application.plan.PlanScheduleService;
 import com.qa.autotest.application.plan.PlanScheduleService.PlannedRun;
-import com.qa.autotest.application.plan.RunDispatcher;
+import com.qa.autotest.application.execution.RunDispatcher;
 import com.qa.autotest.domain.execution.RunRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class PlanScheduler {
         }
         for (PlannedRun planned : runs) {
             dispatcher.submit(planned.plan().projectId(), planned.plan().id(),
-                    planned.record().runId(), () -> {
+                    planned.record().runId(), planned.command().priority(), () -> {
                         RunRecord result;
                         try {
                             result = executions.execute(planned.record(), planned.command());

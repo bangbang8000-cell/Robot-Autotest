@@ -72,6 +72,16 @@ public final class ArtifactVerifier {
     }
 
     /**
+     * 产物里是否存在「单用例超时」失败（FR-v0.4-24）。
+     *
+     * <p>与 run 总超时区分：这是 RF 套件级 {@code Test Timeout} 到点把单条用例判失败，
+     * 其余用例照常跑完，run 的原因记为 {@code test_timeout}。
+     */
+    public boolean testTimedOut(Path outputXml) {
+        return probe.timedOutTests(outputXml) > 0;
+    }
+
+    /**
      * 分片完整性：{@code pabot_results/} 下每个分片目录的 {@code output.xml} 都必须非空。
      *
      * <p>只看「已存在的分片」，不要求分片数等于进程数 —— pabot 在用例少于进程数时

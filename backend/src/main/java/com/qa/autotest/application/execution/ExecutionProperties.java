@@ -22,6 +22,8 @@ public class ExecutionProperties {
     private int leaseReclaimSeconds = 60;
     private int leaseMaxWaitSeconds = 60;
     private int runTimeoutSeconds = 3600;
+    /** 单用例超时秒数（FR-v0.4-24）；<=0 表示不注入 Test Timeout。 */
+    private int testTimeoutSeconds = 1800;
     private int inactivityTimeoutSeconds = 900;
     private long minFreeBytes = 5L * 1024 * 1024 * 1024;
     private int availablePorts = 32;
@@ -100,6 +102,14 @@ public class ExecutionProperties {
 
     public void setRunTimeoutSeconds(int runTimeoutSeconds) {
         this.runTimeoutSeconds = runTimeoutSeconds;
+    }
+
+    public int getTestTimeoutSeconds() {
+        return testTimeoutSeconds;
+    }
+
+    public void setTestTimeoutSeconds(int testTimeoutSeconds) {
+        this.testTimeoutSeconds = testTimeoutSeconds;
     }
 
     public int getInactivityTimeoutSeconds() {

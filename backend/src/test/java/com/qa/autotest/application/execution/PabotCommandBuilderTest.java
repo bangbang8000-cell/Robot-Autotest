@@ -30,7 +30,7 @@ class PabotCommandBuilderTest {
         ExecutionProperties props = props();
         PabotCommandBuilder.PabotCommand command = builder.build(
                 new PabotCommandBuilder.ShardSpec(0,
-                        List.of("suites/a.robot", "suites/b.robot"), 2, "smoke", "run-X"),
+                        List.of("suites/a.robot", "suites/b.robot"), 2, "smoke", "run-X", null),
                 props, tmp.resolve("artifacts"));
 
         List<String> argv = command.argv();
@@ -52,26 +52,40 @@ class PabotCommandBuilderTest {
     @Test
     void 没有标签时不追加_include() {
         PabotCommandBuilder.PabotCommand command = builder.build(
-                new PabotCommandBuilder.ShardSpec(1, List.of("suites/a.robot"), 1, null, "run-Y"),
+                new PabotCommandBuilder.ShardSpec(1, List.of("suites/a.robot"), 1, null, "run-Y", null),
                 props(), tmp.resolve("artifacts"));
         assertTrue(!command.argv().contains("--include"));
         assertEquals(tmp.resolve("artifacts").resolve("shard-1"), command.outputDir());
     }
 
     @Test
+    void 指定测试名时逐条追加_test() {
+        PabotCommandBuilder.PabotCommand command = builder.build(
+                new PabotCommandBuilder.ShardSpec(0, List.of("suites/a.robot"), 1, null, "run-T",
+                        List.of("PERF-001", " ", "200G 带宽压测")),
+                props(), tmp.resolve("artifacts"));
+
+        List<String> argv = command.argv();
+        assertEquals(List.of("PERF-001", "200G 带宽压测"),
+                List.of(argv.get(argv.indexOf("--test") + 1),
+                        argv.get(argv.lastIndexOf("--test") + 1)));
+        assertEquals(2, argv.stream().filter("--test"::equals).count());
+    }
+
+    @Test
     void suite_为空拒绝装配() {
         assertThrows(IllegalArgumentException.class, () -> builder.build(
-                new PabotCommandBuilder.ShardSpec(0, List.of(), 1, null, "run-Z"),
+                new PabotCommandBuilder.ShardSpec(0, List.of(), 1, null, "run-Z", null),
                 props(), tmp.resolve("artifacts")));
     }
 
     @Test
     void processes_越界拒绝装配() {
         assertThrows(IllegalArgumentException.class, () -> builder.build(
-                new PabotCommandBuilder.ShardSpec(0, List.of("suites/a.robot"), 0, null, "run-Z"),
+                new PabotCommandBuilder.ShardSpec(0, List.of("suites/a.robot"), 0, null, "run-Z", null),
                 props(), tmp.resolve("artifacts")));
         assertThrows(IllegalArgumentException.class, () -> builder.build(
-                new PabotCommandBuilder.ShardSpec(0, List.of("suites/a.robot"), 2, null, "run-Z"),
+                new PabotCommandBuilder.ShardSpec(0, List.of("suites/a.robot"), 2, null, "run-Z", null),
                 props(), tmp.resolve("artifacts")));
     }
 }

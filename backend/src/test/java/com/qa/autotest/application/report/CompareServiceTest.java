@@ -126,6 +126,32 @@ class CompareServiceTest {
     }
 
     @Test
+    @DisplayName("手动基线候选：同项目同环境的 finished 按开始时间倒序，排除本轮与异环境")
+    void 手动基线候选按时间倒序() {
+        read.addRun(PROJECT, CURRENT, "GPU-01", "mlx5_0", T2);
+        read.addRun(PROJECT, "OLD", "GPU-01", "mlx5_0", T0);
+        read.addRun(PROJECT, "NEAR", "GPU-01", "mlx5_0", T1);
+        read.addRun(PROJECT, "OTHER-DUT", "GPU-02", "mlx5_0", T1);
+        read.addRun(PROJECT, "OTHER-LINK", "GPU-01", "mlx5_1", T1);
+        read.addRun(OTHER_PROJECT, "FOREIGN", "GPU-01", "mlx5_0", T1);
+
+        List<CompareService.BaselineCandidate> candidates = service.candidates(PROJECT, CURRENT);
+
+        assertEquals(List.of("NEAR", "OLD"),
+                candidates.stream().map(CompareService.BaselineCandidate::runId).toList());
+        assertEquals(T1, candidates.get(0).startedAt());
+    }
+
+    @Test
+    @DisplayName("手动基线候选：运行不存在时 404")
+    void 手动基线候选运行不存在() {
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> service.candidates(PROJECT, "MISSING"));
+
+        assertEquals(ErrorCode.NOT_FOUND, ex.errorCode());
+    }
+
+    @Test
     @DisplayName("关键：本轮未执行的用例 current 必须为 null，禁止用历史值填充")
     void current未执行必须为null() {
         read.addRun(PROJECT, CURRENT, "GPU-01", "mlx5_0", T2);
@@ -339,6 +365,39 @@ class CompareServiceTest {
                 candidates.add(run);
             }
             return candidates.stream().max(Comparator.comparing(RunSnapshot::startedAt));
+        }
+
+        @Override
+        public List<RunSnapshot> listBaselineCandidates(long projectId, String dut, String link,
+                                                        String excludeRunId, int limit) {
+            List<RunSnapshot> matched = new ArrayList<>();
+            for (RunSnapshot run : runs.getOrDefault(projectId, Map.of()).values()) {
+                if (!"finished".equals(run.state())) {
+                    continue;
+                }
+                if (!Objects.equals(dut == null ? "" : dut, run.dut() == null ? "" : run.dut())) {
+                    continue;
+                }
+                if (!Objects.equals(link == null ? "" : link, run.link() == null ? "" : run.link())) {
+                    continue;
+                }
+                if (Objects.equals(run.runId(), excludeRunId)) {
+                    continue;
+                }
+                matched.add(run);
+            }
+            return matched.stream()
+                    .sorted((left, right) -> {
+                        if (left.startedAt() == null) {
+                            return 1;
+                        }
+                        if (right.startedAt() == null) {
+                            return -1;
+                        }
+                        return right.startedAt().compareTo(left.startedAt());
+                    })
+                    .limit(limit)
+                    .toList();
         }
 
         @Override

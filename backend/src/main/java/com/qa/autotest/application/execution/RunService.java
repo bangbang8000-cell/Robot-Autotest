@@ -24,6 +24,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,6 +34,8 @@ import java.util.List;
 public class RunService {
 
     private static final Logger LOG = LoggerFactory.getLogger(RunService.class);
+    /** run.device_scope 列宽；与迁移 V7_4 一致。 */
+    static final int MAX_DEVICE_SCOPE_LENGTH = 512;
 
     private final RunRepository runs;
     private final AccessControlService access;
@@ -114,9 +117,10 @@ public class RunService {
     private RunRecord insertRun(CreateRunCommand cmd, String requestId, RunOrigin origin) {
         Instant now = clock.instant();
         String runId = ids.next(resolveCasePrefix(cmd), now);
+        String scope = deviceScope(cmd);
         RunRecord draft = new RunRecord(0L, runId, cmd.projectId(), cmd.testSetId(),
                 RunState.QUEUED, cmd.priority(), cmd.concurrency(), 0,
-                0, 0, 0, null, null, null, null, now, null, null);
+                0, 0, 0, null, null, null, null, now, null, null, scope);
         try {
             RunRecord inserted = runs.insert(draft, runId, requestId, TenantContext.userId(), origin);
             audit.record("RUN_CREATE", "run", runId,
@@ -135,6 +139,17 @@ public class RunService {
         access.require(PermissionResource.EXECUTION, PermissionAction.READ);
         return runs.findByRunId(projectId, runId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "运行不存在: " + runId));
+    }
+
+    /**
+     * 租约外键 {@code job_id}：{@code execution_job} 与 run 同事务创建（{@code job_no = run_id}），
+     * run 表本身不保存该主键，执行前按 run_id 反查一次。
+     */
+    public long leaseJobId(String runId) {
+        long projectId = TenantContext.requireProjectId();
+        return runs.findJobId(projectId, runId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND,
+                        "执行作业不存在: " + runId));
     }
 
     public PageResult<RunRecord> page(long projectId, RunState state, int page, int size) {
@@ -183,7 +198,7 @@ public class RunService {
                 current.attemptNo(), current.totalTests(), current.passedTests(),
                 current.failedTests(), ctx.failureClass(), ctx.failureReason(),
                 ctx.failureMessage(), current.artifactsDir(), current.enqueuedAt(),
-                startedAt, finishedAt);
+                startedAt, finishedAt, current.deviceScope());
         if (to.terminal()) {
             notifyCompletion(completed);
         }
@@ -233,7 +248,7 @@ public class RunService {
                 current.state(), current.priority(), current.concurrency(), current.attemptNo(),
                 total, passed, failed, current.failureClass(), current.failureReason(),
                 current.failureMessage(), artifactsDir, current.enqueuedAt(),
-                current.startedAt(), current.finishedAt());
+                current.startedAt(), current.finishedAt(), current.deviceScope());
     }
 
     private void validate(CreateRunCommand cmd) {
@@ -259,6 +274,39 @@ public class RunService {
         }
     }
 
+    /**
+     * FR-v0.4-01：设备范围落库。逗号分隔、去重保序；空/全空白记 NULL。
+     *
+     * <p>这里只做持久化口径（≤512 字符），单键长度与互斥语义由执行期
+     * {@code RunExecutionService.resourceKeys} 负责——同一个列表在两侧各有各的边界，
+     * 写库时放宽是为了历史回溯不被执行期规则绑死。
+     */
+    static String deviceScope(CreateRunCommand cmd) {
+        List<String> keys = cmd.deviceKeys();
+        if (keys == null || keys.isEmpty()) {
+            return null;
+        }
+        List<String> normalized = new ArrayList<>();
+        for (String raw : keys) {
+            if (raw == null || raw.isBlank()) {
+                continue;
+            }
+            String key = raw.trim();
+            if (!normalized.contains(key)) {
+                normalized.add(key);
+            }
+        }
+        if (normalized.isEmpty()) {
+            return null;
+        }
+        String joined = String.join(",", normalized);
+        if (joined.length() > MAX_DEVICE_SCOPE_LENGTH) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
+                    "deviceScope 超过 " + MAX_DEVICE_SCOPE_LENGTH + " 字符");
+        }
+        return joined;
+    }
+
     private String resolveCasePrefix(CreateRunCommand cmd) {
         List<String> suites = cmd.suitePaths();
         if (suites.isEmpty()) {
@@ -279,7 +327,8 @@ public class RunService {
                                    String runRequestId,
                                    int priority,
                                    int timeoutSeconds,
-                                   String includeTag) {
+                                   String includeTag,
+                                   List<String> testNames) {
     }
 
     public record TransitionContext(Instant startedAt,

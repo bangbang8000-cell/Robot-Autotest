@@ -70,6 +70,6 @@ class IdempotencyTest {
     private RunService.CreateRunCommand command() {
         return new RunService.CreateRunCommand(PROJECT, null,
                 List.of("suites/a.robot"), 1, null, List.of(),
-                "REQ-1", 0, 600, null);
+                "REQ-1", 0, 600, null, null);
     }
 }

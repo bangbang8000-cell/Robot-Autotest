@@ -119,6 +119,17 @@ public class ReportController {
         return ApiResponse.ok(compare.compare(projectId, runId, baselineRunId));
     }
 
+    /**
+     * 手动基线候选（RPT-03 补口）：只返回同项目同环境的 finished 运行，最多 20 条。
+     */
+    @GetMapping("/{runId}/baseline-candidates")
+    public ApiResponse<List<CompareService.BaselineCandidate>> baselineCandidates(
+            @PathVariable String runId,
+            @RequestParam long projectId) {
+        access.bindProject(projectId);
+        return ApiResponse.ok(compare.candidates(projectId, runId));
+    }
+
     /** 计数结构：与前端约定的 pass / fail / skip 三段。 */
     public record ReportCounts(int pass, int fail, int skip) {
 

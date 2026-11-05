@@ -10,6 +10,8 @@ import com.qa.autotest.application.repository.TestResultWriter;
 import com.qa.autotest.application.repository.UserRepository;
 import com.qa.autotest.common.tenant.TenantContext;
 import com.qa.autotest.domain.common.PageResult;
+import com.qa.autotest.domain.caseasset.RobotFile;
+import com.qa.autotest.domain.execution.Lease;
 import com.qa.autotest.domain.execution.RunRecord;
 import com.qa.autotest.domain.execution.RunState;
 import java.io.ByteArrayInputStream;
@@ -30,6 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.IntSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -95,10 +98,91 @@ class RunExecutionServiceTest {
         assertTrue(fixture.launcher.launchCount == 0);
     }
 
+    @Test
+    void 数据库脚本落盘到_run_工作区并作为_pabot_工作目录() throws Exception {
+        Fixture fixture = new Fixture("ok.xml", true, List.of(
+                new RobotFile(1L, PROJECT, "suites/a.robot",
+                        "*** Test Cases ***\nA\n    Log    ok\n", "sha-a", 1),
+                new RobotFile(2L, PROJECT, "suites/b.robot",
+                        "*** Test Cases ***\nB\n    Log    ok\n", "sha-b", 1)));
+        RunRecord run = fixture.service.execute(command());
+
+        assertEquals(RunState.FINISHED, run.state());
+        Path workspace = Path.of(run.artifactsDir())
+                .resolve(ExecutionWorkspaceMaterializer.WORKSPACE_DIR);
+        assertTrue(Files.isRegularFile(workspace.resolve("suites/a.robot")));
+        assertTrue(Files.isRegularFile(workspace.resolve("suites/b.robot")));
+        assertEquals(workspace, fixture.launcher.workDir);
+    }
+
+    @Test
+    void 执行期持有租约且成功后释放() throws Exception {
+        Fixture fixture = new Fixture("ok.xml", true);
+        RunRecord run = fixture.service.execute(command());
+
+        assertEquals(RunState.FINISHED, run.state());
+        assertEquals(1, fixture.launcher.leaseSizeAtLaunch);
+        assertEquals(0, fixture.leaseRepo.size());
+        assertTrue(fixture.leaseRepo.history().stream()
+                .anyMatch(row -> "released".equals(row.state()) && "finished".equals(row.reason())));
+    }
+
+    @Test
+    void 失败结束同样释放租约() throws Exception {
+        Fixture fixture = new Fixture("empty.xml", true);
+        RunRecord run = fixture.service.execute(command());
+
+        assertEquals(RunState.FAILED, run.state());
+        assertEquals(0, fixture.leaseRepo.size());
+        assertTrue(fixture.leaseRepo.history().stream()
+                .anyMatch(row -> "released".equals(row.state()) && "failed".equals(row.reason())));
+    }
+
+    @Test
+    void 资源被占用时等待超时进入_lease_timeout_且不启动_pabot() throws Exception {
+        Fixture fixture = new Fixture("ok.xml", true);
+        fixture.props.setLeaseMaxWaitSeconds(0);
+        RunRecord created = fixture.runs.create(command());
+        String key = "run:" + created.runId();
+        fixture.leaseRepo.seed(new Lease(key, 99L, "RUN-OTHER", PROJECT,
+                CLOCK.instant(), CLOCK.instant().plusSeconds(120)));
+
+        RunRecord run = fixture.service.execute(created, command());
+
+        assertEquals(RunState.FAILED, run.state());
+        assertEquals("lease_timeout", run.failureReason());
+        assertEquals("INFRA", run.failureClass());
+        assertTrue(run.failureMessage().contains(key));
+        assertEquals(0, fixture.launcher.launchCount);
+    }
+
+    @Test
+    void 设备范围决定租约键() throws Exception {
+        Fixture fixture = new Fixture("ok.xml", true);
+        RunRecord run = fixture.service.execute(command(List.of("DUT-01/mlx5_0")));
+
+        assertEquals(RunState.FINISHED, run.state());
+        assertTrue(fixture.leaseRepo.history().stream()
+                .anyMatch(row -> "DUT-01/mlx5_0".equals(row.resourceKey())));
+    }
+
+    @Test
+    void 资源键缺省退化为运行自持() {
+        assertEquals(List.of("run:RUN-9"),
+                RunExecutionService.resourceKeys("RUN-9", command()));
+        assertEquals(List.of("DUT-01/mlx5_0", "DUT-02/mlx5_1"),
+                RunExecutionService.resourceKeys("RUN-9", command(
+                        List.of("DUT-01/mlx5_0", " DUT-01/mlx5_0 ", "DUT-02/mlx5_1"))));
+    }
+
     private RunService.CreateRunCommand command() {
+        return command(List.of());
+    }
+
+    private RunService.CreateRunCommand command(List<String> deviceKeys) {
         return new RunService.CreateRunCommand(PROJECT, null,
-                List.of("suites/a.robot", "suites/b.robot"), 2, null, List.of(),
-                "req-1", 5, 600, null);
+                List.of("suites/a.robot", "suites/b.robot"), 2, null, deviceKeys,
+                "req-1", 5, 600, null, null);
     }
 
     private final class Fixture {
@@ -106,15 +190,24 @@ class RunExecutionServiceTest {
         private final FakeRunRepository repo = new FakeRunRepository();
         private final FakeArtifacts artifacts = new FakeArtifacts();
         private final FakeResults results = new FakeResults();
+        private final InMemoryLeaseRepository leaseRepo = new InMemoryLeaseRepository();
         private final FakeLauncher launcher;
         private final List<String> artifactKinds = artifacts.kinds;
         private final List<String> resultVerdicts = results.verdicts;
+        private final ExecutionProperties props;
+        private final RunService runs;
         private final RunExecutionService service;
 
         private Fixture(String fixtureName, boolean pabotExists) throws Exception {
+            this(fixtureName, pabotExists, List.of());
+        }
+
+        private Fixture(String fixtureName, boolean pabotExists,
+                        List<RobotFile> scripts) throws Exception {
             this.launcher = new FakeLauncher(Path.of(getClass().getClassLoader()
                     .getResource("fixtures/output-xml/" + fixtureName).toURI()));
-            ExecutionProperties props = new ExecutionProperties();
+            this.launcher.leaseProbe = leaseRepo::size;
+            this.props = new ExecutionProperties();
             props.setVenvBin(tmp.resolve("venv").resolve("bin").toString());
             props.setWorkspaceRoot(tmp.resolve("ws").toString());
             props.setArtifactsRoot(tmp.resolve("artifacts").toString());
@@ -122,14 +215,17 @@ class RunExecutionServiceTest {
             FakeFs fs = new FakeFs();
             fs.exists = pabotExists;
 
-            RunService runs = new RunService(repo,
+            this.runs = new RunService(repo,
                     new AccessControlService(adminUsers(), emptyProjects()),
                     new AuditService(noopAudit()), new RunIdGenerator(), props, CLOCK);
             ExecutionPrecheck precheck = new ExecutionPrecheck(fs, path -> Optional.of("5.2.2"));
             PabotOrchestrator orchestrator = new PabotOrchestrator(launcher,
                     new ArtifactVerifier(new OutputXmlProbe()),
                     new ProcessRegistry(), new RunLogService(CLOCK), CLOCK);
-            this.service = new RunExecutionService(runs, props, precheck,
+            LeaseService leaseService = new LeaseService(leaseRepo, CLOCK,
+                    Duration.ofSeconds(120), Duration.ofSeconds(40), duration -> { });
+            this.service = new RunExecutionService(runs, props, precheck, leaseService,
+                    new ExecutionWorkspaceMaterializer(ExecutionTestSupport.scriptRepo(scripts)),
                     new PabotCommandBuilder(), orchestrator, artifacts, results,
                     new FailureClassifier(FailureRuleSet.defaults()), new RetryPolicy(), CLOCK);
         }
@@ -140,6 +236,9 @@ class RunExecutionServiceTest {
 
         private final Path sourceXml;
         private int launchCount;
+        private Path workDir;
+        private IntSupplier leaseProbe = () -> 0;
+        private int leaseSizeAtLaunch = -1;
 
         private FakeLauncher(Path sourceXml) {
             this.sourceXml = sourceXml;
@@ -148,6 +247,8 @@ class RunExecutionServiceTest {
         @Override
         public ExecutionHandle launch(PabotCommandBuilder.PabotCommand command) {
             launchCount++;
+            workDir = command.workDir();
+            leaseSizeAtLaunch = leaseProbe.getAsInt();
             try {
                 Files.createDirectories(command.outputDir());
                 Files.copy(sourceXml, command.outputDir().resolve("output.xml"),
@@ -223,9 +324,16 @@ class RunExecutionServiceTest {
             RunRecord stored = new RunRecord(id, draft.runId(), draft.projectId(),
                     draft.testSetId(), draft.state(), draft.priority(), draft.concurrency(),
                     draft.attemptNo(), 0, 0, 0, null, null, null, null,
-                    draft.enqueuedAt(), null, null);
+                    draft.enqueuedAt(), null, null, draft.deviceScope());
             byRunId.put(stored.runId(), stored);
             return stored;
+        }
+
+        @Override
+        public Optional<Long> findJobId(long projectId, String runId) {
+            RunRecord stored = byRunId.get(runId);
+            return stored != null && stored.projectId() == projectId
+                    ? Optional.of(stored.id()) : Optional.empty();
         }
 
         @Override
@@ -255,7 +363,7 @@ class RunExecutionServiceTest {
                     current.failedTests(), failureClass, failureReason, failureMessage,
                     current.artifactsDir(), current.enqueuedAt(),
                     startedAt == null ? current.startedAt() : startedAt,
-                    finishedAt == null ? current.finishedAt() : finishedAt));
+                    finishedAt == null ? current.finishedAt() : finishedAt, current.deviceScope()));
             return 1;
         }
 
@@ -269,7 +377,7 @@ class RunExecutionServiceTest {
                     current.testSetId(), current.state(), current.priority(), current.concurrency(),
                     current.attemptNo(), total, passed, failed, current.failureClass(),
                     current.failureReason(), current.failureMessage(), artifactsDir,
-                    current.enqueuedAt(), current.startedAt(), current.finishedAt()));
+                    current.enqueuedAt(), current.startedAt(), current.finishedAt(), current.deviceScope()));
             return 1;
         }
 

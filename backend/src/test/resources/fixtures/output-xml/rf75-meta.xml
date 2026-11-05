@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.5.1 (Python 3.12.3 on linux)" generated="2026-11-05T17:47:14.096774" rpa="false" schemaversion="5">
+<suite id="s1" name="RealMeta" source="/tmp/real">
+<test id="s1-t1" name="T1">
+<kw name="Log">
+<msg level="INFO">hello</msg>
+<status status="PASS" elapsed="0.001"/>
+</kw>
+<status status="PASS" elapsed="0.002"/>
+</test>
+<suite id="s1-s1" name="Shard-1">
+<test id="s1-s1-t1" name="T2">
+<status status="PASS" elapsed="0.001"/>
+</test>
+<meta name="OPERATOR">ops</meta>
+<status status="PASS" elapsed="0.003"/>
+</suite>
+<meta name="RUN_ID">REAL-20261105</meta>
+<meta name="DUT">GPU-01</meta>
+<meta name="Pabot Info">[https://pabot.org/?ref=log|Pabot] result from 2 executions.</meta>
+<status status="PASS" elapsed="0.010"/>
+</suite>
+</robot>

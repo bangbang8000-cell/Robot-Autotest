@@ -261,12 +261,19 @@ class AuditAspectTest {
     @Test
     @DisplayName("lease:force-release 记录释放数量与原因")
     void leaseForceRelease() {
-        int released = leaseService.releaseRun("run-1", "admin-force");
+        int released = leaseService.forceReleaseRun("run-1", "admin-force");
         assertEquals(1, released);
         AuditEntry entry = single();
         assertEquals("lease:force-release", entry.action());
         assertEquals("resource_lease", entry.resourceType());
         assertTrue(entry.summary().contains("reason=admin-force"));
+    }
+
+    @Test
+    @DisplayName("生命周期释放（正常结束/失败/取消）不写强制释放审计")
+    void leaseLifecycleReleaseNotAudited() {
+        assertEquals(1, leaseService.releaseRun("run-1", "finished"));
+        assertTrue(auditRepo.entries.isEmpty(), "普通收尾不应产生 force-release 审计");
     }
 
     @Test
@@ -305,7 +312,8 @@ class AuditAspectTest {
         assertAnnotated(TestSetService.class, "delete", "set:delete", "test_set");
         assertAnnotated(PlanService.class, "update", "schedule:update", "execution_plan");
         assertAnnotated(PlanService.class, "delete", "schedule:delete", "execution_plan");
-        assertAnnotated(LeaseService.class, "releaseRun", "lease:force-release", "resource_lease");
+        assertAnnotated(LeaseService.class, "forceReleaseRun", "lease:force-release",
+                "resource_lease");
     }
 
     @Test
