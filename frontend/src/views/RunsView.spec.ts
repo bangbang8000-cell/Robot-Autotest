@@ -152,6 +152,15 @@ describe('RunsView 列表与日志联动', () => {
     expect(root.textContent).toContain('RUN-BBB')
   })
 
+  it('列表页直接显示设备范围，未声明时写「全部设备」而不是空白（EXEC-11）', async () => {
+    const root = await mountView()
+    const rows = [...root.querySelectorAll<HTMLElement>('.n-data-table-tbody .n-data-table-tr')]
+
+    // RUN-AAA 声明了两条设备，RUN-BBB 未声明
+    expect(rows[0].textContent).toContain('DUT-01/mlx5_0,DUT-02/mlx5_1')
+    expect(rows[1].textContent).toContain(i18n.global.t('execution.allDevices'))
+  })
+
   it('点「查看日志」后打开对应行的面板，且只有那一行被标为选中', async () => {
     const root = await mountView()
     expect(root.textContent).not.toContain('started')

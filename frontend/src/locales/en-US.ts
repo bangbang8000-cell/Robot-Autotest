@@ -343,6 +343,10 @@ export default {
       description: 'Description',
       endpointA: 'Side A',
       endpointB: 'Side B',
+      topologyView: 'Topology view',
+      tableView: 'Table view',
+      unconnected: 'Unconnected',
+      topologyEmpty: 'No links to display',
     },
     credential: {
       name: 'Credential name',

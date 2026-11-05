@@ -76,6 +76,28 @@ const domains = ref<string[]>([])
 const domainFilter = ref('')
 
 /**
+ * 链路页签的「拓扑视图」（AST-02）：表格回答「有几条链路」，拓扑回答「谁连谁」。
+ * 后台还没有图数据库，这里就用链路自带的 A/B 端做 DUT-LINK-DUT 链式渲染，
+ * 一个设备出现多次是有意的——按链路读比按设备聚合更贴近排障时的问法。
+ */
+const topologyMode = ref(false)
+
+function toggleTopology(): void {
+  topologyMode.value = !topologyMode.value
+  // 表格里的勾选在视图切换后已不可见，留着会让批量条指向看不见的行
+  if (topologyMode.value) clearSelection()
+}
+
+function endpointName(link: Link, side: 'a' | 'b'): string {
+  const name = side === 'a' ? link.aDeviceName : link.bDeviceName
+  return name || t('assets.link.unconnected')
+}
+
+function endpointPort(link: Link, side: 'a' | 'b'): string {
+  return (side === 'a' ? link.aPortName : link.bPortName) || ''
+}
+
+/**
  * 端口面板独立在表格下方（同 RunsView 的日志面板），不做行内展开。
  *
  * 行内展开要往 NDataTable 里塞一张子表和一张表单，单元格里既没有宽度也没有焦点管理余量；
@@ -820,6 +842,13 @@ async function forceRelease(lease: LeaseView): Promise<void> {
         {{ showForm ? t('common.cancel') : t('common.create') }}
       </NButton>
       <NButton quaternary :loading="loading" @click="load">{{ t('common.refresh') }}</NButton>
+      <NButton
+        v-if="tab === 'links'"
+        :type="topologyMode ? 'primary' : 'default'"
+        @click="toggleTopology"
+      >
+        {{ topologyMode ? t('assets.link.tableView') : t('assets.link.topologyView') }}
+      </NButton>
     </div>
 
     <ErrorLineView v-if="error" :error="error" />
@@ -973,7 +1002,7 @@ async function forceRelease(lease: LeaseView): Promise<void> {
     </div>
 
     <DataTable
-      v-if="tab === 'links'"
+      v-if="tab === 'links' && !topologyMode"
       :columns="linkColumns"
       :data="links"
       :loading="loading"
@@ -984,6 +1013,30 @@ async function forceRelease(lease: LeaseView): Promise<void> {
       :error="Boolean(error)"
       :empty-illustration="keyword ? 'no-result' : 'no-data'"
     />
+
+    <div v-if="tab === 'links' && topologyMode" class="topology">
+      <p v-if="links.length === 0" class="muted">{{ t('assets.link.topologyEmpty') }}</p>
+      <div v-for="link in links" :key="link.id" class="topo-link" :data-link="link.name">
+        <div class="topo-node">
+          <span class="topo-node-name">{{ endpointName(link, 'a') }}</span>
+          <span v-if="endpointPort(link, 'a')" class="topo-node-port">
+            {{ endpointPort(link, 'a') }}
+          </span>
+        </div>
+        <div class="topo-edge">
+          <span class="topo-edge-name">{{ link.name }}</span>
+          <span class="muted small">
+            {{ [link.protocol, link.speedGbps ? `${link.speedGbps} Gbps` : ''].filter(Boolean).join(' · ') || EMPTY }}
+          </span>
+        </div>
+        <div class="topo-node">
+          <span class="topo-node-name">{{ endpointName(link, 'b') }}</span>
+          <span v-if="endpointPort(link, 'b')" class="topo-node-port">
+            {{ endpointPort(link, 'b') }}
+          </span>
+        </div>
+      </div>
+    </div>
 
     <DataTable
       v-if="tab === 'credentials'"
@@ -1057,5 +1110,68 @@ async function forceRelease(lease: LeaseView): Promise<void> {
 :deep(.row-actions) {
   display: flex;
   gap: var(--space-2);
+}
+
+/* 拓扑视图：一行一条链路 = 左端节点 / 链路元数据 / 右端节点 */
+.topology {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.topo-link {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.topo-node {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+}
+
+.topo-node-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topo-node-port {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.topo-edge {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.topo-edge::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed var(--border-strong);
+  z-index: 0;
+}
+
+.topo-edge-name {
+  position: relative;
+  z-index: 1;
+  padding: 0 var(--space-2);
+  background: var(--bg);
+  font-size: var(--font-size-sm);
 }
 </style>

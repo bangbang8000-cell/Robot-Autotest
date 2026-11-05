@@ -1,0 +1,27 @@
+
+ RUN  v3.2.7 /home/evergreen/robot-autotest/frontend
+
+(node:656451) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:656450) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/views/RunsView.spec.ts (13 tests) 3470ms
+   ✓ RunsView 列表与日志联动 > 渲染两行运行记录  313ms
+   ✓ RunsView 手动执行 > 套件路径按行解析并原样提交给 quick-run  357ms
+   ✓ RunsView 手动执行 > 套件路径清空后提交按钮禁用，不会把空列表打到后端  330ms
+   ✓ RunsView 手动执行 > 手动执行表单可声明设备范围，并随 quick-run 提交（FR-v0.4-01）  422ms
+ ✓ src/views/AssetsView.spec.ts (14 tests) 4570ms
+   ✓ AssetsView 设备页 > 渲染设备行，空值列显示统一占位而不是空白  469ms
+   ✓ AssetsView 页签切换 > 切到链路页签后换数据源，且设备表不再渲染  365ms
+   ✓ AssetsView 页签切换 > 切页签会清空上一页的勾选  340ms
+   ✓ AssetsView 链路拓扑（AST-02） > 拓扑按 A 端 → 链路 → B 端渲染，表格让位给拓扑  415ms
+   ✓ AssetsView 链路拓扑（AST-02） > 两端都没登记设备的链路显示「未连接」，切回表格可复原  414ms
+   ✓ AssetsView 租约页 > 切到租约页签后列出占用资源与剩余时间  329ms
+   ✓ AssetsView 租约页 > 非管理员看不到强制释放按钮  337ms
+   ✓ AssetsView 租约页 > 管理员强制释放以 runId 作二次确认，成功后刷新列表  358ms
+
+ Test Files  2 passed (2)
+      Tests  27 passed (27)
+   Start at  01:05:58
+   Duration  6.95s (transform 1.13s, setup 36ms, collect 3.37s, tests 8.04s, environment 400ms, prepare 315ms)
+

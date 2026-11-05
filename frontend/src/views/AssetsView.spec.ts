@@ -89,8 +89,29 @@ vi.mock('@/api/asset', () => ({
           description: null,
           enabled: true,
         },
+        {
+          // 两端都没登记设备的链路：拓扑里必须显式写「未连接」，
+          // 直接留空会让这一格看起来像渲染丢了（AST-02）
+          id: 22,
+          projectId: 1,
+          name: 'LINK-ORPHAN',
+          linkType: 'ethernet',
+          protocol: null,
+          speedGbps: null,
+          mtu: null,
+          aDeviceId: null,
+          aDeviceName: null,
+          aPortId: null,
+          aPortName: null,
+          bDeviceId: null,
+          bDeviceName: null,
+          bPortId: null,
+          bPortName: null,
+          description: null,
+          enabled: false,
+        },
       ],
-      total: 1,
+      total: 2,
       page: 1,
       size: 10,
     })),
@@ -301,6 +322,53 @@ describe('AssetsView 页签切换', () => {
 
     // 凭据 id(31) 若没清掉，会带着旧 id 去发表单外的批量删除请求
     expect(root.textContent).not.toContain(i18n.global.t('cases.batch.selected', { count: 1 }))
+  })
+})
+
+describe('AssetsView 链路拓扑（AST-02）', () => {
+  it('拓扑按 A 端 → 链路 → B 端渲染，表格让位给拓扑', async () => {
+    const root = await mountView()
+    clickTab(root, 'links')
+    await flush()
+    expect(root.querySelector('.n-data-table')).not.toBeNull()
+
+    clickByText(root, i18n.global.t('assets.link.topologyView'))
+    await flush()
+
+    const links = [...root.querySelectorAll<HTMLElement>('.topo-link')]
+    expect(links).toHaveLength(2)
+
+    const [first] = links
+    expect(first.textContent).toContain('DUT-A')
+    expect(first.textContent).toContain('eth0')
+    expect(first.textContent).toContain('LINK-AB')
+    expect(first.textContent).toContain('DUT-B')
+    // B 端没有端口，不能渲染出一个空的行高
+    const nodes = [...first.querySelectorAll<HTMLElement>('.topo-node')]
+    expect(nodes).toHaveLength(2)
+    expect(nodes[0].querySelector('.topo-node-port')).not.toBeNull()
+    expect(nodes[1].querySelector('.topo-node-port')).toBeNull()
+
+    // 同一份数据不能同时以表格和拓扑出现两遍
+    expect(root.querySelector('.n-data-table')).toBeNull()
+  })
+
+  it('两端都没登记设备的链路显示「未连接」，切回表格可复原', async () => {
+    const root = await mountView()
+    clickTab(root, 'links')
+    await flush()
+    clickByText(root, i18n.global.t('assets.link.topologyView'))
+    await flush()
+
+    const orphan = root.querySelector<HTMLElement>('[data-link="LINK-ORPHAN"]')
+    expect(orphan).not.toBeNull()
+    // 两端各一处占位：留空会让这一格看起来像渲染失败
+    expect(orphan?.textContent?.split(i18n.global.t('assets.link.unconnected')).length).toBe(3)
+
+    clickByText(root, i18n.global.t('assets.link.tableView'))
+    await flush()
+    expect(root.querySelector('.topo-link')).toBeNull()
+    expect(root.querySelector('.n-data-table')).not.toBeNull()
   })
 })
 

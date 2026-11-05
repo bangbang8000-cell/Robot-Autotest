@@ -208,6 +208,15 @@ const columns = computed<DataTableColumns<ExecutionRun>>(() => [
     render: (row) => `${row.passedTests} / ${row.totalTests}`,
   },
   {
+    // EXEC-11 残余：设备范围原来只在日志面板里看得到，列表页筛不出「哪次占了哪几台」。
+    // null 表示提交时未声明（执行期不做设备互斥），不能显示成空白，否则和「字段丢了」无法区分。
+    title: t('execution.deviceScope'),
+    key: 'deviceScope',
+    width: 220,
+    ellipsis: { tooltip: true },
+    render: (row) => row.deviceScope || t('execution.allDevices'),
+  },
+  {
     title: t('execution.failureReason'),
     key: 'failureReason',
     minWidth: 200,

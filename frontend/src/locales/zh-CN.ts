@@ -352,6 +352,10 @@ export default {
       description: '描述',
       endpointA: 'A 端',
       endpointB: 'B 端',
+      topologyView: '拓扑视图',
+      tableView: '表格视图',
+      unconnected: '未连接',
+      topologyEmpty: '暂无可展示的链路',
     },
     credential: {
       name: '凭据名',
