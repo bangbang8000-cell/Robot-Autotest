@@ -44,14 +44,14 @@
 | 5 | WS-05 | CI：自托管 runner + PR 流水线（lint / test / build） | B1 | 待验 | `.github/workflows/pr.yml`（lint→test→build 串行、self-hosted `rf-lab`、`paths-ignore`、setup-java/npm 缓存）、`scripts/runner-install.sh`（只装不注册）、`scripts/ci-local.sh` | **需人工在本地 WSL 注册 runner 后开 PR 验三绿**；runner 未注册前用 `make ci-local` 降级 |
 | 6 | WS-06 | 环境与配置基线（venv、PATH、时区、产物根、密钥注入） | B1 | 待验 | `docs/env/环境基线.md`、`scripts/env-check.sh`、`make env-check`；`application.yml` 缺 `DB_PASSWORD` 即启动失败 | 待人工按文档在本地 WSL 走一遍（30 分钟验收） |
 | 7 | IAM-01 | 用户 / 角色 / 项目 CRUD | B2 | 待验 | `application/iam/{UserService,RoleService,ProjectService}.java`、`api/iam/{UserController,ProjectController}.java`、`infrastructure/persistence/*RepositoryJdbc`；前端 `views/AdminView.vue` 用户/角色/项目列表与新建 | 后端 CRUD 未在真实库跑集成测试；需人工在本地 WSL 验 `mvn -Pit test` |
-| 8 | IAM-02 | 登录与会话（本地账号 + 密码策略） | B2 | 待验 | `application/iam/{AuthService,PasswordPolicy}.java`、`common/security/{PasswordHasher,TokenGenerator}.java`、`api/iam/AuthController.java`、`api/AuthInterceptor.java`；前端 `stores/auth.ts` + `views/LoginView.vue` + 路由守卫；`PasswordPolicyTest` 5 条；**2026-11-05 补会话续期**：`POST /api/auth/renew`（`AuthService.renew` + `SessionTokenRepository.extend`）+ `stores/auth.ts` 提前 5 分钟定时续，`AuthServiceRenewTest` 3 条 | 连续 5 次失败锁定与令牌过期需集成测试/手工验证；续期端点待真实 HTTP 走查 |
+| 8 | IAM-02 | 登录与会话（本地账号 + 密码策略） | B2 | 待验 | `application/iam/{AuthService,PasswordPolicy}.java`、`common/security/{PasswordHasher,TokenGenerator}.java`、`api/iam/AuthController.java`、`api/AuthInterceptor.java`；前端 `stores/auth.ts` + `views/LoginView.vue` + 路由守卫；`PasswordPolicyTest` 5 条；**2026-11-05 补会话续期**：`POST /api/auth/renew`（`AuthService.renew` + `SessionTokenRepository.extend`）+ `stores/auth.ts` 提前 5 分钟定时续，`AuthServiceRenewTest` 3 条 | 连续 5 次失败锁定与令牌过期需集成测试/手工验证；续期端点本机 HTTP 已实测（`g2-3/http-verify-20261105.md`），前端定时续由 `stores/auth.spec.ts` 4 条假时钟用例覆盖（2026-11-06） |
 | 9 | IAM-03 | RBAC + 项目成员 | B2 | 待验 | `domain/iam/PermissionMatrix.java` + `PermissionMatrixTest` 5 条；`application/iam/{AccessControlService,ProjectService}.java`（成员增改删）；接口按 `资源:动作` 校验 | 权限矩阵「每格有测试」尚未覆盖全量；成员管理仅后端，前端未做成员页 |
 | 10 | IAM-04 | 租户隔离（行级 `org_id` + 拦截器） | B2 | 待验 | `common/tenant/{TenantContext,TenantGuard}.java`、`TenantGuardMetaTest` 5 条、`docs/adr/0006-tenant-isolation.md`；控制器统一 `access.bindProject(pathProjectId)` | 用「强制守卫 + 元测试」替代 MyBatis 拦截器（ADR-0006）；真实 SQL 覆盖需集成测试 |
 | 11 | IAM-05 | 越权测试集（≥20 条） | B2 | 待验 | `backend/src/test/java/com/qa/autotest/api/iam/AuthorizationBoundaryTest.java`（**36 条**控制器级 MockMvc，真实 `AccessControlService` + 伪造 `UserRepository`/`ProjectRepository`）：未认证 7 / 跨项目 10（含防枚举与 `X-Project-Id` 伪造）/ 角色边界 16 / 无角色无成员 3；`docs/evidence/v0.5/iam05-authz.log`（`Tests run: 204, Failures: 0`，主代理复跑核验）、`docs/evidence/v0.5/iam05-authz-20.md` | 仍缺「本地 WSL 真实环境 + 真账号的 HTTP 全链路」；ENGINEER 删用例按 PRD 冻结矩阵为 ALLOW，已在证据中说明 |
 | 12 | AST-01 | 设备与端口台账 | B2 | 待验 | `application/asset/DeviceService.java`、`api/asset/DeviceController.java`、`infrastructure/persistence/DeviceRepositoryJdbc`；前端 `views/AssetsView.vue`（设备/端口下钻、序列号唯一校验） | 真实库集成测试待跑 |
 | 13 | AST-02 | 环境与拓扑（DUT-LINK-HOST 链） | B2 | 待验 | `application/asset/{LinkService,EnvProfileService}.java`、`api/asset/{LinkController,EnvController}.java`；链路一次查询带两端设备/端口名 | 拓扑节点 UI 未做；实测链路需真实设备数据 |
 | 14 | AST-03 | 凭据存储（加密 + 运行时注入不落盘） | B2 | 待验 | `common/security/SecretCipher.java`、`infrastructure/CipherConfig.java`、`application/asset/CredentialService.java`、`CredentialController`；`SecretCipherTest` 3 条；前端凭据页只显示 `configured` | 需人工验 `CRED_MASTER_KEY` 注入与磁盘/日志无明文扫描 |
-| 15 | AST-04 | 技术域标签体系与筛选器 | B2 | 待验 | `application/asset/LabelService.java`、`api/asset/LabelController.java`；设备列表按 `domain` 筛选、用例页按技术域筛选 | 标签与用例共用标签集需集成测试确认 |
+| 15 | AST-04 | 技术域标签体系与筛选器 | B2 | 待验 | `application/asset/LabelService.java`、`api/asset/LabelController.java`；设备列表按 `domain` 筛选、用例页按技术域筛选；`docs/evidence/v1.0/g2-6/`（2026-11-06 本机界面走查：用例 `roce` → 10 行 / 清空 → 226，设备下拉来自 `/device-domains` 且 `domain=roce` → 3 行，含 3 张截图） | 标签与用例共用标签集需集成测试确认；**台账无「技术域」列，226 条 `domain_tag` 全空**，真实数据上筛选等价于空结果，需先定数据来源（加列 / 按一级分类映射 / 平台内批量标注） |
 | 16 | CAS-01 | 双模用例模型（台账 + 脚本）建模与评审 | B2 | 待验 | `docs/adr/0005-dual-mode-case-model.md`、`docs/release/v0.2-ledger/CAS-01-评审纪要.md`；`V2_3__case_fields.sql` | 待人工签字冻结（G2 后改模型需 ADR） |
 | 17 | CAS-02 | 用例库 / 用例集 CRUD | B2 | 待验 | `application/caseasset/{TestCaseService,TestSetService}.java`、`api/caseasset/{CaseController,TestSetController}.java`；前端 `views/CasesView.vue`（筛选/新建/提审/审核/删除） | 用例集前端页面未做（仅后端 API） |
 | 18 | CAS-03 | 台账导入（字段映射 + 校验 + 回滚） | B2 | 待验 | `application/caseasset/CaseImportService.java`（POI 5.2.5，中英文表头别名、整批事务、行级错误）、`CaseController` preview/commit；前端导入面板。**安全分级已做**：`tools/classify_cases.py` 对 226 条样本产出 L0 10 / L1 89 / L2 32 / LX 95，证据 `docs/evidence/v0.2/cas03-classify.log` + `cas03-ledger-classification.csv`（见 ADR-0013） | **只做导入、不做执行**：`preview` 按 226 条跑通、重导幂等；条数口径待定（461 vs 226），**不得据 226 置 `已完成`**；`CaseImportService` 无执行路径（已核 `robot/exec/ssh/pabot` 0 命中） **2026-11-04 解除阻断（大师定「补别名，接受命令列丢失」）**：`HEADER_ALIASES` 补入「测试编号 / 测试用例 / 一级分类 / 测试类型 / 预置条件」，静态对账从 **1/14 → 6/14 且 `[PASS]`**（证据 `docs/evidence/v0.1/env04-header-check.log`）。三点必须记住：① **测试步骤 / A端命令 / B端命令 / 交换机配置 4 列无处存放，导入时静默丢弃**（`ImportRow` 无对应字段，属定案取舍）；② 台账**无优先级列** → 226 条全部落 `P2`；③ 「执行顺序」（"第二优先：其余70项"）**故意不映射**到 priority，否则 `Priority.from` 抛「非法优先级」把全表判错。**2026-11-04 真跑通过（判据达成）**：新增 `CaseImportIT`（`@Tag("it")`，连真库 `robot_it`）端到端验证 —— `preview totalRows=226 validRows=226 errors=0` → `commit imported=226` → 重导 `validRows=0 errors=226`（逐行「编号已存在于项目」），首末条 `TN-IMP-001` / `TN-IMP-226` 完整。证据 `docs/evidence/v0.2/cas03-import-it.log`。**未覆盖项（勿读成已验）**：不起 Spring 上下文故 `@Transactional` 不生效 → **「整批回滚」未验证**；403 拒绝路径、并发导入未验证 |
@@ -495,6 +495,30 @@
    但它是接口级证据，现场仍需各留一份读数（见第 8 条）。
 8. **残余（写进包内阻塞列）**：现场仍需真实触发一次 L2 用例并留存 403 响应；跨页选中不可见；
    台账补判仍需人工逐条。本包按纪律留 **`待验`**。
+
+### 2026-11-06 补记（G2-6 界面走查 + IAM-02 前端定时续补齐）
+
+1. **G2-6 本机界面走查已过**（`#15 / AST-04`，证据 `docs/evidence/v1.0/g2-6/`，含 3 张截图与可复跑脚本
+   `prep-domain.py`）：用例页技术域填 `roce` → 表格 10 行、首行 `TN-IMP-226`，清空 → 226 行；
+   设备页技术域下拉选项来自 `GET /projects/1/device-domains`（只有 `全部技术域` / `roce`），
+   选 `roce` 后下发 `GET /devices?domain=roce` 并回 3 行（`leaf-switch-01` / `gpu-node-02` / `gpu-node-01`）。
+2. **走查暴露一个比代码更硬的缺口：台账没有「技术域」列**。226 行样例台账的列是
+   测试编号 / 一级分类 / 二级分类 / 测试用例 / 测试类型 / 预设条件 / 测试步骤 / A端命令 / B端命令 /
+   交换机配置 / 预期结果 / 执行状态与证据 / 当前环境适配 / 执行顺序 —— 导入器支持「技术域」别名但源表无此列，
+   于是 226 条 `domain_tag` 全为空串，**真实数据上「按技术域筛」等价于筛出 0 条**。
+   本次为走查用批量动作 `setDomainTag` 临时标了 `roce`×10 / `storage`×5（dev 库，可重标）。
+   口径需大师定：给台账加列 / 按「一级分类」规则映射 / 平台内人工批量标注。
+3. **G2-4 前端定时续不再是「等 8 小时」的死角**：`SESSION_TTL=8h` + 提前 5 分钟排期，
+   真实浏览器观察不到第二次续期，因此新增 `frontend/src/stores/auth.spec.ts`（假时钟 4 条：
+   到点前 1ms 不发 / 到点发 1 次且回写 `auth_expires_at` / 8h-5min 后第 2 次 / 失败清空 / 无令牌不排期），
+   浏览器侧只补「整页刷新后不跳登录页、localStorage 三项齐全」（即 `loadMe()` 重排的前提）。
+   **记一个边界**：若 `renew` 返回值固定不变，重排算出的 `due` 变负会让 0ms 定时器自激——服务端目前每次返回
+   「当时 + 8h」不会触发，但改服务端口径时要留意。
+4. 门禁：前端 **27 文件 / 189 用例**（原 26 / 185）、`npm run build` 0、`scripts/lint.sh` PASS、
+   `check_release_docs.py` 0 FAIL。
+5. 汇总不变：**96 包 = 0 / 0 / 83 / 0 / 13**。`#15 AST-04`、`#8 IAM-02` 均留 `待验`（本机证据不能替代现场签字）。
+6. 观察项（不影响判定）：首次进 `/cases` 默认项目是 `AST05-B`（0 条用例），用户先看到空表；
+   技术域筛选不随刷新/URL 保留（用例页与设备页一致）。
 
 ## 更新方式
 
