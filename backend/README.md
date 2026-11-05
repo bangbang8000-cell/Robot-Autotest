@@ -18,6 +18,7 @@ src/test/java/      ArchUnit 规则 + 单测 + 集成测试（@Tag("it")）
 ```bash
 mvn -B test          # 单测 + ArchUnit（@Tag("it") 默认跳过）
 mvn -Pit test        # 集成测试，需 DB_HOST/DB_PORT/DB_NAME/DB_USERNAME/DB_PASSWORD
+bash ../artifacts/run_it.sh   # 集成测试标准入口（仓库根执行，自动读取 ~/.config/robot-autotest/env 并置 DB_NAME=robot_it）
 mvn spring-boot:run  # 本地起服务（:8081），GET /api/_ping
 ```
 
