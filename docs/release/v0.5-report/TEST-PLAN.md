@@ -54,6 +54,8 @@
 | TC-v0.5-107 | 截断产物容错 | 把 output.xml 截掉后半段 → 明确报「产物损坏，行 N」，不产生半份报告 |
 | TC-v0.5-108 | 空产物 | 只有统计节点的 XML → 判「无用例」，不生成报告 |
 | TC-v0.5-109 | 双向对账 | 报告页每条用例都能在 XML 找到对应节点（抽 20 条） |
+| TC-v0.5-110 | **真 pabot 产物解析**（2026-11-05 已跑） | `pabot --processes 2` 真产物 8/8 用例解析一致，5 项 metadata 全部有值 |
+| TC-v0.5-111 | **万行级解析耗时**（2026-11-05 已跑） | 14.4k 行 122 ms、108k 行 / 5.9 MB 273 ms，无 `StackOverflowError` |
 
 **对账方法**（不接受「数字看着对」）：
 
@@ -121,8 +123,8 @@ print('pass', r.statistics.passed, 'fail', r.statistics.failed)
 | TC-v0.5-303 | **本轮未执行** | 右列显示「无（本轮未执行）」，**接口 JSON 中 `current` 为 `null`** |
 | TC-v0.5-304 | **禁止回填**（核心） | 断言接口响应里 `current==null` 的行数 >0，且这些行 `history!=null`；前端 DOM 里该行右列文本不含历史结论 |
 | TC-v0.5-305 | 变化统计 | `PASS_TO_FAIL`/`FAIL_TO_PASS`/`SAME`/`NOT_RUN` 四类计数与逐行统计一致 |
-| TC-v0.5-306 | 手动切换基线 | 换基线后列标题与数据同步变化 |
-| TC-v0.5-307 | 跨环境不对比 | 基线 run 的环境不同 → 拒绝并提示（或显示「环境不同不可比」） |
+| TC-v0.5-306 | 手动切换基线 | 换基线后列标题与数据同步变化；候选下拉首项是「自动（最近一次）」，候选中不出现异项目 / 异环境 run（`GET /api/reports/{runId}/baseline-candidates`）；选回「自动」时请求不带 `baselineRunId` |
+| TC-v0.5-307 | 跨环境不对比 | 基线 run 的环境不同 → 拒绝并提示（或显示「环境不同不可比」）；手动基线路径下候选已过滤，后端仍二次校验返回 400 |
 | TC-v0.5-308 | case_key 稳定性 | 同一用例两次运行 key 相同；改用例名后 key 变化（视为新用例） |
 
 **TC-v0.5-304 的验证细节**（这是本版最重要的一条断言）：
@@ -155,6 +157,21 @@ for (const row of nullCurrent) {
 | TC-v0.5-408 | 导出记录 | `export_record` 有记录（谁/何时/哪个 run/哪种版本） |
 | TC-v0.5-409 | 导出耗时 | 100 用例 ≤60 s |
 | TC-v0.5-410 | 并发导出 | 3 个导出同时进行不互相覆盖文件 |
+| TC-v0.5-411 | 打印链接一次性 | `GET /api/print/{runId}?token=` 成功后复用同一 token 返回 400「打印链接无效或已过期」 |
+| TC-v0.5-412 | **打印页经前端可达** | 用 `printUrl` 走前端 dev server 的 `/api` 代理取打印数据 200，`mode` / `internal` / `metadataMissing` 与 run 行一致 |
+| TC-v0.5-413 | **PDF 与导出记录一致** | 下载响应的 `Content-Type` / 字节数 / sha256 与 `POST /export` 响应、`export_record.sha256` 三处一致 |
+| TC-v0.5-414 | 导出历史可查 | `GET /api/reports/{runId}/exports` 返回 `fileName` / `status=created` / `requestedBy` |
+| TC-v0.5-415 | **内部标识进了 PDF** | 内容流解压后存在 `#c00000` 颜色算子（`.7529 0 0 rg/RG`），且 `Tj`/`TJ` 文本算子 > 0（非空白页） |
+
+**2026-11-05 实测（内部模式，`RUN-20261104155814-952426`）**：411~415 全绿——token 复用 400；经
+`:5273` 代理取数 200（`internal=true`、`exportable=false`、缺失 10 项）；导出 200 / 7.47 s /
+235,253 B / `%PDF-1.4` / 2 页，sha256 三处一致；`export_record` 落库 `created`；`.7529 0 0`
+出现 12 次、`Tj/TJ` 346 次；对外模式 400 回显 10 项 `metadataMissing`。证据
+`docs/evidence/v0.5/rpt05-print/`。
+
+**未覆盖**：401 / 402 / 403 依赖 `pdftotext`（本机无 poppler、无 pypdf），本轮用「页数 + 文本算子数 +
+sha256」替代，文案未逐字比对；404 / 407 / 409 / 410 未做（需人工看稿、Word 打开、100 用例样本、并发样本）；
+406 只验到「红色算子存在」，未做人工目视。
 
 ---
 

@@ -2,7 +2,7 @@
 
 **文档编号** RA-REL-2026-004-TASKS ｜ **版本** v0.4 ｜ **门禁** G4
 
-**对应规格** `docs/release/v0.4-execution/spec.md` ｜ **范围** EXE-01 ~ EXE-08（WBS #30 ~ #37）
+**对应规格** `docs/release/v0.4-execution/spec.md` ｜ **范围** EXE-01 ~ EXE-08（WBS #30 ~ #37）+ EXEC-02（WBS #83）+ EXEC-03（WBS #84）+ EXEC-04（WBS #85）+ EXEC-05（WBS #86）+ EXEC-06（WBS #87）+ EXEC-07（WBS #88）+ EXEC-08（WBS #89，复核包）+ EXEC-09（WBS #90，租约接入执行链路）+ EXEC-10（WBS #91，队列语义）+ EXEC-11（WBS #92，设备范围）+ EXEC-12（WBS #93，单用例超时）+ EXEC-13（WBS #94，重试可追溯）+ EXEC-14（WBS #95，日志级别过滤；实现与证据见 `docs/evidence/v0.4/exec02/`、`exec03/`、`exec04/`、`exec05/`、`exec06/`、`exec07/`、`exec09/`、`exec10/`、`exec11/`、`exec12/`、`exec13/`、`exec14/`）
 
 **执行原则**：一次最多并行 2 个任务包；每包先落代码与单测，再跑验证，再写证据，最后改 WBS 为 `待验`。`已完成` 只由人改。
 

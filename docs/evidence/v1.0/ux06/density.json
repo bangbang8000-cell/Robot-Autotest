@@ -1,0 +1,43 @@
+{
+  "generatedAt": "2026-11-05T11:39:59.130Z",
+  "app": "http://localhost:5273",
+  "viewport": 1440,
+  "rows": [
+    {
+      "mode": "comfortable",
+      "route": "/assets",
+      "density": "comfortable",
+      "rowVar": "44px",
+      "rows": 3,
+      "firstRowH": 44,
+      "firstTdPadTop": "0px"
+    },
+    {
+      "mode": "comfortable",
+      "route": "/runs",
+      "density": "comfortable",
+      "rowVar": "44px",
+      "rows": 1,
+      "firstRowH": 44,
+      "firstTdPadTop": "0px"
+    },
+    {
+      "mode": "compact",
+      "route": "/assets",
+      "density": "compact",
+      "rowVar": "36px",
+      "rows": 3,
+      "firstRowH": 36,
+      "firstTdPadTop": "0px"
+    },
+    {
+      "mode": "compact",
+      "route": "/runs",
+      "density": "compact",
+      "rowVar": "36px",
+      "rows": 1,
+      "firstRowH": 36,
+      "firstTdPadTop": "0px"
+    }
+  ]
+}

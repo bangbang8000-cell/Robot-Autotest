@@ -1,0 +1,27 @@
+Initialized logging in /tmp/rpt01-real/pabot_results
+Warning: specified pabotlibport 8270 is already in use. A free port will be assigned automatically.
+Robot Framework remote server at 127.0.0.1:47732 started.
+2026-11-05 17:46:33.996017 [PID:509112] [0] [ID:0] EXECUTING 4Suite-2Cases.Suite1
+2026-11-05 17:46:33.998865 [PID:509113] [1] [ID:1] EXECUTING 4Suite-2Cases.Suite2
+2026-11-05 17:46:39.007162 [PID:509112] [0] [ID:0] still running 4Suite-2Cases.Suite1 after 5.0s
+2026-11-05 17:46:39.008535 [PID:509113] [1] [ID:1] still running 4Suite-2Cases.Suite2 after 5.0s
+2026-11-05 17:46:46.425878 [PID:509112] [0] [ID:0] PASSED 4Suite-2Cases.Suite1 in 12.4 seconds
+2026-11-05 17:46:46.430865 [PID:509113] [1] [ID:1] PASSED 4Suite-2Cases.Suite2 in 12.4 seconds
+2026-11-05 17:46:46.431414 [PID:509126] [0] [ID:2] EXECUTING 4Suite-2Cases.Suite3
+2026-11-05 17:46:46.437727 [PID:509130] [1] [ID:3] EXECUTING 4Suite-2Cases.Suite4
+2026-11-05 17:46:51.441916 [PID:509126] [0] [ID:2] still running 4Suite-2Cases.Suite3 after 5.0s
+2026-11-05 17:46:51.448614 [PID:509130] [1] [ID:3] still running 4Suite-2Cases.Suite4 after 5.0s
+2026-11-05 17:46:58.968530 [PID:509126] [0] [ID:2] PASSED 4Suite-2Cases.Suite3 in 12.5 seconds
+2026-11-05 17:46:58.968868 [PID:509130] [1] [ID:3] PASSED 4Suite-2Cases.Suite4 in 12.5 seconds
+8 tests, 8 passed, 0 failed, 0 skipped.
+===================================================
+Output:  
+/tmp/rpt01-real/output.xml
+
+Finalizing Pabot execution...
+Stopping PabotLib process
+Robot Framework remote server at 127.0.0.1:47732 stopped.
+PabotLib process stopped
+Total testing: 49.80 seconds
+Elapsed time:  25.56 seconds
+Logs flushed successfully.

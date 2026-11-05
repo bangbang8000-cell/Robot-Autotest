@@ -1,0 +1,42 @@
+[setup] 临时会话令牌已注入，token 前缀 VEvJz8…（仅本次验证使用，结束后撤销）
+[01-projects] 200 0.029906s 339B
+[02-print-token] 200 0.031698s 349B
+[02] printUrl=http://127.0.0.1:5273/reports/RUN-20261104155814-952426/print?token=2b5b000019c6cd024e970b44d6cd19b4e8da36361debaa6dd9912615b5b1850b
+[03-print-data-via-vite] 200 0.018514s 1072B
+[03] mode=internal internalMark=None exportable=False missing=10 suites=4
+[04-print-token-replay] 400 0.009741s 139B
+{"code":40001,"codeName":"INVALID_ARGUMENT","message":"打印链接无效或已过期，请重新发起导出","data":null,"success":false}
+[05-export-internal] 200 7.467428s 254B
+{"code":0,"codeName":"OK","message":"OK","data":{"exportId":2,"format":"pdf","mode":"internal","bytes":235253,"sha256":"bf4cba032319e859a2bb76e02ebcb638f4677509f5511e793455a6d4eaffe558","downloadUrl":"/api/exports/2/download?projectId=1"},"success":true}
+[06-export-external] 400 0.033090s 343B
+{"code":40001,"codeName":"INVALID_ARGUMENT","message":"外部版导出被拒绝：缺少 metadata 项 CASE_ID, RUN_ID, QA_PROJECT, DUT, LINK, SW_BUILD, BASELINE, OPERATOR, STARTED_AT, CASE_KIND","data":{"metadataMissing":["CASE_ID","RUN_ID","QA_PROJECT","DUT","LINK","SW_BUILD","BASELINE","OPERATOR","STARTED_AT","CASE_KIND"]},"success":false}
+[05] exportId=2
+[07-download] 200 0.021556s 235253B
+[07] header=%PDF-1.4 sha256=bf4cba032319e859a2bb76e02ebcb638f4677509f5511e793455a6d4eaffe558
+[07] pages(/Type /Page)=2
+[05] export record: status=None bytes=235253 sha256=bf4cba032319e859a2bb76e02ebcb638f4677509f5511e793455a6d4eaffe558 file=None
+[08-export-history] 200 0.023252s 681B
+{"code":0,"codeName":"OK","message":"OK","data":[{"exportId":2,"runId":"RUN-20261104155814-952426","format":"pdf","mode":"internal","fileName":"report_RUN-20261104155814-952426_internal.pdf","bytes":235253,"sha256":"bf4cba032319e859a2bb76e02ebcb638f4677509f5511e793455a6d4eaffe558","status":"created","requestedBy":1,"createdAt":"2026-11-05T10:29:38.452Z"},{"exportId":1,"runId":"RUN-20261104155814-952426","format":"pdf","mode":"internal","fileName":"report_RUN-20261104155814-952426_internal.pdf","
+== export_record ==
+2	RUN-20261104155814-952426	internal	pdf	created	235253	bf4cba032319	report_RUN-20261104155814-952426_internal.pdf
+1	RUN-20261104155814-952426	internal	pdf	created	235216	6f3a1b317f6a	report_RUN-20261104155814-952426_internal.pdf
+[cleanup] 临时会话令牌已撤销
+== 工作目录 /tmp/rpt05-e2e ==
+total 296
+-rw-r--r-- 1 evergreen evergreen    339 Nov  5 18:29 01-projects.body
+-rw-r--r-- 1 evergreen evergreen    114 Nov  5 18:29 01-projects.hdr
+-rw-r--r-- 1 evergreen evergreen    349 Nov  5 18:29 02-print-token.body
+-rw-r--r-- 1 evergreen evergreen    114 Nov  5 18:29 02-print-token.hdr
+-rw-r--r-- 1 evergreen evergreen   1072 Nov  5 18:29 03-print-data.body
+-rw-r--r-- 1 evergreen evergreen    149 Nov  5 18:29 03-print-data.hdr
+-rw-r--r-- 1 evergreen evergreen    139 Nov  5 18:29 04-print-data-replay.body
+-rw-r--r-- 1 evergreen evergreen    158 Nov  5 18:29 04-print-data-replay.hdr
+-rw-r--r-- 1 evergreen evergreen    254 Nov  5 18:29 05-export-internal.body
+-rw-r--r-- 1 evergreen evergreen    114 Nov  5 18:29 05-export-internal.hdr
+-rw-r--r-- 1 evergreen evergreen    343 Nov  5 18:29 06-export-external.body
+-rw-r--r-- 1 evergreen evergreen    133 Nov  5 18:29 06-export-external.hdr
+-rw-r--r-- 1 evergreen evergreen    302 Nov  5 18:29 07-download.hdr
+-rw-r--r-- 1 evergreen evergreen 235253 Nov  5 18:29 07-download.pdf
+-rw-r--r-- 1 evergreen evergreen    681 Nov  5 18:29 08-export-history.body
+-rw-r--r-- 1 evergreen evergreen    114 Nov  5 18:29 08-export-history.hdr
+-rw-r--r-- 1 evergreen evergreen    230 Nov  5 18:29 09-export-records.tsv

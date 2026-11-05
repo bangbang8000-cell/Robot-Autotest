@@ -1,0 +1,70 @@
+ M backend/src/main/java/com/qa/autotest/api/execution/LeaseController.java
+ M backend/src/main/java/com/qa/autotest/api/execution/RunController.java
+ M backend/src/main/java/com/qa/autotest/application/execution/LeaseService.java
+ M backend/src/main/java/com/qa/autotest/application/execution/PabotCommandBuilder.java
+ M backend/src/main/java/com/qa/autotest/application/execution/RunExecutionService.java
+ D backend/src/main/java/com/qa/autotest/application/execution/RunQueuePolicy.java
+ M backend/src/main/java/com/qa/autotest/application/execution/RunService.java
+ M backend/src/main/java/com/qa/autotest/application/plan/PlanScheduleService.java
+ D backend/src/main/java/com/qa/autotest/application/plan/RunDispatcher.java
+ M backend/src/main/java/com/qa/autotest/application/repository/RobotFileRepository.java
+ M backend/src/main/java/com/qa/autotest/application/repository/RunRepository.java
+ D backend/src/main/java/com/qa/autotest/infrastructure/PlanRunDispatcher.java
+ M backend/src/main/java/com/qa/autotest/infrastructure/PlanScheduler.java
+ M backend/src/main/java/com/qa/autotest/infrastructure/RobotFileRepositoryJdbc.java
+ M backend/src/main/java/com/qa/autotest/infrastructure/RunRepositoryJdbc.java
+ M backend/src/test/java/com/qa/autotest/api/iam/AuthorizationBoundaryTest.java
+ M backend/src/test/java/com/qa/autotest/application/editor/EditorSaveServiceTest.java
+ M backend/src/test/java/com/qa/autotest/application/execution/ExecutionTestSupport.java
+ M backend/src/test/java/com/qa/autotest/application/execution/IdempotencyTest.java
+ M backend/src/test/java/com/qa/autotest/application/execution/PabotCommandBuilderTest.java
+ M backend/src/test/java/com/qa/autotest/application/execution/RunExecutionServiceTest.java
+ D backend/src/test/java/com/qa/autotest/application/execution/RunQueuePolicyTest.java
+ M backend/src/test/java/com/qa/autotest/application/iam/AuditAspectTest.java
+ M backend/src/test/java/com/qa/autotest/application/plan/PlanTestSupport.java
+ M docs/plan/WBS-STATUS.md
+ M "docs/plan/\345\274\200\345\217\221\350\256\241\345\210\222\350\257\204\344\274\260\344\270\216\345\220\216\347\273\255\346\216\250\350\277\233-\344\272\244\346\216\245\345\244\215\346\240\270-20261104.md"
+ M docs/release/README.md
+ M docs/release/v0.4-execution/DEV-PLAN.md
+ M docs/release/v0.4-execution/spec.md
+ M docs/release/v0.4-execution/tasks.md
+ M frontend/src/api/execution.ts
+ M frontend/src/assets/fonts/noto-sans-sc-ui.woff2
+ M frontend/src/locales/en-US.ts
+ M frontend/src/locales/zh-CN.ts
+ M frontend/src/views/AssetsView.spec.ts
+ M frontend/src/views/AssetsView.vue
+ M frontend/src/views/CasesView.spec.ts
+ M frontend/src/views/CasesView.vue
+ M frontend/src/views/RunsView.spec.ts
+ M frontend/src/views/RunsView.vue
+?? backend/src/main/java/com/qa/autotest/application/execution/CaseRunService.java
+?? backend/src/main/java/com/qa/autotest/application/execution/CaseScriptResolver.java
+?? backend/src/main/java/com/qa/autotest/application/execution/ExecutionRequestPrecheck.java
+?? backend/src/main/java/com/qa/autotest/application/execution/ExecutionWorkspaceMaterializer.java
+?? backend/src/main/java/com/qa/autotest/application/execution/LeaseAdminService.java
+?? backend/src/main/java/com/qa/autotest/application/execution/QuickRunService.java
+?? backend/src/main/java/com/qa/autotest/application/execution/RunDispatcher.java
+?? backend/src/main/java/com/qa/autotest/application/execution/RunLogFileService.java
+?? backend/src/main/java/com/qa/autotest/application/execution/TestSetRunService.java
+?? backend/src/main/java/com/qa/autotest/infrastructure/ProjectRunDispatcher.java
+?? backend/src/test/java/com/qa/autotest/api/execution/
+?? backend/src/test/java/com/qa/autotest/application/execution/CaseRunServiceTest.java
+?? backend/src/test/java/com/qa/autotest/application/execution/CaseScriptResolverTest.java
+?? backend/src/test/java/com/qa/autotest/application/execution/ExecutionRequestPrecheckTest.java
+?? backend/src/test/java/com/qa/autotest/application/execution/LeaseAdminServiceTest.java
+?? backend/src/test/java/com/qa/autotest/application/execution/QuickRunServiceTest.java
+?? backend/src/test/java/com/qa/autotest/application/execution/RunLogFileServiceTest.java
+?? backend/src/test/java/com/qa/autotest/application/execution/TestSetRunServiceTest.java
+?? backend/src/test/java/com/qa/autotest/infrastructure/ProjectRunDispatcherTest.java
+?? docs/evidence/v0.2/exec01/
+?? docs/evidence/v0.4/exec02/
+?? docs/evidence/v0.4/exec03/
+?? docs/evidence/v0.4/exec04/
+?? docs/evidence/v0.4/exec05/
+?? docs/evidence/v0.4/exec06/
+?? docs/evidence/v0.4/exec07/
+?? docs/evidence/v0.4/exec08/
+?? docs/evidence/v0.4/exec09/
+?? docs/evidence/v0.4/exec10/
+?? docs/release/v0.4-execution/FR-COVERAGE-20261105.md

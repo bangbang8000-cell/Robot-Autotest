@@ -1,0 +1,29 @@
+==============================================================================
+版本开发流程机检（docs/process/版本开发流程.md §8）
+==============================================================================
+
+[IDLE] v0.1-foundation   FR=22 TC=60 WBS=9
+   INFO  未启动流程（缺 3 项，含 00-RESEARCH / 01-ASSESSMENT），按 §9 不计为违规
+
+[IDLE] v0.2-ledger   FR=63 TC=55 WBS=18
+   INFO  未启动流程（缺 3 项，含 00-RESEARCH / 01-ASSESSMENT），按 §9 不计为违规
+
+[IDLE] v0.3-editor   FR=27 TC=41 WBS=11
+   INFO  未启动流程（缺 3 项，含 00-RESEARCH / 01-ASSESSMENT），按 §9 不计为违规
+
+[IDLE] v0.4-execution   FR=34 TC=49 WBS=10
+   INFO  未启动流程（缺 3 项，含 00-RESEARCH / 01-ASSESSMENT），按 §9 不计为违规
+
+[IDLE] v0.5-report   FR=35 TC=61 WBS=7
+   INFO  未启动流程（缺 3 项，含 00-RESEARCH / 01-ASSESSMENT），按 §9 不计为违规
+
+[IDLE] v0.6-automation   FR=21 TC=52 WBS=4
+   INFO  未启动流程（缺 3 项，含 00-RESEARCH / 01-ASSESSMENT），按 §9 不计为违规
+
+[IDLE] v1.0-ga   FR=25 TC=43 WBS=4
+   INFO  未启动流程（缺 3 项，含 00-RESEARCH / 01-ASSESSMENT），按 §9 不计为违规
+
+------------------------------------------------------------------------------
+合计：7 个版本  |  FAIL 0 项  |  WARN 0 项  |  未启动 7 个
+未启动的版本：正式开工前须先走 ① 调研 → ② 评估，再写 PRD。
+==============================================================================

@@ -8,22 +8,22 @@
 
 | 汇总 | 未开始 | 进行中 | 待验 | 待现场 | 已完成 |
 |---|---:|---:|---:|---:|---:|
-| 82 个任务包 | **2** | **0** | **67** | **0** | **13** |
+| 95 个任务包 | **0** | **0** | **82** | **0** | **13** |
 
-**当前进度：13 / 82（约 15.9% 已完成 · 67 待验 · 0 待现场 · 2 未开始 · 0 进行中）**
+**当前进度：13 / 95（约 13.7% 已完成 · 82 待验 · 0 待现场 · 0 未开始 · 0 进行中）**
 
 > **2026-11-05 状态口径变更**：八个 `待现场` 包按大师「F2 验收通过」裁决转 `已完成`（授权代改，
 > 逐包清单见文末修订记录）。这不是 AI 自判 —— 沿用 `ENV-01~05` 的「授权代改」先例，
 > 大师口头裁决即为放行依据；若其中某包实际未过，直接改回 `待现场` 并注明即可。
 
-**一句话读法**：功能代码已铺到 v1.0（后端 `Tests run: 466, Failures: 0`、`-Pit` 集成 **6/6**（`SchemaIT` 5 + `CaseImportIT` 1），**应用真启动通过**（构建 13.6s + 启动 4.5s），**执行域本机已真跑通一条 run**（`RUN-20261104155814-952426` → `FINISHED 2/2` → 报告入库），前端 `build`/`lint` exit 0，dev/it 库均已迁到 **V7_1 / 44 表**），但**验收尚未启动**，所以读数是 0%。**这不是烂尾，是验收产能没建起来**——详见 `docs/plan/开发计划评估与后续推进-20261103.md`。
+**一句话读法**：功能代码已铺到 v1.0（后端 `Tests run: 488, Failures: 0`、`-Pit` 集成 **6/6**（`SchemaIT` 5 + `CaseImportIT` 1），**应用真启动通过**（构建 13.6s + 启动 4.5s），**执行域本机已真跑通一条 run**（`RUN-20261104155814-952426` → `FINISHED 2/2` → 报告入库），**人工触发链路 2026-11-05 接通**（quick-run / 用例集立即执行 / CI 端点均落派发器），前端 `build`/`lint` exit 0，dev/it 库均已迁到 **V7_1 / 44 表**），但**验收尚未启动**，所以读数是 0%。**这不是烂尾，是验收产能没建起来**——详见 `docs/plan/开发计划评估与后续推进-20261103.md`。
 
 | 分组 | 包数 | 现状 | 下一步 |
 |---|---:|---|---|
-| **进行中** | 0 | **2026-11-05 清零**：`UX-04b` 七批全部落库（12 个业务视图组件化完成），已转 `待验` | 剩余 2 个 `未开始` 包：`EXEC-01`（冻结至 F2 现场，已过）、`UX-06`；`UX-05` 已转 `待验` |
+| **进行中** | 0 | **2026-11-05 清零**：`UX-06` 落库并转 `待验`，全部 95 个包不再有 `未开始`/`进行中` | 进入 F1（G1→G2 成组审）；本表已无待认领包 |
 | **待现场**（需人 / 真机 / 授权 / 签字） | 0 | **2026-11-05 清零**：8 个包按大师「F2 验收通过」转 `已完成`（授权代改） | 新的现场项出现时再登记，不再攒批 |
 | **待验·需环境** | 0 | **环境类阻断 2026-11-04 已清零**：DB 口令重置（`robot_it` → **V7_1 / 44 表**，`db-audit` 7 项全 PASS，`SchemaIT` **5/5 通过**），CAS-03 / WS-04 / WS-05 全部解锁 | — |
-| **待验·本地可验** | 66 | 本轮新增 `UX-04b`（视图组件化迁移）；其余同前 | 按 **G1 → G2** 成组审（F1） |
+| **待验·本地可验** | 82 | 本轮新增 `UX-06`（v1.0 #76）；其余同前 | 按 **G1 → G2** 成组审（F1） |
 
 **验收顺序（2026-11-04 大师定）**：**门禁优先 G1→G2**，不按 WBS 编号逐包审。
 **已知口径变更**：
@@ -74,19 +74,19 @@
 | 35 | EXE-06 | 失败分类与重试策略 | B4 | 待验 | `FailureRuleSet`、`FailureClassifier`、`RetryPolicy`、`db/migration/V4_3__failure_class.sql` + down；`fixtures/failure-class/30-samples.tsv`（30 条）、`FailureClassifierTest` 4 条、`RetryPolicyTest` 5 条；`docs/evidence/v0.4/failure-class-30.md`（30/30） | 30 条是构造样本；需在本地 WSL 补 ≥5 条真实 pabot 日志样本复核，避免规则只对构造文本有效 |
 | 36 | EXE-07 | 4 并发容量压测与调优 | B4 | 已完成 | `fixtures/bench/4suite-2cases/suite{1..4}.robot`（4×2，每条 6s）、`scripts/bench-4way.sh`（serial / p4 / p2，20 轮，`bash -n` exit 0）、`fixtures/bench/README.md`；`docs/evidence/v0.4/bench-20rounds.txt`、`bench-2process.log`（均首行 `[待本地 WSL 实跑]`） | **C 级，必须本地 WSL 实跑 20 轮**：平均加速 ≥2.5x、最差 ≥2.2x、租约冲突 0；本机无 RF/pabot，证据未填任何数字 **2026-11-05 按大师「F2 验收通过」裁决授权代改**：原文的待现场口径保留以便追溯；如实际未满足，请直接改回 `待现场` 并注明，本行状态不代表 AI 自判。 |
 | 37 | EXE-08 | DUT 实网联通（SSH 采集器） | B4 | 已完成 | `DutTarget`（toString 脱敏）、`SshClient`、`infrastructure/SystemSshClient.java`（`sshpass -e`，口令仅进环境变量）、`DutCollectorService`、`api/execution/DutController.java`；回放样本 `fixtures/dut-replay/*.out`、`DutCollectorServiceTest` 7 条、`DutTargetRedactionTest` 4 条；`docs/evidence/v0.4/dut-real.md`（首行 `[REPLAY] 非实网`） | **C 级，必须本地 WSL + DUT 实网**：`ip -br addr` / `ethtool -S <iface>` / `cat /proc/interrupts` 三条命令 exit 0 且解析非空；本机仅回放，不得算实网通过 **2026-11-05 按大师「F2 验收通过」裁决授权代改**：原文的待现场口径保留以便追溯；如实际未满足，请直接改回 `待现场` 并注明，本行状态不代表 AI 自判。 |
-| 38 | RPT-01 | output.xml 解析（递归 + metadata 装配） | B5 | 待验 | `application/report/{OutputXmlParser,ReportIngestService,ReportQueryService}.java`、`domain/report/{ParsedReport,SuiteNode,CaseNode,MetadataGate}.java`、`infrastructure/ReportRepositoryJdbc.java`、`api/report/ReportController.java`、`db/migration/V5_1__report_fields.sql` + down；`MetadataGateTest` 9 条 / `OutputXmlParserTest` 7 条 / `ReportIngestServiceTest` 4 条；`docs/evidence/v0.5/mvn-test-rpt01.log`（`Tests run: 168, Failures: 0`，主代理复跑核验）、`docs/evidence/v0.5/rpt01-rpt07.md` | V5_1 已在 dev 库执行（当前 schema 已到 V5_5）；真实 pabot 合并产物未生成，fixture 为手写；API 无 MockMvc 用例 |
-| 39 | RPT-02 | 运行详情（套件树 / 步骤 / 日志着色） | B5 | 待验 | 后端 `GET /api/reports/{runId}/tree` 与 `GET /api/reports/{runId}/logs`（默认 200 行、上限 1000、`nextOffset` 到底为 null）；`ReportLogService` 6 条 + `ReportLogReader` 5 条单测；前端 `api/reports.ts`、`views/ReportDetailView.vue`、`views/ReportsView.vue` 列表页（十项 metadata 缺失标红、套件树折叠、日志增量加载、中英文案）；`docs/evidence/v0.5/mvn-test-rpt02-rpt03.log`（`Tests run: 226, Failures: 0`，主代理复跑）、`frontend-rpt02-rpt03-{build,lint}.log`（exit 0，主代理复跑） | V5_3 已在 dev 库执行；万行 XML 与真 pabot 产物未在本机验证；8081 旧 jar 未重启，线上页面暂不可用 |
-| 40 | RPT-03 | 双列结果并置（历史 vs 本轮） | B5 | 待验 | `GET /api/reports/{runId}/compare?baselineRunId=`：同项目+同 case_key+同 env+更早且 finished 的最近一次为自动基线，手动基线跨项目/跨环境 400；`history`/`current` 未执行必须为 `null`、`change` 后端计算；`CompareServiceTest` 11 条（含「current 未执行不得用 history 填充」）；前端详情页「本轮 vs 基线」双列，`current===null` 显示「无（本轮未执行）」；`docs/evidence/v0.5/rpt02-rpt03.md` | 手动基线选择未做前端 UI（接口已支持）；真实环境对比未跑 |
+| 38 | RPT-01 | output.xml 解析（递归 + metadata 装配） | B5 | 待验 | `application/report/{OutputXmlParser,ReportIngestService,ReportQueryService}.java`、`domain/report/{ParsedReport,SuiteNode,CaseNode,MetadataGate}.java`、`infrastructure/ReportRepositoryJdbc.java`、`api/report/ReportController.java`、`db/migration/V5_1__report_fields.sql` + down；`MetadataGateTest` 9 条 / `OutputXmlParserTest` 8 条 / `ReportIngestServiceTest` 4 条；`docs/evidence/v0.5/mvn-test-rpt01.log`、`docs/evidence/v0.5/rpt01-rpt07.md`；**真 pabot 产物（2026-11-05）** `docs/evidence/v0.5/rpt01-rpt02-real/` | V5_1 已在 dev 库执行（当前 schema 已到 V5_5）；**真 pabot 合并产物已验**（pabot 5.2.2 跑 `fixtures/bench/4suite-2cases`，2 进程 25s，rebot 7.5.1 合并产物 172 行 / 8 用例，5 项 metadata 全部解析出值）；顺带修掉 `<meta name>值</meta>` 被读成空串的缺陷（真实产物才暴露）；残余：API 无 MockMvc 用例 |
+| 39 | RPT-02 | 运行详情（套件树 / 步骤 / 日志着色） | B5 | 待验 | 后端 `GET /api/reports/{runId}/tree` 与 `GET /api/reports/{runId}/logs`（默认 200 行、上限 1000、`nextOffset` 到底为 null）；`ReportLogService` 6 条 + `ReportLogReader` 5 条单测；前端 `api/reports.ts`、`views/ReportDetailView.vue`、`views/ReportsView.vue` 列表页（十项 metadata 缺失标红、套件树折叠、日志增量加载、中英文案）；`docs/evidence/v0.5/mvn-test-rpt02-rpt03.log`、`frontend-rpt02-rpt03-{build,lint}.log`；**万行解析实测（2026-11-05）** `docs/evidence/v0.5/rpt01-rpt02-real/parse-10k.log` | V5_3 已在 dev 库执行；**万行 XML 已实测**：14,428 行 / 790 KB → 122ms、108,028 行 / 5.9 MB → 273ms（800 / 6000 用例，堆占用 ≤ 62MB，无栈溢出）；残余：无（2026-11-05 已 `systemctl --user stop` 停掉旧 jar 并重建重启，`/api/reports/{runId}/exports` 返回 401 鉴权可达） |
+| 40 | RPT-03 | 双列结果并置（历史 vs 本轮） | B5 | 待验 | `GET /api/reports/{runId}/compare?baselineRunId=`：同项目+同 case_key+同 env+更早且 finished 的最近一次为自动基线，手动基线跨项目/跨环境 400；`history`/`current` 未执行必须为 `null`、`change` 后端计算；`CompareServiceTest`（含「current 未执行不得用 history 填充」）；前端详情页「本轮 vs 基线」双列，`current===null` 显示「无（本轮未执行）」；**手动基线 UI 补口（2026-11-05）**：`GET /api/reports/{runId}/baseline-candidates`（同项目同环境 finished、排除本轮、倒序、上限 20）+ 详情页基线下拉（「自动（最近一次）」为默认项）；`CompareServiceTest` 13 条 / `CompareBaselineIT` 1 条真库用例（倒序、NULL 开始时间排最后、排除本轮与异环境、limit 截断、跨项目 403）；`docs/evidence/v0.5/rpt02-rpt03.md`、`docs/evidence/v0.5/rpt03b-baseline/` | 真实环境对比未跑 |
 | 41 | RPT-04 | 趋势与性能基线 | B5 | 待验 | `GET /api/reports/{runId}/trend`（同 project+case_key+同 env，返回 `baselineMs` 中位数与 `deviated`，>1.5 倍判偏离、等于不算）、`GET /api/reports/trend/pass-rate?granularity=day\|week`；`TrendServiceTest` 12 条；前端自写 SVG 折线（无图表库），点可跳详情、环境变化断线、空态提示；`docs/evidence/v0.5/mvn-test-rpt04-rpt06.log`（`Tests run: 251`，主代理复跑）、`frontend-rpt04-rpt06-{build,lint}.log`（exit 0） | 真实本地 WSL 历史数据未接入；前端趋势交互未做浏览器回归 |
-| 42 | RPT-05 | PDF / Word 导出（含 metadata 页） | B5 | 待验 | `POST /api/reports/{runId}/export?mode=external\|internal&format=pdf\|docx`（外部缺项 400+`metadataMissing`，内部版红字标识）、`GET /api/reports/{runId}/exports`、`GET /api/exports/{exportId}/download`（校验归属）、`POST /api/reports/{runId}/print-token` + `GET /api/print/{runId}`（一次性 10 分钟）；Word 用既有 POI `XWPFDocument`（无新依赖）；PDF 由 `PdfExportService` 调无头浏览器（Chrome/Edge 探测，失败 503 不伪造）；导出写 `audit_log`（`report_export`）；`V5_5__export_columns.sql` 已在 dev 库执行成功；测试 `DocxExporterTest` 5 / `ExportServiceTest` 6 / `PdfRendererTest` 4；**真实 PDF 冒烟** `docs/evidence/v0.5/rpt05-export.md`（Chrome 无头打印 46,443 字节、exit 0、`%PDF-1.4`）；`mvn-test-rpt05.log`（`Tests run: 266`，主代理复跑）、`frontend-rpt05-{build,lint}.log`（exit 0） | 打印页「后端→5173→Chrome」端到端未跑（8081 仍是旧 jar）；`mvn package` 因旧 jar 占用未产出新可执行 jar |
+| 42 | RPT-05 | PDF / Word 导出（含 metadata 页） | B5 | 待验 | `POST /api/reports/{runId}/export?mode=external\|internal&format=pdf\|docx`（外部缺项 400+`metadataMissing`，内部版红字标识）、`GET /api/reports/{runId}/exports`、`GET /api/exports/{exportId}/download`（校验归属）、`POST /api/reports/{runId}/print-token` + `GET /api/print/{runId}`（一次性 10 分钟）；Word 用既有 POI `XWPFDocument`（无新依赖）；PDF 由 `PdfExportService` 调无头浏览器（Chrome/Edge 探测，失败 503 不伪造）；导出写 `audit_log`（`report_export`）；`V5_5__export_columns.sql` 已在 dev 库执行成功；测试 `DocxExporterTest` 5 / `ExportServiceTest` 6 / `PdfRendererTest` 4；**真实 PDF 冒烟** `docs/evidence/v0.5/rpt05-export.md`（Chrome 无头打印 46,443 字节、exit 0、`%PDF-1.4`）；`mvn-test-rpt05.log`（`Tests run: 266`，主代理复跑）、`frontend-rpt05-{build,lint}.log`（exit 0）；**端到端证据（2026-11-05）** `docs/evidence/v0.5/rpt05-print/`（`README.md` + `rpt05-e2e.sh` / `.log` + `artifacts/01..09` 逐条 hdr/body + 07 下载 PDF + `pdf-inspect.txt` + `env.txt` + drop-in 与桥接脚本留档） | **2026-11-05 端到端已跑通**（旧 jar 用 `systemctl --user stop` 停掉后重建，dev 库补迁移到 V7_4）：10 个检查点全绿——打印 token 200、经 Vite **5273** 代理取数 200（`internal=true` / `exportable=false` / 10 项缺失）、token 复用 400、内部模式导出 200（**7.47 s**、235,253 B、sha256 `bf4cba03…`）、对外模式 400 回显 10 项 `metadataMissing`、下载 `%PDF-1.4` **2 页**且 sha256 三处（导出响应 / 文件 / `export_record`）一致、导出记录落库 `created`；PDF 内容流解压后 `.7529 0 0`（即 `#c00000`）出现 **12 次**，证明内部版红字确实进了 PDF。WSL 侧两处适配只改 systemd drop-in 与 `scripts/chrome-wsl-bridge.sh`，未动产品代码。残余：仅内部模式有正样本（该 run 无 metadata，对外成功分支缺样本）；token 存内存不跨实例；无 PDF 文本抽取工具，文案未逐字比对 |
 | 43 | RPT-06 | 产物保留策略与清理任务 | B5 | 待验 | `RetentionService` 按 `max-days 90` / `max-project-gb 50` / `keep-recent-runs 20` 选候选，扣导出/`pinned`/`p0_evidence` 三类保护；`POST /api/reports/retention/run` 默认 dryRun、仅管理员；实际执行只删文件 + `availability='purged'` + 写 `audit_log`，**不删库记录**；`config` 中 `enabled=false` 默认关闭；`V5_4__artifact_pin.sql` + down；`RetentionPlannerTest` 13 条；前端 dry-run 清单+二次确认；`docs/evidence/v0.5/rpt04-rpt06.md` | V5_4 已在 dev 库执行；真实大产物清理未在本地 WSL 执行；审计写入与删文件非同事务 |
 | 44 | RPT-07 | metadata 门禁（入库前校验 10 项） | B5 | 待验 | `domain/report/{MetadataGate,GateResult}.java`（null/空串/全空白算缺失、>40 字符算超长、键名大写精确匹配；缺失列表按十项顺序稳定）、`ReportIngestService` 在入库同一流程写 `run.exportable` / `run.metadata_missing`；`MetadataGateTest` 9 条；`docs/evidence/v0.5/rpt01-rpt07.md` | 门禁只覆盖解析入库路径；导出时的二次拒绝属 RPT-05，待该包落地后联调 |
-| 45 | PLN-01 | 执行计划（cron / metadata 注入 / 重叠与错过 / 并发上限） | B6 | 待验 | `execution_plan`（cron/timezone/status/overlap_policy/last_fire_at/next_fire_at + 审计四列）、`run` 增 `plan_id`/`trigger_type`/`triggered_by_plan_at`；`V6_1__execution_plan.sql` + down 已应用（dev 库 6.1）；`PlanService` CRUD/pause/resume/trigger-now/preview；`PlanScheduler` 用 `FOR UPDATE SKIP LOCKED` 领取、重叠 `SKIP`、错过同一触发点只补一次、`max-concurrent-per-project=2` 超限 deferred、单线程执行器串行调 `RunExecutionService`、metadata 注入 `PLAN_ID`/`TRIGGER_TYPE`；`CronNextFireTest` 6 + `PlanScheduleServiceTest` 10；前端 `/plans`（列表/表单/cron 未来 3 次/暂停/立即触发）；`docs/evidence/v0.6/{mvn-test-pln01-pln02.log,flyway-history.log,pln01-pln02.md}`（`Tests run: 292`，主代理复跑）、`frontend-pln01-pln02-{build,lint}.log`（exit 0） | 调度器默认关闭，未做长时连续实跑（非验收项，随试点迭代观察）；多实例 SPA 锁未压测；8081 旧 jar 无新接口 |
+| 45 | PLN-01 | 执行计划（cron / metadata 注入 / 重叠与错过 / 并发上限） | B6 | 待验 | `execution_plan`（cron/timezone/status/overlap_policy/last_fire_at/next_fire_at + 审计四列）、`run` 增 `plan_id`/`trigger_type`/`triggered_by_plan_at`；`V6_1__execution_plan.sql` + down 已应用（dev 库 6.1）；`PlanService` CRUD/pause/resume/trigger-now/preview；`PlanScheduler` 用 `FOR UPDATE SKIP LOCKED` 领取、重叠 `SKIP`、错过同一触发点只补一次、`max-concurrent-per-project=2` 超限 deferred、单线程执行器串行调 `RunExecutionService`、metadata 注入 `PLAN_ID`/`TRIGGER_TYPE`；`CronNextFireTest` 6 + `PlanScheduleServiceTest` 10；前端 `/plans`（列表/表单/cron 未来 3 次/暂停/立即触发）；`docs/evidence/v0.6/{mvn-test-pln01-pln02.log,flyway-history.log,pln01-pln02.md}`（`Tests run: 292`，主代理复跑）、`frontend-pln01-pln02-{build,lint}.log`（exit 0） | 调度器默认关闭，未做长时连续实跑（非验收项，随试点迭代观察）；多实例 SPA 锁未压测；8081 旧 jar 已于 2026-11-05 重建重启（`/api/plans` 返回 401），调度器仍默认关闭 |
 | 46 | PLN-02 | 依赖前置 DAG（环检测 / 成功触发下游 / 失败阻断） | B6 | 待验 | `execution_plan_dependency` UNIQUE(plan_id,depends_on_plan_id)、`V6_2__plan_dependency.sql` + down 已应用（dev 库 6.2）；`PlanDependencyGraph` DFS 环检测（含自环）与拓扑；成功触发直接下游（受暂停与并发上限约束）、失败/取消下游标记 `skipped_dependency`、手动触发忽略依赖但保存期防环；`PlanDependencyGraphTest` 10 条；`docs/evidence/v0.6/pln01-pln02.md` | 失败传导未在真实 pabot 链路验证；下游跳过事件无独立 UI 列表 |
-| 47 | PLN-03 | CI 触发 + 回写（Actions → 平台 API → run） | B6 | 已完成 | `POST /api/ci/trigger`：Bearer 项目 API token + `ci:trigger` scope；幂等 `UNIQUE(plan_id,commit_sha)` → 重复返回 202+已有 runId+`duplicated:true`；限流 10 次/分钟（超 429）；异步建 run（`trigger_type='ci'`，metadata 注入 `COMMIT_SHA`/`BUILD`/`CI_REF`）；审计不落 token 明文；`ci_trigger` 表 + `api_token` 增 `project_id`/`scopes`（`V6_3__ci_trigger.sql` + down，dev 库已到 6.3）；回写 GitHub status 默认关闭（`enabled=false`），失败不改 run 结论，只记 `writeback_error`，内网镜像仓（NAS）返回 `not_supported`；`CiTriggerServiceTest` 10 + `CiWritebackTest` 9；`docs/evidence/v0.6/{mvn-test-pln03.log,flyway-history-pln03.log,pln03-pln04.md}`（`Tests run: 311`，主代理复跑） | **GitHub 真实回写与 Actions 端到端未验证（无 token）**；限流为单实例内存实现；8081 旧 jar 未重启 **2026-11-05 按大师「F2 验收通过」裁决授权代改**：原文的待现场口径保留以便追溯；如实际未满足，请直接改回 `待现场` 并注明，本行状态不代表 AI 自判。 |
+| 47 | PLN-03 | CI 触发 + 回写（Actions → 平台 API → run） | B6 | 已完成 | `POST /api/ci/trigger`：Bearer 项目 API token + `ci:trigger` scope；幂等 `UNIQUE(plan_id,commit_sha)` → 重复返回 202+已有 runId+`duplicated:true`；限流 10 次/分钟（超 429）；异步建 run（`trigger_type='ci'`，metadata 注入 `COMMIT_SHA`/`BUILD`/`CI_REF`）；审计不落 token 明文；`ci_trigger` 表 + `api_token` 增 `project_id`/`scopes`（`V6_3__ci_trigger.sql` + down，dev 库已到 6.3）；回写 GitHub status 默认关闭（`enabled=false`），失败不改 run 结论，只记 `writeback_error`，内网镜像仓（NAS）返回 `not_supported`；`CiTriggerServiceTest` 10 + `CiWritebackTest` 9；`docs/evidence/v0.6/{mvn-test-pln03.log,flyway-history-pln03.log,pln03-pln04.md}`（`Tests run: 311`，主代理复跑） | **GitHub 真实回写与 Actions 端到端未验证（无 token）**；限流为单实例内存实现；8081 旧 jar 已于 2026-11-05 重建重启 **2026-11-05 按大师「F2 验收通过」裁决授权代改**：原文的待现场口径保留以便追溯；如实际未满足，请直接改回 `待现场` 并注明，本行状态不代表 AI 自判。 |
 | 48 | PLN-04 | Gitea 或双仓策略落地（ADR-0011） | B6 | 已完成 | `docs/adr/ADR-0011-双仓与Gitea决策.md`（内网镜像仓（NAS）内置 Git 服务只有 SSH/无 webhook 的事实、方案 A 采用、方案 B 触发条件与代价）、`docs/CI接入指南.md`（自托管 runner、token/scope、限流、内网镜像仓（NAS）回写不支持、排障）、`docs/adr/README.md` 索引更新 | 决策类交付，待大师签字；Gitea 方案未部署验证 **2026-11-05 按大师「F2 验收通过」裁决授权代改**：原文的待现场口径保留以便追溯；如实际未满足，请直接改回 `待现场` 并注明，本行状态不代表 AI 自判。 |
 | 49 | HRD-01 | 权限矩阵全量校验（角色 × 资源 × 动作） | B7 | 待验 | `backend/src/test/resources/authz-matrix.yaml` 112 行（4 角色 × 7 资源 × 4 动作，ALLOW 62 / DENY 38 / N/A 12，N/A 全部有中文理由）；`AuthzMatrixTest` **113 用例**（含「登录但无任何项目」单测），ALLOW 断言业务真成功、DENY 断言 403 且不泄露；`-Dexport` 产出 `docs/evidence/v1.0/authz-matrix.csv` **113 行**（表头 `角色,资源,动作,预期,实际,用例ID,备注`，N/A 空备注 0，主代理实测）；`docs/evidence/v1.0/{mvn-test-hrd01-hrd02.log,hrd01-hrd02.md}`（`Tests run: 444`，主代理复跑） | 矩阵为控制器级 MockMvc，真实本地 WSL 账号 HTTP 全链路未跑；待人签字后才可置 `已完成` |
-| 50 | HRD-02 | 审计日志（10 类关键操作，可查可导出） | B7 | 待验 | `@Audited` 注解 + 显式 `recordChange`（本地 m2 无 AOP 依赖，未联网新增）；已覆盖 user/role/project/member/credential/case/set/schedule/lease 共 10 类动作；`run:metadata-patch`、`system:deploy` 当前无入口，记录待后续；脱敏（凭据只记「已配置」）、异步写失败不阻断业务但告警、只增不改；`GET /api/audit` + `GET /api/audit/export` 仅 ADMIN/OWNER；`V7_1__audit_summary.sql` 已应用到 dev 库；前端 `/admin/audit`（筛选/分页/导出，非管理员隐藏）；`AuditAspectTest` + `AuditQueryTest`；修复 3 个真实缺陷（405 误 500、CSV 误伤凭据、JSON 脱敏丢引号）；`docs/evidence/v1.0/hrd01-hrd02.md` | 8081 未重启，真实 HTTP 全链路未跑；两类无入口操作需后续补埋点 |
+| 50 | HRD-02 | 审计日志（10 类关键操作，可查可导出） | B7 | 待验 | `@Audited` 注解 + 显式 `recordChange`（本地 m2 无 AOP 依赖，未联网新增）；已覆盖 user/role/project/member/credential/case/set/schedule/lease 共 10 类动作；`run:metadata-patch`、`system:deploy` 当前无入口，记录待后续；脱敏（凭据只记「已配置」）、异步写失败不阻断业务但告警、只增不改；`GET /api/audit` + `GET /api/audit/export` 仅 ADMIN/OWNER；`V7_1__audit_summary.sql` 已应用到 dev 库；前端 `/admin/audit`（筛选/分页/导出，非管理员隐藏）；`AuditAspectTest` + `AuditQueryTest`；修复 3 个真实缺陷（405 误 500、CSV 误伤凭据、JSON 脱敏丢引号）；`docs/evidence/v1.0/hrd01-hrd02.md` | 8081 已于 2026-11-05 重建重启，真实 HTTP 全链路仍未跑（需真实账号）；两类无入口操作需后续补埋点 |
 | 51 | HRD-03 | 小型试点迭代验证与运维手册 | B7 | 已完成 | `scripts/stability-24h.sh`（稳定性采样脚本，脚本名保留；`--duration/--interval/--project/--base-url/--out`，输出 CSV + 摘要 `restarts`/`rss_growth`/`conn_leak`）、`scripts/window-stats.sql`（运行统计）、`docs/OPS-MANUAL.md`（服务清单 / 启停 / 日志 / 3 条健康检查 / 备份恢复 / 5 类故障 / 回滚指向）；实测 `bash -n` 通过，3 分钟冒烟 9 样本 `restarts=0`、`conn_leak=无`、exit 0（`docs/evidence/v1.0/{stability-smoke.txt,stability-smoke.csv,hrd03.md}`，**仅冒烟，不构成稳定性结论**）；运行统计脚本对 `robot_dev` 库 exit 0（0 行，`window-stats-dev.txt`） | **24h 压测已取消（需求变更，不再作为验收项）**；验收改为「小型试点项目持续迭代验证 + 运维手册可执行」：每轮记录崩溃/重启/内存趋势/连接数作为优化输入，不设 24h 与 RSS<20% 硬门槛；「新人按手册独立完成重启 + 备份恢复」未实测；本地 WSL 部署未验证；容量基线三项数字待补 **2026-11-05 按大师「F2 验收通过」裁决授权代改**：原文的待现场口径保留以便追溯；如实际未满足，请直接改回 `待现场` 并注明，本行状态不代表 AI 自判。 |
 | 52 | HRD-04 | 回滚预案与演练 | B7 | 已完成 | `scripts/rollback.sh`（`--to` / `--dry-run` / `--schema=keep\|down` 默认 keep / `--yes`）、`docs/ROLLBACK.md`（三步、down 风险、默认策略、RTO 空表、抽样清单）；实测 dry-run exit 0（`docs/evidence/v1.0/rollback-dryrun.log`）、`bash -n` 通过、`--schema=down` 不带 `--yes` exit 3、7 个交付物齐全（`hrd04.md`） | **真实回滚演练未执行**，RTO 表为空；`--schema=down` 实际删表路径未实跑；回滚目标版本包未在本地 WSL 验证；需在 HRD-03 试点迭代与 HRD-04 演练后由人签字 **2026-11-05 按大师「F2 验收通过」裁决授权代改**：原文的待现场口径保留以便追溯；如实际未满足，请直接改回 `待现场` 并注明，本行状态不代表 AI 自判。 |
 | 53 | DOC-01 | `AGENTS.md`（工程总纲） | — | 待验 | 仓库根 `AGENTS.md`（已补 v0.1 实际操作：`make lint/test/build/ci-local`、`db-*`、`env-check`、目录状态） | 待人工合并；随 v0.2 逐版补细节 |
@@ -109,16 +109,29 @@
 | 70 | **PRJ-03** | 引用保护：被引用不可硬删（409）、项目内移除只删引用、删项目保留平台资产、越权 403（`FR-v0.2-51`） | B2 | 待验 | `docs/evidence/v0.2/prj03/` | 前置：`AST-05`。同批做 `AssetScopeIT` 越权用例 |
 | 71 | **UX-02b** | 其余列表接入批量，复用 `UX-02` 组件与契约（`FR-v0.2-40`）：通用批量端点 + `useBatchAction` + 资产三 tab / 用户页接入 | B2 | 待验 | `docs/evidence/v0.2/ux02b/` | **2026-11-04 22:15 实现**：`GenericBatchService` / `BatchController`（同一部分成功契约 + `batch=` 逐条审计）、真库 `GenericBatchIT` 3/3、前端 vitest 21/21、build 0。**偏差：报告页未接入**（`runId` 为字符串键、导出属任务型操作，与 `ids: number[]` 契约不兼容），登记为边界、需要时另开包；`TEST-PLAN` §13.11 已同步修订，G2 不得据此判完整通过 |
 | 72 | **UX-01b** | 界面基线修复（美术 S0）：`--muted` 21 处修复 + 交互态 + 危险按钮 + 内容宽 + D15 校验器修复 + accent 两态 token + 2 个新守门脚本（`FR-v0.2-54~58`） | B2 | 待验 | `styles/theme.css`、`styles/main.css`、`report/SuiteTree.vue`/`TrendChart.vue`/`ReportDetailView.vue`/`ReportsView.vue`/`CasesView.vue`（宽表容器）、`tools/check_tokens.py`+`tools/px-allow.txt`、`tools/check_states.py`、`tools/check_contrast.py`（按主题×强调色分组）；证据 `docs/evidence/v0.2/ux01b/`（`README.md`、`ux01b-checks.log`、`ux01b-frontend.log`、`backend-mvn-test.log`、13 张截图） | **v0.2 收尾必做，排在 UX-01 验收前**。只动样式不动逻辑。计划：`docs/design/美术体系-开发与测试计划-20261104.md` §2.1/§3.1。**2026-11-04 已实现**：4 组 × 20 项对比度全 PASS、0 悬空 var、8 类元素三态齐备、1920 下 `scrollWidth==clientWidth` 且 `.app-body`=1440 |
-| 73 | **EXEC-01** | 执行人工触发：quick-run 无计划直跑 + 执行页手动表单 + 僵尸端点 `POST /execution/runs` 收编（补派发消费者）+ 用例集立即执行 + 审计（`FR-v0.2-59~63`） | B2 | 未开始 | 待补 | **⛔ 大师 2026-11-04 22:01 裁决：完全冻结到 F2 现场**——不开发、不空跑、不落派发消费者，ADR-0013 禁跑令继续有效；开工时点由 F2 现场定。前置 `UX-02`/`UX-01b`。关键事实：现 `POST /execution/runs` 只落库无消费者（`RunQueuePolicy` 零调用点）。评估：`docs/plan/执行人工触发-评估与计划-20261104.md`。台账用例↔脚本绑定缺失，勾选用例直跑列 v0.4 EXEC-02 |
+| 73 | **EXEC-01** | 执行人工触发：quick-run 无计划直跑 + 执行页手动表单 + 僵尸端点 `POST /execution/runs` 收编（补派发消费者）+ 用例集立即执行 + 审计（`FR-v0.2-59~63`） | B2 | 待验 | `docs/evidence/v0.2/exec01/`（后端 488 测试 / 前端 153 测试 / build / `lint.sh` 全绿日志）；实现：`QuickRunService`、`TestSetRunService`、`SerialRunDispatcher`、`POST /api/execution/quick-run`、`POST /api/execution/test-sets/{id}/run` | **2026-11-05 大师解冻并选为下一包**（原 11-04 22:01「冻结到 F2」裁决作废）。口径偏差：①套件路径不做磁盘存在性校验（执行工作区未配置时无法在请求期判定），不存在由执行期明确失败；②用例集「已绑定」按 `case_code == 脚本测试名` 约定（与报告覆盖口径一致），绑定模型仍归 EXEC-02；真实 pabot 端到端按 ADR-0013 留给验收人 |
 | 74 | **UX-04** | 美术 S1 设计系统骨架：lucide 图标 + **组件库适配层（拍板引库：Naive UI 第一候选/Element Plus 对照，两页试点为闸门）** + **打包字体 Noto Sans SC+JetBrains Mono（拍板，子集化）** + 字阶/间距 token + 强调色**六预设**与切换（拍板，守门 14 组 × 20 项 = 280 项）+ styleguide 页 | B3 | 待验 | `docs/design/UX-04-两页试点对比报告-20261104.md`、`docs/design/pilot/`、`docs/evidence/v0.3/ux04-pilot-*`；**S1 骨架证据 `docs/evidence/v0.3/ux04-s1-20261104/`**（README + 21 条命令日志 + `run-all.sh`） | **2026-11-05 00:20 程序骨架落地，`进行中 → 待验`**。大师 23:08 定「不用评审 先可以开工 优先推进程序功能」，评审闸门免除；按试点数据选 **Naive UI 2.45.3**（gzip 154,779 B 对 174,484 B）。主仓已落：六预设强调色 × 亮暗 12 套 + 三层持久化（`localStorage` 首帧 / 服务端 `user_preference.accent` / `data-accent`）、`naiveTheme.ts` 单向派生、`AppIcon`+`iconMap`、字体子集（892 字 / 157,077 B gzip）、字阶间距圆角 z-index token、StatusTag/EmptyState/InlineAlert/FormField/ConfirmModal、6 视图 13 处 `window.confirm` 全换、`/dev/styleguide` 仅 DEV。守门：14 组 280 项对比度全 PASS、i18n 516/516、0 硬编码色值、图标 chunk 4.2 KiB / vendor 100.4 KiB、产物无 styleguide 泄漏。**未完成**：四态截图与 1440·1920 表格观感（待现场）、13 视图全量迁移（另立 #80）。**顺带修真缺陷**：后端 `UserPreferenceService` 白名单漏 `accent`，前端 `PUT {accent}` 被 400 且按约定静默吞掉 → 跨设备同步一直无效；已补键 + `UserPreferenceIT` 两条用例。另：自建组件**首批 5 处进业务页**（计划徽标 2 + 列表空态 3）、新增 `tools/check_icons.py`（未开 strictTemplates 时模板 prop 不被 vue-tsc 检查，图标名拼错会静默渲染空白，本轮真踩一次）；**2026-11-05 00:50 换色板**：六预设按大师定名改为 新年红 crimson / 科技蓝 blue / 土豪金 gold / 活力橙 orange / 魅力紫 violet / 翡翠绿 jade（原 blue/cyan/indigo/violet/teal/fuchsia 作废）；旧键名由 `useAccent.normalizeAccent` 归一（cyan/indigo→blue、teal→jade、fuchsia→violet），后端白名单只收新六值并新增 IT 断言旧键被拒。连带修掉两处守门缺口：①六预设清单原本散在 7 个文件，新增 `tools/check_accent_presets.py` 机械比对；②`subset_font.py --check` 原来只比预算不比字覆盖，换文案后 33 个字不在子集里却全绿，已加 fontTools cmap 逐字断言（修后 909/909）。守门 14 组 × 20 项 = 280 项、集成测试 28/28、前端 35/35 全过。前置 `UX-01b` 仍为 `待验` |
 | 75 | **UX-05** | 美术 S2 数据与报告视觉：表格规范 **19** 处数据网格迁壳 + 图表薄封装 `TrendChart` + 品牌轻量版（`AppLogo`/`favicon`/`AboutDialog`/登录页品牌区）+ 空态插画 `EmptyIllustration` + 打印版式（RPT-05，零库依赖保留） | B5 | 待验 | `frontend/src/components/DataTable.vue`、`TrendChart.vue`、`AppLogo.vue`、`AboutDialog.vue`、`EmptyIllustration.vue`、`public/favicon.svg`、`tools/check_tables.py`、`tools/check_brand.py`；证据 `docs/evidence/v0.5/ux05-20261105/` | 归 v0.5（与 RPT 同期）。前置 `UX-04`（已转 `待验`）。**2026-11-05 第一批实际把四块全做了**（原计划只批一块）：① 表格规范壳——19 处数据网格迁 `DataTable`（粘性表头/行高双档/对齐/列宽按列宽推导/骨架行/三态空态统一）+ `naiveTheme` 接管表头主题（修掉暗色表头发白、表头不弱化两处迁库静默缺陷）；② 图表薄封装 `TrendChart`（y 轴刻度带单位/tooltip/空图/偏离图例显隐）；③ 品牌轻量版——`AppLogo` 几何标记+字标、`favicon.svg`、版本号移入 `AboutDialog`、登录页品牌区、`index.html` 标题去版本号；④ 3 种空态插画 `EmptyIllustration`（no-data/no-result/error 语义分流，错误态不再被误读成「暂无数据」）。守门新增 `tools/check_tables.py`（19 处走壳/0 处裸 `NDataTable`/原生 `<table>` 仅白名单 3 文件）+ 自检负向、`tools/check_brand.py`（favicon/侧栏+登录页标记/版本号只在关于）+ 自检。**余下一块**：打印版式（RPT-05）——`ReportPrintView` 按约定保持零库组件依赖，打印视觉打磨并入本包收尾或留待 `UX-06` 暗色微调顺带，未单列新包。设计计划 v1.10 已记三条写进文档的判断。 |
-| 76 | **UX-06** | 美术 S3 双语与密度：英文版式集中回归（每页 en 1440+1920 截图）+ 密度切换 + 暗色微调 | B7 | 未开始 | 待补 | 归 v1.0。前置 `UX-05` |
+| 76 | **UX-06** | 美术 S3 双语与密度：英文版式集中回归（每页 en 1440+1920 截图）+ 密度切换 + 暗色微调 | B7 | 待验 | `docs/evidence/v1.0/ux06/`（`README.md`、`report.json`、`density.json`、40 张截图、5 份门禁日志、`scripts/` 走查与探针脚本） | 归 v1.0。前置 `UX-05`（已 `待验`）。**2026-11-05 实现并实测**：① en-US **13 路由 × 1440/1920** 全页截图，逐页断言 `lang=en-US` 且 `scrollWidth-clientWidth=0`（26/26 通过）；② 密度只改 `--table-row-h`（44↔36），`DataTable` 统一消费，实测 `/assets`+`/runs` 首行 44→36、单元格 padding 归零；首帧由 `index.html` 内联脚本打 `data-density` 防闪，服务端 `user_preference.density` 登录后覆盖（后端白名单 + `UserPreferenceIT` 往返/非法值各一条）；③ 暗色自建 WCAG 探针跑 13 页，首轮 report-detail 3 类、report-print 1 类违规，改 `naiveTheme` 的 `Button.textColorPrimary/Hover/Pressed/Focus/**Disabled**`（取 `accentContrast`）与 `Radio` 按钮组、打印页 `.muted` 固定 `#666`，复跑 **13 页 offenders=0 / overflow=0**。**顺带修 2 个整页级真缺陷**：`AuditView` 两个 `NDatePicker` 初值 `''` 交 date-fns 抛 `RangeError` 导致**整页白屏**（改 `null`）；`locales/index.ts` 顶层浅合并使编辑器包 `editor` 段整段覆盖平台同名段、`/editor/1` 直接显示 `editor.titleEditor` 原始键名（改字段级合并）。各补回归（`AuditView.spec.ts` 2 条、`locales/index.spec.ts` 6 条、`naiveTheme.spec.ts` 扩到 5 条）。门禁：前端 **26 文件 / 181 用例**、`vue-tsc` 0、后端 **542/542**、`-Pit` **30/30**、`lint.sh` **EXIT=0**。残余：暗色仅 1440 一档；溢出为 DOM 级判定，不含 `ellipsis` 截断；本包按纪律留 `待验` |
 | 77 | **EXE-09** | 生成侧确定性化：末段改「实例前缀 2 hex + 同秒单调序列 4 hex」（溢出明确抛错）；测试改确定性断言 + 真并发/跨秒/溢出/唯一索引守门（2026-11-04 F1-1 现场发现：固定时间戳 + 2²⁴ 随机末段，1000 次生日碰撞约 2.9%，`ci-local` 当晚 exit 2） | B4 | 待验 | `docs/evidence/v0.2/ux02b/mvn-unit.log`、`RunIdGeneratorTest.java` | **口径已修订**：DB 唯一索引 `uk_run_run_id` 与 `RunService` 冲突回读**本来就有**，不是「缺硬唯一保障、碰撞会串数据」；真实缺口只在生成侧与测试设计，故不加索引、不改插入逻辑。连跑 10 次 7/7 零 flaky。G1 偏差整改包，大师裁决「记偏差 + 单开包修」 |
 | 78 | **ENV-06** | DB 回滚脚本端到端整改：`db-undo.sh` 缺库名（1046）、4 个 down 脚本 24 处 `DROP COLUMN IF EXISTS`（1064）、`V2_1` 外键绑定索引（1553）；补 `_it` 安全阀并现场复跑 down→up | B1 | 待验 | `docs/evidence/v0.1/flyway-downup-20261104-2030.log`、`DownScriptGuardTest.java` | **G1 #4 现场整改包**，已现场复跑 PASS（46→0→46 表 / Flyway 19 条 success）；**2026-11-04 22:15 补静态守门**：`DownScriptGuardTest` 5/5 把三处缺陷固化为单测（含「注释里提到禁用语法不算违规」的例外），双向破坏性验证通过。按纪律仍留 `待验`，由人裁决 |
 | 79 | **WS-06** | 验收守门接线与测试环境整改：`scripts/lint.sh` 原本未调用 `tools/check_*.py` 六个守门（写了没接线的假绿）；编辑器包 vitest 在 Node 26 下缺 `localStorage` 致 6/215 失败；`color-mix(...#000)` 被 `check_colors` 判为硬编码；`check_import_header` 缺 `openpyxl` 依赖声明 | B1 | 待验 | `docs/evidence/acceptance-20261104/SUMMARY.tsv`、同目录 19 份日志与 `README.md` | **按各版 DEV-PLAN「完成判定」逐项实跑暴露的整改包，非顺手改**：19 项验收由 4 红转全绿，六守门已接进 `lint.sh` 且 exit 0；色值提升为 semantic token `--fail-hover/--fail-active`（亮暗两套）。状态留 `待验`，由人裁决 |
 | 80 | **UX-04b** | 视图组件化迁移（美术 S1 收尾）：13 个业务视图从原生元素迁到 `naive-ui` 组件 + 自建库组件；表格交 `NDataTable` 并保留宽表横滚；打印页（RPT-05）保持零库组件依赖 | B3 | 待验 | `docs/evidence/v0.3/ux04b2-20261105/`、`ux04b3-20261105/`、`ux04b4-20261105/`、`ux04b5-20261105/`、`ux04b6-20261105/`（各含 README + 命令日志 + `run-all.sh`）；`ux04c-20261105/`（第二、三批） | **由 `UX-04` 拆出**：S1 只交付「骨架 + 局部替换」，库组件目前仅在 `/dev/styleguide` 呈现，业务页仍是原生 `table`/`button`/`select`。迁移要逐页验四态、表格观感与打印版式，属独立可验收单元，混在 `UX-04` 里会让整包永远到不了 `待验`。**2026-11-05 已开工**：首批 5 处进业务页（`PlansView` 计划状态徽标 2 处 → `StatusTag`，`CasesView`/`AuditView`/`AdminView` 主列表空态 3 处 → `EmptyState`，并清理随之变成死代码的 `.badge*` 样式）。前置 `UX-04` 转 `待验`。**2026-11-05 第二批（两页整页迁移）**：`AuditView`（7 列表格 → `NDataTable` + `scroll-x` 横滚、`NSelect`×2 + `NDatePicker`×2、`NButton`、`NPagination`、空态走表格 `#empty` 槽）与 `ReportsView`（报告主表 + 清理清单双表、状态列 → `StatusTag`、工具栏与分页同上）。**顺带修真缺陷**：上一批三个 `EmptyState` **都没 import**，`<script setup>` 下未注册组件不报错、只渲染空白 —— 三页「无数据」时一片空，而构建/单测/lint 全绿；已补 import 并新增守门 `tools/check_component_imports.py`（模板 PascalCase 标签 ↔ import 对账，含递归组件与 Vue 内置白名单，带负向自检），接线进 `lint.sh`，上线 10 分钟内又抓出 `StyleguideView` 一处同款。新增 `runStatusTone()`（`utils/statusLabels.ts`）统一「运行状态 → 色档」，`StatusTag` 反向只 import 类型不引入环。**2026-11-05 第三批（两页整页迁移 + 视图级回归）**：`RunsView`（原生 `table` → `NDataTable` + `scroll-x`、`NSelect`、`NButton`、`NPagination`、状态列 → `StatusTag`、`NCheckbox`、时间走 `formatDateTime`）与 `CasesView`（筛选/表单 → `NInput`/`NSelect`，表格 → `NDataTable`，批量条 8 个按钮 → `NButton`，评审状态 → `StatusTag`）。**三个决策**：① 勾选列**不用**内置 `type: 'selection'` —— 它只认 `checked-row-keys`，`data` 变化会丢掉不在当前页的键，与 `useSelection` 的「跨页保留」（FR-v0.2-35）静默冲突，改为自渲染 `NCheckbox`；② 选中行底色用 `accent-soft` 而非固定的 `surface-selected`（后者是中性蓝，换金色/翡翠绿预设时与全站强调色不一致），并给「正在看日志的行」加 `row-active`；③ 新增 `reviewStatusTone()`，`draft` 用 `neutral` 而 `pending` 用 `warn`（同色会让待审项淹没在草稿堆里）。**首次建立视图级回归**：`CasesView.spec.ts` / `RunsView.spec.ts` 各 4 条（勾选接线、表头全选只作用本页、日志联动高亮只落对应行、状态双编码、终止行无取消），前端 47 → 61 条。**当时未完成**（已于第五批补齐）：报告详情页（`ReportDetailView`）仍为原生元素；打印页按约定保持零库组件。**2026-11-05 第四批（四页整页迁移）**：`AssetsView`（三表 → `NDataTable`、页签 → `NTabs`、端口面板改表格下方卡片、凭据关键词改前端过滤、换设备清空端口）、`PlansView`（表格 → `NDataTable`、表单 → `FormField` + 库控件、删窄屏卡片版）、`AdminView`（四表 → `NDataTable`、成员角色内联 `NSelect`、所有者行保持只读）、`OverviewView`（三表 → `NDataTable`、状态列 `badge` → `StatusTag`）。视图级回归 8 → **35**（6 spec），前端 61 → **88**。连带删除无消费者的 `.tabs`/`.tab` 样式并同步 `check_states.py`。**两个新踩坑**：① naive-ui 2.45.3 的 `NTabPane` 从 `children.tab` 取标题，只给 `:tab` prop 会渲染出三个**空白**页签且无报错；② `h(RouterLink)` 是模块导入组件，`app.component` 桩换不掉，视图测试必须模块级 mock `vue-router`。**2026-11-05 第五批（报告详情页整页迁移）**：`ReportDetailView` 10 个原生按钮 → `NButton`（含 `:loading`）、趋势用例下拉 → `NSelect`、日/周分段 → `NRadioGroup`+`NRadioButton`、对比开关 → `NCheckbox`、导出历史表与对比表 → `NDataTable`、对比汇总 4 计数 + 变化列 + 两侧结论 → `StatusTag`；新增 `verdictTone()`（`utils/statusLabels.ts`）。视图级回归 35 → **43**（7 spec，本页 8 条），前端 88 → **96**。**三条决策**：① **元数据键值表刻意保持原生 `<table>`** —— 它是 `th`+`td` 两列定义表而非数据网格，塞进 `NDataTable` 会凭空多一行表头并丢 `th` 语义，已加断言 `table.meta-table` + `tr`/`th` 各 10 个把这个决定钉死；② **「两轮都 FAIL」单独给 `changes.BOTH_FAIL` 文案**（中英各一条）—— 后端 `CompareService.changeOf` 只判"变没变"，两轮都 FAIL 归 `SAME`，界面显示「无变化」会被读成"通过且没变"，色档给 `warn` 而非 `fail`（本轮没有**新**坏，要与刚回归的分开）；③ 导出历史「内部版」由红字改 `warn` 徽标 —— 红色读起来像"导出失败"，而它表达的是**适用范围**。**新踩坑**：`NSelect`/`NRadioGroup` 的 `value` 是 `string\|number\|null`，`v-model` 到 `ref<'day'\|'week'>` 会被 `vue-tsc` 判不兼容，须 `:value` + 单一 setter 收敛；`NDataTable` 列宽是数字不带 `px` 不触发白名单，但模板内联 `style="width: 220px"` 会被扫到（宽度写 scoped class）。**连带**：注释新增 6 汉字触发 `subset_font.py --check` FAIL，子集 953 → **959 字 / 168,738 B gzip**。**当时未完成**（已于第六批补齐）：`SuiteTree`/`KeywordSteps` 仍为 `badge verdict-*` + 原生 `.tree-toggle`（**无 hover/focus**，且不在 `check_states.py` 扫描范围）；`EditorView`/`Login`/`NotFound` 未迁；打印页按约定保持零库组件。 **2026-11-05 第六批（套件树 + 守门扩范围）**：`SuiteTree` 套件/用例行状态 → `StatusTag`（新增 `verdictTone` 的消费点），**`.tree-toggle` 补齐 `:hover` / `:focus-visible` / `transition`**；`KeywordSteps` 步骤行**刻意保留紧凑文本徽标**（一屏几十行步骤，每行加 16px 图标会把步骤名挤成次要信息，且状态文字本就在徽标里）。**根因修复**：`tools/check_states.py` 原来只扫 `styles/*.css`，组件 `<style scoped>` 天生在盲区 —— `.tree-toggle` 三态全无而守门一直绿；现同时抽所有 `.vue` 的 `<style>` 块（`MIN_VUE_STYLE_FILES=5` 兜底）并把 `.tree-toggle` 登记进 `REQUIRED`，配 `neg-tree-toggle.py` 负向证据（剥掉 hover 必须报 FAIL）。**不用 `NButton` 换树行的理由**：库 `--n-height` 最小 28px vs 行高 21px，几十条用例会让树高翻倍，而该行本质是展开/收起控件（disclosure），缺的是三态不是缺组件。新增 `SuiteTree.spec.ts` 8 条（折叠/展开/emit/步骤递归/双编码/按钮语义），视图+组件回归 43 → **51**，前端 96 → **104**。**2026-11-05 第七批（业务视图迁移收尾）**：`LoginView`（`FormField` + `NInput` + `NButton attr-type="submit"`）、`NotFoundView`（`RouterLink custom` + `NButton`）、`OverviewView`（第四批漏网的刷新按钮）、`EditorView`（5 个 `.editor-host__btn` → `NButton`），并删 3 条登录页死样式 + 4 条编辑器页无三态样式。**测试抓到两个"看起来正常"的真回归**：`NInput` 不透传顶层 `autocomplete`（须进 `:input-props`，否则密码管理器线索静默丢失）；`NButton` 的 `type` 是语义色档、提交行为要 `attr-type="submit"`（写错误表现为「能点不能回车」）。新增 `LoginView.spec.ts` 5 条，视图+组件回归 51 → **56**，前端 104 → **109**。**至此 12 个业务视图全部完成组件化**，`ReportPrintView` 按约定零库依赖、`StyleguideView` 本身即设计系统展示页。**转 `待验` 的唯一缺口**：登录后四态人工截图（需测试账号 + 可达 dev server，属待现场项）。 |
 | 81 | **UX-04c** | 侧边栏信息架构两级化：6 个一级项平铺 → 分组 + 子项（资产 / 执行 / 管理三组可折叠，单页模块不立空壳组）；选中态改强调色三重编码；菜单结构与路由的绑定加守门 | B3 | 待验 | `docs/evidence/v0.3/ux04c-20261105/`（README + 12 条命令日志 + `run-all.sh`）、`frontend/src/config/navigation.spec.ts` | **2026-11-05 大师定「菜单最好是 2 级，后续功能逐步变多」+「当前选中项要重点色强调」**。结构抽成唯一真源 `config/navigation.ts`（`NavGroup`/`NavLeaf` + `isNodeActive`/`visibleNav`/`filterNav`），选中判定不再依赖 `router-link-active`（资产三页共用一个 path，靠 `?tab=` 区分，浏览器默认规则会把三个子项同时点亮）；`AssetsView` 页签与 URL 双向同步，支持深链与前进后退。选中态＝左侧 3px 强调色竖条 + `accent-soft` 底 + `accent` 文字（对比度由六预设派生保证），仅换底色时暗色下与 hover 分不出来。展开态落 `localStorage`，进入某组子页自动展开。**权限修正**：`管理` 组不设 `adminOnly`（该页含「项目成员」，PM/所有者也要用），只挡审计子项 —— 整组隐藏会造成功能回归。守门新增 `navigation.spec.ts` 12 条（叶子路径必须能被路由解析、不允许单子项组、query 精确点亮、前缀边界、权限过滤、空组自动丢弃） |
 | 82 | **UX-04d** | 土豪金预设调优：亮色主色顶到 WCAG 亮度上限 + 手调金色 tint（`SOFT_OVERRIDE`）；暗色转更饱和亮金 | B3 | 待验 | `docs/evidence/v0.3/ux04c-20261105/accent-tokens.log`、`check-contrast.log` | **大师定「土豪金颜色可适当优化」**。先把约束算清楚：亮色金被 `accent/soft ≥ 4.5` 钉死，`#8a6300` 时余量只有 0.23 —— 靠「调亮主色」这条路口本走不通。真正的病根是机械派生 tint：暗金 × 10% + 白 = `#f3efe6`，一块几乎无彩的米灰，选中行看着像灰色。改为手调金色 tint `#fdf3d6`（仍是金），`accent/soft` 反升到 4.91，于是主色得以提亮到 `#8f6500`（5.21 / 4.71，已到上限，再浅一档即 4.43 FAIL）。暗色 `#f5c542 → #ffd24a`（13.00 / 10.63 / 8.78），tint 换暖金 `#3a3222`。`SOFT_OVERRIDE` 只对 gold 生效且**不豁免任何判据**，改错直接 FAIL；色板展示色同步 `--preset-gold`。14 组 280 项全部重算通过 |
+| 83 | **EXEC-02** | 勾选台账用例直接执行：`[Tags] case:<code>` 绑定解析 + 测试级 `--test` 透传（v0.4 补充包，2026-11-05 并入） | B4 | 待验 | `docs/evidence/v0.4/exec02/`（README + 9 份日志）；实现 `CaseScriptResolver`、`CaseRunService`、`POST /api/execution/cases/run`、`PabotCommandBuilder` 透传 `--test`、CasesView「执行所选」表单 | `--test` 实跑效果待验收人现场确认（ADR-0013 禁跑令）；绑定读 DB 与执行器读磁盘的工作区差异仍在 |
+| 84 | **EXEC-03** | 用例集测试级执行：`TestSetRunService` 解析绑定后透传 `testNames`，集合只跑所选测试（v0.4 补充包，2026-11-05 并入） | B4 | 待验 | `docs/evidence/v0.4/exec03/`（README + 5 份日志）；`TestSetRunService` + 2 个单测 | `--test` 实跑效果待验收人现场确认（ADR-0013）；空编号用例原静默跳过，EXEC-04 已改 400 |
+| 85 | **EXEC-04** | 执行前预检：套件路径存在性、用例编号非空、测试名跨套件重名，命中直接 400（v0.4 补充包，2026-11-05 并入） | B4 | 待验 | `docs/evidence/v0.4/exec04/`（README + 5 份日志）；新增 `ExecutionRequestPrecheck`、`QuickRunService` 接入、用例集空编号 400、5 个预检单测 | 工作区需先同步脚本（默认 `~/robot-test/infra-monitor`）；目录路径不查重名 |
+| 86 | **EXEC-05** | 执行工作区落盘：`robot_file.content` 按路径写入 `<artifacts>/<runId>/workspace`，pabot 以该目录为工作目录 （v0.4 补充包，2026-11-05 并入） | B4 | 待验 | `docs/evidence/v0.4/exec05/`（README + 6 份日志）；新增 `ExecutionWorkspaceMaterializer`、`RobotFileRepository#listAll`、`PabotCommandBuilder` 工作目录重载、`RunExecutionService` 接入、请求期预检改 DB 优先/磁盘回落；9 个新增单测 | 数据库无脚本时仍回落 `execution.workspace-root`（兼容计划/CI）；真实 pabot 在落盘工作区执行待现场确认（ADR-0013） |
+| 87 | **EXEC-06** | 全量日志下载：`GET /api/execution/runs/{runId}/log/download` 返回 `run.log` 附件；运行页日志面板加「下载完整日志」（v0.4 补充包，2026-11-05 并入） | B4 | 待验 | `docs/evidence/v0.4/exec06/`（README + 9 份日志）；新增 `RunLogFileService`（定位与 404 口径）、控制器端点、1 接口测试 + 3 服务测试；前端 `downloadLog` + 按钮 + 1 视图测试 | 实时频道仍只保留最近 2000 行（完整日志走文件下载）；`run.log` 不存在或产物已清理时 404 |
+| 88 | **EXEC-07** | 租约可视化与管理员强制释放：资产页新增「租约」只读页签（资源 / 运行 / 剩余时间 / 状态，`FR-v0.4-09`）；行内「强制释放」仅管理员可见，二次确认以 `runId` 作 confirm，后端把原运行标记为 `failed(lease_revoked)` 并释放租约（`FR-v0.4-10`，v0.4 补充包，2026-11-05 并入） | B4 | 待验 | `docs/evidence/v0.4/exec07/`（README + 9 份日志）；新增 `LeaseAdminService`、`POST /api/execution/leases/force-release`、4 条服务测试 + 1 条接口测试；前端 `listLeases` / `forceReleaseLease` + 资产页租约页签 + 4 条视图测试 | 强制释放只摘租约、不杀子进程（残余写进 javadoc）；租约列表只列 `lease_state = held`，历史租约需查审计 |
+| 89 | **EXEC-08** | v0.4 PRD 34 条 FR 逐条覆盖复核：按「覆盖 / 部分 / 缺失 / 待现场」四档给出实现位置、测试证据与缺口，产出 `docs/release/v0.4-execution/FR-COVERAGE-20261105.md`（20 覆盖 / 12 部分 / 0 缺失 / 2 待现场），并排出 7 条补口优先级（首位为租约接入执行链路） | G | 待验 | `docs/evidence/v0.4/exec08/`；`FR-COVERAGE-20261105.md` 逐条 FR 对照表 + 缺口排序 | 复核包，不改实现、不计入 v0.4 交付包数（`release/README.md` 仍为 15）；缺口待另开包 |
+| 90 | **EXEC-09** | 租约接入执行链路（FR-04/07/09/10/23）：进入 RUNNING 前按 run 维度申请租约，设备键优先（如 `DUT-01/mlx5_0`），未声明设备范围则用 `run:<runId>` 自持（工作区/端口已按 run 隔离，不与其他 run 互斥）；申请失败直接 `failed(lease_timeout)`（INFRA，不启动 pabot）；成功 / 失败 / 异常 / 取消 / 超时 / 重启统一走 `releaseRun`；续约沿用 40s 全局心跳 | G | 待验 | `docs/evidence/v0.4/exec09/`；`RunExecutionServiceTest` 新增 5 条（执行期持有 / 成功释放 / 失败释放 / 占用超时不启动 / 键退化） | 租约按 run 聚合而非按分片拆 job（`execution_job` 每 run 一条）；FR-08 等待态 UI（WAITING）仍缺；`lease_wait_ms` 未回写 |
+| 91 | **EXEC-10** | 队列语义收口（FR-03/05）：派发器由全局单线程改为「按项目分道 + 单项目 `MAX_PARALLEL` 并发」，同项目按 priority 降序、再按提交先后排队，达上限只排队不拒绝；不同项目分属不同队列与线程池、互不阻塞；runId 在途去重保留 | G | 待验 | `docs/evidence/v0.4/exec10/`；`ProjectRunDispatcherTest` 4 条（优先级顺序 / 上限排队不拒绝 / 跨项目并行 / 在途去重） | 优先级只在派发队列内生效，未回写 `execution_job.queue_state`；`QUEUED` 队列位次接口（pending-activity 语义）未做 |
+| 92 | **EXEC-11** | 设备范围落库与回溯（FR-v0.4-01）：新增 `run.device_scope`（`V7_4` 迁移 + down），创建时按 `deviceKeys` 去重保序落库（≤512 字符；空/全空白 = NULL，不自造键），`RunRecord` / JDBC 映射 / 前端类型全链路回溯；手动执行表单加「设备范围」多选（可手填端口键），日志面板显示当前运行的设备范围 | G | 待验 | `docs/evidence/v0.4/exec11/`；后端 `QuickRunServiceTest` 3 条（落库回溯 / 缺省 NULL / 超长 400）、`MigrationFileTest` V7_4 断言、前端 `RunsView.spec` 2 条（提交带 deviceKeys / 面板展示） | 并发度仍是数字输入（1~`MAX_PARALLEL`），未改 PRD 的 1/2/4 三档；运行**列表**未加设备范围列（只在日志面板展示）；执行期资源键仍按请求 `deviceKeys` 直取，未从 `device_scope` 反解 |
+| 93 | **EXEC-12** | 单用例超时（FR-v0.4-24）：`execution.test-timeout-seconds`（默认 1800，`<=0` 关闭）+ 执行前向本 run 工作区副本的 `.robot` 套件 `*** Settings ***` 注入 `Test Timeout`（RF 7.5 无全局 CLI 开关；用户已显式写过则保留原值）；产物检出 `Test timeout ... exceeded` 时 run 原因记 `test_timeout`（按取消归类 CANCELED） | G | 待验 | `docs/evidence/v0.4/exec12/`；`TestTimeoutInjectorTest` 5 条、`ArtifactVerifierTest` 1 条；后端 539 / 集成 28 / 前端 162 / `vue-tsc`+`build` 0 / `lint.sh` PASS | `.resource` 资源文件不注入；未做「按用例单独配置超时」与「UI 可调」；注入只发生在 materialize 成功的副本上（回落 workspace-root 时不注入，避免改用户原脚本） |
+| 94 | **EXEC-13** | 运行详情重试可追溯（FR-v0.4-29）：日志面板在 `attemptNo > 1` 时显示「第 N 次尝试」（`execution.attemptLine`），首次尝试不渲染；配合列表既有「失败原因 / 状态」列，构成「第几次 / 原因 / 结果」三件可追溯信息 | G | 待验 | `docs/evidence/v0.4/exec13/`；前端 `RunsView.spec` 1 条（第 2 次显示 / 首次不显示）；后端 539 / 集成 28 / 前端 163 / `vue-tsc`+`build` 0 / `lint.sh` PASS | `retry_of_run_id` 已入库但未对外暴露，运行详情看不到「上一次失败原因」；要显示需在 `RunRecord` / `RunView` 增字段（23 处构造点） |
+| 95 | **EXEC-14** | 日志级别过滤（FR-v0.4-20）：日志面板把单档「只看失败」换成 ERROR / WARN / INFO 三个可独立勾选的档位（默认全开，未知级别按 INFO 放行）；三档全关时明说「当前级别过滤下没有日志」，而不是假装这份 run 没日志 | G | 待验 | `docs/evidence/v0.4/exec14/`；前端 `RunsView.spec` 1 条（取消「信息」后 INFO 行隐藏、ERROR/WARN 保留、全关空态文案）；后端 539 / 集成 28 / 前端 164 / `vue-tsc`+`build` 0 / `lint.sh` PASS | 后端仍只产出 ERROR/WARN/INFO 三档（PRD 里的 FAIL 归 ERROR、DEBUG 未产出）；要真正的 DEBUG 档需在执行器侧采集 RF 的 DEBUG 日志，属 v0.5 日志补口 |
 
 ---
 
@@ -228,7 +241,230 @@
    静态对账并接进 `lint.sh`（自检覆盖「未定义名」「表被清空」）。
 5. 汇总同步为 **80 包 = 3 未开始 / 1 进行中 / 63 待验 / 8 待现场 / 5 已完成**；
    `待验 → 已完成` 本轮仍然一个都没改。
-6. **F1/F2 边界未动**：`EXEC-01` 仍按 22:01 裁决完全冻结到现场；八条 `待现场` 包一条未碰。
+6. **F1/F2 边界**：`EXEC-01` 在 11-04 22:01 裁决下完全冻结，八条 `待现场` 包一条未碰；该冻结已在 11-05 由大师解冻（见下条补记）。
+
+### 2026-11-05 13:20 补记（大师「继续推动开发」→ EXEC-01 解冻实现）
+
+1. **#73 / EXEC-01 解冻**：大师在评估后选择本包开工，原「冻结到 F2 现场」裁决作废。
+   状态 `未开始 → 待验`（AI 不改 `已完成`）。
+2. **派发器公共化**：`RunDispatcher` 从计划域迁到 `application/execution`，
+   `PlanRunDispatcher → SerialRunDispatcher`（单线程串行 + runId 在途去重 + `TenantContext.runAs`）；
+   无调用方的 `RunQueuePolicy` 及其测试删除（评估书允许的处置项）。
+3. **人工触发**：`QuickRunService` + `POST /api/execution/quick-run`（`EXECUTION:EXECUTE`、
+   ≥1 套件、路径规范化、落库 `manual` 后立即派发、`RUN_TRIGGER` 审计含 source/suites/operator）；
+   `POST /api/execution/runs` 改为 **CI 专用**并接同一派发器，僵尸 queued 不再出现。
+4. **用例集立即执行**：`POST /api/execution/test-sets/{id}/run`，按 `case_code == 脚本测试名`
+   扫描脚本工作区解析套件；未绑定整单 400 并列出编号；空集合 400、集合不存在 404。
+5. **前端**：`RunsView` 新增「手动执行」内联表单（套件路径 / 用例集两种来源、环境/并发/超时/标签），
+   提交后刷新列表并直接接上该 run 的实时日志；i18n 中英双份，`check_i18n` 通过。
+6. **门禁实测**：后端 `Tests run: 488, Failures: 0`（`-Pit` 28/28）；前端 `153 passed`；`vue-tsc` / `npm run build` /
+   `bash scripts/lint.sh` 均退出 0。证据 `docs/evidence/v0.2/exec01/`。
+7. 汇总同步为 **82 包 = 1 未开始 / 0 进行中 / 68 待验 / 0 待现场 / 13 已完成**；
+   `待验 → 已完成` 本轮仍然一个都没改。
+
+### 2026-11-05 14:10 补记（EXEC-02 提前实现，v0.4 候选、不计入 v0.2 包数）
+
+大师 11-05 追加指示「继续做 EXEC-02」。EXEC-02 是 **v0.4 候选**（勾选台账用例直接执行），
+不在 v0.2 的 82 包里，因此**不改上方汇总、不占包号**，按包外提前实现留痕：
+
+| 项 | 结果 |
+|---|---|
+| 状态 | 包外 · 待验（v0.4 立项时转为正式包） |
+| 绑定模型 | ADR-0005 §3：脚本测试 `[Tags] case:<case_code>` 优先；测试名 == 编号兜底；任一条未绑定整单 400 列编号 |
+| 后端 | `CaseScriptResolver`（新）、`CaseRunService`（新）、`POST /api/execution/cases/run`；`--test` 透传（`CreateRunCommand`/`ShardSpec` 增 `testNames`）；`TestSetRunService` 改为复用同一解析器 |
+| 前端 | `executionApi.runCases` + CasesView 批量条「执行所选」内联表单（环境/并发/超时/标签）+ i18n 中英 |
+| 门禁 | 后端 **496** / 集成 **28** / 前端 **155** / `vue-tsc`+`build` 退出 0 / `lint.sh` **PASS** |
+| 证据 | `docs/evidence/v0.4/exec02/`（README + 6 份日志） |
+| 偏差 | ① `--test` 未实跑（ADR-0013 禁跑令）② 绑定读 DB、执行器读磁盘，两工作区可能不一致 ③ 用例集执行仍为套件粒度 |
+| 未提交 | 本轮无任何 git 提交，改动留在工作区等大师复核 |
+
+> 2026-11-05 14:12 大师指示「把 EXEC-02 正式并入 v0.4 包表」，本条已升为 **WBS #83**（见下条补记），原「不改汇总」口径作废。
+
+### 2026-11-05 14:12 补记（大师「把 EXEC-02 正式并入 v0.4 包表」）
+
+1. **#83 / EXEC-02 入表**：不再按包外候选留痕，正式登记为 **v0.4 执行版补充包**；
+   包表同步改在 `docs/release/v0.4-execution/DEV-PLAN.md` §1.3 与 `spec.md` §8。
+2. 状态 **`待验`**（实现与门禁已在 14:10 完成，AI 不改 `已完成`）。
+3. 汇总同步为 **83 包 = 1 未开始 / 0 进行中 / 69 待验 / 0 待现场 / 13 已完成**；
+   自洽由 `tools/check_wbs_consistency.py` 机检。
+4. 证据 `docs/evidence/v0.4/exec02/`；三条偏差不变（`--test` 未实跑 / 绑定读 DB 与执行读磁盘 / 用例集仍套件粒度）。
+
+### 2026-11-05 14:28 补记（大师「继续做 EXEC-03」）
+
+1. **#84 / EXEC-03 入表**：用例集执行由套件粒度改为**测试粒度**，与 EXEC-02 的 `--test` 链路统一；
+   包表同步改在 `docs/release/v0.4-execution/DEV-PLAN.md` §1.3 与 `spec.md` §8。
+2. 状态 **`待验`**（门禁：后端 498 / 集成 28 / `lint.sh` PASS，AI 不改 `已完成`）。
+3. 汇总同步为 **84 包 = 1 未开始 / 0 进行中 / 70 待验 / 0 待现场 / 13 已完成**。
+4. 证据 `docs/evidence/v0.4/exec03/`；残余：`--test` 未实跑、同名测试全局匹配、空编号用例静默跳过、
+   绑定读 DB 与执行读磁盘。
+
+### 2026-11-05 14:36 补记（大师「继续做 EXEC-04」）
+
+1. **#85 / EXEC-04 入表**：执行前预检前移到请求期 —— 套件路径存在性、用例编号非空、测试名跨套件重名，
+   命中直接 400，不落库、不排队；包表同步改在 `docs/release/v0.4-execution/DEV-PLAN.md` §1.3 与 `spec.md` §8。
+2. 状态 **`待验`**（门禁：后端 506 / 集成 28 / `lint.sh` PASS，AI 不改 `已完成`）。
+3. 汇总同步为 **85 包 = 1 未开始 / 0 进行中 / 71 待验 / 0 待现场 / 13 已完成**。
+4. 证据 `docs/evidence/v0.4/exec04/`；残余：工作区需先同步脚本、目录路径不查重名、
+   `--test` 未实跑、绑定读 DB 与执行读磁盘。
+
+### 2026-11-05 15:10 补记（大师「结合 PRD 与总体开发计划，连续推进」）
+
+1. **近期计划**：v0.4 收口 EXEC-05（工作区落盘）→ EXEC-06（全量日志下载）→ EXEC-07（租约强制释放）
+   → EXEC-08（34 条 FR 覆盖复核）；随后按复核 gap 补 v0.5 报告（已知 RPT-03 手动基线 UI）；
+   v1.0 `UX-06` 需现场截图，暂不启动。
+2. **#86 / EXEC-05 入表**：ADR-0005 的 `robot_file.content` 在执行期真正成为唯一真源 ——
+   每个 run 把项目脚本落盘到自己的 `workspace/`，pabot 以它为 cwd；请求期预检同步改 DB 优先、
+   磁盘回落，关闭 EXEC-03/04 留下的「绑定读 DB、执行读磁盘」缺口。
+3. 状态 **`待验`**（门禁：后端 510 / 集成 28 / `lint.sh` PASS，AI 不改 `已完成`）。
+4. 汇总同步为 **86 包 = 1 未开始 / 0 进行中 / 72 待验 / 0 待现场 / 13 已完成**。
+5. 证据 `docs/evidence/v0.4/exec05/`；残余：数据库为空时回落磁盘、
+   落盘工作区真实 pabot 执行待现场确认（ADR-0013）。
+
+### 2026-11-05 15:50 补记（近期计划 A2）
+
+1. **#87 / EXEC-06 入表**：全量日志下载落地 —— `RunLogFileService` 统一定位 `<runDir>/run.log`，
+   `GET /api/execution/runs/{runId}/log/download` 以附件返回；运行页日志面板加「下载完整日志」。
+   实时频道（WebSocket / `recent` 接口）仍只保留最近 2000 行，完整日志不再依赖内存缓冲。
+2. 状态 **`待验`**（门禁：后端 514 / 集成 28 / 前端 156 / `vue-tsc`+`build` 0 / `lint.sh` PASS）。
+3. 汇总同步为 **87 包 = 1 未开始 / 0 进行中 / 73 待验 / 0 待现场 / 13 已完成**。
+4. 证据 `docs/evidence/v0.4/exec06/`；残余：`run.log` 不存在 → 404、产物清理后不可下载、
+   下载按钮仅在日志面板打开时可见。
+
+### 2026-11-05 16:10 补记（近期计划 A3）
+
+1. **#88 / EXEC-07 入表**：租约可视化与管理员强制释放 —— 资产页新增「租约」只读页签
+   （资源键 / 占用运行 / 剩余时间 / 状态），搜索框与「新建」在该页隐藏；「强制释放」按钮仅管理员渲染，
+   二次确认文案念出占用者 `runId` 与资源键，`confirm` 参数直接取该租约的 `runId` 与后端口径一致。
+2. 后端 `LeaseAdminService`：非管理员 403、无生效租约 404、`confirm` 不匹配 400；
+   成功路径把仍 `RUNNING` 的原运行置为 `FAILED`（`failureClass = failureReason = lease_revoked`），
+   再走 `LeaseService.releaseRun`（沿用既有 `@Audited(lease:force-release)`）。
+3. 状态 **`待验`**（门禁：后端 521 / 集成 28 / 前端 160 / `vue-tsc`+`build` 0 / `lint.sh` PASS）。
+4. 汇总同步为 **88 包 = 1 未开始 / 0 进行中 / 74 待验 / 0 待现场 / 13 已完成**。
+5. 证据 `docs/evidence/v0.4/exec07/`；残余：强制释放不终止子进程（只摘租约并标记失败）、
+   租约表只列生效中的租约、非管理员无任何释放入口。
+
+### 2026-11-05 16:40 补记（近期计划 A4）
+
+1. **#89 / EXEC-08 入表**：v0.4 PRD 34 条 FR 逐条覆盖复核。结论 **20 覆盖 / 12 部分 / 0 缺失 / 2 待现场**，
+   逐条给出实现位置与测试证据，详见 `docs/release/v0.4-execution/FR-COVERAGE-20261105.md`。
+2. 最关键的发现：**租约组件已实现但未接入执行链路** —— 全仓 `LeaseService.acquireAll` 只被单测调用，
+   `RunExecutionService` 仍是「W2 最小闭环（无租约服务）」；因此 FR-04 / 07 / 08 / 09 / 10 / 23 全部降为「部分」，
+   租约页在真实使用中恒空、强制释放恒 404。这是 v0.4「正确性地基」的总闸，建议下一包 **EXEC-09**。
+3. 其余 P0：`SerialRunDispatcher` 全局单线程 + 入队未按 priority（FR-03 / 05 与实现不符）；
+   P1：设备范围字段缺失（FR-01）、单用例超时缺失（FR-24）、重试次数未展示（FR-29）、日志过滤只有一档（FR-20）。
+4. 状态 **`待验`**；复核包不改实现，**不计入 v0.4 交付包数**（`release/README.md` 仍为 15）。
+5. 汇总同步为 **89 包 = 1 未开始 / 0 进行中 / 75 待验 / 0 待现场 / 13 已完成**。
+
+### 2026-11-05 17:20 补记（近期计划 A5 / EXEC-08 缺口首位）
+
+1. **#90 / EXEC-09 入表**：租约接入执行链路 —— `RunExecutionService` 在进入 `RUNNING` 前按 run 维度
+   `acquireAll`，成功后状态机才允许跃迁；`lease_timeout` 直接落 `FAILED(INFRA)` 且不启动 pabot；
+   执行段用 `try/finally` 保证成功 / 失败 / 异常 / 并发取消都 `releaseRun`。
+2. 资源键口径：请求带 `deviceKeys` 时用「设备+端口」键（去重、≤128 字符），未声明设备范围时用
+   `run:<runId>` 自持（不与其他 run 互斥）；`execution_job` 与 run 同事务创建，`findJobId` 按
+   `job_no = run_id` 反查租约外键。
+3. 状态 **`待验`**（门禁：后端 527 / 集成 28 / 前端 160 / `vue-tsc`+`build` 0 / `lint.sh` PASS）。
+4. 汇总同步为 **90 包 = 1 未开始 / 0 进行中 / 76 待验 / 0 待现场 / 13 已完成**；v0.4 交付包数 15→16。
+5. 证据 `docs/evidence/v0.4/exec09/`；残余：租约按 run 聚合（不按分片拆 job）、FR-08 等待态 UI 仍缺、
+   `lease_wait_ms` 未回写运行表。
+
+### 2026-11-05 17:55 补记（近期计划 A6 / 队列语义 P0）
+
+1. **#91 / EXEC-10 入表**：`SerialRunDispatcher`（全局单线程）→ `ProjectRunDispatcher`
+   （按项目分道，单项目并发 = `execution.max-parallel`，默认 4），队列元素实现 `Comparable`：
+   priority 降序 → 提交序号升序；`PriorityBlockingQueue` 无界，达上限只排队不拒绝。
+2. 跨项目互不阻塞：每项目一条独立 `ThreadPoolExecutor`（核心=上限，60s 回收空闲线程）；
+   runId 在途去重仍全局生效；提交仍用 `TenantContext.runAs` 包裹。
+3. `RunDispatcher.submit` 增加 `priority` 参数；`QuickRunService` / `PlanScheduleService` /
+   `PlanScheduler` 三个提交点统一取 `command.priority()`（0~9，越大越先）。
+4. 状态 **`待验`**（后端 529 / 集成 28 / 前端 160 / `vue-tsc`+`build` 0 / `lint.sh` PASS）。
+5. 汇总同步为 **91 包 = 1 未开始 / 0 进行中 / 77 待验 / 0 待现场 / 13 已完成**；v0.4 交付包数 16→17。
+6. 证据 `docs/evidence/v0.4/exec10/`；残余：`execution_job.queue_state` 与排队位次接口未做。
+
+### 2026-11-05 18:00 补记（近期计划 A7 / EXEC-11 设备范围）
+
+1. **#92 / EXEC-11 入表**：`run.device_scope`（`V7_4__run_device_scope.sql` + down）落库；
+   `RunService` 把请求 `deviceKeys` 去重保序拼成逗号串（≤512 字符，空/全空白记 NULL），
+   `RunRecord` / `RunRepositoryJdbc` / 前端 `ExecutionRun` 全链路回溯。
+2. 前端：手动执行表单新增「设备范围」多选（设备名下拉 + `tag` 手填端口键，如 `DUT-01/mlx5_0`），
+   quick-run / 用例集立即执行都带 `deviceKeys`；日志面板显示该运行的设备范围，未声明时写「全部设备（不互斥）」。
+3. **迁移版本号取 V7_4 而非 V4_4**：V4_1~V4_3 与 V5/V6/V7 系列已在开发库执行，补插低位版本会触发
+   Flyway out-of-order 拒绝；语义归属仍是 v0.4 执行包。
+4. 状态 **`待验`**（后端 533 / 集成 28 / 前端 162 / `vue-tsc`+`build` 0 / `lint.sh` PASS）。
+5. 汇总同步为 **92 包 = 1 未开始 / 0 进行中 / 78 待验 / 0 待现场 / 13 已完成**；v0.4 交付包数 17→18。
+6. 证据 `docs/evidence/v0.4/exec11/`；残余：并发度 1/2/4 三档未做、列表页未加设备范围列。
+
+### 2026-11-05 19:30 补记（近期计划 P1 / EXEC-12 单用例超时）
+
+1. **能力缺口确认**：Robot Framework 7.5.1 实测 `robot --help` **没有任何 timeout 选项**，
+   单用例超时只能靠套件级 `*** Settings ***` 的 `Test Timeout`。
+2. **#93 / EXEC-12 入表**：新增 `execution.test-timeout-seconds`（`ExecutionProperties`，默认 `1800`，
+   `<=0` 关闭）；`TestTimeoutInjector` 在 materialize 成功后向工作区副本的 `.robot` 套件注入
+   `Test Timeout    <N>s`，已有 `Test Timeout` 的套件保持用户原值；`Test Timeout` 命中后
+   `ArtifactVerifier.testTimedOut` 从 `output.xml` 的 `msg` 识别，`PabotOrchestrator` 把 run 原因记为
+   `test_timeout`（`FailureClassifier` 按 `timeout` 归 CANCELED，符合 PRD「超时按取消处理」）。
+3. **不碰用户原脚本**：注入只在 `workspaces.materialize` 返回副本时执行；回落到真实 workspace-root 时跳过。
+4. 状态 **`待验`**（后端 539 / 集成 28 / 前端 162 / `vue-tsc`+`build` 0 / `lint.sh` PASS）。
+5. 汇总同步为 **93 包 = 1 未开始 / 0 进行中 / 79 待验 / 0 待现场 / 13 已完成**；v0.4 交付包数 18→19。
+6. 证据 `docs/evidence/v0.4/exec12/`；残余：`.resource` 不注入、按用例单独配置与 UI 可调未做。
+
+### 2026-11-05 17:15 补记（近期计划 P1 / EXEC-13 重试可追溯）
+
+1. **#94 / EXEC-13 入表**：`attemptNo` 早已由后端 `RunRecord` → `RunView` → 前端 `ExecutionRun` 全链路回溯，
+   缺的只是展示。日志面板新增「第 N 次尝试」标记（`execution.attemptLine`），`attemptNo > 1` 才渲染，
+   首次尝试不出现，避免正常记录被同一句提示占满。
+2. **不碰后端**：本包只改前端（`RunsView.vue` + 两套 i18n + 视图测试）；`retry_of_run_id` 未对外暴露，
+   「上一次失败原因」需要新增 API 字段，已在残余里登记。
+3. 状态 **`待验`**（后端 539 / 集成 28 / 前端 163 / `vue-tsc`+`build` 0 / `lint.sh` PASS）。
+4. 汇总同步为 **94 包 = 1 未开始 / 0 进行中 / 80 待验 / 0 待现场 / 13 已完成**；v0.4 交付包数 19→20。
+5. 证据 `docs/evidence/v0.4/exec13/`；残余：`retry_of_run_id` 未对外暴露，看不到「上一次失败原因」。
+
+### 2026-11-05 17:25 补记（近期计划 P1 / EXEC-14 日志级别过滤）
+
+1. **#95 / EXEC-14 入表**：`FR-COVERAGE` 里 FR-20 的最后一条缺口是「过滤只有『只看失败』一档」。
+   现在换成 ERROR / WARN / INFO 三个独立勾选（默认全开），着色沿用既有 `level-warn` / `level-error`。
+2. **三档全关的处理**：允许全关，但空态文案改成「当前级别过滤下没有日志」——不能让用户以为这份 run 没日志。
+   未知级别按 INFO 放行，宁可多显示一行，也不要把没见过的 level 藏掉。
+3. **DEBUG 档不做**：后端 `RunLogService` 只产出 ERROR / WARN / INFO（FAIL 已归 ERROR），
+   没有数据源的档位做出来就是空勾选框，登记为残余、留给 v0.5 日志补口。
+4. 状态 **`待验`**（后端 539 / 集成 28 / 前端 164 / `vue-tsc`+`build` 0 / `lint.sh` PASS）。
+5. 汇总同步为 **95 包 = 1 未开始 / 0 进行中 / 81 待验 / 0 待现场 / 13 已完成**；v0.4 交付包数 20→21。
+
+### 2026-11-05 17:40 补记（v0.5 / RPT-03 手动基线 UI 补口）
+
+1. **补的是 RPT-03 的阻塞项**：v0.4 的 P0/P1 清空后转入 v0.5，RPT-01~07 虽已全部 `待验`，
+   但 RPT-03 的阻塞列一直挂着「手动基线选择未做前端 UI（接口已支持）」。本包把这条补齐，
+   **不新增 WBS 包号**（仍是 #40 / RPT-03），包数与五个计数都不变。
+2. **新增候选接口**：`GET /api/reports/{runId}/baseline-candidates` —— 同项目 + 同 DUT/LINK +
+   finished + 排除本轮 + 按 `started_at` 倒序，上限 20。口径与 `resolveBaseline` 的校验一致：
+   能出现在候选里的，选了一定不会被后端 400 打回。
+3. **前端**：详情页「本轮 vs 基线」头部加基线下拉，首项固定「自动（最近一次）」，选中即带
+   `baselineRunId` 重新拉对比；选回「自动」时传 `undefined` 而不是字符串 `"undefined"`。
+   候选拉取失败只让下拉剩「自动」一项，不把对比本身判红。
+4. **真库校验**：新增 `CompareBaselineIT`（1 条，连 `robot_it`），覆盖倒序、NULL 开始时间排最后、
+   排除本轮与异 DUT / 异 LINK / 未完成 / 跨项目、`limit` 截断与跨项目 403 ——
+   替身仓储怎么写都自洽，只有真库能证明这条 SQL 没多给也没少给。
+5. 状态 **`待验`**（后端 **541** / 集成 **29** / 前端 **165** / `vue-tsc`+`build` 0 / `lint.sh` PASS）；
+   证据 `docs/evidence/v0.5/rpt03b-baseline/`。残余：真实环境对比仍未跑。
+
+### 2026-11-05 补记（v1.0 / UX-06 双语 · 密度 · 暗色，全表清零）
+
+1. **本表最后一个 `未开始` 包落地**：`UX-06` → `待验`，汇总变为
+   **95 包 = 0 未开始 / 0 进行中 / 82 待验 / 0 待现场 / 13 已完成**。此后进度只由验收推动，不由开发推动。
+2. **三判据逐条实测**（`docs/evidence/v1.0/ux06/`）：en-US 13 路由 × 1440/1920 共 26 页 `lang=en-US` 且
+   `overflowPx=0`；密度 `--table-row-h` 44 ↔ 36 在 `/assets`、`/runs` 首行实测一致、单元格 padding 归零；
+   暗色 13 页 WCAG 探针修后 `offenders=0`。
+3. **只改有证据的项**：暗色首轮仅 report-detail（3 类）与 report-print（1 类）违规，全部是库默认色与
+   固定白纸的冲突，修在 `naiveTheme.ts` 的 Button / Radio 派生层与打印页 `.muted`，未重设任何色板。
+   其中 Button 的**禁用态**是第二轮才补的（`textColorDisabledPrimary` 是独立键，首轮改 `textColorPrimary` 不生效）。
+4. **走查顺带修掉两个整页级真缺陷，两者此前门禁全绿**：`AuditView` 的 `NDatePicker` 初值 `''` 交
+   date-fns 抛 `RangeError` → **整页白屏**（改 `null`）；`locales/index.ts` 顶层浅合并让编辑器包 `editor`
+   段整段覆盖平台同名段 → `/editor/1` **直接显示原始键名**（改字段级合并）。各补回归，并暴露一个共性：
+   挂载期抛错在 build / eslint / 类型检查里都看不见，只有真挂载才现形。
+5. 门禁：前端 **26 文件 / 181 用例**、`vue-tsc --noEmit` 0、后端 **542/542**、`-Pit` 集成 **30/30**、
+   `lint.sh` **EXIT=0**（对比度 280 项、字体子集 1019 字 / 177506 B、0 悬空 var、20 处数据网格全走壳）。
+6. **残余（写进包内阻塞列，不隐藏）**：暗色只走 1440 一档；溢出判定为 DOM 级，不含 `ellipsis` 截断；
+   无真实 DUT（ADR-0013）。本包按纪律留 **`待验`**。
 
 ## 更新方式
 

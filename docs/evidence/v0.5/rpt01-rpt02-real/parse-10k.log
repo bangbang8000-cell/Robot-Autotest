@@ -1,0 +1,14 @@
+[probe] file=/tmp/rpt10k/output.xml
+[probe] bytes=790987 lines=14428
+[probe] suites=401 cases=800 keywords=1600 messages=1600
+[probe] pass=800 fail=0 skip=0 total=800
+[probe] metadata={DUT=bench-4suite, Pabot Version=5.2.2, RUN_ID=RPT01-REAL-20261105, LINK=local-wsl, Pabot Info=[https://pabot.org/?ref=log|Pabot] result from 4 executions.}
+[probe] elapsed=122ms heapUsed=62MB
+
+[probe] file=/tmp/rpt100k/output.xml
+[probe] bytes=5940593 lines=108028
+[probe] suites=3001 cases=6000 keywords=12000 messages=12000
+[probe] pass=6000 fail=0 skip=0 total=6000
+[probe] metadata={Pabot Info=[https://pabot.org/?ref=log|Pabot] result from 4 executions., DUT=bench-4suite, Pabot Version=5.2.2, RUN_ID=RPT01-REAL-20261105, LINK=local-wsl}
+[probe] elapsed=273ms heapUsed=47MB
+

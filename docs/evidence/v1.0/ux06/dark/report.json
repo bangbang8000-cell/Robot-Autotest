@@ -1,0 +1,124 @@
+{
+  "generatedAt": "2026-11-05T11:29:27.137Z",
+  "theme": "dark",
+  "width": 1440,
+  "pages": [
+    {
+      "name": "login",
+      "path": "/login",
+      "theme": "dark",
+      "lang": "en-US",
+      "overflowPx": 0,
+      "offenders": [],
+      "file": "docs/evidence/v1.0/ux06/dark/1440/login-login.png"
+    },
+    {
+      "name": "overview",
+      "path": "/",
+      "theme": "dark",
+      "lang": "en-US",
+      "overflowPx": 0,
+      "offenders": [],
+      "file": "docs/evidence/v1.0/ux06/dark/1440/overview-overview.png"
+    },
+    {
+      "name": "assets",
+      "path": "/assets",
+      "theme": "dark",
+      "lang": "en-US",
+      "overflowPx": 0,
+      "offenders": [],
+      "file": "docs/evidence/v1.0/ux06/dark/1440/assets-assets.png"
+    },
+    {
+      "name": "cases",
+      "path": "/cases",
+      "theme": "dark",
+      "lang": "en-US",
+      "overflowPx": 0,
+      "offenders": [],
+      "file": "docs/evidence/v1.0/ux06/dark/1440/cases-cases.png"
+    },
+    {
+      "name": "runs",
+      "path": "/runs",
+      "theme": "dark",
+      "lang": "en-US",
+      "overflowPx": 0,
+      "offenders": [],
+      "file": "docs/evidence/v1.0/ux06/dark/1440/runs-runs.png"
+    },
+    {
+      "name": "plans",
+      "path": "/plans",
+      "theme": "dark",
+      "lang": "en-US",
+      "overflowPx": 0,
+      "offenders": [],
+      "file": "docs/evidence/v1.0/ux06/dark/1440/plans-plans.png"
+    },
+    {
+      "name": "reports",
+      "path": "/reports",
+      "theme": "dark",
+      "lang": "en-US",
+      "overflowPx": 0,
+      "offenders": [],
+      "file": "docs/evidence/v1.0/ux06/dark/1440/reports-reports.png"
+    },
+    {
+      "name": "report-detail",
+      "path": "/reports/RUN-20261104155814-952426",
+      "theme": "dark",
+      "lang": "en-US",
+      "overflowPx": 0,
+      "offenders": [],
+      "file": "docs/evidence/v1.0/ux06/dark/1440/report-detail-report-detail.png"
+    },
+    {
+      "name": "report-print",
+      "path": "/reports/RUN-20261104155814-952426/print?token=c5cdaacf489e485bf49e5d890c953060c7392deb7cf869eb6fa82bb37eeb9838",
+      "theme": "dark",
+      "lang": "en-US",
+      "overflowPx": 0,
+      "offenders": [],
+      "file": "docs/evidence/v1.0/ux06/dark/1440/report-print-report-print.png"
+    },
+    {
+      "name": "admin",
+      "path": "/admin",
+      "theme": "dark",
+      "lang": "en-US",
+      "overflowPx": 0,
+      "offenders": [],
+      "file": "docs/evidence/v1.0/ux06/dark/1440/admin-admin.png"
+    },
+    {
+      "name": "audit",
+      "path": "/admin/audit",
+      "theme": "dark",
+      "lang": "en-US",
+      "overflowPx": 0,
+      "offenders": [],
+      "file": "docs/evidence/v1.0/ux06/dark/1440/audit-audit.png"
+    },
+    {
+      "name": "editor",
+      "path": "/editor/1",
+      "theme": "dark",
+      "lang": "en-US",
+      "overflowPx": 0,
+      "offenders": [],
+      "file": "docs/evidence/v1.0/ux06/dark/1440/editor-editor.png"
+    },
+    {
+      "name": "viewer",
+      "path": "/viewer/1",
+      "theme": "dark",
+      "lang": "en-US",
+      "overflowPx": 0,
+      "offenders": [],
+      "file": "docs/evidence/v1.0/ux06/dark/1440/viewer-viewer.png"
+    }
+  ]
+}

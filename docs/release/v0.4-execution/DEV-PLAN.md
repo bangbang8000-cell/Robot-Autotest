@@ -2,7 +2,7 @@
 
 **文档编号** RA-REL-2026-004-DEV ｜ **版本** v0.4 ｜ **门禁** G4
 
-**范围** EXE-01~08 ｜ **对应 PRD** FR-v0.4-01 ~ 34
+**范围** EXE-01~08 + **EXEC-02**（WBS #83）+ **EXEC-03**（WBS #84）+ **EXEC-04**（WBS #85）+ **EXEC-05**（WBS #86）+ **EXEC-06**（WBS #87）+ **EXEC-07**（WBS #88）+ **EXEC-08**（WBS #89，复核包，2026-11-05 并入）+ **EXEC-09**（WBS #90，租约接线，2026-11-05 并入）+ **EXEC-10**（WBS #91，队列语义，2026-11-05 并入）+ **EXEC-11**（WBS #92，设备范围，2026-11-05 并入）+ **EXEC-12**（WBS #93，单用例超时，2026-11-05 并入）+ **EXEC-13**（WBS #94，重试可追溯，2026-11-05 并入）+ **EXEC-14**（WBS #95，日志级别过滤，2026-11-05 并入） ｜ **对应 PRD** FR-v0.4-01 ~ 34
 
 ---
 
@@ -39,6 +39,27 @@ EXE-01 状态机
 > 一条 suite → 一个 pabot 进程 → `output.xml` 落盘 → 解析出用例数 → 写 `run` 与 `test_result` → 前端运行记录能看到。
 
 这个闭环**不含并发、不含租约、不含实时日志**。它跑通之前不写任何池化代码。
+
+### 1.3 补充包：EXEC-02 / EXEC-03 / EXEC-04 / EXEC-05 / EXEC-06 / EXEC-07 / EXEC-08 / EXEC-09 / EXEC-10 / EXEC-11 / EXEC-12 / EXEC-13 / EXEC-14（WBS #83 / #84 / #85 / #86 / #87 / #88 / #89 / #90 / #91 / #92 / #93 / #94 / #95，2026-11-05 并入）
+
+「勾选台账用例直接执行」（EXEC-02）、「用例集测试级执行」（EXEC-03）、「执行前预检」（EXEC-04）、「执行工作区落盘」（EXEC-05）、「全量日志下载」（EXEC-06）与「租约可视化 + 强制释放」（EXEC-07）原按 v0.4 候选在 EXEC-01 之后包外提前实现；2026-11-05 大师指示正式并入本包表。
+它**不参与**上方 EXE 依赖链（EXE-07 仍是总验收），单独按测试级执行链路验收：
+
+| WBS | 任务 | 参考人日 | 前置 | AI 自主度 | 完成判定（命令级） |
+|---|---|---:|---|---|---|
+| #83 EXEC-02 | 勾选台账用例直接执行：按 ADR-0005 §3 `[Tags] case:<code>` 解析绑定，测试级 `--test` 透传 | —（11-05 已提前实现） | CAS-06 / EXEC-01 | A | 未绑定整单 400 并列出编号；勾选 N 条追加 N 个 `--test`；`mvn test` + MockMvc 400/403 矩阵全绿；`--test` 实跑留验收人现场（ADR-0013） |
+| #84 EXEC-03 | 用例集测试级执行：`TestSetRunService` 解析绑定后透传 `testNames`，集合只跑所选测试 | —（11-05 已实现） | EXEC-01 / EXEC-02 | A | 集合只勾 1 条时同套件其它测试不进 `--test`；测试名去重；`mvn test` 498 全绿；`--test` 实跑留验收人现场（ADR-0013） |
+| #85 EXEC-04 | 执行前预检：套件路径存在性、用例编号非空、测试名跨套件重名，命中直接 400 | —（11-05 已实现） | EXEC-01 / EXEC-03 | A | 缺失路径/空编号/重名均在落库前 400；`mvn test` 506 全绿；不落库不派发有单测断言 |
+| #86 EXEC-05 | 执行工作区落盘：`robot_file.content` 写入本次 run 的独立工作区，pabot cwd 指向该目录；请求期预检 DB 优先、磁盘回落 | —（11-05 已实现） | EXEC-01 / EXEC-04 | A | 落盘路径与 pabot cwd 有单测断言；数据库为空回落磁盘的兼容路径有单测；`mvn test` 510 全绿；真实 pabot 实跑留验收人现场（ADR-0013） |
+| #87 EXEC-06 | 全量日志下载：`RunLogFileService` 定位 `run.log`，`GET /runs/{runId}/log/download` 返回附件；运行页加下载按钮 | FR-v0.4-21 | EXE-04（日志频道） | A | 404 口径有服务测试；接口测试断言 `attachment` 与 `text/plain`；前端 1 条视图测试断言调用参数；后端 514 / 前端 156 全绿 |
+| #88 EXEC-07 | 租约可视化 + 管理员强制释放：资产页「租约」只读页签；`POST /api/execution/leases/force-release?resourceKey=&confirm=` 以 runId 二次确认，原运行置 `failed(lease_revoked)` 后释放租约 | FR-v0.4-09 / FR-v0.4-10 | EXE-01（租约仓储） | A | 非管理员 403 / 无租约 404 / confirm 不匹配 400 / 成功路径 4 条服务测试 + 3 条接口测试（字段透传 / 参数接线 / 错误码映射）；前端 4 条视图测试（页签渲染、非管理员无按钮、管理员按 runId 调用、取消不发请求）；后端 521 / 前端 160 全绿 |
+| #89 EXEC-08 | v0.4 PRD 34 条 FR 覆盖复核（复核包，不改实现）：四档结论 + 实现位置 + 测试证据 + 缺口排序 | FR-v0.4-01~34 | EXE-01~08 | A | 20 覆盖 / 12 部分 / 0 缺失 / 2 待现场；首位缺口为「租约未接入执行链路」，建议 EXEC-09 接手 |
+| #90 EXEC-09 | 租约接入执行链路：进入 `RUNNING` 前按 run 维度申请租约（设备键优先；未声明设备范围用 `run:<runId>` 自持，不与其他 run 互斥），失败即 `failed(lease_timeout)` 且不启动 pabot；成功 / 失败 / 异常 / 取消 / 超时 / 重启统一 `releaseRun` | FR-v0.4-04 / 07 / 09 / 10 / 23 | EXE-01（租约仓储）/ EXEC-07 | A | pabot 启动瞬间租约已持有（`leaseSizeAtLaunch == 1`）；成功/失败两条路径结束后 `resource_lease` 为空；占用超时 → `FAILED(lease_timeout)` + pabot 零启动；`mvn test` 527 / 集成 28 全绿 |
+| #91 EXEC-10 | 队列语义：派发器按项目分道，单项目并发 = `MAX_PARALLEL`；同项目 priority 降序再按提交先后，达上限排队不拒绝；跨项目并行不互阻 | FR-v0.4-03 / 05 | EXE-01（派发端口）/ EXEC-01 | A | `ProjectRunDispatcherTest` 4 条：顺序 `seed→high→low→low-later`、峰值并发 = 上限且第 3 条排队、A 占满时 B 仍开跑、重复 runId 只跑一次；`mvn test` 529 / 集成 28 全绿 |
+| #92 EXEC-11 | 设备范围：`run.device_scope` 落库（去重保序、≤512 字符、空=NULL），运行详情与前端类型回溯；手动执行可声明设备范围（设备名下拉 + 手填端口键），日志面板展示 | FR-v0.4-01 | EXE-01 | A | `QuickRunServiceTest` 3 条（落库回溯 / 缺省 NULL / 超长 400）、`MigrationFileTest` V7_4 断言、`RunsView.spec` 2 条；`mvn test` 533 / 集成 28 / 前端 162 全绿 |
+| #93 EXEC-12 | 单用例超时：`execution.test-timeout-seconds`（默认 1800，`<=0` 关闭），执行前向工作区副本的 `.robot` 套件注入 `Test Timeout`（用户显式设置优先）；产物检出 `Test timeout ... exceeded` 时 run 原因记 `test_timeout` | FR-v0.4-24 | EXE-05 | A | `TestTimeoutInjectorTest` 5 条 + `ArtifactVerifierTest` 1 条；`mvn test` 539 / 集成 28 / 前端 162 全绿 |
+| #94 EXEC-13 | 运行详情重试可追溯：日志面板在 `attemptNo > 1` 时显示「第 N 次尝试」，首次尝试不渲染（只改前端） | FR-v0.4-29 | EXE-06 | A | `RunsView.spec` 1 条（第 2 次显示 / 首次不显示）；前端 163 / `vue-tsc`+`build` 0 全绿 |
+| #95 EXEC-14 | 日志级别过滤：单档「只看失败」换成 ERROR / WARN / INFO 三档独立勾选（默认全开），三档全关显式提示「当前级别过滤下没有日志」（只改前端） | FR-v0.4-20 | EXE-04 | A | `RunsView.spec` 1 条（取消「信息」后 INFO 行隐藏、ERROR/WARN 保留、全关空态）；前端 164 / `vue-tsc`+`build` 0 全绿 |
 
 ---
 
@@ -382,6 +403,6 @@ grep -E "speedup|conflict|p95" docs/evidence/v0.4/bench.txt
 | 类别 | 内容 |
 |---|---|
 | 代码 | 执行域（队列/worker/状态机）、租约服务、pabot 编排器、日志推送、失败分类器、DUT 采集器、前端运行记录与实时面板 |
-| 迁移 | `V4_1__lease.sql`、`V4_2__run_artifact.sql`、`V4_3__failure_class.sql` |
+| 迁移 | `V4_1__lease.sql`、`V4_2__run_artifact.sql`、`V4_3__failure_class.sql`、`V7_4__run_device_scope.sql`（EXEC-11） |
 | 文档 | 执行域设计说明（含 PATH/双日志/退出码三条硬约束）、`CONVENTIONS-exec`、ADR-0008 租约粒度、ADR-0009 加速比口径 |
 | 证据 | `docs/evidence/v0.4/`：并发单测、5 种故障注入、取消前后 `ps`、20 轮压测报告、DUT 实网采集日志 |

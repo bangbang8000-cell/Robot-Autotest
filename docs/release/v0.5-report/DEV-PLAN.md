@@ -40,7 +40,13 @@ RPT-01 解析 ─┬─► RPT-07 门禁（先于展示，因为 exportable 要�
 | 调 Python `robot.api.ExecutionResult` | 需要 Python 进程与 venv，跨语言调用增加故障点；且它是**全量加载**，大文件吃内存 |
 | **Java 流式解析 XML** | ✅ 单进程、内存可控（StAX） |
 
-**但有一个坑必须处理**：RF 7.5 的 `output.xml` 中 metadata 序列化为 `<meta name="..." value="..."/>`，且**只在根套件上有部分内容**，pabot 合并后真值分散在子套件里。
+**但有两个坑必须处理**：
+
+1. **值在元素文本里，不在属性里**（2026-11-05 用真产物抓到）：RF 7.5.1 实际写的是
+   `<meta name="RUN_ID">RPT01-REAL-20261105</meta>`，没有 `value` 属性；
+   早期实现只读 `value` 属性，导致**真实产物的 metadata 全是空串**，而手写 fixture
+   用 `<meta name="X" value="Y"/>` 一直是绿的。现实现两种写法都认（属性优先，缺省取元素文本）。
+2. **只在根套件上有部分内容**，pabot 合并后真值分散在子套件里。
 
 ```java
 // 递归收集，不能只读根套件
@@ -51,6 +57,12 @@ private void collectMeta(XmlSuite suite, Map<String,String> acc) {
 ```
 
 > **实测教训**：用 `ExecutionResult(...).suite.metadata` 只取根套件时，用目录跑的结果是 `{}`，真值在子套件。这是 v4.1 报告里明确记过的坑，本版必须按递归实现。
+
+**真产物实测（2026-11-05）**：`pabot --processes 2` 跑 `fixtures/bench/4suite-2cases`，
+`rebot --metadata` 注入 3 项，合并产物 172 行 / 8 用例，解析出 5 项
+（`RUN_ID` / `DUT` / `LINK` / `Pabot Version` / `Pabot Info`）且**均有值**；
+按套件放大到 14,428 行 / 790 KB → 122 ms，108,028 行 / 5.9 MB → 273 ms。
+证据 `docs/evidence/v0.5/rpt01-rpt02-real/`。
 
 ### 2.2 表与字段（本版补 v0.1 骨架）
 
@@ -136,6 +148,9 @@ baseline = 同 project + 同 case_key + 同 env（DUT+LINK）+ 时间早于本�
 ```
 
 - 手动切换基线时，`baselineRunId` 作为参数，但要校验同项目同环境。
+- **手动基线 UI（2026-11-05 补口）**：候选由 `GET /api/reports/{runId}/baseline-candidates` 提供
+  （同项目同环境 finished、排除本轮、按开始时间倒序、上限 20），下拉首项固定是「自动（最近一次）」；
+  跨项目 / 跨环境的运行不会出现在候选里，选完仍由后端二次校验（400）。
 - **找不到基线不算错**：左列显示「无历史」，右列正常。
 
 ### 4.2 接口契约（关键：缺失必须是 null）

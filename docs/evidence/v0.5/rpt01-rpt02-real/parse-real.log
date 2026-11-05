@@ -1,0 +1,7 @@
+[probe] file=/tmp/rpt01-real/merged-meta.xml
+[probe] bytes=9047 lines=172
+[probe] suites=5 cases=8 keywords=16 messages=16
+[probe] pass=8 fail=0 skip=0 total=8
+[probe] metadata={LINK=local-wsl, RUN_ID=RPT01-REAL-20261105, Pabot Version=5.2.2, DUT=bench-4suite, Pabot Info=[https://pabot.org/?ref=log|Pabot] result from 4 executions.}
+[probe] elapsed=47ms heapUsed=56MB
+

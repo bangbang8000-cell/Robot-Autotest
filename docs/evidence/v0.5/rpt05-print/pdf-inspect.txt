@@ -1,0 +1,9 @@
+file        = /home/evergreen/robot-autotest/docs/evidence/v0.5/rpt05-print/artifacts/07-download.pdf
+bytes       = 235253
+sha256      = bf4cba032319e859a2bb76e02ebcb638f4677509f5511e793455a6d4eaffe558
+header      = %PDF-1.4
+pages       = 2
+streams     = 95
+text ops    = 346
+red_ops #c00000 = 12 (内部版红字/红框)
+image_ops   = 0

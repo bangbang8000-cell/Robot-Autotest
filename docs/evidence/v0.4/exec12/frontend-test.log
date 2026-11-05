@@ -1,0 +1,128 @@
+
+ RUN  v3.2.7 /home/evergreen/robot-autotest/frontend
+
+(node:474985) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:474912) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:474967) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:474966) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:474919) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:474934) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:474991) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:474941) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:474911) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:474918) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:474910) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:474974) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:474992) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:474926) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:474968) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/components/EmptyIllustration.spec.ts (4 tests) 60ms
+ ✓ src/utils/format.spec.ts (8 tests) 61ms
+ ✓ src/components/AppLogo.spec.ts (5 tests) 78ms
+ ✓ src/components/AboutDialog.spec.ts (4 tests) 247ms
+ ✓ src/components/report/TrendChart.spec.ts (7 tests) 386ms
+(node:475218) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/components/report/SuiteTree.spec.ts (8 tests) 393ms
+ ✓ src/composables/useBatchAction.spec.ts (5 tests) 39ms
+(node:475239) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:475238) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/composables/useAccent.spec.ts (8 tests) 58ms
+ ✓ src/config/navigation.spec.ts (12 tests) 37ms
+(node:475285) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:475278) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:475292) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/utils/tableWidth.spec.ts (8 tests) 15ms
+ ✓ src/composables/useSelection.spec.ts (8 tests) 40ms
+ ✓ src/composables/naiveTheme.spec.ts (4 tests) 26ms
+(node:475337) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/composables/useConfirm.spec.ts (3 tests) 7ms
+(node:475358) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/utils/statusLabels.spec.ts (6 tests) 30ms
+ ✓ src/components/DataTable.spec.ts (11 tests) 1216ms
+   ✓ DataTable 规范壳 > 有数据时渲染表头与行  369ms
+ ✓ src/views/LoginView.spec.ts (6 tests) 1297ms
+   ✓ LoginView 表单 > 两个字段都渲染成输入框，密码框类型正确  303ms
+   ✓ LoginView 表单 > 登录失败把错误渲染到界面上，而不是只留在控制台  343ms
+ ✓ src/views/OverviewView.spec.ts (4 tests) 2141ms
+   ✓ OverviewView 表格 > 近期执行表保留设备与链路两段信息  1044ms
+   ✓ OverviewView 表格 > 近期执行表的通过率与用例数都渲染出来  488ms
+   ✓ OverviewView 表格 > 状态列是图标 + 文字双编码  316ms
+ ✓ src/views/ReportDetailView.spec.ts (8 tests) 2727ms
+   ✓ ReportDetailView 元数据表 > 保持原生 table：10 项全渲染且是 th + td 的两列定义表  862ms
+   ✓ ReportDetailView 导出 > 不可对外时两个外部导出按钮禁用，内部两枚仍可用  352ms
+   ✓ ReportDetailView 对比 > 开关是 NCheckbox：勾选后才发对比请求并多出一张表  318ms
+ ✓ src/views/PlansView.spec.ts (7 tests) 3076ms
+   ✓ PlansView 列表 > 双行单元格两行都在：名称 + 套件路径、Cron + 时区  767ms
+   ✓ PlansView 列表 > 未来触发时间保留第 2、3 次，不只显示第一个  414ms
+   ✓ PlansView 列表 > 状态徽标图标 + 文字双编码  327ms
+   ✓ PlansView 编辑对话框 > 点「编辑」预填原值，而不是打开一张空表单  602ms
+   ✓ PlansView 编辑对话框 > 新建打开空表单，且不显示「编辑」标题  326ms
+   ✓ PlansView 编辑对话框 > 依赖列表排除自己，勾选后写回 dependencyIds  391ms
+ ✓ src/views/CasesView.spec.ts (6 tests) 4205ms
+   ✓ CasesView 勾选接线 > 渲染出接口返回的行  1575ms
+   ✓ CasesView 勾选接线 > 勾一行出现批量条并计数为 1  742ms
+   ✓ CasesView 勾选接线 > 表头全选只选本页，再点一次全部取消  478ms
+   ✓ CasesView 勾选接线 > 状态列走 StatusTag，图标与文字双编码  391ms
+   ✓ CasesView 执行所选（EXEC-02） > 提交只传所选 id 与执行参数，成功提示运行号  522ms
+   ✓ CasesView 执行所选（EXEC-02） > 后端未绑定 400：错误原文展示在表单内，勾选不丢  494ms
+ ✓ src/views/RunsView.spec.ts (10 tests) 5512ms
+   ✓ RunsView 列表与日志联动 > 渲染两行运行记录  1375ms
+   ✓ RunsView 列表与日志联动 > 点「查看日志」后打开对应行的面板，且只有那一行被标为选中  702ms
+   ✓ RunsView 列表与日志联动 > 日志面板可下载完整日志（EXEC-06）  563ms
+   ✓ RunsView 列表与日志联动 > 已终止的行不再显示「取消」  301ms
+   ✓ RunsView 手动执行 > 点「手动执行」打开表单，默认带一套可改的套件路径  454ms
+   ✓ RunsView 手动执行 > 套件路径按行解析并原样提交给 quick-run  538ms
+   ✓ RunsView 手动执行 > 套件路径清空后提交按钮禁用，不会把空列表打到后端  370ms
+   ✓ RunsView 手动执行 > 手动执行表单可声明设备范围，并随 quick-run 提交（FR-v0.4-01）  635ms
+   ✓ RunsView 手动执行 > 日志面板显示运行的设备范围，未声明时明确写「全部设备」  336ms
+ ✓ src/views/AdminView.spec.ts (8 tests) 6996ms
+   ✓ AdminView 用户列表 > 渲染用户行，空邮箱显示统一占位  2347ms
+   ✓ AdminView 用户列表 > 启用状态走 StatusTag，图标 + 文字双编码  882ms
+   ✓ AdminView 用户列表 > 勾一行出现批量条并计数为 1  772ms
+   ✓ AdminView 项目成员 > 所有者行是只读文本，不给可编辑的角色下拉  583ms
+   ✓ AdminView 项目成员 > 停用成员显示「已停用」，不是笼统的「否」  737ms
+   ✓ AdminView 项目成员 > 所有者不可移除，非所有者有移除按钮  693ms
+   ✓ AdminView 项目与角色 > 项目表渲染项目编码与启用状态  433ms
+   ✓ AdminView 项目与角色 > 角色表渲染角色码与内置标记  547ms
+ ✓ src/views/AssetsView.spec.ts (12 tests) 7480ms
+   ✓ AssetsView 设备页 > 渲染设备行，空值列显示统一占位而不是空白  1856ms
+   ✓ AssetsView 设备页 > 勾一行出现批量条，计数为 1  517ms
+   ✓ AssetsView 设备页 > 端口按钮打开下方卡片，含设备名与端口行  631ms
+   ✓ AssetsView 设备页 > 再点一次收起端口卡片  433ms
+   ✓ AssetsView 页签切换 > 切到链路页签后换数据源，且设备表不再渲染  602ms
+   ✓ AssetsView 页签切换 > 切页签会清空上一页的勾选  480ms
+   ✓ AssetsView 租约页 > 切到租约页签后列出占用资源与剩余时间  627ms
+   ✓ AssetsView 租约页 > 非管理员看不到强制释放按钮  488ms
+   ✓ AssetsView 租约页 > 管理员强制释放以 runId 作二次确认，成功后刷新列表  535ms
+   ✓ AssetsView 租约页 > 取消二次确认时一个请求都不发  393ms
+   ✓ AssetsView 凭据页 > 「已配置」走 StatusTag，图标与文字双编码  511ms
+   ✓ AssetsView 凭据页 > 搜索在前端过滤（后端 /credentials 不支持关键词）  402ms
+
+ Test Files  23 passed (23)
+      Tests  162 passed (162)
+   Start at  17:03:46
+   Duration  14.96s (transform 7.67s, setup 644ms, collect 54.92s, tests 36.13s, environment 27.40s, prepare 6.52s)
+

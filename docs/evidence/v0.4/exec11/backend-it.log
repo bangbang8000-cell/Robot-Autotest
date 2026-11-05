@@ -1,0 +1,135 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< com.qa:robot-autotest-backend >--------------------
+[INFO] Building robot-autotest-backend 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- jacoco:0.8.12:prepare-agent (default) @ robot-autotest-backend ---
+[INFO] argLine set to -javaagent:/home/evergreen/.m2/repository/org/jacoco/org.jacoco.agent/0.8.12/org.jacoco.agent-0.8.12-runtime.jar=destfile=/tmp/jacoco-robot-autotest.exec
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ robot-autotest-backend ---
+[INFO] Copying 4 resources from src/main/resources to target/classes
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ robot-autotest-backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ robot-autotest-backend ---
+[INFO] Copying 9 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ robot-autotest-backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ robot-autotest-backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.qa.autotest.application.batch.GenericBatchIT
+16:39:48.723 [main] WARN org.mariadb.jdbc.message.server.ErrorPacket -- Error: 1451-23000: Cannot delete or update a parent row: a foreign key constraint fails (`robot_it`.`project_member`, CONSTRAINT `fk_project_member_user` FOREIGN KEY (`user_id`) REFERENCES `app_user` (`id`))
+[GenericBatchIT] 清理失败：PreparedStatementCallback; SQL [DELETE FROM app_user WHERE id = ?]; (conn=64470) Cannot delete or update a parent row: a foreign key constraint fails (`robot_it`.`project_member`, CONSTRAINT `fk_project_member_user` FOREIGN KEY (`user_id`) REFERENCES `app_user` (`id`))
+16:39:48.962 [main] WARN org.mariadb.jdbc.message.server.ErrorPacket -- Error: 1451-23000: Cannot delete or update a parent row: a foreign key constraint fails (`robot_it`.`project_member`, CONSTRAINT `fk_project_member_user` FOREIGN KEY (`user_id`) REFERENCES `app_user` (`id`))
+[GenericBatchIT] 清理失败：PreparedStatementCallback; SQL [DELETE FROM app_user WHERE id = ?]; (conn=64480) Cannot delete or update a parent row: a foreign key constraint fails (`robot_it`.`project_member`, CONSTRAINT `fk_project_member_user` FOREIGN KEY (`user_id`) REFERENCES `app_user` (`id`))
+16:39:49.607 [main] WARN org.mariadb.jdbc.message.server.ErrorPacket -- Error: 1451-23000: Cannot delete or update a parent row: a foreign key constraint fails (`robot_it`.`project_member`, CONSTRAINT `fk_project_member_user` FOREIGN KEY (`user_id`) REFERENCES `app_user` (`id`))
+[GenericBatchIT] 清理失败：PreparedStatementCallback; SQL [DELETE FROM app_user WHERE id = ?]; (conn=64522) Cannot delete or update a parent row: a foreign key constraint fails (`robot_it`.`project_member`, CONSTRAINT `fk_project_member_user` FOREIGN KEY (`user_id`) REFERENCES `app_user` (`id`))
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.391 s -- in com.qa.autotest.application.batch.GenericBatchIT
+[INFO] Running com.qa.autotest.application.overview.OverviewRepositoryIT
+[UX-03] 分组键空值：byPriority=[=1, P0=1] topDomains=[=1, rdma=1]
+[OVW-01] cases=5 assets(dev/port/link/cred/env/set)=2/2/1/2/1/1 runs(total/finished/canceled/running)=3/1/1/1 passRateBp=7500 trendPoints=30 | 空项目 passRateBp=null | 跨项目=403
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.051 s -- in com.qa.autotest.application.overview.OverviewRepositoryIT
+[INFO] Running com.qa.autotest.application.iam.UserPreferenceIT
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.440 s -- in com.qa.autotest.application.iam.UserPreferenceIT
+[INFO] Running com.qa.autotest.application.asset.AssetScopeIT
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.707 s -- in com.qa.autotest.application.asset.AssetScopeIT
+[INFO] Running com.qa.autotest.application.caseasset.CaseBatchIT
+[UX-02] setPriority=2/0 setDomain=1/0 submit=2/1 delete=2/1 | 审计 batch=9856a93850744512 条数=2 | 操作人=it-bat-1793867994127
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.371 s -- in com.qa.autotest.application.caseasset.CaseBatchIT
+[INFO] Running com.qa.autotest.application.caseasset.CaseImportIT
+[CAS-03] preview totalRows=226 validRows=226 errors=0 | commit imported=226 skipped=0 | 重导 validRows=0 errors=226 | 首条=TN-IMP-001 末条=TN-IMP-226
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.203 s -- in com.qa.autotest.application.caseasset.CaseImportIT
+[INFO] Running com.qa.autotest.db.SchemaIT
+16:40:05.216 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:mariadb://127.0.0.1/robot_it (MySQL 8.0)
+16:40:05.222 [main] WARN org.mariadb.jdbc.message.server.ErrorPacket -- Error: 1142-42000: SELECT command denied to user 'robot'@'localhost' for table 'user_variables_by_thread'
+16:40:05.268 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped pre-schema database level objects (execution time 00:00.002s)
+16:40:06.841 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema `robot_it` (execution time 00:01.570s)
+16:40:06.853 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema `robot_it` (execution time 00:00.010s)
+16:40:06.856 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped post-schema database level objects (execution time 00:00.002s)
+16:40:06.925 [main] WARN org.mariadb.jdbc.message.server.ErrorPacket -- Error: 1142-42000: SELECT command denied to user 'robot'@'localhost' for table 'user_variables_by_thread'
+16:40:06.972 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table `robot_it`.`flyway_schema_history` does not exist yet
+16:40:06.979 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 20 migrations (execution time 00:00.040s)
+16:40:07.026 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table `robot_it`.`flyway_schema_history` ...
+16:40:07.132 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema `robot_it`: << Empty Schema >>
+16:40:07.183 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "1 - baseline"
+16:40:08.853 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.1 - iam fields"
+16:40:09.578 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.2 - asset fields"
+16:40:10.345 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.3 - case fields"
+16:40:10.883 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.4 - audit indexes"
+16:40:10.978 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.5 - editor keywords"
+16:40:11.053 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "4.1 - lease"
+16:40:11.273 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "4.2 - run artifact"
+16:40:11.374 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "4.3 - failure class"
+16:40:11.531 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "5.1 - report fields"
+16:40:11.631 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State:  - Error Code: 1681)
+16:40:11.807 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "5.3 - report log"
+16:40:11.950 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "5.4 - artifact pin"
+16:40:12.044 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "5.5 - export columns"
+16:40:12.124 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "6.1 - execution plan"
+16:40:12.264 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "6.2 - plan dependency"
+16:40:12.331 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "6.3 - ci trigger"
+16:40:12.462 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.1 - audit summary"
+16:40:12.563 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.2 - user preference"
+16:40:12.650 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.3 - asset pool"
+16:40:13.032 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.4 - run device scope"
+16:40:13.131 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 20 migrations to schema `robot_it`, now at version v7.4 (execution time 00:05.438s)
+16:40:14.884 [main] WARN org.mariadb.jdbc.message.server.ErrorPacket -- Error: 1062-23000: Duplicate entry 'IT-RUN-1' for key 'run.uk_run_run_id'
+16:40:14.917 [main] WARN org.mariadb.jdbc.message.server.ErrorPacket -- Error: 1062-23000: Duplicate entry 'GPU-01#mlx5_0' for key 'resource_lease.uk_resource_lease_key'
+16:40:14.952 [main] WARN org.mariadb.jdbc.message.server.ErrorPacket -- Error: 1142-42000: SELECT command denied to user 'robot'@'localhost' for table 'user_variables_by_thread'
+16:40:14.968 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped pre-schema database level objects (execution time 00:00.001s)
+16:40:16.490 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema `robot_it` (execution time 00:01.520s)
+16:40:16.507 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema `robot_it` (execution time 00:00.015s)
+16:40:16.512 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped post-schema database level objects (execution time 00:00.003s)
+16:40:16.556 [main] WARN org.mariadb.jdbc.message.server.ErrorPacket -- Error: 1142-42000: SELECT command denied to user 'robot'@'localhost' for table 'user_variables_by_thread'
+16:40:16.578 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table `robot_it`.`flyway_schema_history` does not exist yet
+16:40:16.583 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 20 migrations (execution time 00:00.014s)
+16:40:16.633 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table `robot_it`.`flyway_schema_history` ...
+16:40:16.718 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema `robot_it`: << Empty Schema >>
+16:40:16.735 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "1 - baseline"
+16:40:18.435 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.1 - iam fields"
+16:40:19.266 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.2 - asset fields"
+16:40:19.914 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.3 - case fields"
+16:40:20.477 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.4 - audit indexes"
+16:40:20.572 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.5 - editor keywords"
+16:40:20.664 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "4.1 - lease"
+16:40:20.927 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "4.2 - run artifact"
+16:40:21.035 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "4.3 - failure class"
+16:40:21.206 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "5.1 - report fields"
+16:40:21.282 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State:  - Error Code: 1681)
+16:40:21.425 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "5.3 - report log"
+16:40:21.560 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "5.4 - artifact pin"
+16:40:21.675 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "5.5 - export columns"
+16:40:21.796 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "6.1 - execution plan"
+16:40:22.033 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "6.2 - plan dependency"
+16:40:22.154 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "6.3 - ci trigger"
+16:40:22.324 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.1 - audit summary"
+16:40:22.432 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.2 - user preference"
+16:40:22.486 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.3 - asset pool"
+16:40:22.976 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.4 - run device scope"
+16:40:23.136 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 20 migrations to schema `robot_it`, now at version v7.4 (execution time 00:05.864s)
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 18.73 s -- in com.qa.autotest.db.SchemaIT
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 28, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jacoco:0.8.12:report (report) @ robot-autotest-backend ---
+[INFO] Loading execution data file /tmp/jacoco-robot-autotest.exec
+[INFO] Analyzed bundle 'robot-autotest-backend' with 409 classes
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  43.626 s
+[INFO] Finished at: 2026-11-05T16:40:25+08:00
+[INFO] ------------------------------------------------------------------------

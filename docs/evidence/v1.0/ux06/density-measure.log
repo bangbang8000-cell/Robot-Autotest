@@ -1,0 +1,5 @@
+comfortable  /assets  data-density=comfortable rowVar=44px rows=3 firstRowH=44 padTop=0px
+comfortable  /runs    data-density=comfortable rowVar=44px rows=1 firstRowH=44 padTop=0px
+compact      /assets  data-density=compact rowVar=36px rows=3 firstRowH=36 padTop=0px
+compact      /runs    data-density=compact rowVar=36px rows=1 firstRowH=36 padTop=0px
+DONE density.json

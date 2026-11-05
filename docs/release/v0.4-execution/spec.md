@@ -2,7 +2,7 @@
 
 **文档编号** RA-REL-2026-004-SPEC ｜ **版本** v0.4 ｜ **门禁** G4
 
-**范围** EXE-01 ~ EXE-08（WBS #30 ~ #37） ｜ **上游** `PRD.md` / `DEV-PLAN.md` / `TEST-PLAN.md`
+**范围** EXE-01 ~ EXE-08（WBS #30 ~ #37）+ EXEC-02（WBS #83）+ EXEC-03（WBS #84）+ EXEC-04（WBS #85）+ EXEC-05（WBS #86）+ EXEC-06（WBS #87）+ EXEC-07（WBS #88）+ EXEC-08（WBS #89）+ EXEC-09（WBS #90）+ EXEC-10（WBS #91）+ EXEC-11（WBS #92） ｜ **上游** `PRD.md` / `DEV-PLAN.md` / `TEST-PLAN.md`
 
 **本规格的地位**：本文件是 v0.4 执行域的「决策完整」实现契约。所有类名、方法签名、表字段、测试判据、证据文件名以本文件为准；实现过程中如发现与上游冲突，先改本文件并重新评审，不直接改代码。
 
@@ -462,6 +462,19 @@ npm run lint
 | #35 EXE-06 | 失败分类 | `待验` | `failure-class-30.md` |
 | #36 EXE-07 | 4 并发压测 | `待验` | `bench-20rounds.txt`（待本地 WSL） |
 | #37 EXE-08 | DUT 实网 | `待验` | `dut-real.md`（`[REPLAY]`） |
+| #83 EXEC-02 | 勾选台账用例直接执行 | `待验` | `docs/evidence/v0.4/exec02/README.md` |
+| #84 EXEC-03 | 用例集测试级执行 | `待验` | `docs/evidence/v0.4/exec03/README.md` |
+| #85 EXEC-04 | 执行前预检 | `待验` | `docs/evidence/v0.4/exec04/README.md` |
+| #86 EXEC-05 | 执行工作区落盘 | `待验` | `docs/evidence/v0.4/exec05/README.md` |
+| #87 EXEC-06 | 全量日志下载 | `待验` | `docs/evidence/v0.4/exec06/README.md` |
+| #88 EXEC-07 | 租约可视化 + 管理员强制释放 | `待验` | `docs/evidence/v0.4/exec07/README.md` |
+| #89 EXEC-08 | v0.4 PRD FR 覆盖复核 | `待验` | `docs/release/v0.4-execution/FR-COVERAGE-20261105.md` |
+| #90 EXEC-09 | 租约接入执行链路（申请 / 超时拒绝 / 全路径释放） | `待验` | `docs/evidence/v0.4/exec09/README.md` |
+| #91 EXEC-10 | 队列语义：按项目分道 + priority 排队 + MAX_PARALLEL 上限 | `待验` | `docs/evidence/v0.4/exec10/README.md` |
+| #92 EXEC-11 | 设备范围：`run.device_scope` 落库 + 回溯 + 手动执行声明与展示 （`V7_4__run_device_scope.sql`） | `待验` | `docs/evidence/v0.4/exec11/README.md` |
+| #93 EXEC-12 | 单用例超时：`Test Timeout` 注入工作区副本 + `test_timeout` 原因归类 | `待验` | `docs/evidence/v0.4/exec12/README.md` |
+| #94 EXEC-13 | 运行详情显示「第 N 次尝试」（`attemptNo > 1` 才渲染，只改前端） | `待验` | `docs/evidence/v0.4/exec13/README.md` |
+| #95 EXEC-14 | 日志级别过滤：ERROR / WARN / INFO 三档独立勾选，默认全开（只改前端） | `待验` | `docs/evidence/v0.4/exec14/README.md` |
 
 汇总行从 `24 / 1 / 31 / 0` 变为 `16 / 1 / 39 / 0`；AI 不得改 `已完成`。
 
