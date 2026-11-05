@@ -1,0 +1,7 @@
+ frontend/src/assets/fonts/noto-sans-sc-ui.woff2 | Bin 134948 -> 135388 bytes
+ frontend/src/styles/main.css                    |  21 ++-------
+ frontend/src/views/EditorView.vue               |  60 +++++++++---------------
+ frontend/src/views/LoginView.vue                |  53 +++++++++++++++++----
+ frontend/src/views/NotFoundView.vue             |  10 +++-
+ frontend/src/views/OverviewView.vue             |   6 +--
+ 6 files changed, 82 insertions(+), 68 deletions(-)

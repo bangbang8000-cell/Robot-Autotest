@@ -2,8 +2,10 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { NButton, NInput } from 'naive-ui'
 import { useAuthStore } from '@/stores/auth'
 import ErrorLineView from '@/components/ErrorLine.vue'
+import FormField from '@/components/FormField.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 
 const { t } = useI18n()
@@ -13,6 +15,19 @@ const auth = useAuthStore()
 
 const username = ref('')
 const password = ref('')
+
+/**
+ * 不写 `v-model:value`：`NInput` 的回调值类型是 `string | null`，直接绑到 `ref<string>`
+ * 会被 `vue-tsc` 判成不兼容赋值（同 UX-04b 第五批 `NSelect` 的处理）。收敛在一个 setter 里。
+ */
+function setUsername(value: string): void {
+  username.value = value
+}
+
+function setPassword(value: string): void {
+  password.value = value
+}
+
 const submitting = ref(false)
 const error = ref<ErrorLine | null>(null)
 
@@ -41,19 +56,37 @@ async function submit(): Promise<void> {
       <h1 class="login-title">{{ t('app.title') }}</h1>
       <p class="muted">{{ t('login.subtitle') }}</p>
 
-      <label class="field">
-        <span class="field-label">{{ t('login.username') }}</span>
-        <input v-model="username" class="input" autocomplete="username" />
-      </label>
-      <label class="field">
-        <span class="field-label">{{ t('login.password') }}</span>
-        <input v-model="password" class="input" type="password" autocomplete="current-password" />
-      </label>
+      <FormField v-slot="{ describedBy }" :label="t('login.username')" required>
+        <NInput
+          :value="username"
+          :input-props="{ 'aria-describedby': describedBy, autocomplete: 'username' }"
+          @update:value="setUsername"
+        />
+      </FormField>
+      <FormField v-slot="{ describedBy }" :label="t('login.password')" required>
+        <NInput
+          :value="password"
+          type="password"
+          show-password-on="click"
+          :input-props="{ 'aria-describedby': describedBy, autocomplete: 'current-password' }"
+          @update:value="setPassword"
+        />
+      </FormField>
 
       <ErrorLineView v-if="error" :error="error" />
-      <button class="btn login-btn" type="submit" :disabled="submitting">
+      <!--
+        `attr-type="submit"` 而不是 `type`：`type` 是库按钮的语义色档（primary/default），
+        HTML 的提交行为要用 `attr-type` 透传到原生 `<button>` 上。漏了它回车就提交不了。
+      -->
+      <NButton
+        class="login-btn"
+        type="primary"
+        attr-type="submit"
+        :loading="submitting"
+        :disabled="submitting"
+      >
         {{ submitting ? t('login.submitting') : t('login.submit') }}
-      </button>
+      </NButton>
       <p class="muted">{{ t('login.hint') }}</p>
     </form>
   </div>

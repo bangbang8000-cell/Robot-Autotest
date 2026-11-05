@@ -1,0 +1,49 @@
+
+ RUN  v3.2.7 /home/evergreen/robot-autotest/frontend
+
+(node:344470) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:344471) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:344463) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:344477) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:344495) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:344483) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:344484) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:344464) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:344551) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/components/report/SuiteTree.spec.ts (8 tests) 207ms
+ ✓ src/views/LoginView.spec.ts (5 tests) 518ms
+ ✓ src/views/OverviewView.spec.ts (4 tests) 1012ms
+   ✓ OverviewView 表格 > 近期执行表保留设备与链路两段信息  378ms
+ ✓ src/views/RunsView.spec.ts (4 tests) 1004ms
+   ✓ RunsView 列表与日志联动 > 渲染两行运行记录  351ms
+   ✓ RunsView 列表与日志联动 > 点「查看日志」后打开对应行的面板，且只有那一行被标为选中  346ms
+ ✓ src/views/CasesView.spec.ts (4 tests) 1358ms
+   ✓ CasesView 勾选接线 > 渲染出接口返回的行  473ms
+   ✓ CasesView 勾选接线 > 勾一行出现批量条并计数为 1  383ms
+ ✓ src/views/PlansView.spec.ts (7 tests) 1522ms
+   ✓ PlansView 编辑对话框 > 点「编辑」预填原值，而不是打开一张空表单  332ms
+ ✓ src/views/ReportDetailView.spec.ts (8 tests) 1437ms
+   ✓ ReportDetailView 元数据表 > 保持原生 table：10 项全渲染且是 th + td 的两列定义表  314ms
+ ✓ src/views/AssetsView.spec.ts (8 tests) 2306ms
+   ✓ AssetsView 设备页 > 渲染设备行，空值列显示统一占位而不是空白  596ms
+   ✓ AssetsView 设备页 > 勾一行出现批量条，计数为 1  344ms
+   ✓ AssetsView 设备页 > 端口按钮打开下方卡片，含设备名与端口行  362ms
+ ✓ src/views/AdminView.spec.ts (8 tests) 3233ms
+   ✓ AdminView 用户列表 > 渲染用户行，空邮箱显示统一占位  1028ms
+   ✓ AdminView 用户列表 > 启用状态走 StatusTag，图标 + 文字双编码  591ms
+   ✓ AdminView 用户列表 > 勾一行出现批量条并计数为 1  383ms
+
+ Test Files  9 passed (9)
+      Tests  56 passed (56)
+   Start at  10:19:52
+   Duration  6.37s (transform 3.14s, setup 225ms, collect 19.17s, tests 12.60s, environment 4.42s, prepare 1.72s)
+

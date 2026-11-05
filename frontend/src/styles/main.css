@@ -416,22 +416,11 @@ textarea.input {
   margin: 0 0 6px;
 }
 
-.login-card .field {
-  display: block;
-  margin: 14px 0;
-}
-
-.field-label {
-  display: block;
-  color: var(--text-muted);
-  font-size: 12px;
-  margin-bottom: 4px;
-}
-
-.login-card .input {
-  width: 100%;
-}
-
+/*
+ * `.login-card .field` / `.field-label` / `.login-card .input` 已于 UX-04b 第七批退场：
+ * 登录页改成 `FormField` + `NInput`，字段壳由组件自带（label 关联、必填标记、错误提示）。
+ * 宽度不再需要 `.input { width: 100% }` —— `NInput` 在 flex 列里自然撑满。
+ */
 .login-btn {
   width: 100%;
   margin-top: 8px;

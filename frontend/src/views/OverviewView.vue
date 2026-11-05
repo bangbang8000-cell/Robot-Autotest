@@ -2,7 +2,7 @@
 import { computed, h, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
-import { NDataTable, type DataTableColumns } from 'naive-ui'
+import { NButton, NDataTable, type DataTableColumns } from 'naive-ui'
 import {
   digestApi,
   overviewApi,
@@ -240,9 +240,9 @@ function rateBarClass(point: DigestTrendPoint): string {
       <h1 class="page-title">{{ t('menu.overview') }}</h1>
       <div class="page-head-actions">
         <ProjectPicker />
-        <button class="btn" type="button" :disabled="loading || !projectId" @click="load">
+        <NButton :disabled="loading || !projectId" :loading="loading" @click="load">
           {{ t('common.refresh') }}
-        </button>
+        </NButton>
       </div>
     </div>
 

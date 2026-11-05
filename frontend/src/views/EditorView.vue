@@ -11,6 +11,7 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+import { NButton } from 'naive-ui'
 import { RobotEditor, configureEditorAdapter, setEditorScope } from '@robot-autotest/editor'
 import '@robot-autotest/editor-css'
 import {
@@ -192,23 +193,25 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
       <span class="editor-host__path">{{ filePath }}</span>
       <span v-if="currentVersion > 0" class="editor-host__version">v{{ currentVersion }}</span>
       <span class="editor-host__role" :data-readonly="readonly">{{ roleLabel }}</span>
-      <button
+      <NButton
         v-if="!readonly"
-        class="editor-host__btn editor-host__btn--primary"
+        type="primary"
+        size="small"
         data-testid="editor-save"
         :disabled="!dirty || saving"
+        :loading="saving"
         @click="save"
       >
         {{ saving ? t('editor.saving') : t('common.save') }}
-      </button>
-      <button
+      </NButton>
+      <NButton
         v-if="canWrite"
-        class="editor-host__btn"
+        size="small"
         data-testid="editor-versions"
         @click="showVersions = !showVersions"
       >
         {{ t('editor.versionsCount', { count: versions.length }) }}
-      </button>
+      </NButton>
     </header>
 
     <p v-if="notice" class="editor-host__notice" :data-level="noticeLevel">{{ notice }}</p>
@@ -232,20 +235,20 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
           <span class="version-row__no">v{{ item.versionNo }}</span>
           <span class="version-row__time">{{ formatDateTime(item.createdAt) }}</span>
           <span class="version-row__comment">{{ item.comment || EMPTY }}</span>
-          <button
+          <NButton
             v-if="item.versionNo !== currentVersion"
-            class="editor-host__btn editor-host__btn--small"
+            size="tiny"
             @click="showDiff(item.versionNo)"
           >
             {{ t('editor.diffCurrent') }}
-          </button>
-          <button
+          </NButton>
+          <NButton
             v-if="item.versionNo !== currentVersion"
-            class="editor-host__btn editor-host__btn--small"
+            size="tiny"
             @click="rollback(item.versionNo)"
           >
             {{ t('editor.rollback') }}
-          </button>
+          </NButton>
         </li>
       </ul>
     </aside>
@@ -254,7 +257,7 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
       <div class="editor-host__modal-body">
         <header class="editor-host__modal-bar">
           <h3>{{ t('editor.diffTitle', { title: diffTitle }) }}</h3>
-          <button class="editor-host__btn" @click="diffLines = null">{{ t('common.close') }}</button>
+          <NButton size="small" @click="diffLines = null">{{ t('common.close') }}</NButton>
         </header>
         <pre class="diff">
 <span
@@ -319,31 +322,12 @@ watch([projectId, filePath], () => { void open() }, { immediate: true })
   color: var(--warn);
 }
 
-.editor-host__btn {
-  padding: 0.25rem 0.7rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  background: var(--panel);
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.editor-host__btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.editor-host__btn--primary {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--accent-contrast);
-}
-
-.editor-host__btn--small {
-  padding: 0.1rem 0.4rem;
-  font-size: 0.75rem;
-}
-
+/*
+ * `.editor-host__btn` / `--primary` / `--small` 已于 UX-04b 第七批退场：
+ * 五个按钮全换 `NButton`（保存 primary + loading、版本开关与 diff 弹窗关闭 small、
+ * 版本行的两个操作 tiny）。原生那份既没有 hover / focus-visible，也用 `rem` 而不是
+ * 项目 token —— 换成库按钮后三态由 `naiveTheme.ts` 的派生主题承担。
+ */
 .editor-host__body {
   flex: 1;
   min-height: 0;
