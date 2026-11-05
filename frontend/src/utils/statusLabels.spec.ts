@@ -6,7 +6,7 @@
  * 但会让「等我评审的」在列表里被草稿淹没 —— 只能靠断言兜住。
  */
 import { describe, expect, it } from 'vitest'
-import { reviewStatusTone, runStatusTone } from '@/utils/statusLabels'
+import { blocksExecution, reviewStatusTone, runStatusTone, safetyLevelTone } from '@/utils/statusLabels'
 
 describe('runStatusTone', () => {
   it('终态里只有 finished 算成功', () => {
@@ -46,5 +46,29 @@ describe('reviewStatusTone', () => {
   it('未知值与空值降级为 neutral', () => {
     expect(reviewStatusTone('')).toBe('neutral')
     expect(reviewStatusTone(undefined)).toBe('neutral')
+  })
+})
+
+describe('执行安全级（ADR-0013）', () => {
+  it('色档：L2 红、LX 黄、L1 绿、L0 灰', () => {
+    expect(safetyLevelTone('L2')).toBe('fail')
+    expect(safetyLevelTone('lx')).toBe('warn')
+    expect(safetyLevelTone('L1')).toBe('ok')
+    expect(safetyLevelTone('L0')).toBe('neutral')
+  })
+
+  it('L2 与 LX 禁止自动执行，LX 按 L2 对待', () => {
+    // 前后端同口径：后端 SafetyLevel#blocksExecution 也是这两个值，
+    // 前端多拦或少拦都会出现「按钮能点但接口 403」或「该拦的没拦」
+    expect(blocksExecution('L2')).toBe(true)
+    expect(blocksExecution('LX')).toBe(true)
+    expect(blocksExecution('L0')).toBe(false)
+    expect(blocksExecution('L1')).toBe(false)
+  })
+
+  it('空值按 LX 处理（不允许静默放行）', () => {
+    expect(blocksExecution(null)).toBe(true)
+    expect(blocksExecution(undefined)).toBe(true)
+    expect(blocksExecution('')).toBe(true)
   })
 })

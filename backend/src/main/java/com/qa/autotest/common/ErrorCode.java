@@ -25,6 +25,9 @@ public enum ErrorCode {
     /** 无权限。 */
     FORBIDDEN(40300, "FORBIDDEN"),
 
+    /** 安全级拦截：L2 高危 / LX 未判定用例禁止自动执行（ADR-0013，G2-3）。 */
+    SAFETY_LEVEL_BLOCKED(40301, "SAFETY_LEVEL_BLOCKED"),
+
     /** 资源不存在。 */
     NOT_FOUND(40400, "NOT_FOUND"),
 

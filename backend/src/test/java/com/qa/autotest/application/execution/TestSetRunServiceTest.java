@@ -179,7 +179,7 @@ class TestSetRunServiceTest {
     @DisplayName("用例编号为空：400 并列 id，不触发")
     void 空编号被拒() {
         TestCase blank = new TestCase(9L, PROJECT, "  ", "无编号", null, null, null, null,
-                null, "draft", null, null, null);
+                null, "draft", null, null, null, "L1");
         List<TestCase> cases = List.of(testCase("PERF-009"), blank);
         RecordingQuickRun quick = new RecordingQuickRun();
         TestSetRunService service = serviceWith(cases, Map.of(), quick);
@@ -190,6 +190,23 @@ class TestSetRunServiceTest {
         assertTrue(ex.getMessage().contains("编号为空"), ex.getMessage());
         assertTrue(ex.getMessage().contains("id=9"), ex.getMessage());
         assertNull(quick.last, "预检失败不得触发");
+    }
+
+    @Test
+    @DisplayName("集合含 L2 / LX 用例：整单 403，一条都不跑")
+    void 安全级拦截() {
+        List<TestCase> cases = List.of(testCase("PERF-010"),
+                testCase("DESTRUCT-001", "L2"), testCase("UNKNOWN-001", "LX"));
+        RecordingQuickRun quick = new RecordingQuickRun();
+        TestSetRunService service = serviceWith(cases, Map.of(), quick);
+
+        BusinessException ex = assertThrows(BusinessException.class, () -> service.run(command()));
+
+        assertEquals(ErrorCode.SAFETY_LEVEL_BLOCKED, ex.errorCode());
+        assertTrue(ex.getMessage().contains("DESTRUCT-001(L2)"), ex.getMessage());
+        assertTrue(ex.getMessage().contains("UNKNOWN-001(LX)"), ex.getMessage());
+        assertTrue(ex.getMessage().contains("PERF-SET"), ex.getMessage());
+        assertNull(quick.last, "集合里有高危 / 未判定用例时不得部分执行");
     }
 
     private TestSetRunService serviceWith(List<TestCase> cases, Map<String, String> files,
@@ -209,8 +226,12 @@ class TestSetRunServiceTest {
     }
 
     private static TestCase testCase(String code) {
+        return testCase(code, "L1");
+    }
+
+    private static TestCase testCase(String code, String safetyLevel) {
         return new TestCase(1L, PROJECT, code, code, null, null, null, null,
-                null, "draft", null, null, null);
+                null, "draft", null, null, null, safetyLevel);
     }
 
     private static String robotFile(String content) {

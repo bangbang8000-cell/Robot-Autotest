@@ -33,9 +33,13 @@ import { confirmAction } from '@/composables/useConfirm'
 import {
   PRIORITIES,
   REVIEW_STATUSES,
+  SAFETY_LEVELS,
+  blocksExecution,
   priorityLabel,
   reviewStatusLabel,
   reviewStatusTone,
+  safetyLevelLabel,
+  safetyLevelTone,
 } from '@/utils/statusLabels'
 
 const { t } = useI18n()
@@ -45,6 +49,7 @@ const keyword = ref('')
 const priority = ref('')
 const reviewStatus = ref('')
 const domain = ref('')
+const safetyLevel = ref('')
 const page = ref(1)
 const size = 10
 const total = ref(0)
@@ -76,6 +81,7 @@ const batchResult = ref<BatchResult | null>(null)
 const batchLoading = ref(false)
 const batchPriority = ref('P1')
 const batchDomain = ref('')
+const batchSafety = ref('L1')
 
 // 勾选用例执行（EXEC-02）：绑定解析在后端，前端只负责收集参数
 const runOpen = ref(false)
@@ -91,6 +97,8 @@ const form = reactive({
   title: '',
   category: '',
   priority: 'P2',
+  // 新建即「未判定」：安全级是需要人工判断的结论，不能默认给个 L1 蒙过去（ADR-0013）
+  safetyLevel: 'LX',
   domainTag: '',
   capability: '',
   precondition: '',
@@ -114,9 +122,27 @@ const reviewOptions = computed(() => [
   { label: t('cases.allStatus'), value: '' },
   ...REVIEW_STATUSES.map((item) => ({ label: reviewStatusLabel(item), value: item })),
 ])
+const safetyOptions = computed(() => [
+  { label: t('cases.allSafety'), value: '' },
+  ...SAFETY_LEVELS.map((item) => ({ label: safetyLevelLabel(item), value: item })),
+])
 const formPriorityOptions = computed(() =>
   PRIORITIES.map((item) => ({ label: priorityLabel(item), value: item })),
 )
+const formSafetyOptions = computed(() =>
+  SAFETY_LEVELS.map((item) => ({ label: safetyLevelLabel(item), value: item })),
+)
+
+/**
+ * 选中项里禁止自动执行的用例（ADR-0013：L2 高危 / LX 未判定按 L2 对待）。
+ *
+ * 只能看到**当前页**的选中项的安全级；跨页选中的 L2/LX 前端看不见，
+ * 由 `CaseRunService` / `TestSetRunService` 整单拒绝兜底——前端禁用只是提前告知。
+ */
+const blockedSelected = computed(() =>
+  cases.value.filter((item) => isSelected(item.id) && blocksExecution(item.safetyLevel)),
+)
+const blockedCodes = computed(() => blockedSelected.value.map((item) => item.caseCode).join('、'))
 
 /**
  * 用例列定义（UX-04b 逐页迁移）。
@@ -163,6 +189,16 @@ const columns = computed<DataTableColumns<TestCase>>(() => [
     key: 'priority',
     width: 90,
     render: (row) => priorityLabel(row.priority),
+  },
+  {
+    title: t('cases.safetyLevel'),
+    key: 'safetyLevel',
+    width: 120,
+    render: (row) =>
+      h(StatusTag, {
+        label: safetyLevelLabel(row.safetyLevel),
+        tone: safetyLevelTone(row.safetyLevel),
+      }),
   },
   {
     title: t('cases.status'),
@@ -255,6 +291,7 @@ async function load(): Promise<void> {
         priority: priority.value,
         reviewStatus: reviewStatus.value,
         domain: domain.value,
+        safetyLevel: safetyLevel.value,
         page: page.value,
         size,
       }),
@@ -284,7 +321,7 @@ watch([projectId], () => {
   void load()
 }, { immediate: true })
 
-watch([keyword, priority, reviewStatus, domain], () => {
+watch([keyword, priority, reviewStatus, domain, safetyLevel], () => {
   page.value = 1
   void load()
 })
@@ -297,6 +334,14 @@ function turnPage(next: number): void {
 
 /** 展开/收起勾选用例的执行表单（EXEC-02）。 */
 function toggleRunForm(): void {
+  // L2/LX 在执行入口就被拒（ADR-0013），这里提前给出原因，别让用户点了才看到 403
+  if (!runOpen.value && blockedSelected.value.length > 0) {
+    error.value = {
+      summary: t('cases.run.blocked', { codes: blockedCodes.value }),
+      detail: null,
+    }
+    return
+  }
   runOpen.value = !runOpen.value
   runError.value = null
   message.value = ''
@@ -308,6 +353,13 @@ function toggleRunForm(): void {
  */
 async function submitRun(): Promise<void> {
   if (selectedCount.value === 0) return
+  if (blockedSelected.value.length > 0) {
+    runError.value = {
+      summary: t('cases.run.blocked', { codes: blockedCodes.value }),
+      detail: null,
+    }
+    return
+  }
   runLoading.value = true
   runError.value = null
   message.value = ''
@@ -356,6 +408,7 @@ async function runBatch(action: BatchAction): Promise<void> {
     error.value = { summary: t('cases.batch.setDomainTag'), detail: null }
     return
   }
+  if (action === 'setSafetyLevel' && !batchSafety.value) return
 
   batchLoading.value = true
   try {
@@ -365,6 +418,7 @@ async function runBatch(action: BatchAction): Promise<void> {
       comment,
       priority: action === 'setPriority' ? batchPriority.value : undefined,
       domainTag: action === 'setDomainTag' ? batchDomain.value.trim() : undefined,
+      safetyLevel: action === 'setSafetyLevel' ? batchSafety.value : undefined,
     })
     batchResult.value = result
     // 失败项保留选中：重试只作用于它们（FR-v0.2-36）
@@ -390,6 +444,7 @@ async function createCase(): Promise<void> {
       title: form.title.trim(),
       category: form.category,
       priority: form.priority,
+      safetyLevel: form.safetyLevel,
       domainTag: form.domainTag,
       capability: form.capability,
       precondition: form.precondition,
@@ -499,6 +554,12 @@ async function runCommit(): Promise<void> {
         style="width: 140px"
         :aria-label="t('cases.status')"
       />
+      <NSelect
+        v-model:value="safetyLevel"
+        :options="safetyOptions"
+        style="width: 140px"
+        :aria-label="t('cases.safetyLevel')"
+      />
       <NInput
         v-model:value="domain"
         clearable
@@ -525,6 +586,12 @@ async function runCommit(): Promise<void> {
         :options="formPriorityOptions"
         style="width: 120px"
         :aria-label="t('cases.priority')"
+      />
+      <NSelect
+        v-model:value="form.safetyLevel"
+        :options="formSafetyOptions"
+        style="width: 140px"
+        :aria-label="t('cases.safetyLevel')"
       />
       <NInput v-model:value="form.domainTag" style="width: 140px" :placeholder="t('cases.domain')" />
       <NInput
@@ -589,9 +656,16 @@ async function runCommit(): Promise<void> {
       :loading="batchLoading"
       @clear="clearSelection(); batchResult = null"
     >
-      <NButton type="primary" :disabled="batchLoading" @click="toggleRunForm">
+      <NButton
+        type="primary"
+        :disabled="batchLoading || blockedSelected.length > 0"
+        @click="toggleRunForm"
+      >
         {{ t('cases.run.open') }}
       </NButton>
+      <span v-if="blockedSelected.length" class="muted">
+        {{ t('cases.run.blocked', { codes: blockedCodes }) }}
+      </span>
       <NButton quaternary :disabled="batchLoading" @click="runBatch('submit')">
         {{ t('cases.batch.submit') }}
       </NButton>
@@ -619,6 +693,16 @@ async function runCommit(): Promise<void> {
       />
       <NButton quaternary :disabled="batchLoading" @click="runBatch('setDomainTag')">
         {{ t('cases.batch.setDomainTag') }}
+      </NButton>
+      <NSelect
+        v-model:value="batchSafety"
+        :options="formSafetyOptions"
+        style="width: 140px"
+        :disabled="batchLoading"
+        :aria-label="t('cases.safetyLevel')"
+      />
+      <NButton quaternary :disabled="batchLoading" @click="runBatch('setSafetyLevel')">
+        {{ t('cases.batch.setSafetyLevel') }}
       </NButton>
       <NButton quaternary type="error" :disabled="batchLoading" @click="runBatch('delete')">
         {{ t('cases.batch.delete') }}
@@ -654,7 +738,7 @@ async function runCommit(): Promise<void> {
           style="width: 140px"
           :placeholder="t('cases.run.tag')"
         />
-        <NButton type="primary" :loading="runLoading" @click="submitRun">
+        <NButton type="primary" :loading="runLoading" :disabled="blockedSelected.length > 0" @click="submitRun">
           {{ t('cases.run.submit') }}
         </NButton>
         <NButton quaternary :disabled="runLoading" @click="runOpen = false">

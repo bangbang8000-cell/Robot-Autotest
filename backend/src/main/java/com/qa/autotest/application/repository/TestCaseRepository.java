@@ -12,7 +12,8 @@ import java.util.Optional;
 public interface TestCaseRepository {
 
     PageResult<TestCase> page(long projectId, String keyword, String domain, String priority,
-                              String reviewStatus, String capability, int page, int size);
+                              String reviewStatus, String capability, String safetyLevel,
+                              int page, int size);
 
     Optional<TestCase> find(long projectId, long id);
 
@@ -37,6 +38,9 @@ public interface TestCaseRepository {
 
     /** 批量改技术域标签（UX-02，FR-v0.2-37）。 */
     void updateDomainTag(long projectId, long id, String domainTag, Long operatorId);
+
+    /** 批量改执行安全级（G2-3 / ADR-0013）：人工补判 LX 的唯一入口。 */
+    void updateSafetyLevel(long projectId, long id, String safetyLevel, Long operatorId);
 
     boolean codeExists(long projectId, String caseCode, Long excludeId);
 

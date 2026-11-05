@@ -519,9 +519,9 @@ class AuthorizationBoundaryTest {
         AuditService audit = new AuditService(stub(AuditRepository.class, (name, args) -> UNHANDLED));
 
         AtomicReference<TestCase> storedCase = new AtomicReference<>(new TestCase(1L, ALPHA, "TC-SEED",
-                "种子用例", "功能", "P2", null, null, null, "draft", "manual", null, null));
+                "种子用例", "功能", "P2", null, null, null, "draft", "manual", null, null, "L1"));
         TestCaseRepository caseRepository = stub(TestCaseRepository.class, (name, args) -> switch (name) {
-            case "page" -> PageResult.<TestCase>empty((Integer) args[6], (Integer) args[7]);
+            case "page" -> PageResult.<TestCase>empty((Integer) args[7], (Integer) args[8]);
             case "find" -> {
                 TestCase current = storedCase.get();
                 yield current != null && current.projectId() == ((Number) args[0]).longValue()
@@ -532,7 +532,7 @@ class AuthorizationBoundaryTest {
                 storedCase.set(new TestCase(1L, draft.projectId(), draft.caseCode(), draft.title(),
                         draft.category(), draft.priority(), draft.precondition(), draft.expected(),
                         draft.domainTag(), draft.reviewStatus(), draft.source(), draft.capability(),
-                        draft.description()));
+                        draft.description(), draft.safetyLevel()));
                 yield 1L;
             }
             case "steps" -> List.of();

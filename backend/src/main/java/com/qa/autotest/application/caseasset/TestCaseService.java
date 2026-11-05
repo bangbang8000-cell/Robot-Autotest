@@ -10,6 +10,7 @@ import com.qa.autotest.common.tenant.TenantContext;
 import com.qa.autotest.domain.caseasset.CapabilityStat;
 import com.qa.autotest.domain.caseasset.Priority;
 import com.qa.autotest.domain.caseasset.ReviewStatus;
+import com.qa.autotest.domain.caseasset.SafetyLevel;
 import com.qa.autotest.domain.caseasset.TestCase;
 import com.qa.autotest.domain.caseasset.TestCaseStep;
 import com.qa.autotest.domain.common.PageResult;
@@ -33,26 +34,30 @@ public class TestCaseService {
     public record StepCommand(int stepNo, String action, String expectation) {
     }
 
-    /** 用例写入表单。 */
+    /** 用例写入表单。safetyLevel 留空即 LX（未判定，ADR-0013）。 */
     public record CaseCommand(String caseCode, String title, String category, String priority,
                               String precondition, String expected, String domainTag,
-                              String capability, String description, List<StepCommand> steps) {
+                              String capability, String description, List<StepCommand> steps,
+                              String safetyLevel) {
     }
 
     /** 用例详情（台账 + 步骤）。 */
     public record CaseDetail(TestCase testCase, List<TestCaseStep> steps) {
     }
 
-    /** 批量动作（UX-02，FR-v0.2-37）。 */
-    public static final Set<String> BATCH_ACTIONS =
-            Set.of("submit", "approve", "reject", "setPriority", "setDomainTag", "delete");
+    /** 批量动作（UX-02，FR-v0.2-37；setSafetyLevel 为 G2-3 / ADR-0013 的人工补判入口）。 */
+    public static final Set<String> BATCH_ACTIONS = Set.of("submit", "approve", "reject",
+            "setPriority", "setDomainTag", "setSafetyLevel", "delete");
 
     /** 单次批量上限（FR-v0.2-39）。 */
     public static final int BATCH_MAX = 200;
 
-    /** 批量请求：reject 必须带 comment，setPriority 必须带 priority，setDomainTag 必须带 domainTag。 */
+    /**
+     * 批量请求：reject 必须带 comment，setPriority 必须带 priority，
+     * setDomainTag 必须带 domainTag，setSafetyLevel 必须带 safetyLevel。
+     */
     public record BatchRequest(String action, List<Long> ids, String comment,
-                               String priority, String domainTag) {
+                               String priority, String domainTag, String safetyLevel) {
     }
 
     /** 逐条结果：失败带稳定错误码名（NOT_FOUND / CONFLICT / INTERNAL_ERROR）。 */
@@ -89,10 +94,12 @@ public class TestCaseService {
     }
 
     public PageResult<TestCase> page(long projectId, String keyword, String domain, String priority,
-                                     String reviewStatus, String capability, int page, int size) {
+                                     String reviewStatus, String capability, String safetyLevel,
+                                     int page, int size) {
         access.bindProject(projectId);
         access.require(PermissionResource.CASE, PermissionAction.READ);
-        return cases.page(projectId, keyword, domain, priority, reviewStatus, capability, page, size);
+        return cases.page(projectId, keyword, domain, priority, reviewStatus, capability,
+                safetyLevel, page, size);
     }
 
     public CaseDetail get(long projectId, long id) {
@@ -111,7 +118,8 @@ public class TestCaseService {
         if (cases.codeExists(projectId, code, null)) {
             throw new BusinessException(ErrorCode.CONFLICT, "用例编号已存在：" + code);
         }
-        long id = cases.insert(toCase(null, projectId, command, ReviewStatus.DRAFT), TenantContext.userId());
+        long id = cases.insert(toCase(null, projectId, command, ReviewStatus.DRAFT,
+                resolveSafetyLevel(command.safetyLevel(), null)), TenantContext.userId());
         saveSteps(id, command.steps());
         audit.record("case.create", "test_case", String.valueOf(id), "code=" + code);
         return get(projectId, id);
@@ -127,7 +135,8 @@ public class TestCaseService {
         if (!code.equals(existing.caseCode()) && cases.codeExists(projectId, code, id)) {
             throw new BusinessException(ErrorCode.CONFLICT, "用例编号已存在：" + code);
         }
-        cases.update(toCase(id, projectId, command, ReviewStatus.from(existing.reviewStatus())),
+        cases.update(toCase(id, projectId, command, ReviewStatus.from(existing.reviewStatus()),
+                resolveSafetyLevel(command.safetyLevel(), existing.safetyLevel())),
                 TenantContext.userId());
         if (command.steps() != null) {
             saveSteps(id, command.steps());
@@ -215,6 +224,7 @@ public class TestCaseService {
             case "reject" -> requireText(request.comment(), "驳回必须填写意见");
             case "setPriority" -> requirePriority(request.priority());
             case "setDomainTag" -> requireText(request.domainTag(), "技术域标签不能为空");
+            case "setSafetyLevel" -> requireSafetyLevel(request.safetyLevel());
             default -> {
             }
         }
@@ -279,6 +289,11 @@ public class TestCaseService {
                     cases.updateDomainTag(projectId, id, domainTag, TenantContext.userId());
                     detail = "code=" + existing.caseCode() + "; domain=" + domainTag;
                 }
+                case "setSafetyLevel" -> {
+                    String safetyLevel = requireSafetyLevel(req.safetyLevel());
+                    cases.updateSafetyLevel(projectId, id, safetyLevel, TenantContext.userId());
+                    detail = "code=" + existing.caseCode() + "; safetyLevel=" + safetyLevel;
+                }
                 case "delete" -> {
                     if (current == ReviewStatus.APPROVED) {
                         throw new BusinessException(ErrorCode.CONFLICT, "已通过用例不可批量删除，请先驳回");
@@ -314,6 +329,24 @@ public class TestCaseService {
         }
     }
 
+    private static String requireSafetyLevel(String value) {
+        requireText(value, "改安全级必须指定 L0/L1/L2/LX");
+        try {
+            return SafetyLevel.from(value).name();
+        } catch (IllegalArgumentException ex) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, ex.getMessage());
+        }
+    }
+
+    /** 安全级取值：表单留空时沿用 fallback，create 无 fallback 即 LX（未判定）。 */
+    private static String resolveSafetyLevel(String value, String fallback) {
+        if (value == null || value.isBlank()) {
+            return fallback == null || fallback.isBlank()
+                    ? SafetyLevel.LX.name() : SafetyLevel.from(fallback).name();
+        }
+        return requireSafetyLevel(value);
+    }
+
     private void saveSteps(long caseId, List<StepCommand> steps) {
         if (steps == null) {
             return;
@@ -328,7 +361,8 @@ public class TestCaseService {
         cases.replaceSteps(caseId, rows, TenantContext.userId());
     }
 
-    private static TestCase toCase(Long id, long projectId, CaseCommand c, ReviewStatus status) {
+    private static TestCase toCase(Long id, long projectId, CaseCommand c, ReviewStatus status,
+                                   String safetyLevel) {
         Priority priority;
         try {
             priority = Priority.from(c.priority());
@@ -337,7 +371,7 @@ public class TestCaseService {
         }
         return new TestCase(id, projectId, requireCode(c.caseCode()), c.title(), c.category(),
                 priority.name(), c.precondition(), c.expected(), c.domainTag(), status.code(),
-                "manual", c.capability(), c.description());
+                "manual", c.capability(), c.description(), safetyLevel);
     }
 
     private static String requireCode(String code) {

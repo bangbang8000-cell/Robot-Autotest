@@ -4,6 +4,7 @@ import com.qa.autotest.application.iam.AccessControlService;
 import com.qa.autotest.application.repository.TestSetRepository;
 import com.qa.autotest.common.BusinessException;
 import com.qa.autotest.common.ErrorCode;
+import com.qa.autotest.domain.caseasset.SafetyLevel;
 import com.qa.autotest.domain.caseasset.TestCase;
 import com.qa.autotest.domain.caseasset.TestSet;
 import com.qa.autotest.domain.execution.RunRecord;
@@ -68,6 +69,18 @@ public class TestSetRunService {
                             + " 条用例编号为空（id=" + joinIds(blank) + "），无法解析脚本绑定");
         }
 
+        // G2-3 / ADR-0013：集合内存在 L2 高危或 LX 未判定用例即整单拒绝，不静默剔除
+        List<String> blocked = cases.stream()
+                .filter(testCase -> SafetyLevel.from(testCase.safetyLevel()).blocksExecution())
+                .map(testCase -> testCase.caseCode().trim() + "("
+                        + SafetyLevel.from(testCase.safetyLevel()).name() + ")")
+                .toList();
+        if (!blocked.isEmpty()) {
+            throw new BusinessException(ErrorCode.SAFETY_LEVEL_BLOCKED,
+                    "用例集 " + set.setCode() + " 含禁止自动执行的用例（L2 高危 / LX 未判定按 L2 对待）："
+                            + blockedSummary(blocked));
+        }
+
         Resolution resolution = resolve(cmd.projectId(), cases);
         if (!resolution.unbound().isEmpty()) {
             throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
@@ -89,6 +102,13 @@ public class TestSetRunService {
         List<String> values = new ArrayList<>();
         ids.forEach(id -> values.add(String.valueOf(id)));
         return String.join(", ", values);
+    }
+
+    /** 拒绝文案：超过 10 条只列前 10 条。 */
+    private static String blockedSummary(List<String> blocked) {
+        int limit = 10;
+        String head = String.join(", ", blocked.subList(0, Math.min(limit, blocked.size())));
+        return blocked.size() <= limit ? head : head + " 等 " + blocked.size() + " 条";
     }
 
     /** 用例编号 → 套件路径与测试名；未命中即为未绑定。 */

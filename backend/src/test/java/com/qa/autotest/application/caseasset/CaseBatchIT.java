@@ -75,21 +75,28 @@ class CaseBatchIT {
             // ---- 改优先级 / 改技术域：任意状态可改 ----
             TestCaseService.BatchResult pr = service.batch(projectId,
                     new TestCaseService.BatchRequest("setPriority",
-                            List.of(draftA, draftB), null, "P1", null));
+                            List.of(draftA, draftB), null, "P1", null, null));
             assertThat(pr.succeeded()).as("setPriority 两条都成功").isEqualTo(2);
             assertThat(priorityOf(jdbc, draftA)).isEqualTo("P1");
             assertThat(priorityOf(jdbc, draftB)).isEqualTo("P1");
 
             TestCaseService.BatchResult dm = service.batch(projectId,
                     new TestCaseService.BatchRequest("setDomainTag",
-                            List.of(draftA), null, null, "roce"));
+                            List.of(draftA), null, null, "roce", null));
             assertThat(dm.succeeded()).isEqualTo(1);
             assertThat(domainOf(jdbc, draftA)).isEqualTo("roce");
+
+            // ---- 改安全级（G2-3 / ADR-0013）：人工补判 LX → L2 落库 ----
+            TestCaseService.BatchResult sf = service.batch(projectId,
+                    new TestCaseService.BatchRequest("setSafetyLevel",
+                            List.of(draftD), null, null, null, "L2"));
+            assertThat(sf.succeeded()).as("setSafetyLevel 一条成功").isEqualTo(1);
+            assertThat(safetyOf(jdbc, draftD)).isEqualTo("L2");
 
             // ---- 提交评审：draft 可提交，approved 冲突（TC-BAT-03 形态）----
             TestCaseService.BatchResult sb = service.batch(projectId,
                     new TestCaseService.BatchRequest("submit",
-                            List.of(draftA, draftB, approvedC), null, null, null));
+                            List.of(draftA, draftB, approvedC), null, null, null, null));
             assertThat(sb.total()).isEqualTo(3);
             assertThat(sb.succeeded()).isEqualTo(2);
             assertThat(sb.failed()).isEqualTo(1);
@@ -104,7 +111,7 @@ class CaseBatchIT {
             // ---- 驳回必填意见：pending → rejected，意见落库 ----
             TestCaseService.BatchResult rj = service.batch(projectId,
                     new TestCaseService.BatchRequest("reject",
-                            List.of(draftB), "批量驳回：步骤缺预期", null, null));
+                            List.of(draftB), "批量驳回：步骤缺预期", null, null, null));
             assertThat(rj.succeeded()).isEqualTo(1);
             assertThat(reviewStatusOf(jdbc, draftB)).isEqualTo("rejected");
             assertThat(commentOf(jdbc, draftB)).contains("批量驳回");
@@ -113,7 +120,7 @@ class CaseBatchIT {
             long draftE = seedCase(jdbc, projectId, "BAT-" + stamp + "-E", "draft");
             TestCaseService.BatchResult del = service.batch(projectId,
                     new TestCaseService.BatchRequest("delete",
-                            List.of(approvedC, draftA, draftE), null, null, null));
+                            List.of(approvedC, draftA, draftE), null, null, null, null));
             assertThat(del.succeeded()).as("approvedC 冲突，draftA/draftE 删除").isEqualTo(2);
             TestCaseService.BatchItemResult delFail = del.items().stream()
                     .filter(i -> !i.ok()).findFirst().orElseThrow();
@@ -172,14 +179,14 @@ class CaseBatchIT {
 
             // TC-BAT-06：空 ids → 400
             assertThatThrownBy(() -> service.batch(pid,
-                    new TestCaseService.BatchRequest("approve", List.of(), null, null, null)))
+                    new TestCaseService.BatchRequest("approve", List.of(), null, null, null, null)))
                     .isInstanceOfSatisfying(BusinessException.class, ex ->
                             assertThat(ex.errorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT));
 
             // TC-BAT-05：201 条 → 400，提示分批
             List<Long> tooMany = LongStream.rangeClosed(1, 201).boxed().toList();
             assertThatThrownBy(() -> service.batch(pid,
-                    new TestCaseService.BatchRequest("approve", tooMany, null, null, null)))
+                    new TestCaseService.BatchRequest("approve", tooMany, null, null, null, null)))
                     .isInstanceOfSatisfying(BusinessException.class, ex -> {
                         assertThat(ex.errorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
                         assertThat(ex.getMessage()).contains("分批");
@@ -187,21 +194,30 @@ class CaseBatchIT {
 
             // 未知 action → 400
             assertThatThrownBy(() -> service.batch(pid,
-                    new TestCaseService.BatchRequest("purge", List.of(1L), null, null, null)))
+                    new TestCaseService.BatchRequest("purge", List.of(1L), null, null, null, null)))
                     .isInstanceOfSatisfying(BusinessException.class, ex ->
                             assertThat(ex.errorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT));
 
             // 驳回缺意见 → 400
             assertThatThrownBy(() -> service.batch(pid,
-                    new TestCaseService.BatchRequest("reject", List.of(1L), " ", null, null)))
+                    new TestCaseService.BatchRequest("reject", List.of(1L), " ", null, null, null)))
                     .isInstanceOfSatisfying(BusinessException.class, ex ->
                             assertThat(ex.errorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT));
 
             // 非法优先级 → 400
             assertThatThrownBy(() -> service.batch(pid,
-                    new TestCaseService.BatchRequest("setPriority", List.of(1L), null, "P9", null)))
+                    new TestCaseService.BatchRequest("setPriority", List.of(1L), null, "P9", null, null)))
                     .isInstanceOfSatisfying(BusinessException.class, ex ->
                             assertThat(ex.errorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT));
+
+            // 非法安全级 → 400（G2-3：值域只认 L0/L1/L2/LX）
+            assertThatThrownBy(() -> service.batch(pid,
+                    new TestCaseService.BatchRequest("setSafetyLevel", List.of(1L), null, null,
+                            null, "L9")))
+                    .isInstanceOfSatisfying(BusinessException.class, ex -> {
+                        assertThat(ex.errorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+                        assertThat(ex.getMessage()).contains("安全级");
+                    });
 
             assertThat(cases.countByProject(projectId))
                     .as("400 路径不产生任何写操作").isEqualTo(before);
@@ -238,7 +254,7 @@ class CaseBatchIT {
 
             TestCaseService.BatchResult result = service.batch(projectA,
                     new TestCaseService.BatchRequest("approve",
-                            List.of(b1, b2), null, null, null));
+                            List.of(b1, b2), null, null, null, null));
             assertThat(result.failed()).as("两条都逐条失败").isEqualTo(2);
             assertThat(result.items()).allSatisfy(i -> {
                 assertThat(i.ok()).isFalse();
@@ -301,6 +317,11 @@ class CaseBatchIT {
 
     private static String domainOf(JdbcTemplate jdbc, long id) {
         return jdbc.queryForObject("SELECT domain_tag FROM test_case WHERE id = ?", String.class, id);
+    }
+
+    private static String safetyOf(JdbcTemplate jdbc, long id) {
+        return jdbc.queryForObject(
+                "SELECT safety_level FROM test_case WHERE id = ?", String.class, id);
     }
 
     private static String commentOf(JdbcTemplate jdbc, long id) {

@@ -32,6 +32,6 @@ public class CapabilityService {
     public PageResult<TestCase> casesOf(long projectId, String capability, int page, int size) {
         access.bindProject(projectId);
         access.require(PermissionResource.CASE, PermissionAction.READ);
-        return cases.page(projectId, null, null, null, null, capability, page, size);
+        return cases.page(projectId, null, null, null, null, capability, null, page, size);
     }
 }

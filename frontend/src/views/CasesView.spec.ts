@@ -23,31 +23,17 @@ vi.mock('@/api/execution', () => ({
   },
 }))
 
+// 列表数据放在 hoisted 容器里而不是写死在工厂里：个别用例（L2 禁用执行）需要换一整页数据
+const { pageItems } = vi.hoisted(() => ({
+  pageItems: [] as Array<Record<string, string | number | null>>,
+}))
+
 // 工厂内直接写死数据：vi.mock 会被提升到 import 之前，引用外部 const 会 TDZ 报错
 vi.mock('@/api/cases', () => ({
   caseApi: {
     page: vi.fn(async () => ({
-      items: [
-        {
-          id: 1,
-          caseCode: 'TC-001',
-          title: 'first',
-          priority: 'P1',
-          reviewStatus: 'draft',
-          domainTag: 'roce',
-          capability: 'throughput',
-        },
-        {
-          id: 2,
-          caseCode: 'TC-002',
-          title: 'second',
-          priority: 'P2',
-          reviewStatus: 'approved',
-          domainTag: 'roce',
-          capability: 'latency',
-        },
-      ],
-      total: 2,
+      items: pageItems,
+      total: pageItems.length,
       page: 1,
       size: 10,
     })),
@@ -97,6 +83,30 @@ beforeEach(() => {
   pinia = createPinia()
   setActivePinia(pinia)
   useAuthStore().projectId = 1
+  pageItems.splice(
+    0,
+    pageItems.length,
+    {
+      id: 1,
+      caseCode: 'TC-001',
+      title: 'first',
+      priority: 'P1',
+      safetyLevel: 'L1',
+      reviewStatus: 'draft',
+      domainTag: 'roce',
+      capability: 'throughput',
+    },
+    {
+      id: 2,
+      caseCode: 'TC-002',
+      title: 'second',
+      priority: 'P2',
+      safetyLevel: 'L1',
+      reviewStatus: 'approved',
+      domainTag: 'roce',
+      capability: 'latency',
+    },
+  )
 })
 
 afterEach(() => {
@@ -145,7 +155,8 @@ describe('CasesView 勾选接线', () => {
 
   it('状态列走 StatusTag，图标与文字双编码', async () => {
     const root = await mountView()
-    expect(root.querySelectorAll('.status-tag').length).toBe(2)
+    // 每行两个徽标：评审状态 + 执行安全级（L1/L2/LX 不是普通文本，要能一眼分级）
+    expect(root.querySelectorAll('.status-tag').length).toBe(4)
   })
 })
 
@@ -195,5 +206,27 @@ describe('CasesView 执行所选（EXEC-02）', () => {
 
     expect(root.textContent).toContain('TC-001')
     expect(root.textContent).toContain(i18n.global.t('cases.batch.selected', { count: 1 }))
+  })
+
+  it('选中 L2 用例时禁用执行并给出原因（ADR-0013）', async () => {
+    pageItems.splice(0, pageItems.length, {
+      id: 7,
+      caseCode: 'DESTRUCT-001',
+      title: 'wipe disk',
+      priority: 'P1',
+      safetyLevel: 'L2',
+      reviewStatus: 'approved',
+      domainTag: 'storage',
+      capability: null,
+    })
+    const root = await mountView()
+    checkboxes(root)[1].click()
+    await nextTick()
+
+    // 按钮禁用只是提前告知，真正的拦截在后端（整单 403 SAFETY_LEVEL_BLOCKED）
+    expect(button(root, i18n.global.t('cases.run.open')).disabled).toBe(true)
+    expect(root.textContent).toContain(
+      i18n.global.t('cases.run.blocked', { codes: 'DESTRUCT-001' }),
+    )
   })
 })

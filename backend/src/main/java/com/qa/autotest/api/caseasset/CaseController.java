@@ -51,10 +51,11 @@ public class CaseController {
             @RequestParam(required = false) String priority,
             @RequestParam(required = false) String reviewStatus,
             @RequestParam(required = false) String capability,
+            @RequestParam(required = false) String safetyLevel,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size) {
         return ApiResponse.ok(cases.page(projectId, keyword, domain, priority, reviewStatus,
-                capability, page, Math.min(size, 200)));
+                capability, safetyLevel, page, Math.min(size, 200)));
     }
 
     @GetMapping("/cases/{id}")

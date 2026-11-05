@@ -8,6 +8,7 @@ import com.qa.autotest.common.ErrorCode;
 import com.qa.autotest.common.tenant.TenantContext;
 import com.qa.autotest.domain.caseasset.Priority;
 import com.qa.autotest.domain.caseasset.ReviewStatus;
+import com.qa.autotest.domain.caseasset.SafetyLevel;
 import com.qa.autotest.domain.caseasset.TestCase;
 import com.qa.autotest.domain.iam.PermissionAction;
 import com.qa.autotest.domain.iam.PermissionResource;
@@ -58,10 +59,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CaseImportService {
 
-    /** 预览行。 */
+    /** 预览行。safetyLevel 缺列即 LX（未判定，ADR-0013）。 */
     public record ImportRow(int rowNum, String caseCode, String title, String category,
                             String priority, String precondition, String expected, String domainTag,
-                            String capability, String description) {
+                            String capability, String description, String safetyLevel) {
     }
 
     /** 一行校验错误。 */
@@ -95,6 +96,9 @@ public class CaseImportService {
         alias("domainTag", "技术域", "域", "domain", "domain_tag");
         alias("capability", "能力", "能力项", "capability");
         alias("description", "描述", "说明", "description");
+        // 执行安全级（G2-3 / ADR-0013）：真实台账原本没有这一列，缺列一律落 LX（未判定），
+        // 由人工用批量动作 setSafetyLevel 补判；有列时按 L0/L1/L2/LX 校验，非法值判行错。
+        alias("safetyLevel", "安全级", "安全级别", "安全等级", "safety_level", "safetylevel");
     }
 
     private static void alias(String field, String... names) {
@@ -142,7 +146,8 @@ public class CaseImportService {
                 String code = cell(formatter, row, columns.get("caseCode"));
                 String title = cell(formatter, row, columns.get("title"));
                 String rawPriority = cell(formatter, row, columns.get("priority"));
-                if (code.isEmpty() && title.isEmpty() && rawPriority.isEmpty()) {
+                String rawSafety = cell(formatter, row, columns.get("safetyLevel"));
+                if (code.isEmpty() && title.isEmpty() && rawPriority.isEmpty() && rawSafety.isEmpty()) {
                     continue;
                 }
                 total++;
@@ -170,13 +175,20 @@ public class CaseImportService {
                     errors.add(new RowError(rowNum, "priority", ex.getMessage()));
                     continue;
                 }
+                String safetyLevel;
+                try {
+                    safetyLevel = SafetyLevel.from(rawSafety).name();
+                } catch (IllegalArgumentException ex) {
+                    errors.add(new RowError(rowNum, "safetyLevel", ex.getMessage()));
+                    continue;
+                }
                 rows.add(new ImportRow(rowNum, code, title,
                         cell(formatter, row, columns.get("category")), priority,
                         cell(formatter, row, columns.get("precondition")),
                         cell(formatter, row, columns.get("expected")),
                         cell(formatter, row, columns.get("domainTag")),
                         cell(formatter, row, columns.get("capability")),
-                        cell(formatter, row, columns.get("description"))));
+                        cell(formatter, row, columns.get("description")), safetyLevel));
             }
             int valid = rows.size();
             return new ImportPreview(total, valid, errors, rows);
@@ -204,7 +216,7 @@ public class CaseImportService {
             TestCase entity = new TestCase(null, projectId, row.caseCode().trim(), row.title(),
                     row.category(), Priority.from(row.priority()).name(), row.precondition(),
                     row.expected(), row.domainTag(), ReviewStatus.DRAFT.code(), "excel",
-                    row.capability(), row.description());
+                    row.capability(), row.description(), SafetyLevel.from(row.safetyLevel()).name());
             cases.insert(entity, TenantContext.userId());
             imported++;
         }

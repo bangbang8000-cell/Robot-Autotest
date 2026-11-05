@@ -3,6 +3,7 @@ package com.qa.autotest.infrastructure;
 import com.qa.autotest.application.repository.TestCaseRepository;
 import com.qa.autotest.common.tenant.TenantGuard;
 import com.qa.autotest.domain.caseasset.CapabilityStat;
+import com.qa.autotest.domain.caseasset.SafetyLevel;
 import com.qa.autotest.domain.caseasset.TestCase;
 import com.qa.autotest.domain.caseasset.TestCaseStep;
 import com.qa.autotest.domain.common.PageResult;
@@ -25,7 +26,7 @@ public class TestCaseRepositoryJdbc implements TestCaseRepository {
 
     private static final String SELECT = """
             SELECT id, project_id, case_code, title, case_kind, priority, precondition, expected,
-                   domain_tag, review_status, source, capability, description
+                   domain_tag, review_status, source, capability, description, safety_level
               FROM test_case
             """;
 
@@ -34,7 +35,7 @@ public class TestCaseRepositoryJdbc implements TestCaseRepository {
             rs.getString("title"), rs.getString("case_kind"), rs.getString("priority"),
             rs.getString("precondition"), rs.getString("expected"), rs.getString("domain_tag"),
             rs.getString("review_status"), rs.getString("source"), rs.getString("capability"),
-            rs.getString("description"));
+            rs.getString("description"), rs.getString("safety_level"));
 
     private static final RowMapper<TestCaseStep> STEP_MAPPER = (rs, rowNum) -> new TestCaseStep(
             rs.getLong("id"), rs.getLong("test_case_id"), rs.getInt("step_no"),
@@ -48,7 +49,8 @@ public class TestCaseRepositoryJdbc implements TestCaseRepository {
 
     @Override
     public PageResult<TestCase> page(long projectId, String keyword, String domain, String priority,
-                                     String reviewStatus, String capability, int page, int size) {
+                                     String reviewStatus, String capability, String safetyLevel,
+                                     int page, int size) {
         StringBuilder where = new StringBuilder(" WHERE project_id = ?");
         List<Object> args = new ArrayList<>();
         args.add(projectId);
@@ -73,6 +75,10 @@ public class TestCaseRepositoryJdbc implements TestCaseRepository {
         if (capability != null && !capability.isBlank()) {
             where.append(" AND capability = ?");
             args.add(capability);
+        }
+        if (safetyLevel != null && !safetyLevel.isBlank()) {
+            where.append(" AND safety_level = ?");
+            args.add(safetyLevel.trim().toUpperCase(java.util.Locale.ROOT));
         }
         String countSql = "SELECT COUNT(*) FROM test_case" + where;
         TenantGuard.requireProjectScope(countSql, "test_case");
@@ -105,25 +111,26 @@ public class TestCaseRepositoryJdbc implements TestCaseRepository {
         jdbc.update(connection -> {
             PreparedStatement ps = connection.prepareStatement("""
                     INSERT INTO test_case
-                      (project_id, case_code, title, case_kind, source_type, priority, domain_tag,
-                       status, description, precondition, expected, review_status, source,
-                       capability, created_by, updated_by)
-                    VALUES (?, ?, ?, ?, 'ledger', ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?)
+                      (project_id, case_code, title, case_kind, source_type, priority, safety_level,
+                       domain_tag, status, description, precondition, expected, review_status,
+                       source, capability, created_by, updated_by)
+                    VALUES (?, ?, ?, ?, 'ledger', ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, Statement.RETURN_GENERATED_KEYS);
             ps.setLong(1, testCase.projectId());
             ps.setString(2, testCase.caseCode());
             ps.setString(3, testCase.title());
             ps.setString(4, testCase.category());
             ps.setString(5, testCase.priority());
-            ps.setString(6, testCase.domainTag());
-            ps.setString(7, testCase.description());
-            ps.setString(8, testCase.precondition());
-            ps.setString(9, testCase.expected());
-            ps.setString(10, testCase.reviewStatus());
-            ps.setString(11, testCase.source());
-            ps.setString(12, testCase.capability());
-            ps.setObject(13, operatorId, java.sql.Types.BIGINT);
+            ps.setString(6, SafetyLevel.from(testCase.safetyLevel()).name());
+            ps.setString(7, testCase.domainTag());
+            ps.setString(8, testCase.description());
+            ps.setString(9, testCase.precondition());
+            ps.setString(10, testCase.expected());
+            ps.setString(11, testCase.reviewStatus());
+            ps.setString(12, testCase.source());
+            ps.setString(13, testCase.capability());
             ps.setObject(14, operatorId, java.sql.Types.BIGINT);
+            ps.setObject(15, operatorId, java.sql.Types.BIGINT);
             return ps;
         }, keyHolder);
         return keyHolder.getKey() == null ? 0 : keyHolder.getKey().longValue();
@@ -132,13 +139,14 @@ public class TestCaseRepositoryJdbc implements TestCaseRepository {
     @Override
     public void update(TestCase testCase, Long operatorId) {
         String sql = """
-                UPDATE test_case SET title = ?, case_kind = ?, priority = ?, domain_tag = ?,
-                       description = ?, precondition = ?, expected = ?, review_status = ?,
-                       source = ?, capability = ?, updated_by = ?
+                UPDATE test_case SET title = ?, case_kind = ?, priority = ?, safety_level = ?,
+                       domain_tag = ?, description = ?, precondition = ?, expected = ?,
+                       review_status = ?, source = ?, capability = ?, updated_by = ?
                  WHERE project_id = ? AND id = ?
                 """;
         TenantGuard.requireProjectScope(sql, "test_case");
         jdbc.update(sql, testCase.title(), testCase.category(), testCase.priority(),
+                SafetyLevel.from(testCase.safetyLevel()).name(),
                 testCase.domainTag(), testCase.description(), testCase.precondition(),
                 testCase.expected(), testCase.reviewStatus(), testCase.source(),
                 testCase.capability(), operatorId, testCase.projectId(), testCase.id());
@@ -218,6 +226,16 @@ public class TestCaseRepositoryJdbc implements TestCaseRepository {
                 """;
         TenantGuard.requireProjectScope(sql, "test_case");
         jdbc.update(sql, domainTag, operatorId, projectId, id);
+    }
+
+    @Override
+    public void updateSafetyLevel(long projectId, long id, String safetyLevel, Long operatorId) {
+        String sql = """
+                UPDATE test_case SET safety_level = ?, updated_by = ?
+                 WHERE project_id = ? AND id = ?
+                """;
+        TenantGuard.requireProjectScope(sql, "test_case");
+        jdbc.update(sql, SafetyLevel.from(safetyLevel).name(), operatorId, projectId, id);
     }
 
     @Override

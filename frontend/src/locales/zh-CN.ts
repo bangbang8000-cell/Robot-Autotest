@@ -117,6 +117,12 @@ export default {
       member: '成员',
       viewer: '只读成员',
     },
+    safetyLevel: {
+      l0: 'L0 只读',
+      l1: 'L1 可逆写',
+      l2: 'L2 高危',
+      lx: 'LX 未判定',
+    },
   },
   menu: {
     label: '主导航',
@@ -259,6 +265,7 @@ export default {
     NETWORK_ERROR: '无法连接服务器，请检查网络',
     MALFORMED_RESPONSE: '服务器返回了无法识别的响应',
     DOWNLOAD_FAILED: '文件下载失败',
+    SAFETY_LEVEL_BLOCKED: '该用例安全级禁止自动执行（L2 高危 / LX 未判定按 L2 对待）',
     UNKNOWN: '操作失败',
   },
   editor: {
@@ -358,11 +365,13 @@ export default {
   cases: {
     allPriority: '全部优先级',
     allStatus: '全部状态',
+    allSafety: '全部安全级',
     domain: '技术域',
     caseCode: '用例编号',
     title: '用例名称',
     category: '分类',
     priority: '优先级',
+    safetyLevel: '安全级',
     status: '评审状态',
     capability: '能力',
     precondition: '前置条件',
@@ -383,6 +392,7 @@ export default {
       reject: '驳回',
       setPriority: '改优先级',
       setDomainTag: '改技术域',
+      setSafetyLevel: '改安全级',
       delete: '删除',
       rejectComment: '驳回意见（必填）',
       confirmDelete: '确认删除选中的用例？已通过的用例不会被删除。',
@@ -410,6 +420,7 @@ export default {
       tag: '附加标签（可选）',
       submit: '开始执行',
       created: '已创建运行 {runId}；执行严格串行排队，可在运行记录页查看',
+      blocked: '所选含 L2 高危 / LX 未判定用例（{codes}），已禁用自动执行；请先用「改安全级」补判',
     },
   },
   execution: {

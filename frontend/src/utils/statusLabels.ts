@@ -20,18 +20,21 @@
  */
 import { i18n } from '@/locales'
 
-/** 五组受控词表。数组同时供下拉框选项使用，避免选项和映射两处漂移。 */
+/** 六组受控词表。数组同时供下拉框选项使用，避免选项和映射两处漂移。 */
 export const REVIEW_STATUSES = ['draft', 'pending', 'approved', 'rejected'] as const
 export const RUN_STATUSES = ['queued', 'preparing', 'running', 'finished', 'failed', 'canceled'] as const
 export const PRIORITIES = ['P0', 'P1', 'P2', 'P3'] as const
 export const TRIGGER_TYPES = ['manual', 'schedule', 'ci'] as const
 export const MEMBER_ROLES = ['owner', 'admin', 'pm', 'engineer', 'member', 'viewer'] as const
+/** 执行安全级（ADR-0013）：L0 只读 / L1 可逆写 / L2 高危 / LX 未判定 */
+export const SAFETY_LEVELS = ['L0', 'L1', 'L2', 'LX'] as const
 
 export type ReviewStatus = (typeof REVIEW_STATUSES)[number]
 export type RunStatus = (typeof RUN_STATUSES)[number]
 export type Priority = (typeof PRIORITIES)[number]
 export type TriggerType = (typeof TRIGGER_TYPES)[number]
 export type MemberRole = (typeof MEMBER_ROLES)[number]
+export type SafetyLevel = (typeof SAFETY_LEVELS)[number]
 
 /**
  * 组名 → 取值集合。守门脚本读这份声明。
@@ -44,6 +47,7 @@ export const ENUM_GROUPS = {
   priority: PRIORITIES,
   triggerType: TRIGGER_TYPES,
   memberRole: MEMBER_ROLES,
+  safetyLevel: SAFETY_LEVELS,
 } as const
 
 export type EnumGroup = keyof typeof ENUM_GROUPS
@@ -79,6 +83,40 @@ export function triggerTypeLabel(value: string | null | undefined): string {
 /** 项目内成员角色：owner / admin / pm / engineer / member / viewer */
 export function memberRoleLabel(value: string | null | undefined): string {
   return lookup('memberRole', value)
+}
+
+/** 执行安全级：L0 只读 / L1 可逆写 / L2 高危 / LX 未判定 */
+export function safetyLevelLabel(value: string | null | undefined): string {
+  return lookup('safetyLevel', value)
+}
+
+/** 执行安全级 → 色档：L2 红、LX 黄（按 L2 对待）、L1 绿、L0 灰。 */
+export function safetyLevelTone(value: string | null | undefined): StatusTone {
+  switch ((value ?? '').toUpperCase()) {
+    case 'L0':
+      return 'neutral'
+    case 'L1':
+      return 'ok'
+    case 'L2':
+      return 'fail'
+    case 'LX':
+      return 'warn'
+    default:
+      return 'neutral'
+  }
+}
+
+/**
+ * 该安全级是否禁止自动执行（ADR-0013）：L2 高危、LX 未判定。
+ *
+ * 与后端 `SafetyLevel#blocksExecution` 同口径——前端只负责禁用按钮并说明原因，
+ * 真正的拦截在 `CaseRunService` / `TestSetRunService`，前端不拦也必须被拒。
+ */
+export function blocksExecution(value: string | null | undefined): boolean {
+  const level = (value ?? '').toUpperCase()
+  // 空值 / 未知值一律按 LX 处理：安全级没判就不许跑（ADR-0013），
+  // 宁可多拦一次让人补判，也不能让高危用例静默跑上真实 DUT
+  return level !== 'L0' && level !== 'L1'
 }
 
 /**

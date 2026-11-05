@@ -4,6 +4,7 @@ import com.qa.autotest.application.iam.AccessControlService;
 import com.qa.autotest.application.repository.TestCaseRepository;
 import com.qa.autotest.common.BusinessException;
 import com.qa.autotest.common.ErrorCode;
+import com.qa.autotest.domain.caseasset.SafetyLevel;
 import com.qa.autotest.domain.caseasset.TestCase;
 import com.qa.autotest.domain.execution.RunRecord;
 import com.qa.autotest.domain.iam.PermissionAction;
@@ -61,6 +62,7 @@ public class CaseRunService {
         access.require(PermissionResource.EXECUTION, PermissionAction.EXECUTE);
 
         Set<String> codes = new LinkedHashSet<>();
+        List<String> blocked = new ArrayList<>();
         for (Long id : ids) {
             if (id == null) {
                 continue;
@@ -72,10 +74,20 @@ public class CaseRunService {
                 throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
                         "用例缺少编号，无法解析脚本: " + id);
             }
+            SafetyLevel level = SafetyLevel.from(testCase.safetyLevel());
+            if (level.blocksExecution()) {
+                blocked.add(testCase.caseCode().trim() + "(" + level.name() + ")");
+            }
             codes.add(testCase.caseCode().trim());
         }
         if (codes.isEmpty()) {
             throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "至少选择一条用例");
+        }
+        // G2-3 / ADR-0013：L2 高危与 LX 未判定一律不得自动执行，整单拒绝并列明编号
+        if (!blocked.isEmpty()) {
+            throw new BusinessException(ErrorCode.SAFETY_LEVEL_BLOCKED,
+                    "以下用例安全级禁止自动执行（L2 高危 / LX 未判定按 L2 对待）："
+                            + blockedSummary(blocked));
         }
 
         Map<String, List<CaseScriptResolver.Binding>> bindings = resolver.resolve(cmd.projectId(), codes);
@@ -106,6 +118,13 @@ public class CaseRunService {
                 cmd.environmentId(), cmd.deviceKeys(), cmd.concurrency(),
                 cmd.timeoutSeconds(), cmd.includeTag(), cmd.runRequestId(),
                 new ArrayList<>(testNames), "cases"));
+    }
+
+    /** 拒绝文案：超过 10 条只列前 10 条，避免长列表撑爆界面。 */
+    private static String blockedSummary(List<String> blocked) {
+        int limit = 10;
+        String head = String.join(", ", blocked.subList(0, Math.min(limit, blocked.size())));
+        return blocked.size() <= limit ? head : head + " 等 " + blocked.size() + " 条";
     }
 
     public record CaseRunCommand(long projectId,

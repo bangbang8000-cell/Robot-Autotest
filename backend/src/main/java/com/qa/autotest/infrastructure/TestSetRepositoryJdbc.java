@@ -118,7 +118,7 @@ public class TestSetRepositoryJdbc implements TestSetRepository {
         String sql = """
                 SELECT c.id, c.project_id, c.case_code, c.title, c.case_kind, c.priority,
                        c.precondition, c.expected, c.domain_tag, c.review_status, c.source,
-                       c.capability, c.description
+                       c.capability, c.description, c.safety_level
                   FROM test_set_item i
                   JOIN test_case c ON c.id = i.test_case_id
                   JOIN test_set s ON s.id = i.test_set_id
@@ -131,7 +131,7 @@ public class TestSetRepositoryJdbc implements TestSetRepository {
                 rs.getString("title"), rs.getString("case_kind"), rs.getString("priority"),
                 rs.getString("precondition"), rs.getString("expected"), rs.getString("domain_tag"),
                 rs.getString("review_status"), rs.getString("source"), rs.getString("capability"),
-                rs.getString("description")), projectId, testSetId);
+                rs.getString("description"), rs.getString("safety_level")), projectId, testSetId);
     }
 
     @Override

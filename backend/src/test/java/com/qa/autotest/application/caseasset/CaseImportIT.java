@@ -96,9 +96,11 @@ class CaseImportIT {
             CaseImportService.ImportResult result = service.commit(projectId, preview.rows());
             assertThat(result.imported()).isEqualTo(EXPECTED_ROWS);
             assertThat(result.skipped()).isZero();
-            assertThat(cases.page(projectId, null, null, null, null, null, 1, 1).total())
+            assertThat(cases.page(projectId, null, null, null, null, null, null, 1, 1).total())
                     .as("库里实际落下的用例数")
                     .isEqualTo(EXPECTED_ROWS);
+            assertThat(preview.rows()).allSatisfy(row ->
+                    assertThat(row.safetyLevel()).as("台账无安全级列 → LX 未判定").isEqualTo("LX"));
 
             // ---- 3. 重导：每行都报「编号已存在」，validRows 归零（幂等判据）----
             CaseImportService.ImportPreview again;

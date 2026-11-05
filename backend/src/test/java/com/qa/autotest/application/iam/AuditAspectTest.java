@@ -117,7 +117,7 @@ class AuditAspectTest {
 
         cases = new LinkedHashMap<>();
         cases.put(31L, new TestCase(31L, ALPHA, "TC-31", "待删用例", "功能", "P2", null, null,
-                null, "draft", "manual", null, null));
+                null, "draft", "manual", null, null, "L1"));
 
         sets = new LinkedHashMap<>();
         sets.put(41L, new TestSet(41L, ALPHA, "SET-41", "待删用例集", null, ADMIN, "draft", 0));

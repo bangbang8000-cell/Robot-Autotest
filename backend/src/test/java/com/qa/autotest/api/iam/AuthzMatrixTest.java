@@ -190,7 +190,7 @@ class AuthzMatrixTest {
 
         cases = new LinkedHashMap<>();
         cases.put(31L, new TestCase(31L, ALPHA, "TC-PROBE", "探针用例", "功能", "P2",
-                null, null, null, "draft", "manual", null, null));
+                null, null, null, "draft", "manual", null, null, "L1"));
 
         plans = new LinkedHashMap<>();
         plans.put(51L, new PlanRecord(51L, ALPHA, "计划探针", null, null, List.of("suites/a.robot"),
@@ -588,14 +588,14 @@ class AuthzMatrixTest {
     private TestCaseRepository caseRepository() {
         return stub(TestCaseRepository.class, (name, args) -> switch (name) {
             case "page" -> new PageResult<>(List.copyOf(cases.values()), cases.size(),
-                    (Integer) args[6], (Integer) args[7]);
+                    (Integer) args[7], (Integer) args[8]);
             case "find" -> Optional.ofNullable(cases.get(((Number) args[1]).longValue()));
             case "insert" -> {
                 TestCase draft = (TestCase) args[0];
                 cases.put(95L, new TestCase(95L, draft.projectId(), draft.caseCode(), draft.title(),
                         draft.category(), draft.priority(), draft.precondition(), draft.expected(),
                         draft.domainTag(), draft.reviewStatus(), draft.source(), draft.capability(),
-                        draft.description()));
+                        draft.description(), draft.safetyLevel()));
                 yield 95L;
             }
             case "update" -> {

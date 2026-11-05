@@ -121,6 +121,51 @@ class CaseRunServiceTest {
     }
 
     @Test
+    @DisplayName("G2-3：L2 用例在执行入口整单拒绝，并列出编号与安全级")
+    void L2被拦截() {
+        Map<Long, TestCase> cases = Map.of(
+                11L, testCase(11L, "PERF-001", "L1"),
+                12L, testCase(12L, "DESTRUCT-001", "L2"));
+        RecordingQuickRun quick = new RecordingQuickRun();
+        CaseRunService service = new CaseRunService(repo(cases), ExecutionTestSupport.access(),
+                new CaseScriptResolver(files(Map.of())), quick);
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> service.run(command(List.of(11L, 12L))));
+
+        assertEquals(ErrorCode.SAFETY_LEVEL_BLOCKED, ex.errorCode());
+        assertTrue(ex.getMessage().contains("DESTRUCT-001(L2)"), ex.getMessage());
+        assertTrue(quick.last == null, "被安全级拦截时不得触发执行");
+    }
+
+    @Test
+    @DisplayName("G2-3：LX 未判定按 L2 对待，同样拒执行；补判为 L1 后放行")
+    void LX被拦截补判后放行() {
+        RecordingQuickRun quick = new RecordingQuickRun();
+        CaseRunService blocked = new CaseRunService(
+                repo(Map.of(11L, testCase(11L, "PERF-001", "LX"))),
+                ExecutionTestSupport.access(), new CaseScriptResolver(files(Map.of())), quick);
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> blocked.run(command(List.of(11L))));
+        assertEquals(ErrorCode.SAFETY_LEVEL_BLOCKED, ex.errorCode());
+        assertTrue(ex.getMessage().contains("PERF-001(LX)"), ex.getMessage());
+        assertTrue(quick.last == null);
+
+        Map<String, String> files = Map.of("suites/fallback.robot", """
+                *** Test Cases ***
+                PERF-001
+                    Log    ok
+                """);
+        CaseRunService allowed = new CaseRunService(
+                repo(Map.of(11L, testCase(11L, "PERF-001", "L1"))),
+                ExecutionTestSupport.access(), new CaseScriptResolver(files(files)), quick);
+        allowed.run(command(List.of(11L)));
+        assertEquals(List.of("PERF-001"), quick.last.testNames());
+    }
+
+
+    @Test
     @DisplayName("访客只有 EXECUTION:READ，执行所选 403")
     void 访客被拒() {
         RecordingQuickRun quick = new RecordingQuickRun();
@@ -140,8 +185,12 @@ class CaseRunServiceTest {
     }
 
     private static TestCase testCase(long id, String code) {
+        return testCase(id, code, "L1");
+    }
+
+    private static TestCase testCase(long id, String code, String safetyLevel) {
         return new TestCase(id, PROJECT, code, code, null, null, null, null,
-                null, "draft", null, null, null);
+                null, "draft", null, null, null, safetyLevel);
     }
 
     private static TestCaseRepository repo(Map<Long, TestCase> cases) {

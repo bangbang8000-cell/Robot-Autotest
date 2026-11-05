@@ -77,6 +77,23 @@ class MigrationFileTest {
     }
 
     @Test
+    @DisplayName("V7_5 用例执行安全级与 down 脚本齐全")
+    void 安全级字段() throws IOException {
+        assertTrue(Files.exists(ROOT.resolve("migration/V7_5__case_safety_level.sql")),
+                "缺少 migration/V7_5__case_safety_level.sql");
+        assertTrue(Files.exists(ROOT.resolve("down/V7_5__case_safety_level.down.sql")),
+                "缺少 down/V7_5__case_safety_level.down.sql");
+
+        String sql = read("migration/V7_5__case_safety_level.sql");
+        assertTrue(sql.contains("`safety_level`"), "V7_5 缺少 safety_level 列");
+        // 缺省必须是 LX：存量 226 条台账没有安全级，默认成 L1 等于把高危用例静默放行
+        assertTrue(sql.contains("DEFAULT 'LX'"), "V7_5 缺省必须是 LX（未判定不得默认放行）");
+        String down = read("down/V7_5__case_safety_level.down.sql");
+        assertTrue(down.contains("DROP INDEX idx_test_case_safety"), "V7_5 down 缺少索引删除");
+        assertTrue(down.contains("DROP COLUMN `safety_level`"), "V7_5 down 缺少列删除");
+    }
+
+    @Test
     @DisplayName("V5_1 报告字段与 down 脚本齐全")
     void 报告字段() throws IOException {
         assertTrue(Files.exists(ROOT.resolve("migration/V5_1__report_fields.sql")),

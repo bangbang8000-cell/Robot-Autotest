@@ -10,6 +10,8 @@ export interface TestCase {
   title: string
   category: string | null
   priority: string
+  /** 执行安全级（ADR-0013）：L0 / L1 / L2 / LX；L2 与 LX 禁止自动执行。 */
+  safetyLevel: string
   precondition: string | null
   expected: string | null
   domainTag: string | null
@@ -38,6 +40,7 @@ export interface CaseCommand {
   title: string
   category?: string
   priority: string
+  safetyLevel?: string
   precondition?: string
   expected?: string
   domainTag?: string
@@ -62,6 +65,7 @@ export interface ImportRow {
   title: string
   category: string | null
   priority: string
+  safetyLevel: string | null
   precondition: string | null
   expected: string | null
   domainTag: string | null
@@ -95,22 +99,27 @@ export interface TestSet {
   description: string | null
 }
 
-/** 批量动作（FR-v0.2-37：提交评审/通过/驳回/改优先级/改技术域/删除）。 */
+/** 批量动作（FR-v0.2-37：提交评审/通过/驳回/改优先级/改技术域/改安全级/删除）。 */
 export type BatchAction =
   | 'submit'
   | 'approve'
   | 'reject'
   | 'setPriority'
   | 'setDomainTag'
+  | 'setSafetyLevel'
   | 'delete'
 
-/** 批量请求：reject 必填 comment；setPriority 必填 priority；setDomainTag 必填 domainTag。 */
+/**
+ * 批量请求：reject 必填 comment；setPriority 必填 priority；
+ * setDomainTag 必填 domainTag；setSafetyLevel 必填 safetyLevel（人工补判 LX）。
+ */
 export interface BatchRequest {
   action: BatchAction
   ids: number[]
   comment?: string
   priority?: string
   domainTag?: string
+  safetyLevel?: string
 }
 
 /** 逐条结果：失败带稳定错误码名（NOT_FOUND / CONFLICT）。 */
@@ -138,6 +147,7 @@ export const caseApi = {
     priority?: string
     reviewStatus?: string
     capability?: string
+    safetyLevel?: string
     page?: number
     size?: number
   }) {

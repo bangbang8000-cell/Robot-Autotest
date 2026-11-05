@@ -18,5 +18,6 @@ public record TestCase(
         String reviewStatus,
         String source,
         String capability,
-        String description) {
+        String description,
+        String safetyLevel) {
 }

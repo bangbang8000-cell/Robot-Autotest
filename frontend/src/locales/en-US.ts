@@ -104,6 +104,12 @@ export default {
       schedule: 'Schedule',
       ci: 'CI',
     },
+    safetyLevel: {
+      l0: 'L0 read-only',
+      l1: 'L1 reversible write',
+      l2: 'L2 destructive',
+      lx: 'LX unclassified',
+    },
     memberRole: {
       owner: 'Owner',
       admin: 'Admin',
@@ -250,6 +256,7 @@ export default {
     NETWORK_ERROR: 'Cannot reach the server — check your network',
     MALFORMED_RESPONSE: 'The server returned an unrecognizable response',
     DOWNLOAD_FAILED: 'File download failed',
+    SAFETY_LEVEL_BLOCKED: 'Blocked by execution safety level (L2 destructive / unclassified LX treated as L2)',
     UNKNOWN: 'Operation failed',
   },
   editor: {
@@ -349,11 +356,13 @@ export default {
   cases: {
     allPriority: 'All priorities',
     allStatus: 'All statuses',
+    allSafety: 'All safety levels',
     domain: 'Domain',
     caseCode: 'Case code',
     title: 'Title',
     category: 'Category',
     priority: 'Priority',
+    safetyLevel: 'Safety level',
     status: 'Review status',
     capability: 'Capability',
     precondition: 'Precondition',
@@ -374,6 +383,7 @@ export default {
       reject: 'Reject',
       setPriority: 'Set priority',
       setDomainTag: 'Set domain',
+      setSafetyLevel: 'Set safety level',
       delete: 'Delete',
       rejectComment: 'Rejection comment (required)',
       confirmDelete: 'Delete selected cases? Approved cases will not be deleted.',
@@ -401,6 +411,7 @@ export default {
       tag: 'Extra tag (optional)',
       submit: 'Start run',
       created: 'Run {runId} created; executions queue strictly in order — track it on the runs page',
+      blocked: 'Selection contains L2 / LX cases ({codes}) — automatic execution is disabled; classify them with “Set safety level” first',
     },
   },
   execution: {
