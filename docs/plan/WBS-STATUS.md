@@ -132,7 +132,7 @@
 | 93 | **EXEC-12** | 单用例超时（FR-v0.4-24）：`execution.test-timeout-seconds`（默认 1800，`<=0` 关闭）+ 执行前向本 run 工作区副本的 `.robot` 套件 `*** Settings ***` 注入 `Test Timeout`（RF 7.5 无全局 CLI 开关；用户已显式写过则保留原值）；产物检出 `Test timeout ... exceeded` 时 run 原因记 `test_timeout`（按取消归类 CANCELED） | G | 待验 | `docs/evidence/v0.4/exec12/`；`TestTimeoutInjectorTest` 5 条、`ArtifactVerifierTest` 1 条；后端 539 / 集成 28 / 前端 162 / `vue-tsc`+`build` 0 / `lint.sh` PASS | `.resource` 资源文件不注入；未做「按用例单独配置超时」与「UI 可调」；注入只发生在 materialize 成功的副本上（回落 workspace-root 时不注入，避免改用户原脚本） |
 | 94 | **EXEC-13** | 运行详情重试可追溯（FR-v0.4-29）：日志面板在 `attemptNo > 1` 时显示「第 N 次尝试」（`execution.attemptLine`），首次尝试不渲染；配合列表既有「失败原因 / 状态」列，构成「第几次 / 原因 / 结果」三件可追溯信息 | G | 待验 | `docs/evidence/v0.4/exec13/`；前端 `RunsView.spec` 1 条（第 2 次显示 / 首次不显示）；后端 539 / 集成 28 / 前端 163 / `vue-tsc`+`build` 0 / `lint.sh` PASS | `retry_of_run_id` 已入库但未对外暴露，运行详情看不到「上一次失败原因」；要显示需在 `RunRecord` / `RunView` 增字段（23 处构造点） |
 | 95 | **EXEC-14** | 日志级别过滤（FR-v0.4-20）：日志面板把单档「只看失败」换成 ERROR / WARN / INFO 三个可独立勾选的档位（默认全开，未知级别按 INFO 放行）；三档全关时明说「当前级别过滤下没有日志」，而不是假装这份 run 没日志 | G | 待验 | `docs/evidence/v0.4/exec14/`；前端 `RunsView.spec` 1 条（取消「信息」后 INFO 行隐藏、ERROR/WARN 保留、全关空态文案）；后端 539 / 集成 28 / 前端 164 / `vue-tsc`+`build` 0 / `lint.sh` PASS | 后端仍只产出 ERROR/WARN/INFO 三档（PRD 里的 FAIL 归 ERROR、DEBUG 未产出）；要真正的 DEBUG 档需在执行器侧采集 RF 的 DEBUG 日志，属 v0.5 日志补口 |
-| 96 | **EXEC-15** | 执行安全级闸门（ADR-0013 / G2-3）：`test_case.safety_level`（`V7_5` 迁移 + down，缺省 `LX`）落库并全链路回溯；执行入口两处（执行所选 `CaseRunService` / 执行用例集 `TestSetRunService`）逐条判级，**L2 高危与 LX 未判定一律整单拒绝**（403 `SAFETY_LEVEL_BLOCKED`，消息列出前 10 条 `code(level)`）；新增批量动作 `setSafetyLevel` 作人工补判；列表加安全级列与筛选，选中含 L2/LX 时前置禁用「执行所选」并写出用例编号 | G | 待验 | `docs/evidence/v1.0/g2-3/`；后端 `CaseRunServiceTest` 2 条（L2 被拒 / LX 补判后放行）、`TestSetRunServiceTest` 集合级拦截、`CaseBatchIT`（落库 + 非法值 400）、`CaseImportIT`（无安全级列 → LX）、`MigrationFileTest` V7_5；前端 `statusLabels.spec` 3 条、`CasesView.spec` 1 条（L2 禁用执行） | 跨页选中的安全级前端不可见，只由后端整单拒绝兜底（要准需后端预检接口）；台账无安全级列，226 条导入后全为 `LX`，需人工逐条补判才能执行——这正是 ADR-0013 想要的默认态 |
+| 96 | **EXEC-15** | 执行安全级闸门（ADR-0013 / G2-3）：`test_case.safety_level`（`V7_5` 迁移 + down，缺省 `LX`）落库并全链路回溯；执行入口两处（执行所选 `CaseRunService` / 执行用例集 `TestSetRunService`）逐条判级，**L2 高危与 LX 未判定一律整单拒绝**（403 `SAFETY_LEVEL_BLOCKED`，消息列出前 10 条 `code(level)`）；新增批量动作 `setSafetyLevel` 作人工补判；列表加安全级列与筛选，选中含 L2/LX 时前置禁用「执行所选」并写出用例编号 | G | 待验 | `docs/evidence/v1.0/g2-3/`（含本机 HTTP 实测 `http-verify-20261105.md`：`L2`/`LX` → 403、`L9` → 400）；后端 `CaseRunServiceTest` 2 条（L2 被拒 / LX 补判后放行）、`TestSetRunServiceTest` 集合级拦截、`CaseBatchIT`（落库 + 非法值 400）、`CaseImportIT`（无安全级列 → LX）、`MigrationFileTest` V7_5；前端 `statusLabels.spec` 3 条、`CasesView.spec` 1 条（L2 禁用执行） | 跨页选中的安全级前端不可见，只由后端整单拒绝兜底（要准需后端预检接口）；台账无安全级列，226 条导入后全为 `LX`，需人工逐条补判才能执行——这正是 ADR-0013 想要的默认态 |
 
 ---
 
@@ -487,7 +487,13 @@
    `lint.sh` PASS（字体子集 1021 字 / 177826 B）、`check_release_docs.py` 0 FAIL。
    **踩到一个坑记下来**：IT 首轮 3 条红是 `robot_it` 没迁到 `V7_5`（`Unknown column 'safety_level'`），
    跑 `scripts/db-migrate.sh` 补齐后全绿——**改迁移后必须先迁 dev/it 再跑 `run_it.sh`**。
-7. **残余（写进包内阻塞列）**：现场仍需真实触发一次 L2 用例并留存 403 响应；跨页选中不可见；
+7. **接口级实测已补（2026-11-05 23:54，本机 dev 后端 :8081 新 jar + `robot_dev`）**：
+   `POST /api/execution/cases/run` 对 `L2` 与还原后的 `LX` 均回 **403 `SAFETY_LEVEL_BLOCKED`**
+   （消息含 `TN-IMP-226(L2)` / `(LX)`），`L9` 回 400；同一轮把 G2-4 两条接口一并验了（弱口令 2 种 → 400，
+   `POST /api/auth/renew` → 200 且 `expiresAt` 前推 8h 窗口）。原始记录
+   `docs/evidence/v1.0/g2-3/http-verify-20261105.md`。这批请求在派发前就被拒，**不需要真实 DUT**，
+   但它是接口级证据，现场仍需各留一份读数（见第 8 条）。
+8. **残余（写进包内阻塞列）**：现场仍需真实触发一次 L2 用例并留存 403 响应；跨页选中不可见；
    台账补判仍需人工逐条。本包按纪律留 **`待验`**。
 
 ## 更新方式
