@@ -4,6 +4,7 @@ import com.qa.autotest.application.execution.CancelService;
 import com.qa.autotest.application.execution.CaseRunService;
 import com.qa.autotest.application.execution.ExecutionProperties;
 import com.qa.autotest.application.execution.QuickRunService;
+import com.qa.autotest.application.execution.RunDispatcher;
 import com.qa.autotest.application.execution.RunLogFileService;
 import com.qa.autotest.application.execution.RunLogService;
 import com.qa.autotest.application.execution.RunService;
@@ -54,11 +55,12 @@ public class RunController {
     private final QuickRunService quickRuns;
     private final TestSetRunService testSetRuns;
     private final CaseRunService caseRuns;
+    private final RunDispatcher dispatcher;
 
     public RunController(RunService runs, CancelService cancels, RunLogService logs,
                          ExecutionProperties props, QuickRunService quickRuns,
                          TestSetRunService testSetRuns, CaseRunService caseRuns,
-                         RunLogFileService logFiles) {
+                         RunLogFileService logFiles, RunDispatcher dispatcher) {
         this.runs = runs;
         this.cancels = cancels;
         this.logs = logs;
@@ -67,6 +69,7 @@ public class RunController {
         this.testSetRuns = testSetRuns;
         this.caseRuns = caseRuns;
         this.logFiles = logFiles;
+        this.dispatcher = dispatcher;
     }
 
     /** 页面手动执行（EXEC-01 / FR-v0.2-59~60）。 */
@@ -179,6 +182,29 @@ public class RunController {
                                          @RequestBody(required = false) CancelRequest request) {
         String reason = request == null ? null : request.reason();
         return ApiResponse.ok(cancels.cancel(projectId, runId, reason));
+    }
+
+    /**
+     * 排队位次（EXEC-10 残余 / FR-v0.4-14）。
+     *
+     * <p>先按 {@code projectId} 校验 run 归属（越权直接 403/404，由 {@link RunService#get} 抛错），
+     * 再问派发器。派发器只在进程内知道位次，重启或 run 已结束时会查不到——此时按 DB 状态回答：
+     * {@code queued} 表示「排队但位次未知（position=0）」，{@code running} 表示在执行，
+     * {@code terminal} 表示已结束。
+     */
+    @GetMapping("/runs/{runId}/pending-activity")
+    public ApiResponse<RunDispatcher.QueueStatus> pendingActivity(@PathVariable String runId,
+                                                                  @RequestParam long projectId) {
+        RunRecord run = runs.get(projectId, runId);
+        int maxParallel = Math.max(1, props.getMaxParallel());
+        return ApiResponse.ok(dispatcher.status(runId).orElseGet(() -> {
+            String state = switch (run.state()) {
+                case QUEUED -> "queued";
+                case PREPARING, RUNNING -> "running";
+                default -> "terminal";
+            };
+            return new RunDispatcher.QueueStatus(runId, state, 0, 0, 0, maxParallel);
+        }));
     }
 
     public record CancelRequest(String reason) {

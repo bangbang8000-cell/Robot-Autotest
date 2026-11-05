@@ -1,0 +1,14 @@
+
+ RUN  v3.2.7 /home/evergreen/robot-autotest/frontend
+
+(node:664284) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/views/RunsView.spec.ts (14 tests) 3051ms
+   ✓ RunsView 手动执行 > 套件路径按行解析并原样提交给 quick-run  385ms
+   ✓ RunsView 手动执行 > 手动执行表单可声明设备范围，并随 quick-run 提交（FR-v0.4-01）  380ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  01:49:26
+   Duration  5.33s (transform 688ms, setup 14ms, collect 1.51s, tests 3.05s, environment 209ms, prepare 214ms)
+

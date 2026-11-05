@@ -4,6 +4,7 @@ import com.qa.autotest.application.execution.CancelService;
 import com.qa.autotest.application.execution.CaseRunService;
 import com.qa.autotest.application.execution.ExecutionProperties;
 import com.qa.autotest.application.execution.QuickRunService;
+import com.qa.autotest.application.execution.RunDispatcher;
 import com.qa.autotest.application.execution.RunLogFileService;
 import com.qa.autotest.application.execution.RunLogService;
 import com.qa.autotest.application.execution.RunService;
@@ -27,6 +28,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -53,6 +55,7 @@ class RunControllerTest {
     private TestSetRunService testSetRuns;
     private CaseRunService caseRuns;
     private RunLogFileService logFiles;
+    private RunDispatcher dispatcher;
     private MockMvc mvc;
 
     @BeforeEach
@@ -62,9 +65,10 @@ class RunControllerTest {
         testSetRuns = mock(TestSetRunService.class);
         caseRuns = mock(CaseRunService.class);
         logFiles = mock(RunLogFileService.class);
+        dispatcher = mock(RunDispatcher.class);
         RunController controller = new RunController(runs, mock(CancelService.class),
                 mock(RunLogService.class), new ExecutionProperties(), quickRuns, testSetRuns,
-                caseRuns, logFiles);
+                caseRuns, logFiles, dispatcher);
         mvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -137,6 +141,28 @@ class RunControllerTest {
         assertEquals(RunOrigin.CI, origin.getValue().triggerType());
         assertNull(origin.getValue().planId());
         verify(quickRuns).dispatch(any(RunRecord.class), any(CreateRunCommand.class));
+    }
+
+    @Test
+    @DisplayName("pending-activity：派发器有位次时原样返回；查不到时按 DB 状态兜底")
+    void pendingActivity_位次与兜底() throws Exception {
+        when(runs.get(1L, "RUN-1")).thenReturn(run("RUN-1"));
+        when(dispatcher.status("RUN-1")).thenReturn(Optional.of(
+                new RunDispatcher.QueueStatus("RUN-1", "queued", 2, 3, 1, 4)));
+
+        mvc.perform(get("/api/execution/runs/RUN-1/pending-activity").param("projectId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.state").value("queued"))
+                .andExpect(jsonPath("$.data.position").value(2))
+                .andExpect(jsonPath("$.data.waiting").value(3))
+                .andExpect(jsonPath("$.data.running").value(1))
+                .andExpect(jsonPath("$.data.maxParallel").value(4));
+
+        when(dispatcher.status("RUN-1")).thenReturn(Optional.empty());
+        mvc.perform(get("/api/execution/runs/RUN-1/pending-activity").param("projectId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.state").value("queued"))
+                .andExpect(jsonPath("$.data.position").value(0));
     }
 
     @Test

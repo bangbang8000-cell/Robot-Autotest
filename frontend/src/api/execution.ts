@@ -51,6 +51,22 @@ export interface ForceReleaseResult {
   releasedLeases: number
 }
 
+/**
+ * 排队位次（EXEC-10 残余 / FR-v0.4-14）。
+ *
+ * - `state = queued`：在队列中等待，`position` 为 1 起的位次；`position = 0` 表示后端重启过、位次未知。
+ * - `state = running`：已占用执行线程。
+ * - `state = terminal`：已结束（或已取消/失败）。
+ */
+export interface PendingActivity {
+  runId: string
+  state: 'queued' | 'running' | 'terminal'
+  position: number
+  waiting: number
+  running: number
+  maxParallel: number
+}
+
 export interface PageResult<T> {
   items: T[]
   total: number
@@ -165,6 +181,13 @@ export const executionApi = {
   recentLog(projectId: number, runId: string, limit = 200): Promise<RunLogLine[]> {
     return request<RunLogLine[]>(
       `/execution/runs/${encodeURIComponent(runId)}/log${toQuery({ projectId, limit })}`,
+    )
+  },
+
+  /** 排队位次（EXEC-10 残余）：运行列表在 state=queued 时展示「第 N 位 / 共 M 个」。 */
+  pendingActivity(projectId: number, runId: string): Promise<PendingActivity> {
+    return request<PendingActivity>(
+      `/execution/runs/${encodeURIComponent(runId)}/pending-activity${toQuery({ projectId })}`,
     )
   },
 

@@ -475,6 +475,8 @@ export default {
     allDevices: 'All devices (no exclusion)',
     deviceScopeLine: 'Device scope: {scope}',
     attemptLine: 'Attempt {n}',
+    queuePosition: 'Queued · #{position} of {waiting}',
+    queueUnknown: 'Queued · position unavailable',
     downloadLog: 'Download full log',
     logDownloaded: 'Full log downloaded',
     manual: {

@@ -2,6 +2,7 @@ package com.qa.autotest.infrastructure;
 
 import com.qa.autotest.application.execution.ExecutionProperties;
 import com.qa.autotest.application.execution.RunDispatcher;
+import com.qa.autotest.application.execution.RunQueueRepository;
 import com.qa.autotest.common.tenant.TenantContext;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -36,11 +38,15 @@ public class ProjectRunDispatcher implements RunDispatcher {
 
     private final Map<Long, ProjectLane> lanes = new ConcurrentHashMap<>();
     private final Set<String> inFlight = ConcurrentHashMap.newKeySet();
+    /** runId → 所属项目：查询位次时不必让调用方再传一次 projectId，也避免跨项目串道。 */
+    private final Map<String, Long> projectOfRun = new ConcurrentHashMap<>();
     private final AtomicLong sequence = new AtomicLong();
     private final int maxParallel;
+    private final RunQueueRepository queues;
 
-    public ProjectRunDispatcher(ExecutionProperties props) {
+    public ProjectRunDispatcher(ExecutionProperties props, RunQueueRepository queues) {
         this.maxParallel = Math.max(1, props.getMaxParallel());
+        this.queues = queues;
     }
 
     @Override
@@ -49,14 +55,56 @@ public class ProjectRunDispatcher implements RunDispatcher {
             LOG.warn("run {} 已在派发队列中，忽略重复提交（plan={}）", runId, planId);
             return;
         }
+        projectOfRun.put(runId, projectId);
+        queues.enqueue(projectId, runId, priority);
         Runnable item = new RunTask(projectId, planId, runId, priority,
                 sequence.incrementAndGet(), task);
         try {
             lane(projectId).executor.execute(item);
         } catch (RuntimeException rejected) {
             inFlight.remove(runId);
+            projectOfRun.remove(runId);
             throw rejected;
         }
+    }
+
+    /**
+     * 队列位次（EXEC-10 残余）：位次按同项目队列中的 {@link RunTask#compareTo} 排序计算，
+     * 与线程池真实出队顺序一致——优先级高的排前面，同优先级按提交先后。
+     */
+    @Override
+    public Optional<QueueStatus> status(String runId) {
+        Long projectId = projectOfRun.get(runId);
+        if (projectId == null) {
+            return Optional.empty();
+        }
+        ProjectLane lane = lanes.get(projectId);
+        if (lane == null) {
+            return Optional.empty();
+        }
+        Object[] waiting = lane.executor.getQueue().toArray();
+        int running = lane.executor.getActiveCount();
+        RunTask target = null;
+        for (Object item : waiting) {
+            if (item instanceof RunTask task && task.runId.equals(runId)) {
+                target = task;
+                break;
+            }
+        }
+        if (target == null) {
+            // 已占用线程（在途但不在队列里）；不在途则说明派发已结束，交给调用方按 DB 状态回答
+            return inFlight.contains(runId)
+                    ? Optional.of(new QueueStatus(runId, "running", 0, waiting.length, running, maxParallel))
+                    : Optional.empty();
+        }
+        int ahead = 0;
+        for (Object item : waiting) {
+            if (item instanceof RunTask task && task.compareTo(target) < 0) {
+                ahead++;
+            }
+        }
+        return Optional.of(new QueueStatus(runId, "queued", ahead + 1,
+                waiting.length, running, maxParallel));
     }
 
     private ProjectLane lane(long projectId) {
@@ -114,13 +162,16 @@ public class ProjectRunDispatcher implements RunDispatcher {
 
         @Override
         public void run() {
+            queues.markRunning(projectId, runId);
             TenantContext.runAs(null, "runner", projectId, () -> {
                 try {
                     task.run();
                 } catch (RuntimeException ex) {
                     LOG.error("运行 {} 执行派发异常（plan={}）: {}", runId, planId, ex.getMessage(), ex);
                 } finally {
+                    queues.markDone(projectId, runId);
                     inFlight.remove(runId);
+                    projectOfRun.remove(runId);
                 }
             });
         }

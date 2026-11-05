@@ -10,7 +10,7 @@ import {
   NSelect,
   type DataTableColumns,
 } from 'naive-ui'
-import { executionApi, runLogSocketUrl, type ExecutionRun, type RunLogLine } from '@/api/execution'
+import { executionApi, runLogSocketUrl, type ExecutionRun, type PendingActivity, type RunLogLine } from '@/api/execution'
 import { caseSetApi, type TestSet } from '@/api/cases'
 import { deviceApi, type Device } from '@/api/asset'
 import { useAuthStore } from '@/stores/auth'
@@ -37,6 +37,9 @@ const message = ref('')
 
 const selected = ref<ExecutionRun | null>(null)
 const logLines = ref<RunLogLine[]>([])
+/** 排队位次（EXEC-10 残余）：只有 state=QUEUED 时才轮询，结束后不再请求。 */
+const pending = ref<PendingActivity | null>(null)
+let pendingTimer: number | undefined
 const socketState = ref<'idle' | 'connecting' | 'open' | 'closed'>('idle')
 const logPanel = ref<HTMLElement | null>(null)
 
@@ -303,8 +306,42 @@ async function load(): Promise<void> {
 async function selectRun(run: ExecutionRun): Promise<void> {
   selected.value = run
   logLines.value = []
+  stopPendingPoll()
+  pending.value = null
   await loadRecentLog()
+  if (run.state === 'QUEUED') {
+    await loadPending()
+    // 5 秒一轮：位次会随前面的 run 结束而前进，页面不重载也能看到变化
+    pendingTimer = window.setInterval(() => void loadPending(), 5000)
+  }
   connect()
+}
+
+function stopPendingPoll(): void {
+  if (pendingTimer) {
+    window.clearInterval(pendingTimer)
+    pendingTimer = undefined
+  }
+}
+
+/**
+ * 排队位次。失败不弹错：这是辅助信息，接口偶发失败不该盖住日志面板；
+ * 位次未知时保持 `null`，界面退化为不显示排队行。
+ */
+async function loadPending(): Promise<void> {
+  const run = selected.value
+  if (!run || !projectId.value) {
+    pending.value = null
+    return
+  }
+  try {
+    pending.value = await executionApi.pendingActivity(projectId.value, run.runId)
+    if (pending.value.state !== 'queued') {
+      stopPendingPoll()
+    }
+  } catch {
+    pending.value = null
+  }
 }
 
 async function loadRecentLog(): Promise<void> {
@@ -458,6 +495,8 @@ watch([projectId], () => {
   selected.value = null
   manualOpen.value = false
   disconnect()
+  stopPendingPoll()
+  pending.value = null
   logLines.value = []
   void load()
 }, { immediate: true })
@@ -469,6 +508,7 @@ watch([stateFilter], () => {
 
 onBeforeUnmount(() => {
   disconnect()
+  stopPendingPoll()
 })
 </script>
 
@@ -606,6 +646,14 @@ onBeforeUnmount(() => {
         <span class="muted">{{ t(`execution.socket.${socketState}`) }}</span>
         <span class="muted">
           {{ t('execution.deviceScopeLine', { scope: selected.deviceScope || t('execution.allDevices') }) }}
+        </span>
+        <!-- 排队位次（EXEC-10 残余）：只有真正在队列里才显示，位次未知就明说未知 -->
+        <span v-if="pending && pending.state === 'queued'" class="muted queue-hint">
+          {{
+            pending.position > 0
+              ? t('execution.queuePosition', { position: pending.position, waiting: pending.waiting })
+              : t('execution.queueUnknown')
+          }}
         </span>
         <!-- 重试可追溯（FR-v0.4-29）：首次尝试不渲染，只有重试记录才带「第 N 次尝试」 -->
         <span v-if="selected.attemptNo > 1" class="muted">

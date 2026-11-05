@@ -484,6 +484,9 @@ export default {
     allDevices: '全部设备（不互斥）',
     deviceScopeLine: '设备范围：{scope}',
     attemptLine: '第 {n} 次尝试',
+    /** 排队位次（EXEC-10 残余）：position=0 表示后端重启过、位次未知，不假装知道。 */
+    queuePosition: '排队中 · 第 {position} 位 / 共 {waiting} 个',
+    queueUnknown: '排队中 · 位次暂不可用',
     downloadLog: '下载完整日志',
     logDownloaded: '完整日志已下载',
     manual: {

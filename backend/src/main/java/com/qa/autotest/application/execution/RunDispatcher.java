@@ -1,5 +1,7 @@
 package com.qa.autotest.application.execution;
 
+import java.util.Optional;
+
 /**
  * 运行派发端口（EXEC-01）：从计划域提升为执行域公共组件。
  *
@@ -23,4 +25,29 @@ public interface RunDispatcher {
      * @param task      实际执行动作（内部调用 RunExecutionService）
      */
     void submit(long projectId, Long planId, String runId, int priority, Runnable task);
+
+    /**
+     * 查询一次 run 在派发队列中的位次（EXEC-10 残余：pending-activity 语义）。
+     *
+     * <p>默认返回空，表示该实现不维护队列视图（单测内存实现即可忽略）；
+     * 生产实现返回 {@link QueueStatus}。接口只暴露「排队第几位 / 前面还有几个 / 当前几个在跑」，
+     * 调用方不需要知道线程池细节。
+     */
+    default Optional<QueueStatus> status(String runId) {
+        return Optional.empty();
+    }
+
+    /**
+     * 队列视图（只读快照）。
+     *
+     * @param runId       运行标识
+     * @param state       {@code queued}（在队列中等）或 {@code running}（已占用线程）
+     * @param position    排队位次，1 表示下一个出队；非排队状态为 0
+     * @param waiting     同项目队列中等待的任务总数（含自己）
+     * @param running     同项目当前正在执行的任务数
+     * @param maxParallel 单项目并发上限
+     */
+    record QueueStatus(String runId, String state, int position,
+                       int waiting, int running, int maxParallel) {
+    }
 }

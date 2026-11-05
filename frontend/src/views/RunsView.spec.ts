@@ -58,6 +58,14 @@ vi.mock('@/api/execution', () => ({
     ]),
     cancel: vi.fn(),
     get: vi.fn(),
+    pendingActivity: vi.fn(async (_projectId: number, runId: string) => ({
+      runId,
+      state: 'queued' as const,
+      position: 2,
+      waiting: 3,
+      running: 1,
+      maxParallel: 2,
+    })),
     quickRun: vi.fn(async () => ({ runId: 'RUN-MANUAL-1', state: 'QUEUED' })),
     runTestSet: vi.fn(async () => ({ runId: 'RUN-SET-1', state: 'QUEUED' })),
   },
@@ -226,6 +234,54 @@ describe('RunsView 列表与日志联动', () => {
     expect(texts).toContain(runStatusLabel('FAILED'))
     // 每个徽标都带一个 svg 图标，色觉障碍下仍可辨
     expect(tags.every((tag) => tag.querySelector('svg') !== null)).toBe(true)
+  })
+
+  it('排队中的运行在日志面板显示位次，位次未知时明说未知（EXEC-10）', async () => {
+    const queued = {
+      id: 3,
+      runId: 'RUN-QUEUED',
+      projectId: 1,
+      state: 'QUEUED',
+      attemptNo: 1,
+      passedTests: 0,
+      totalTests: 0,
+      failureReason: null,
+      startedAt: null,
+      finishedAt: null,
+    }
+    vi.mocked(executionApi.page).mockResolvedValueOnce({
+      items: [queued],
+      total: 1,
+      page: 1,
+      size: 10,
+    } as never)
+    const root = await mountView()
+
+    const viewLog = [...root.querySelectorAll<HTMLButtonElement>('button')].find(
+      (btn) => btn.textContent?.trim() === i18n.global.t('execution.viewLog'),
+    )
+    viewLog!.click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(executionApi.pendingActivity).toHaveBeenCalledWith(1, 'RUN-QUEUED')
+    expect(root.textContent).toContain(
+      i18n.global.t('execution.queuePosition', { position: 2, waiting: 3 }),
+    )
+
+    // 后端重启后派发器不知道位次（position=0）：不假装知道，也不显示「第 0 位」
+    vi.mocked(executionApi.pendingActivity).mockResolvedValueOnce({
+      runId: 'RUN-QUEUED',
+      state: 'queued',
+      position: 0,
+      waiting: 0,
+      running: 0,
+      maxParallel: 2,
+    })
+    viewLog!.click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+    expect(root.textContent).toContain(i18n.global.t('execution.queueUnknown'))
   })
 
   it('已终止的行不再显示「取消」', async () => {
