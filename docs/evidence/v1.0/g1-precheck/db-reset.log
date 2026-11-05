@@ -1,0 +1,6 @@
+[db-reset] 重建库 robot_it
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-migrate] robot@127.0.0.1:3306/robot_it
+[db-migrate] 完成；当前业务表数：
+mysql: [Warning] Using a password on the command line interface can be insecure.
+46

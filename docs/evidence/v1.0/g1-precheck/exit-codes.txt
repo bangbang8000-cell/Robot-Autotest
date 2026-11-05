@@ -1,0 +1,31 @@
+lint                     EXIT=0  12s
+backend-unit             EXIT=0  38s
+backend-it               EXIT=0  55s
+frontend-unit            EXIT=0  16s
+frontend-build           EXIT=0  25s
+release-docs             EXIT=0  1s
+env-probes               EXIT=0  1271ms
+[g1b] clean tree -> /tmp/g1-clean (d68c0f6)
+backend-package          EXIT=0  20262ms
+boot-check               PING200=0  BOOT_MS=5094
+flyway-migrate-1         EXIT=1  6ms
+flyway-undo              EXIT=1  6ms
+flyway-migrate-2         EXIT=1  7ms
+--- 第二轮 2026-11-05T22:42:31+08:00 ---
+env-export-check        CRED_MASTER_KEY=SET DB_PASSWORD=SET DB_NAME=robot_it
+boot-check               PING200=1  BOOT_MS=6258
+flyway-migrate-1         EXIT=0  4620ms
+flyway-undo              EXIT=0  9019ms
+flyway-migrate-2         EXIT=0  4954ms
+=== G1B ROUND2 DONE 2026-11-05T22:42:56+08:00 ===
+--- 第三轮 2026-11-05T22:44:57+08:00 ---
+env-probes               EXIT=0  861ms
+db-reset                 EXIT=0  8422ms
+step1-reset-migrate      tables=46 history_rows=20 max_version=7.4
+db-undo                  EXIT=0  6197ms
+step2-undo               tables=0 history_rows=20
+db-migrate-after-undo    EXIT=0  3279ms
+step3-migrate-after-undo tables=0 history_rows=20
+db-reset-restore         EXIT=0  8238ms
+step4-reset-restore      tables=46 history_rows=20 max_version=7.4
+=== G1B ROUND3 DONE 2026-11-05T22:45:28+08:00 ===

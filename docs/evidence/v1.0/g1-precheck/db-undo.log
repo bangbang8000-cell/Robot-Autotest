@@ -1,0 +1,44 @@
+[db-undo] target=robot@127.0.0.1:3306/robot_it
+[db-undo] 执行 V7_4__run_device_scope.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V7_3__asset_pool.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V7_2__user_preference.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V7_1__audit_summary.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V6_3__ci_trigger.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V6_2__plan_dependency.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V6_1__execution_plan.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V5_5__export_columns.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V5_4__artifact_pin.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V5_3__report_log.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V5_1__report_fields.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V4_3__failure_class.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V4_2__run_artifact.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V4_1__lease.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V2_5__editor_keywords.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V2_4__audit_indexes.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V2_3__case_fields.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V2_2__asset_fields.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V2_1__iam_fields.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 执行 V1__baseline.down.sql
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[db-undo] 完成；剩余表（应只有 flyway_schema_history）：
+mysql: [Warning] Using a password on the command line interface can be insecure.
+flyway_schema_history
