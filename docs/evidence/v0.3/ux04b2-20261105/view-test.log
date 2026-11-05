@@ -1,0 +1,15 @@
+
+ RUN  v3.2.7 /home/evergreen/robot-autotest/frontend
+
+(node:308890) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:308889) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/views/RunsView.spec.ts (4 tests) 452ms
+ ✓ src/views/CasesView.spec.ts (4 tests) 574ms
+
+ Test Files  2 passed (2)
+      Tests  8 passed (8)
+   Start at  08:46:38
+   Duration  2.13s (transform 632ms, setup 25ms, collect 2.21s, tests 1.03s, environment 317ms, prepare 187ms)
+

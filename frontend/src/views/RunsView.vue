@@ -1,12 +1,23 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, h, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import {
+  NButton,
+  NCheckbox,
+  NDataTable,
+  NPagination,
+  NSelect,
+  type DataTableColumns,
+} from 'naive-ui'
 import { executionApi, runLogSocketUrl, type ExecutionRun, type RunLogLine } from '@/api/execution'
 import { useAuthStore } from '@/stores/auth'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
+import EmptyState from '@/components/EmptyState.vue'
+import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
-import { RUN_STATUSES, runStatusLabel } from '@/utils/statusLabels'
+import { EMPTY, formatDateTime } from '@/utils/format'
+import { RUN_STATUSES, runStatusLabel, runStatusTone } from '@/utils/statusLabels'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -27,6 +38,103 @@ const logPanel = ref<HTMLElement | null>(null)
 
 const projectId = computed(() => auth.projectId ?? 0)
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / size)))
+
+const stateOptions = computed(() => [
+  { label: t('execution.allStates'), value: '' },
+  ...RUN_STATUSES.map((item) => ({ label: runStatusLabel(item), value: item.toUpperCase() })),
+])
+
+/** 终止态：之后再点「取消」没有意义（后端也会拒），按钮直接不渲染。 */
+const TERMINAL_STATES = ['FINISHED', 'FAILED', 'CANCELED']
+
+function isTerminal(state: string): boolean {
+  return TERMINAL_STATES.includes(state)
+}
+
+/**
+ * 运行记录列定义（UX-04b 逐页迁移）。
+ *
+ * 两个刻意的处理：
+ * ① 状态列用 `StatusTag` 而不是纯文字 —— 六预设里 crimson/gold 与 fail/warn 同色相，
+ *    只靠颜色区分不可靠，标签本身带图标+文字双编码；
+ * ② 「查看日志」用 `text` 型按钮而不是 `link` 型 —— 链接样式在本页会被误读成外链，
+ *    且 text 型仍保留键盘焦点环与禁用态。
+ */
+const columns = computed<DataTableColumns<ExecutionRun>>(() => [
+  {
+    title: t('execution.runId'),
+    key: 'runId',
+    width: 220,
+    // RUN_ID 是三方关联的主键（RF / 看板 / 报告），长且不允许折行打乱对齐
+    ellipsis: { tooltip: true },
+  },
+  {
+    title: t('execution.state'),
+    key: 'state',
+    width: 120,
+    render: (row) =>
+      h(StatusTag, { label: runStatusLabel(row.state), tone: runStatusTone(row.state) }),
+  },
+  {
+    title: t('execution.tests'),
+    key: 'passedTests',
+    width: 110,
+    render: (row) => `${row.passedTests} / ${row.totalTests}`,
+  },
+  {
+    title: t('execution.failureReason'),
+    key: 'failureReason',
+    minWidth: 200,
+    ellipsis: { tooltip: true },
+    render: (row) => row.failureReason || EMPTY,
+  },
+  {
+    title: t('execution.startedAt'),
+    key: 'startedAt',
+    width: 180,
+    render: (row) => formatDateTime(row.startedAt),
+  },
+  {
+    title: t('execution.finishedAt'),
+    key: 'finishedAt',
+    width: 180,
+    render: (row) => formatDateTime(row.finishedAt),
+  },
+  {
+    title: t('common.actions'),
+    key: 'actions',
+    width: 180,
+    render: (row) =>
+      h('div', { class: 'row-actions' }, [
+        h(
+          NButton,
+          {
+            text: true,
+            type: 'primary',
+            size: 'small',
+            onClick: () => void selectRun(row),
+          },
+          { default: () => t('execution.viewLog') },
+        ),
+        !isTerminal(row.state) &&
+          h(
+            NButton,
+            {
+              text: true,
+              type: 'error',
+              size: 'small',
+              onClick: () => void cancelRun(row),
+            },
+            { default: () => t('execution.cancelRun') },
+          ),
+      ]),
+  },
+])
+
+/** 当前看日志的那一行加底色，避免「打开了面板却不确定是哪条」的错配。 */
+function rowClassName(row: ExecutionRun): string {
+  return selected.value?.runId === row.runId ? 'row-active' : ''
+}
 
 let socket: WebSocket | null = null
 let closedByUser = false
@@ -189,84 +297,61 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="toolbar">
-      <select v-model="stateFilter" class="input">
-        <option value="">{{ t('execution.allStates') }}</option>
-        <option v-for="item in RUN_STATUSES" :key="item" :value="item.toUpperCase()">
-          {{ runStatusLabel(item) }}
-        </option>
-      </select>
-      <button class="btn btn-ghost" type="button" @click="load">{{ t('common.refresh') }}</button>
-      <RouterLink class="btn btn-ghost" to="/plans">{{ t('plans.title') }}</RouterLink>
+      <NSelect
+        v-model:value="stateFilter"
+        :options="stateOptions"
+        style="width: 180px"
+        :aria-label="t('execution.state')"
+      />
+      <NButton quaternary :loading="loading" @click="load">{{ t('common.refresh') }}</NButton>
+      <RouterLink v-slot="{ navigate }" to="/plans" custom>
+        <NButton quaternary @click="navigate">{{ t('plans.title') }}</NButton>
+      </RouterLink>
     </div>
 
     <ErrorLineView v-if="error" :error="error" />
     <p v-if="message" class="text-ok">{{ message }}</p>
-    <p v-if="loading" class="muted">{{ t('common.loading') }}</p>
 
-    <table v-if="runs.length" class="table">
-      <thead>
-        <tr>
-          <th>{{ t('execution.runId') }}</th>
-          <th>{{ t('execution.state') }}</th>
-          <th>{{ t('execution.tests') }}</th>
-          <th>{{ t('execution.failureReason') }}</th>
-          <th>{{ t('execution.startedAt') }}</th>
-          <th>{{ t('execution.finishedAt') }}</th>
-          <th>{{ t('common.actions') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="run in runs" :key="run.id">
-          <td>{{ run.runId }}</td>
-          <td>{{ runStatusLabel(run.state) }}</td>
-          <td>{{ run.passedTests }} / {{ run.totalTests }}</td>
-          <td>{{ run.failureReason || '—' }}</td>
-          <td>{{ run.startedAt || '—' }}</td>
-          <td>{{ run.finishedAt || '—' }}</td>
-          <td>
-            <button class="link-btn" type="button" @click="selectRun(run)">
-              {{ t('execution.viewLog') }}
-            </button>
-            <button
-              v-if="run.state !== 'FINISHED' && run.state !== 'FAILED' && run.state !== 'CANCELED'"
-              class="link-btn danger"
-              type="button"
-              @click="cancelRun(run)"
-            >
-              {{ t('execution.cancelRun') }}
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <NDataTable
+      :columns="columns"
+      :data="runs"
+      :loading="loading"
+      :row-key="(row: ExecutionRun) => row.id"
+      :row-class-name="rowClassName"
+      :scroll-x="1000"
+      :bordered="false"
+      size="small"
+    >
+      <template #empty>
+        <EmptyState
+          v-if="!loading && !error"
+          :title="t('common.noData')"
+          :description="projectId ? undefined : t('overview.noProject')"
+          icon="runs"
+        />
+      </template>
+    </NDataTable>
 
-    <p v-if="!loading && !error && total === 0" class="muted">{{ t('common.noData') }}</p>
-
-    <div v-if="total > 0" class="pager">
-      <button class="btn btn-ghost" type="button" :disabled="page <= 1" @click="turnPage(page - 1)">
-        {{ t('common.prev') }}
-      </button>
-      <span class="muted">{{ t('common.pageInfo', { page, total: pageCount }) }}</span>
-      <button
-        class="btn btn-ghost"
-        type="button"
-        :disabled="page >= pageCount"
-        @click="turnPage(page + 1)"
-      >
-        {{ t('common.next') }}
-      </button>
-    </div>
+    <NPagination
+      v-if="total > 0"
+      class="pager"
+      :page="page"
+      :page-count="pageCount"
+      :page-slot="7"
+      @update:page="turnPage"
+    />
 
     <div v-if="selected" class="card log-card">
       <div class="log-head">
         <h2 class="card-title">{{ t('execution.logPanel') }} · {{ selected.runId }}</h2>
-        <span class="muted">
-          {{ runStatusLabel(selected.state) }} · {{ t(`execution.socket.${socketState}`) }}
-        </span>
-        <label class="muted only-fail">
-          <input v-model="onlyFail" type="checkbox" />
+        <StatusTag
+          :label="runStatusLabel(selected.state)"
+          :tone="runStatusTone(selected.state)"
+        />
+        <span class="muted">{{ t(`execution.socket.${socketState}`) }}</span>
+        <NCheckbox v-model:checked="onlyFail" class="only-fail">
           {{ t('execution.onlyFail') }}
-        </label>
+        </NCheckbox>
       </div>
       <pre v-if="visibleLines.length" ref="logPanel" class="log-lines">
 <span
@@ -288,15 +373,15 @@ onBeforeUnmount(() => {
 
 .log-head {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.log-head .card-title {
+  margin: 0;
 }
 
 .only-fail {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   margin-left: auto;
 }
 
@@ -325,5 +410,20 @@ onBeforeUnmount(() => {
 
 .level-error {
   color: var(--fail);
+}
+
+/*
+ * 当前打开日志的那一行：只加底色，不加边框 —— 边框会和表格自身的分隔线打架。
+ * 用 accent-soft 而不是 surface-selected：后者是固定的中性蓝，换成金色/翡翠绿预设时
+ * 会和整站强调色对不上；accent-soft 本来就是这个项目「选中」的统一语义色。
+ */
+:deep(.row-active td) {
+  background: var(--accent-soft);
+}
+
+/* 操作列两个按钮并排时不能贴在一起；h() 渲染的节点拿不到 scoped 类，靠 :deep 兜 */
+:deep(.row-actions) {
+  display: flex;
+  gap: var(--space-2);
 }
 </style>

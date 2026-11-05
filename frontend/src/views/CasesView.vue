@@ -1,6 +1,15 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, h, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import {
+  NButton,
+  NCheckbox,
+  NDataTable,
+  NInput,
+  NPagination,
+  NSelect,
+  type DataTableColumns,
+} from 'naive-ui'
 import {
   caseApi,
   type BatchAction,
@@ -15,7 +24,9 @@ import ProjectPicker from '@/components/ProjectPicker.vue'
 import SelectionBar from '@/components/SelectionBar.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
+import { EMPTY } from '@/utils/format'
 import { useSelection } from '@/composables/useSelection'
 import { confirmAction } from '@/composables/useConfirm'
 import {
@@ -23,6 +34,7 @@ import {
   REVIEW_STATUSES,
   priorityLabel,
   reviewStatusLabel,
+  reviewStatusTone,
 } from '@/utils/statusLabels'
 
 const { t } = useI18n()
@@ -82,6 +94,140 @@ const importMessage = ref('')
 const projectId = computed(() => auth.projectId ?? 0)
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / size)))
 
+// 下拉项首项 valueless 的「全部」用空串表示，与 AuditView 保持一致（不引入 null 语义）
+const priorityOptions = computed(() => [
+  { label: t('cases.allPriority'), value: '' },
+  ...PRIORITIES.map((item) => ({ label: priorityLabel(item), value: item })),
+])
+const reviewOptions = computed(() => [
+  { label: t('cases.allStatus'), value: '' },
+  ...REVIEW_STATUSES.map((item) => ({ label: reviewStatusLabel(item), value: item })),
+])
+const formPriorityOptions = computed(() =>
+  PRIORITIES.map((item) => ({ label: priorityLabel(item), value: item })),
+)
+
+/**
+ * 用例列定义（UX-04b 逐页迁移）。
+ *
+ * 勾选列**没有**用 NDataTable 内置的 `type: 'selection'`：内置列只认 `checked-row-keys`，
+ * 它会在数据刷新时把不在当前页的键丢掉，而 `useSelection` 的契约是**跨页保留**
+ * （FR-v0.2-35）。所以这里自己渲染 `NCheckbox`，状态仍由 `useSelection` 持有，
+ * 表头半选态也照旧从 `pageIndeterminate` 派生。
+ */
+const columns = computed<DataTableColumns<TestCase>>(() => [
+  {
+    key: 'selection',
+    width: 36,
+    // 勾选框在单元格里默认左贴边，与表头框对不齐；居中后上下两排才在一条竖线上
+    align: 'center',
+    title: () =>
+      h(NCheckbox, {
+        checked: pageAllSelected.value,
+        indeterminate: pageIndeterminate.value,
+        'aria-label': t('cases.batch.barLabel'),
+        onUpdateChecked: () => togglePage(),
+      }),
+    render: (row) =>
+      h(NCheckbox, {
+        checked: isSelected(row.id),
+        'aria-label': `${t('cases.caseCode')}: ${row.caseCode}`,
+        onUpdateChecked: () => toggle(row.id),
+      }),
+  },
+  {
+    title: t('cases.caseCode'),
+    key: 'caseCode',
+    width: 120,
+    ellipsis: { tooltip: true },
+  },
+  {
+    title: t('cases.title'),
+    key: 'title',
+    minWidth: 220,
+    ellipsis: { tooltip: true },
+  },
+  {
+    title: t('cases.priority'),
+    key: 'priority',
+    width: 90,
+    render: (row) => priorityLabel(row.priority),
+  },
+  {
+    title: t('cases.status'),
+    key: 'reviewStatus',
+    width: 110,
+    render: (row) =>
+      h(StatusTag, {
+        label: reviewStatusLabel(row.reviewStatus),
+        tone: reviewStatusTone(row.reviewStatus),
+      }),
+  },
+  {
+    title: t('cases.domain'),
+    key: 'domainTag',
+    width: 120,
+    render: (row) => row.domainTag || EMPTY,
+  },
+  {
+    title: t('cases.capability'),
+    key: 'capability',
+    width: 140,
+    render: (row) => row.capability || EMPTY,
+  },
+  {
+    title: t('common.actions'),
+    key: 'actions',
+    width: 240,
+    render: (row) =>
+      h('div', { class: 'row-actions' }, [
+        (row.reviewStatus === 'draft' || row.reviewStatus === 'rejected') &&
+          h(
+            NButton,
+            {
+              text: true,
+              type: 'primary',
+              size: 'small',
+              onClick: () => void submitCase(row),
+            },
+            { default: () => t('cases.submit') },
+          ),
+        row.reviewStatus === 'pending' &&
+          h(
+            NButton,
+            {
+              text: true,
+              type: 'primary',
+              size: 'small',
+              onClick: () => void reviewCase(row, true),
+            },
+            { default: () => t('cases.approve') },
+          ),
+        row.reviewStatus === 'pending' &&
+          h(
+            NButton,
+            {
+              text: true,
+              type: 'warning',
+              size: 'small',
+              onClick: () => void reviewCase(row, false),
+            },
+            { default: () => t('cases.reject') },
+          ),
+        h(
+          NButton,
+          {
+            text: true,
+            type: 'error',
+            size: 'small',
+            onClick: () => void removeCase(row),
+          },
+          { default: () => t('common.delete') },
+        ),
+      ]),
+  },
+])
+
 async function load(): Promise<void> {
   error.value = null
   message.value = ''
@@ -135,12 +281,16 @@ watch([keyword, priority, reviewStatus, domain], () => {
 function turnPage(next: number): void {
   if (next < 1 || next > pageCount.value) return
   page.value = next
-  void load()  // 选择跨页保留（FR-v0.2-35），翻页不清空
+  void load() // 选择跨页保留（FR-v0.2-35），翻页不清空
 }
 
 /**
  * 批量动作（FR-v0.2-36~39）：部分成功返回 200，失败项保留勾选可重试。
  * 仅「ids 空」不发起请求；参数级 400（如驳回缺意见）在本地前置拦截。
+ *
+ * 驳回意见仍走 `window.prompt`：项目还没接 `NDialogProvider`（只有 NConfigProvider），
+ * 换成 `useDialog` 要先在 App.vue 加 provider，属于另一处改动。此处保持既有行为，
+ * 已登记为待办，不在本次视图迁移里顺手改。
  */
 async function runBatch(action: BatchAction): Promise<void> {
   error.value = null
@@ -283,49 +433,81 @@ async function runCommit(): Promise<void> {
     </div>
 
     <div class="toolbar">
-      <input
-        v-model="keyword"
-        class="input"
+      <NInput
+        v-model:value="keyword"
+        clearable
+        style="width: 200px"
         :placeholder="t('common.searchPlaceholder')"
+        :aria-label="t('common.searchPlaceholder')"
         @keyup.enter="load"
       />
-      <select v-model="priority" class="input">
-        <option value="">{{ t('cases.allPriority') }}</option>
-        <option v-for="item in PRIORITIES" :key="item" :value="item">{{ priorityLabel(item) }}</option>
-      </select>
-      <select v-model="reviewStatus" class="input">
-        <option value="">{{ t('cases.allStatus') }}</option>
-        <option v-for="item in REVIEW_STATUSES" :key="item" :value="item">
-          {{ reviewStatusLabel(item) }}
-        </option>
-      </select>
-      <input v-model="domain" class="input" :placeholder="t('cases.domain')" />
-      <button class="btn" type="button" @click="showForm = !showForm">
+      <NSelect
+        v-model:value="priority"
+        :options="priorityOptions"
+        style="width: 140px"
+        :aria-label="t('cases.priority')"
+      />
+      <NSelect
+        v-model:value="reviewStatus"
+        :options="reviewOptions"
+        style="width: 140px"
+        :aria-label="t('cases.status')"
+      />
+      <NInput
+        v-model:value="domain"
+        clearable
+        style="width: 140px"
+        :placeholder="t('cases.domain')"
+        :aria-label="t('cases.domain')"
+      />
+      <NButton :type="showForm ? 'default' : 'primary'" @click="showForm = !showForm">
         {{ showForm ? t('common.cancel') : t('common.create') }}
-      </button>
-      <button class="btn btn-ghost" type="button" @click="showImport = !showImport">
-        {{ t('cases.import.title') }}
-      </button>
-      <button class="btn btn-ghost" type="button" @click="load">{{ t('common.refresh') }}</button>
+      </NButton>
+      <NButton quaternary @click="showImport = !showImport">{{ t('cases.import.title') }}</NButton>
+      <NButton quaternary :loading="loading" @click="load">{{ t('common.refresh') }}</NButton>
     </div>
 
     <ErrorLineView v-if="error" :error="error" />
     <p v-if="message" class="text-ok">{{ message }}</p>
-    <p v-if="loading" class="muted">{{ t('common.loading') }}</p>
 
     <form v-if="showForm" class="inline-form" @submit.prevent="createCase">
-      <input v-model="form.caseCode" class="input" :placeholder="t('cases.caseCode')" />
-      <input v-model="form.title" class="input wide" :placeholder="t('cases.title')" />
-      <input v-model="form.category" class="input" :placeholder="t('cases.category')" />
-      <select v-model="form.priority" class="input">
-        <option v-for="item in PRIORITIES" :key="item" :value="item">{{ priorityLabel(item) }}</option>
-      </select>
-      <input v-model="form.domainTag" class="input" :placeholder="t('cases.domain')" />
-      <input v-model="form.capability" class="input" :placeholder="t('cases.capability')" />
-      <textarea v-model="form.precondition" class="input wide" :placeholder="t('cases.precondition')" />
-      <textarea v-model="form.expected" class="input wide" :placeholder="t('cases.expected')" />
-      <textarea v-model="form.description" class="input wide" :placeholder="t('cases.description')" />
-      <button class="btn" type="submit">{{ t('common.save') }}</button>
+      <NInput v-model:value="form.caseCode" style="width: 140px" :placeholder="t('cases.caseCode')" />
+      <NInput v-model:value="form.title" style="width: 240px" :placeholder="t('cases.title')" />
+      <NInput v-model:value="form.category" style="width: 140px" :placeholder="t('cases.category')" />
+      <NSelect
+        v-model:value="form.priority"
+        :options="formPriorityOptions"
+        style="width: 120px"
+        :aria-label="t('cases.priority')"
+      />
+      <NInput v-model:value="form.domainTag" style="width: 140px" :placeholder="t('cases.domain')" />
+      <NInput
+        v-model:value="form.capability"
+        style="width: 140px"
+        :placeholder="t('cases.capability')"
+      />
+      <NInput
+        v-model:value="form.precondition"
+        type="textarea"
+        style="width: 340px"
+        :autosize="{ minRows: 1, maxRows: 3 }"
+        :placeholder="t('cases.precondition')"
+      />
+      <NInput
+        v-model:value="form.expected"
+        type="textarea"
+        style="width: 340px"
+        :autosize="{ minRows: 1, maxRows: 3 }"
+        :placeholder="t('cases.expected')"
+      />
+      <NInput
+        v-model:value="form.description"
+        type="textarea"
+        style="width: 340px"
+        :autosize="{ minRows: 1, maxRows: 3 }"
+        :placeholder="t('cases.description')"
+      />
+      <NButton type="primary" attr-type="submit">{{ t('common.save') }}</NButton>
     </form>
 
     <div v-if="showImport" class="card import-card">
@@ -333,15 +515,14 @@ async function runCommit(): Promise<void> {
       <p class="muted">{{ t('cases.import.hint') }}</p>
       <input type="file" accept=".xlsx,.xls" @change="pickFile" />
       <div class="toolbar">
-        <button class="btn" type="button" @click="runPreview">{{ t('cases.import.preview') }}</button>
-        <button
-          class="btn btn-ghost"
-          type="button"
+        <NButton @click="runPreview">{{ t('cases.import.preview') }}</NButton>
+        <NButton
+          quaternary
           :disabled="!preview || preview.errors.length > 0"
           @click="runCommit"
         >
           {{ t('cases.import.commit') }}
-        </button>
+        </NButton>
       </div>
       <p v-if="preview" class="muted">
         {{ t('cases.import.summary', { total: preview.totalRows, valid: preview.validRows }) }}
@@ -362,150 +543,66 @@ async function runCommit(): Promise<void> {
       :loading="batchLoading"
       @clear="clearSelection(); batchResult = null"
     >
-      <button
-        class="btn btn-ghost"
-        type="button"
-        :disabled="batchLoading"
-        @click="runBatch('submit')"
-      >
+      <NButton quaternary :disabled="batchLoading" @click="runBatch('submit')">
         {{ t('cases.batch.submit') }}
-      </button>
-      <button
-        class="btn btn-ghost"
-        type="button"
-        :disabled="batchLoading"
-        @click="runBatch('approve')"
-      >
+      </NButton>
+      <NButton quaternary :disabled="batchLoading" @click="runBatch('approve')">
         {{ t('cases.batch.approve') }}
-      </button>
-      <button
-        class="btn btn-ghost"
-        type="button"
-        :disabled="batchLoading"
-        @click="runBatch('reject')"
-      >
+      </NButton>
+      <NButton quaternary :disabled="batchLoading" @click="runBatch('reject')">
         {{ t('cases.batch.reject') }}
-      </button>
-      <select v-model="batchPriority" class="input" :disabled="batchLoading">
-        <option v-for="item in PRIORITIES" :key="item" :value="item">
-          {{ priorityLabel(item) }}
-        </option>
-      </select>
-      <button
-        class="btn btn-ghost"
-        type="button"
+      </NButton>
+      <NSelect
+        v-model:value="batchPriority"
+        :options="formPriorityOptions"
+        style="width: 120px"
         :disabled="batchLoading"
-        @click="runBatch('setPriority')"
-      >
+        :aria-label="t('cases.priority')"
+      />
+      <NButton quaternary :disabled="batchLoading" @click="runBatch('setPriority')">
         {{ t('cases.batch.setPriority') }}
-      </button>
-      <input
-        v-model="batchDomain"
-        class="input"
+      </NButton>
+      <NInput
+        v-model:value="batchDomain"
+        style="width: 140px"
         :placeholder="t('cases.domain')"
         :disabled="batchLoading"
       />
-      <button
-        class="btn btn-ghost"
-        type="button"
-        :disabled="batchLoading"
-        @click="runBatch('setDomainTag')"
-      >
+      <NButton quaternary :disabled="batchLoading" @click="runBatch('setDomainTag')">
         {{ t('cases.batch.setDomainTag') }}
-      </button>
-      <button
-        class="btn btn-ghost danger"
-        type="button"
-        :disabled="batchLoading"
-        @click="runBatch('delete')"
-      >
+      </NButton>
+      <NButton quaternary type="error" :disabled="batchLoading" @click="runBatch('delete')">
         {{ t('cases.batch.delete') }}
-      </button>
+      </NButton>
     </SelectionBar>
 
-    <div v-if="cases.length" class="table-scroll">
-    <table class="table">
-      <thead>
-        <tr>
-          <th class="col-check">
-            <input
-              type="checkbox"
-              :checked="pageAllSelected"
-              :indeterminate.prop="pageIndeterminate"
-              :aria-label="t('cases.batch.barLabel')"
-              @change="togglePage()"
-            />
-          </th>
-          <th>{{ t('cases.caseCode') }}</th>
-          <th>{{ t('cases.title') }}</th>
-          <th>{{ t('cases.priority') }}</th>
-          <th>{{ t('cases.status') }}</th>
-          <th>{{ t('cases.domain') }}</th>
-          <th>{{ t('cases.capability') }}</th>
-          <th>{{ t('common.actions') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="c in cases" :key="c.id">
-          <td class="col-check">
-            <input
-              type="checkbox"
-              :checked="isSelected(c.id)"
-              :aria-label="`${t('cases.caseCode')}: ${c.caseCode}`"
-              @change="toggle(c.id)"
-            />
-          </td>
-          <td>{{ c.caseCode }}</td>
-          <td>{{ c.title }}</td>
-          <td>{{ priorityLabel(c.priority) }}</td>
-          <td>{{ reviewStatusLabel(c.reviewStatus) }}</td>
-          <td>{{ c.domainTag }}</td>
-          <td>{{ c.capability }}</td>
-          <td>
-            <button
-              v-if="c.reviewStatus === 'draft' || c.reviewStatus === 'rejected'"
-              class="link-btn"
-              type="button"
-              @click="submitCase(c)"
-            >
-              {{ t('cases.submit') }}
-            </button>
-            <template v-if="c.reviewStatus === 'pending'">
-              <button class="link-btn" type="button" @click="reviewCase(c, true)">
-                {{ t('cases.approve') }}
-              </button>
-              <button class="link-btn danger" type="button" @click="reviewCase(c, false)">
-                {{ t('cases.reject') }}
-              </button>
-            </template>
-            <button class="link-btn danger" type="button" @click="removeCase(c)">
-              {{ t('common.delete') }}
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
+    <NDataTable
+      :columns="columns"
+      :data="cases"
+      :loading="loading"
+      :row-key="(row: TestCase) => row.id"
+      :scroll-x="1080"
+      :bordered="false"
+      size="small"
+    >
+      <template #empty>
+        <EmptyState
+          v-if="!loading && !error"
+          :title="t('common.noData')"
+          :description="projectId ? undefined : t('overview.noProject')"
+          icon="cases"
+        />
+      </template>
+    </NDataTable>
 
-    <EmptyState
-      v-if="!loading && !error && total === 0"
-      :title="t('common.noData')"
+    <NPagination
+      v-if="total > 0"
+      class="pager"
+      :page="page"
+      :page-count="pageCount"
+      :page-slot="7"
+      @update:page="turnPage"
     />
-
-    <div v-if="total > 0" class="pager">
-      <button class="btn btn-ghost" type="button" :disabled="page <= 1" @click="turnPage(page - 1)">
-        {{ t('common.prev') }}
-      </button>
-      <span class="muted">{{ t('common.pageInfo', { page, total: pageCount }) }}</span>
-      <button
-        class="btn btn-ghost"
-        type="button"
-        :disabled="page >= pageCount"
-        @click="turnPage(page + 1)"
-      >
-        {{ t('common.next') }}
-      </button>
-    </div>
 
     <section v-if="capabilities.length" class="card">
       <h2 class="card-title">{{ t('cases.capabilityIndex') }}</h2>
@@ -519,9 +616,9 @@ async function runCommit(): Promise<void> {
 </template>
 
 <style scoped>
-/* 勾选列：窄列居中，不挤占正文 */
-.col-check {
-  width: 36px;
-  text-align: center;
+/* 操作列多个 text 按钮并排：h() 渲染的节点拿不到 scoped 类，用 :deep 兜 */
+:deep(.row-actions) {
+  display: flex;
+  gap: var(--space-2);
 }
 </style>

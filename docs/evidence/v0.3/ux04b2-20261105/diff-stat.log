@@ -1,0 +1,5 @@
+ frontend/src/assets/fonts/noto-sans-sc-ui.woff2 | Bin 129532 -> 130376 bytes
+ frontend/src/utils/statusLabels.ts              |  20 ++
+ frontend/src/views/CasesView.vue                | 447 ++++++++++++++----------
+ frontend/src/views/RunsView.vue                 | 254 ++++++++++----
+ 4 files changed, 469 insertions(+), 252 deletions(-)

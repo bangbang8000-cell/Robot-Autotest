@@ -1,0 +1,3 @@
+[FAIL] frontend/src/views/RunsView.vue：模板用了 <StatusTag> 但没有 import
+
+[FAIL] 1 处漏 import（共扫描 28 个 .vue）

@@ -111,3 +111,23 @@ export function runStatusTone(value: string | null | undefined): StatusTone {
       return 'neutral'
   }
 }
+
+/**
+ * 用例评审状态 → 色档。
+ *
+ * `draft` 用 neutral 而不是 warn：草稿是作者自己没提交，不是「需要人处理」；
+ * `pending` 才用 warn —— 它表示队列里有人在等评审。这两个如果都标黄，
+ * 列表里「等我审的」就淹没在草稿堆里了。
+ */
+export function reviewStatusTone(value: string | null | undefined): StatusTone {
+  switch ((value ?? '').toLowerCase()) {
+    case 'approved':
+      return 'ok'
+    case 'rejected':
+      return 'fail'
+    case 'pending':
+      return 'warn'
+    default:
+      return 'neutral'
+  }
+}
