@@ -116,10 +116,10 @@ class QuickRunServiceTest {
     void runRequestId_幂等() {
         RunRecord first = service.trigger(new QuickRunService.QuickRunCommand(
                 PROJECT, null, List.of("suites/a.robot"), null, List.of(),
-                null, null, null, "req-1", null, "runs-view"));
+                null, null, null, null, "req-1", null, "runs-view"));
         RunRecord second = service.trigger(new QuickRunService.QuickRunCommand(
                 PROJECT, null, List.of("suites/a.robot"), null, List.of(),
-                null, null, null, "req-1", null, "runs-view"));
+                null, null, null, null, "req-1", null, "runs-view"));
 
         assertEquals(first.runId(), second.runId());
         assertEquals(1, repo.insertCount());
@@ -152,7 +152,7 @@ class QuickRunServiceTest {
 
         service.dispatch(done, new RunService.CreateRunCommand(
                 PROJECT, null, List.of("suites/a.robot"), 1, null, List.of(),
-                null, 0, 900, null, null));
+                null, 0, 900, null, null, 0));
 
         assertTrue(dispatcher.runIds.isEmpty(), "终态 run 不应再次派发");
     }
@@ -177,7 +177,7 @@ class QuickRunServiceTest {
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> service.trigger(new QuickRunService.QuickRunCommand(
                         PROJECT, null, List.of("suites/a.robot", "suites/dup.robot"), null,
-                        List.of(), null, null, null, null, List.of("PERF-001"), "cases")));
+                        List.of(), null, null, null, null, null, List.of("PERF-001"), "cases")));
 
         assertEquals(ErrorCode.INVALID_ARGUMENT, ex.errorCode());
         assertTrue(ex.getMessage().contains("重复"), ex.getMessage());
@@ -191,7 +191,7 @@ class QuickRunServiceTest {
         RunRecord run = service.trigger(new QuickRunService.QuickRunCommand(
                 PROJECT, null, List.of("suites/a.robot"), null,
                 List.of(" DUT-01/mlx5_0 ", "DUT-02/mlx5_1", "DUT-01/mlx5_0"),
-                null, null, null, null, null, "runs-view"));
+                null, null, null, null, null, null, "runs-view"));
 
         assertEquals("DUT-01/mlx5_0,DUT-02/mlx5_1", run.deviceScope());
         assertEquals("DUT-01/mlx5_0,DUT-02/mlx5_1",
@@ -216,7 +216,7 @@ class QuickRunServiceTest {
                 () -> service.trigger(new QuickRunService.QuickRunCommand(
                         PROJECT, null, List.of("suites/a.robot"), null,
                         List.of(key + "-1", key + "-2", key + "-3"),
-                        null, null, null, null, null, "runs-view")));
+                        null, null, null, null, null, null, "runs-view")));
 
         assertEquals(ErrorCode.INVALID_ARGUMENT, ex.errorCode());
         assertTrue(ex.getMessage().contains("deviceScope"), ex.getMessage());
@@ -234,14 +234,42 @@ class QuickRunServiceTest {
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> service.trigger(new QuickRunService.QuickRunCommand(
                         PROJECT, null, List.of(suites), null, List.of(),
-                        null, null, null, null, null, "runs-view")));
+                        null, null, null, null, null, null, "runs-view")));
         assertEquals(ErrorCode.INVALID_ARGUMENT, ex.errorCode());
         assertTrue(ex.getMessage().contains(message), ex.getMessage());
     }
 
+    @Test
+    @DisplayName("单用例超时：本次触发可覆盖，超上限直接拒绝（EXEC-12）")
+    void 单用例超时归一与上限() {
+        RunRecord ok = service.trigger(new QuickRunService.QuickRunCommand(
+                PROJECT, null, List.of("suites/a.robot"), null, List.of(),
+                null, null, 120, null, null, null, "runs-view"));
+        assertEquals(RunState.QUEUED, ok.state());
+        assertEquals(1, dispatcher.runIds.size());
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> service.trigger(new QuickRunService.QuickRunCommand(
+                        PROJECT, null, List.of("suites/a.robot"), null, List.of(),
+                        null, null, 86401, null, null, null, "runs-view")));
+        assertEquals(ErrorCode.INVALID_ARGUMENT, ex.errorCode());
+        assertTrue(ex.getMessage().contains("86400"), ex.getMessage());
+        assertEquals(1, repo.insertCount(), "拒绝发生在落库之前");
+    }
+
+    @Test
+    @DisplayName("单用例超时归一：空 / 非正数走全局默认，合法值原样保留（EXEC-12）")
+    void 单用例超时归一规则() {
+        assertEquals(0, RunService.normalizeTestTimeout(null));
+        assertEquals(0, RunService.normalizeTestTimeout(0));
+        assertEquals(0, RunService.normalizeTestTimeout(-5));
+        assertEquals(120, RunService.normalizeTestTimeout(120));
+        assertEquals(86400, RunService.normalizeTestTimeout(86400));
+    }
+
     private static QuickRunService.QuickRunCommand command(String source, String... suites) {
         return new QuickRunService.QuickRunCommand(PROJECT, null, List.of(suites), null, List.of(),
-                null, null, null, null, null, source);
+                null, null, null, null, null, null, source);
     }
 
     private static AuditService auditService(List<AuditEntry> sink) {

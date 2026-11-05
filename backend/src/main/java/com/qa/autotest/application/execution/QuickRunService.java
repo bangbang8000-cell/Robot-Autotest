@@ -77,6 +77,8 @@ public class QuickRunService {
         int concurrency = cmd.concurrency() == null ? 1 : cmd.concurrency();
         int timeout = cmd.timeoutSeconds() == null || cmd.timeoutSeconds() <= 0
                 ? props.getRunTimeoutSeconds() : cmd.timeoutSeconds();
+        // FR-v0.4-24：本次触发可覆盖单用例超时；0 表示沿用 execution.test-timeout-seconds。
+        int testTimeout = RunService.normalizeTestTimeout(cmd.testTimeoutSeconds());
         CreateRunCommand command = new CreateRunCommand(
                 cmd.projectId(),
                 cmd.testSetId(),
@@ -88,7 +90,8 @@ public class QuickRunService {
                 0,
                 timeout,
                 cmd.includeTag(),
-                cmd.testNames() == null ? List.of() : List.copyOf(cmd.testNames()));
+                cmd.testNames() == null ? List.of() : List.copyOf(cmd.testNames()),
+                testTimeout);
         RunRecord created = runs.create(command, RunOrigin.manual());
         if (created.state() != RunState.QUEUED) {
             // 幂等重放：run 已在执行或已结束，不再派发，也不再重复记触发审计。
@@ -167,7 +170,9 @@ public class QuickRunService {
     /**
      * 手工触发参数。
      *
-     * @param source 来源页面标记（如 runs-view / test-set），只进审计，不落 run 表
+     * @param timeoutSeconds     整次运行的总超时（秒）
+     * @param testTimeoutSeconds 单用例超时（秒）；null / {@code <=0} 表示沿用全局默认
+     * @param source             来源页面标记（如 runs-view / test-set），只进审计，不落 run 表
      */
     public record QuickRunCommand(long projectId,
                                   Long testSetId,
@@ -176,6 +181,7 @@ public class QuickRunService {
                                   List<String> deviceKeys,
                                   Integer concurrency,
                                   Integer timeoutSeconds,
+                                  Integer testTimeoutSeconds,
                                   String includeTag,
                                   String runRequestId,
                                   List<String> testNames,

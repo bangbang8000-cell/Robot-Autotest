@@ -328,7 +328,26 @@ public class RunService {
                                    int priority,
                                    int timeoutSeconds,
                                    String includeTag,
-                                   List<String> testNames) {
+                                   List<String> testNames,
+                                   int testTimeoutSeconds) {
+    }
+
+    /** 单用例超时（秒）上限；与前端输入框上限一致。 */
+    public static final int MAX_TEST_TIMEOUT_SECONDS = 86400;
+
+    /**
+     * 单用例超时归一（FR-v0.4-24）：{@code null} 或 {@code <=0} 表示沿用全局默认
+     * {@code execution.test-timeout-seconds}，这里用 0 占位；超过上限直接拒绝。
+     */
+    public static int normalizeTestTimeout(Integer seconds) {
+        if (seconds == null || seconds <= 0) {
+            return 0;
+        }
+        if (seconds > MAX_TEST_TIMEOUT_SECONDS) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
+                    "单用例超时最多 " + MAX_TEST_TIMEOUT_SECONDS + " 秒");
+        }
+        return seconds;
     }
 
     public record TransitionContext(Instant startedAt,

@@ -56,6 +56,8 @@ const manualTestSetId = ref<number | null>(null)
 const manualEnv = ref('')
 const manualConcurrency = ref(1)
 const manualTimeout = ref(3600)
+/** EXEC-12：单用例超时；0 = 沿用后端全局默认（execution.test-timeout-seconds）。 */
+const manualTestTimeout = ref(0)
 const manualDeviceKeys = ref<string[]>([])
 const manualTag = ref('')
 const manualBusy = ref(false)
@@ -144,6 +146,7 @@ async function submitManual(): Promise<void> {
       deviceKeys: manualDeviceKeys.value.length > 0 ? [...manualDeviceKeys.value] : undefined,
       concurrency: Number(manualConcurrency.value) || 1,
       timeoutSeconds: Number(manualTimeout.value) || 3600,
+      testTimeoutSeconds: Number(manualTestTimeout.value) || 0,
       includeTag: manualTag.value.trim() || null,
     }
     const run =
@@ -587,6 +590,10 @@ onBeforeUnmount(() => {
 
         <FormField :label="t('execution.manual.timeout')">
           <NInputNumber v-model:value="manualTimeout" :min="1" :max="86400" />
+        </FormField>
+
+        <FormField :label="t('execution.manual.testTimeout')" :hint="t('execution.manual.testTimeoutHint')">
+          <NInputNumber v-model:value="manualTestTimeout" :min="0" :max="86400" />
         </FormField>
 
         <FormField :label="t('execution.manual.includeTag')">

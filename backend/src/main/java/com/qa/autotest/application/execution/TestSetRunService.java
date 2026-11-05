@@ -94,7 +94,7 @@ public class TestSetRunService {
         return quickRuns.trigger(new QuickRunService.QuickRunCommand(
                 cmd.projectId(), cmd.testSetId(), resolution.suitePaths(),
                 cmd.environmentId(), cmd.deviceKeys(), cmd.concurrency(),
-                cmd.timeoutSeconds(), cmd.includeTag(), cmd.runRequestId(),
+                cmd.timeoutSeconds(), cmd.testTimeoutSeconds(), cmd.includeTag(), cmd.runRequestId(),
                 resolution.testNames(), "test-set"));
     }
 
@@ -147,6 +147,7 @@ public class TestSetRunService {
                                     List<String> deviceKeys,
                                     Integer concurrency,
                                     Integer timeoutSeconds,
+                                    Integer testTimeoutSeconds,
                                     String includeTag,
                                     String runRequestId) {
     }

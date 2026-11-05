@@ -62,6 +62,51 @@ Robot Framework **没有全局单用例超时命令行开关**（7.5.1 实测 `r
 ## 5. 已知缺口
 
 1. **`.resource` 资源文件不注入**：RF 的 `Test Timeout` 只对套件生效，资源文件里没有该设置；若某用例把长步骤封装在 resource 关键字里，超时仍按整个 test 计时，行为正确。
-2. **按用例单独配置超时未做**：当前是全局值（`execution.test-timeout-seconds`），PRD 未要求逐用例配置。
-3. **UI 不可调**：只能改配置或环境变量；如需在页面上按 run 指定，要再走一遍 `CreateRunCommand` 扩字段（同 EXEC-11 的 `deviceScope` 路径）。
-4. **未做真实长跑验证**：按 ADR-0013 开发期不连 DUT，实机验证留到 v1.0 验收。
+2. **按用例单独配置超时未做**：PRD 未要求逐用例配置，当前支持全局默认 + 每次触发覆盖（见第 6 节）。
+3. **未做真实长跑验证**：按 ADR-0013 开发期不连 DUT，实机验证留到 v1.0 验收。
+
+## 6. 2026-11-06 补记：run 级覆盖 + UI 可调
+
+原先「UI 不可调」的缺口已补齐：本次不做逐用例配置，但允许**每次触发单独指定单用例超时**，
+不改全局配置、不影响其他运行。
+
+| 层 | 之前 | 现在 |
+|---|---|---|
+| 命令模型 | `CreateRunCommand` 无该字段 | 末尾新增 `int testTimeoutSeconds`（0 = 用全局默认） |
+| 归一与上限 | — | `RunService.normalizeTestTimeout(Integer)`：`null`/`<=0` → 0；`> 86400` 抛 `INVALID_ARGUMENT` |
+| 手工触发 | `QuickRunCommand` 无该字段 | 新增 `Integer testTimeoutSeconds`，`QuickRunService` 归一后透传 |
+| 用例集 / 用例批量 | 同上 | `TestSetRunCommand`、`CaseRunCommand` 同步加字段并透传 |
+| 执行 | 固定 `props.getTestTimeoutSeconds()` | `cmd.testTimeoutSeconds() > 0 ? cmd : 全局默认`，注入逻辑不变 |
+| CI / 计划调度 | — | 新增请求字段；计划调度固定 0（沿用全局默认） |
+| 前端 | 只有「超时（秒）」 | 运行记录页手动执行表单、用例页「执行所选」各加「单用例超时（秒，0=默认）」输入（`0..86400`） |
+
+改动文件：
+
+- `backend/.../execution/RunService.java`、`QuickRunService.java`、`TestSetRunService.java`、`CaseRunService.java`、`RunExecutionService.java`
+- `backend/.../api/execution/RunController.java`、`backend/.../plan/PlanScheduleService.java`
+- `backend/.../execution/QuickRunServiceTest.java`（+2 条）、`RunExecutionServiceTest.java`（+1 条）
+- `frontend/src/api/execution.ts`、`views/RunsView.vue`、`views/CasesView.vue`、`locales/zh-CN.ts`、`locales/en-US.ts`
+- `frontend/src/views/RunsView.spec.ts`、`views/CasesView.spec.ts`（断言新增字段）
+
+新增用例：
+
+1. `单用例超时归一与上限` —— 120 秒触发成功并派发；86401 秒在落库前抛 `INVALID_ARGUMENT`（消息含 `86400`）
+2. `单用例超时归一规则` —— `null`/`0`/`-5` → 0，`120`/`86400` 原样
+3. `单用例超时可被本次运行覆盖_未指定时沿用全局默认` —— 覆盖值 90 注入后工作区副本含 `Test Timeout    90s`，全局配置仍 1800；传 0 时副本含 `Test Timeout    1800s`
+
+边界（保持）：`testTimeoutSeconds` 只随本次运行生效，**不落 `execution_job` 表**，运行记录重放不会还原该参数；
+`.resource` 仍不注入；逐用例单独配置仍不做。
+
+## 7. 门禁（2026-11-06 复跑）
+
+| 门禁 | 命令 | 结果 |
+|---|---|---|
+| 后端全量单测 | `cd backend && mvn -o test` | **555** 通过（原 552 + 3） |
+| 前端全量单测 | `cd frontend && npm run test` | **197** 通过（28 文件） |
+| 前端构建 | `cd frontend && npm run build` | exit 0 |
+| 字体子集 | `python3 tools/subset_font.py` | PASS 1028 字 / 178594 B gzip |
+| 规范 / WBS / 发布文档 | `bash scripts/lint.sh` 等 | PASS / PASS / PASS，日志见本目录 `*-20261106.log` |
+
+日志文件：`backend-test-20261106.log`、`frontend-test-20261106.log`、`frontend-build-20261106.log`、
+`font-20261106.log`、`lint-20261106.log`、`release-docs-20261106.log`、`wbs-20261106.log`、`git-status-20261106.log`。
+

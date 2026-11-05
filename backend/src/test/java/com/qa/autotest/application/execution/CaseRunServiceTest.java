@@ -181,7 +181,7 @@ class CaseRunServiceTest {
     }
 
     private static CaseRunService.CaseRunCommand command(List<Long> ids) {
-        return new CaseRunService.CaseRunCommand(PROJECT, ids, 3L, List.of(), 2, 600, null, null);
+        return new CaseRunService.CaseRunCommand(PROJECT, ids, 3L, List.of(), 2, 600, null, null, null);
     }
 
     private static TestCase testCase(long id, String code) {

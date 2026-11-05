@@ -112,8 +112,11 @@ public class RunExecutionService {
         // FR-v0.4-24 单用例超时：RF 没有全局 CLI 开关，只能在套件 `*** Settings ***` 注入
         // `Test Timeout`。只改本 run 的副本（materialize 成功时），
         // 不碰数据库脚本与真实 workspace-root（回落分支下那是用户原脚本）。
+        // 本次触发显式给了 testTimeoutSeconds 就用它，否则沿用全局默认。
         if (materialized) {
-            TestTimeoutInjector.inject(workDir, cmd.suitePaths(), props.getTestTimeoutSeconds());
+            int testTimeout = cmd.testTimeoutSeconds() > 0
+                    ? cmd.testTimeoutSeconds() : props.getTestTimeoutSeconds();
+            TestTimeoutInjector.inject(workDir, cmd.suitePaths(), testTimeout);
         }
 
         List<ExecutionPrecheck.Violation> violations = precheck.check(

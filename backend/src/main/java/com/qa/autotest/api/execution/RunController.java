@@ -83,6 +83,7 @@ public class RunController {
                 request.deviceKeys(),
                 request.concurrency(),
                 request.timeoutSeconds(),
+                request.testTimeoutSeconds(),
                 request.includeTag(),
                 request.runRequestId(),
                 null,
@@ -95,12 +96,13 @@ public class RunController {
     public ApiResponse<RunRecord> runTestSet(@PathVariable long testSetId,
                                               @RequestParam long projectId,
                                               @RequestBody(required = false) TestSetRunRequest request) {
-        TestSetRunRequest body = request == null ? new TestSetRunRequest(null, null, null, null, null, null)
+        TestSetRunRequest body = request == null
+                ? new TestSetRunRequest(null, null, null, null, null, null, null)
                 : request;
         return ApiResponse.ok(testSetRuns.run(new TestSetRunService.TestSetRunCommand(
                 projectId, testSetId, body.environmentId(), body.deviceKeys(),
-                body.concurrency(), body.timeoutSeconds(), body.includeTag(),
-                body.runRequestId())));
+                body.concurrency(), body.timeoutSeconds(), body.testTimeoutSeconds(),
+                body.includeTag(), body.runRequestId())));
     }
 
     /** 勾选台账用例直接执行（EXEC-02，v0.4 候选提前实现）：后端解析绑定，前端只传用例 id。 */
@@ -108,11 +110,11 @@ public class RunController {
     public ApiResponse<RunRecord> runCases(@RequestParam long projectId,
                                            @RequestBody(required = false) CaseRunRequest request) {
         CaseRunRequest body = request == null
-                ? new CaseRunRequest(null, null, null, null, null, null, null) : request;
+                ? new CaseRunRequest(null, null, null, null, null, null, null, null) : request;
         return ApiResponse.ok(caseRuns.run(new CaseRunService.CaseRunCommand(
                 projectId, body.caseIds(), body.environmentId(), body.deviceKeys(),
-                body.concurrency(), body.timeoutSeconds(), body.includeTag(),
-                body.runRequestId())));
+                body.concurrency(), body.timeoutSeconds(), body.testTimeoutSeconds(),
+                body.includeTag(), body.runRequestId())));
     }
 
     /** CI 专用直建端点（FR-v0.2-61）：落库后立即派发，不再停留 queued。 */
@@ -131,7 +133,8 @@ public class RunController {
                 request.priority() == null ? 0 : request.priority(),
                 timeout,
                 request.includeTag(),
-                null);
+                null,
+                RunService.normalizeTestTimeout(request.testTimeoutSeconds()));
         RunRecord created = runs.create(command, new RunOrigin(RunOrigin.CI, null, null));
         quickRuns.dispatch(created, command);
         return ApiResponse.ok(created);
@@ -217,6 +220,7 @@ public class RunController {
                                   List<String> deviceKeys,
                                   Integer concurrency,
                                   Integer timeoutSeconds,
+                                  Integer testTimeoutSeconds,
                                   String includeTag,
                                   String runRequestId,
                                   String source) {
@@ -226,6 +230,7 @@ public class RunController {
                                     List<String> deviceKeys,
                                     Integer concurrency,
                                     Integer timeoutSeconds,
+                                    Integer testTimeoutSeconds,
                                     String includeTag,
                                     String runRequestId) {
     }
@@ -235,6 +240,7 @@ public class RunController {
                                  List<String> deviceKeys,
                                  Integer concurrency,
                                  Integer timeoutSeconds,
+                                 Integer testTimeoutSeconds,
                                  String includeTag,
                                  String runRequestId) {
     }
@@ -248,6 +254,7 @@ public class RunController {
                                    String runRequestId,
                                    Integer priority,
                                    Integer timeoutSeconds,
+                                   Integer testTimeoutSeconds,
                                    String includeTag) {
     }
 }

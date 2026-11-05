@@ -116,7 +116,7 @@ public class CaseRunService {
         return quickRuns.trigger(new QuickRunService.QuickRunCommand(
                 cmd.projectId(), null, new ArrayList<>(suites),
                 cmd.environmentId(), cmd.deviceKeys(), cmd.concurrency(),
-                cmd.timeoutSeconds(), cmd.includeTag(), cmd.runRequestId(),
+                cmd.timeoutSeconds(), cmd.testTimeoutSeconds(), cmd.includeTag(), cmd.runRequestId(),
                 new ArrayList<>(testNames), "cases"));
     }
 
@@ -133,6 +133,7 @@ public class CaseRunService {
                                  List<String> deviceKeys,
                                  Integer concurrency,
                                  Integer timeoutSeconds,
+                                 Integer testTimeoutSeconds,
                                  String includeTag,
                                  String runRequestId) {
     }

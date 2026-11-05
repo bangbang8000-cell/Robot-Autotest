@@ -218,7 +218,7 @@ class TestSetRunServiceTest {
 
     private static TestSetRunService.TestSetRunCommand command() {
         return new TestSetRunService.TestSetRunCommand(PROJECT, SET_ID, null, List.of(),
-                null, null, null, null);
+                null, null, null, null, null);
     }
 
     private static TestSet set(List<TestCase> cases) {

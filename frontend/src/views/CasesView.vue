@@ -89,6 +89,8 @@ const runLoading = ref(false)
 const runEnv = ref<number | null>(null)
 const runConcurrency = ref(1)
 const runTimeout = ref(3600)
+/** EXEC-12：单用例超时；0 = 沿用后端全局默认。 */
+const runTestTimeout = ref(0)
 const runTag = ref('')
 const runError = ref<ErrorLine | null>(null)
 
@@ -369,6 +371,7 @@ async function submitRun(): Promise<void> {
       environmentId: runEnv.value,
       concurrency: runConcurrency.value,
       timeoutSeconds: runTimeout.value,
+      testTimeoutSeconds: Number(runTestTimeout.value) || 0,
       includeTag: runTag.value.trim() || null,
     })
     runOpen.value = false
@@ -735,6 +738,13 @@ async function runCommit(): Promise<void> {
           :max="86400"
           style="width: 140px"
           :placeholder="t('cases.run.timeout')"
+        />
+        <NInputNumber
+          v-model:value="runTestTimeout"
+          :min="0"
+          :max="86400"
+          style="width: 140px"
+          :placeholder="t('cases.run.testTimeout')"
         />
         <NInput
           v-model:value="runTag"

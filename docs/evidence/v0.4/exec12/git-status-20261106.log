@@ -1,0 +1,29 @@
+ M backend/src/main/java/com/qa/autotest/api/execution/RunController.java
+ M backend/src/main/java/com/qa/autotest/application/execution/CaseRunService.java
+ M backend/src/main/java/com/qa/autotest/application/execution/QuickRunService.java
+ M backend/src/main/java/com/qa/autotest/application/execution/RunExecutionService.java
+ M backend/src/main/java/com/qa/autotest/application/execution/RunService.java
+ M backend/src/main/java/com/qa/autotest/application/execution/TestSetRunService.java
+ M backend/src/main/java/com/qa/autotest/application/plan/PlanScheduleService.java
+ M backend/src/test/java/com/qa/autotest/application/execution/CaseRunServiceTest.java
+ M backend/src/test/java/com/qa/autotest/application/execution/IdempotencyTest.java
+ M backend/src/test/java/com/qa/autotest/application/execution/QuickRunServiceTest.java
+ M backend/src/test/java/com/qa/autotest/application/execution/RunExecutionServiceTest.java
+ M backend/src/test/java/com/qa/autotest/application/execution/TestSetRunServiceTest.java
+ M docs/evidence/v0.4/exec12/README.md
+ M docs/plan/WBS-STATUS.md
+ M frontend/src/api/execution.ts
+ M frontend/src/assets/fonts/noto-sans-sc-ui.woff2
+ M frontend/src/locales/en-US.ts
+ M frontend/src/locales/zh-CN.ts
+ M frontend/src/views/CasesView.spec.ts
+ M frontend/src/views/CasesView.vue
+ M frontend/src/views/RunsView.spec.ts
+ M frontend/src/views/RunsView.vue
+?? docs/evidence/v0.4/exec12/font-20261106.log
+?? docs/evidence/v0.4/exec12/frontend-build-20261106.log
+?? docs/evidence/v0.4/exec12/frontend-test-20261106.log
+?? docs/evidence/v0.4/exec12/git-status-20261106.log
+?? docs/evidence/v0.4/exec12/lint-20261106.log
+?? docs/evidence/v0.4/exec12/release-docs-20261106.log
+?? docs/evidence/v0.4/exec12/wbs-20261106.log

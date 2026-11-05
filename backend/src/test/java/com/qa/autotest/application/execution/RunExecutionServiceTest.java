@@ -175,14 +175,43 @@ class RunExecutionServiceTest {
                         List.of("DUT-01/mlx5_0", " DUT-01/mlx5_0 ", "DUT-02/mlx5_1"))));
     }
 
+    @Test
+    void 单用例超时可被本次运行覆盖_未指定时沿用全局默认() throws Exception {
+        Fixture override = new Fixture("ok.xml", true, List.of(
+                new RobotFile(1L, PROJECT, "suites/a.robot",
+                        "*** Settings ***\nDocumentation    x\n\n"
+                                + "*** Test Cases ***\nA\n    Log    ok\n", "sha-a", 1)));
+        RunRecord run = override.service.execute(command(List.of(), 90));
+
+        Path script = Path.of(run.artifactsDir())
+                .resolve(ExecutionWorkspaceMaterializer.WORKSPACE_DIR).resolve("suites/a.robot");
+        String text = Files.readString(script);
+        assertTrue(text.contains("Test Timeout    90s"), text);
+        assertEquals(1800, override.props.getTestTimeoutSeconds(), "全局默认不应被改写");
+
+        Fixture fallback = new Fixture("ok.xml", true, List.of(
+                new RobotFile(1L, PROJECT, "suites/a.robot",
+                        "*** Settings ***\nDocumentation    x\n\n"
+                                + "*** Test Cases ***\nA\n    Log    ok\n", "sha-a", 1)));
+        RunRecord plain = fallback.service.execute(command(List.of(), 0));
+
+        Path plainScript = Path.of(plain.artifactsDir())
+                .resolve(ExecutionWorkspaceMaterializer.WORKSPACE_DIR).resolve("suites/a.robot");
+        assertTrue(Files.readString(plainScript).contains("Test Timeout    1800s"));
+    }
+
     private RunService.CreateRunCommand command() {
         return command(List.of());
     }
 
     private RunService.CreateRunCommand command(List<String> deviceKeys) {
+        return command(deviceKeys, 0);
+    }
+
+    private RunService.CreateRunCommand command(List<String> deviceKeys, int testTimeoutSeconds) {
         return new RunService.CreateRunCommand(PROJECT, null,
                 List.of("suites/a.robot", "suites/b.robot"), 2, null, deviceKeys,
-                "req-1", 5, 600, null, null);
+                "req-1", 5, 600, null, null, testTimeoutSeconds);
     }
 
     private final class Fixture {

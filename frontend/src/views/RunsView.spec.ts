@@ -352,6 +352,7 @@ describe('RunsView 手动执行', () => {
         projectId: 1,
         suitePaths: ['suites/perf', 'suites/rdma'],
         source: 'runs-view',
+        testTimeoutSeconds: 0,
       }),
     )
     expect(root.textContent).toContain(

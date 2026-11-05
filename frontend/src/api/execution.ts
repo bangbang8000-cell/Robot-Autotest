@@ -84,6 +84,8 @@ export interface CreateRunPayload {
   runRequestId?: string
   priority?: number
   timeoutSeconds?: number
+  /** 单用例超时（秒）；0 / 省略表示沿用后端全局默认（EXEC-12）。 */
+  testTimeoutSeconds?: number
   includeTag?: string
 }
 
@@ -96,6 +98,8 @@ export interface QuickRunPayload {
   deviceKeys?: string[]
   concurrency?: number
   timeoutSeconds?: number
+  /** 单用例超时（秒）；0 / 省略表示沿用后端全局默认（EXEC-12）。 */
+  testTimeoutSeconds?: number
   includeTag?: string | null
   runRequestId?: string
   source?: string
@@ -107,6 +111,8 @@ export interface TestSetRunPayload {
   deviceKeys?: string[]
   concurrency?: number
   timeoutSeconds?: number
+  /** 单用例超时（秒）；0 / 省略表示沿用后端全局默认（EXEC-12）。 */
+  testTimeoutSeconds?: number
   includeTag?: string | null
   runRequestId?: string
 }
@@ -117,6 +123,8 @@ export interface CaseRunPayload {
   environmentId?: number | null
   concurrency?: number
   timeoutSeconds?: number
+  /** 单用例超时（秒）；0 / 省略表示沿用后端全局默认（EXEC-12）。 */
+  testTimeoutSeconds?: number
   includeTag?: string | null
   runRequestId?: string
 }

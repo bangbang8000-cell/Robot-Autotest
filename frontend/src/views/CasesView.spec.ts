@@ -196,7 +196,12 @@ describe('CasesView 执行所选（EXEC-02）', () => {
 
     expect(executionApi.runCases).toHaveBeenCalledWith(
       1,
-      expect.objectContaining({ caseIds: [1], concurrency: 1, timeoutSeconds: 3600 }),
+      expect.objectContaining({
+        caseIds: [1],
+        concurrency: 1,
+        timeoutSeconds: 3600,
+        testTimeoutSeconds: 0,
+      }),
     )
     expect(root.textContent).toContain(i18n.global.t('cases.run.created', { runId: 'RUN-9' }))
   })
