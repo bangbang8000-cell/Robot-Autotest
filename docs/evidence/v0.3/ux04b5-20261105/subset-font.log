@@ -1,0 +1,7 @@
+扫描到界面汉字 964 个（下限 200）
+  noto-sans-sc-latin.woff2                 13304 B  gzip     13327 B
+  noto-sans-sc-ui.woff2                   134948 B  gzip    135011 B
+  jetbrains-mono-latin.woff2               21168 B  gzip     21196 B
+  中文字体 cmap 覆盖 964 / 964 字
+  合计（gzip）                                            169534 B  / 预算 819200 B
+[PASS] 字体子集 964 字 / 169534 B gzip，未超 800 KiB 预算

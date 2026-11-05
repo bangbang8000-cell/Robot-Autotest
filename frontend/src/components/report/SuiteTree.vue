@@ -2,6 +2,8 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ReportSuiteNode } from '@/api/reports'
+import StatusTag from '@/components/StatusTag.vue'
+import { verdictTone } from '@/utils/statusLabels'
 import KeywordSteps from './KeywordSteps.vue'
 
 /**
@@ -9,6 +11,21 @@ import KeywordSteps from './KeywordSteps.vue'
  * - 根套件默认展开，子级默认折叠，点标题展开/收起；
  * - 用例行按 PASS/FAIL/SKIP 着色；
  * - 点用例展开关键字步骤树，再点「查看日志」交给父级按需拉取。
+ *
+ * <p>UX-04b 第六批两处改动：
+ *
+ * <p>① **状态徽标 `badge verdict-*` → `StatusTag`**（图标 + 文字）。树里一屏可能出现
+ * 十几条 FAIL，只靠红色区分时，六预设里 crimson 与 fail 同色相基本读不出差别。
+ *
+ * <p>② **整行按钮补齐 hover / focus-visible / transition**。它原来是个裸 `<button>`，
+ * 三态一个都没有；而 `tools/check_states.py` 只扫 `styles/*.css`，读不到 scoped style，
+ * 所以守门一直是绿的 —— 键盘用户走一遍这棵树，焦点停在哪一行完全看不出来。
+ * 本批把守门扩到 `.vue` 的 `<style>` 块并把 `.tree-toggle` 登记进 REQUIRED。
+ *
+ * <p>**为什么不用 `NButton`**：库的 `--n-height` 最小档是 28px（medium 34px），
+ * 而这里的行高是 21px。一个套件里几十条用例，换成库按钮会让整棵树凭空高出一倍；
+ * 而这行本质是**展开/收起控件**（disclosure），不是设计系统意义上的"按钮"。
+ * 保留原生元素 + 显式声明三态，比为了"统一"付出密度代价更合适。
  */
 const props = defineProps<{
   node: ReportSuiteNode
@@ -34,10 +51,6 @@ function toggleCase(caseKey: string): void {
   }
   expanded.value = next
 }
-
-function verdictClass(verdict: string): string {
-  return `verdict-${(verdict || 'unknown').toLowerCase()}`
-}
 </script>
 
 <template>
@@ -46,7 +59,7 @@ function verdictClass(verdict: string): string {
       <button class="tree-toggle" type="button" @click="toggleSuite">
         <span class="caret">{{ open ? '▾' : '▸' }}</span>
         <span class="suite-name">{{ node.name }}</span>
-        <span class="badge" :class="verdictClass(node.status)">{{ node.status }}</span>
+        <StatusTag :label="node.status" :tone="verdictTone(node.status)" />
       </button>
     </div>
 
@@ -56,7 +69,7 @@ function verdictClass(verdict: string): string {
           <button class="tree-toggle" type="button" @click="toggleCase(test.caseKey)">
             <span class="caret">{{ expanded.has(test.caseKey) ? '▾' : '▸' }}</span>
             <span class="case-name">{{ test.name }}</span>
-            <span class="badge" :class="verdictClass(test.verdict)">{{ test.verdict }}</span>
+            <StatusTag :label="test.verdict" :tone="verdictTone(test.verdict)" />
             <span class="muted">{{ test.durationMs }} ms</span>
           </button>
           <button class="link-btn" type="button" @click="emit('open-logs', test.caseKey)">
@@ -101,17 +114,34 @@ function verdictClass(verdict: string): string {
   justify-content: space-between;
 }
 
+/*
+ * 展开/收起整行。密度由这里的 21px 行高定死，别再换成库按钮（见 script 注释）。
+ * transition 是守门硬要求：状态切换不能硬跳。
+ */
 .tree-toggle {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   background: transparent;
   border: none;
+  border-radius: 6px;
   color: var(--text);
   font-size: 13px;
   cursor: pointer;
-  padding: 4px 0;
+  padding: 2px 4px;
   text-align: left;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.tree-toggle:hover {
+  background: var(--surface-2);
+}
+
+.tree-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .caret {

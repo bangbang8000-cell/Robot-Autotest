@@ -1,0 +1,3 @@
+扫描 3 个 css + 22 个 .vue 的 style 块
+  命中: .tree-toggle 缺 :hover 反馈
+[OK] 负向自检通过：剥掉 .tree-toggle 的 hover 即报 FAIL

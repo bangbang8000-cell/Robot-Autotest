@@ -1,0 +1,39 @@
+
+ RUN  v3.2.7 /home/evergreen/robot-autotest/frontend
+
+(node:333164) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:333165) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:333168) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:333195) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:333172) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:333190) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:333184) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:333178) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/components/report/SuiteTree.spec.ts (8 tests) 165ms
+ ✓ src/views/OverviewView.spec.ts (4 tests) 763ms
+ ✓ src/views/RunsView.spec.ts (4 tests) 852ms
+ ✓ src/views/CasesView.spec.ts (4 tests) 1081ms
+   ✓ CasesView 勾选接线 > 渲染出接口返回的行  348ms
+   ✓ CasesView 勾选接线 > 勾一行出现批量条并计数为 1  329ms
+ ✓ src/views/PlansView.spec.ts (7 tests) 1224ms
+ ✓ src/views/ReportDetailView.spec.ts (8 tests) 1164ms
+ ✓ src/views/AssetsView.spec.ts (8 tests) 2032ms
+   ✓ AssetsView 设备页 > 渲染设备行，空值列显示统一占位而不是空白  474ms
+ ✓ src/views/AdminView.spec.ts (8 tests) 2795ms
+   ✓ AdminView 用户列表 > 渲染用户行，空邮箱显示统一占位  766ms
+   ✓ AdminView 用户列表 > 启用状态走 StatusTag，图标 + 文字双编码  447ms
+   ✓ AdminView 用户列表 > 勾一行出现批量条并计数为 1  336ms
+
+ Test Files  8 passed (8)
+      Tests  51 passed (51)
+   Start at  10:10:16
+   Duration  5.42s (transform 2.36s, setup 96ms, collect 14.15s, tests 10.08s, environment 2.76s, prepare 1.26s)
+

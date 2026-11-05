@@ -1,0 +1,4 @@
+扫描 3 个 css + 22 个 .vue 的 style 块
+扫描 3 个 css + 22 个 .vue 的 style 块
+[SELFTEST] 通过：当前样式无缺项
+[SELFTEST] 通过：删掉 .btn:hover 后脚本按预期报 FAIL

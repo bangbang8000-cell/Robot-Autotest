@@ -4,6 +4,14 @@ import type { ReportKeywordNode } from '@/api/reports'
 /**
  * 关键字步骤树（RPT-02）：递归渲染 keyword_result 的父子关系，
  * 用左缩进表达层级，不额外做强交互，避免步骤多时页面跳动。
+ *
+ * <p>UX-04b 第六批：套件/用例行已换 `StatusTag`（图标 + 文字），**步骤行刻意保留
+ * 紧凑文本徽标**（`.badge` + `verdict-*`）。理由：一屏可能排出几十行步骤，
+ * 每行再加一个 16px 图标会把「步骤名」挤成次要信息；而这里的状态文字本身就写在
+ * 徽标里，颜色只是辅助，不存在「只有颜色读不出状态」的问题。
+ *
+ * <p>顺带说明：`.badge` / `.verdict-*` 自此只有本组件一个消费者（全局样式在
+ * `styles/main.css`，未随套件树一起退场）。
  */
 defineProps<{ nodes: ReportKeywordNode[] }>()
 

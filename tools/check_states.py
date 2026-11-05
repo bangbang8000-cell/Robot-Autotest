@@ -13,6 +13,11 @@
   3. 有可见焦点：自身 `:focus-visible`，或全局 `*:focus-visible` 兜底；
   4. 基础规则里声明了 `transition`（状态变化不能硬跳）。
 
+**扫描范围（UX-04b 第六批扩大）**：原来只读 `frontend/src/styles/*.css`。
+组件里 `<style scoped>` 的交互元素因此完全在视野外 —— 报告页的套件树
+`.tree-toggle` 就是这么漏掉的：整行是个裸 `<button>`，三态一个都没有，守门却一直是绿的。
+现在同时扫所有 `.vue` 的 `<style>` 块，「自建 CSS」按文件类型而不按目录判定。
+
 用法
 ----
     python3 tools/check_states.py
@@ -29,16 +34,19 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-STYLE_DIR = ROOT / "frontend" / "src" / "styles"
+SRC_DIR = ROOT / "frontend" / "src"
+STYLE_DIR = SRC_DIR / "styles"
 
 BLOCK_RE = re.compile(r"([^{}]+)\{([^{}]*)\}", re.S)
 COMMENT_RE = re.compile(r"/\*.*?\*/", re.S)
+# `<style>` / `<style scoped>` / `<style module>` 都要，取标签之间的内容
+VUE_STYLE_RE = re.compile(r"<style\b[^>]*>(.*?)</style>", re.S | re.I)
 
 # 需要交互态的元素：基础选择器 → 允许的焦点兜底写法
 #
 # `.tab`（原生页签按钮）已于 UX-04b 期间退场：资产页是全站唯一使用处，换成 `NTabs` 后
 # 这两条原生规则就没有消费者了。页签的三态改由库主题承担（composables/naiveTheme.ts
-# 派生 Tab 的 hoverColor / barColor / textColor），不归本守门管辖 —— 本守门只扫自建 CSS。
+# 派生 Tab 的 hoverColor / barColor / textColor）。
 REQUIRED: list[tuple[str, tuple[str, ...]]] = [
     (".btn", (".btn:focus-visible", "*:focus-visible")),
     (".btn-ghost", (".btn-ghost:focus-visible", "*:focus-visible")),
@@ -47,9 +55,13 @@ REQUIRED: list[tuple[str, tuple[str, ...]]] = [
     ("select", ("select:focus-visible", "*:focus-visible")),
     (".app-nav-item", (".app-nav-item:focus-visible", "*:focus-visible")),
     (".table tbody tr", (".table tbody tr:focus-within", ".table tbody tr:focus-visible")),
+    # 套件树的展开/收起整行（scoped style，靠上面的扫描范围扩大才看得见）
+    (".tree-toggle", (".tree-toggle:focus-visible", "*:focus-visible")),
 ]
 
 MIN_RULES = 120
+# .vue 里的 style 块数量下限：低于此说明模板抽取失效（而不是"组件都删了"）
+MIN_VUE_STYLE_FILES = 5
 
 
 def parse_rules(text: str) -> dict[str, list[str]]:
@@ -63,11 +75,35 @@ def parse_rules(text: str) -> dict[str, list[str]]:
     return rules
 
 
+def vue_style_blocks() -> list[tuple[Path, str]]:
+    """收集所有 .vue 的 `<style>` 内容。"""
+    blocks: list[tuple[Path, str]] = []
+    for path in sorted(SRC_DIR.rglob("*.vue")):
+        text = path.read_text(encoding="utf-8")
+        for body in VUE_STYLE_RE.findall(text):
+            blocks.append((path, body))
+    return blocks
+
+
 def compile_css() -> str:
     files = sorted(STYLE_DIR.glob("*.css"))
     if not files:
         raise FileNotFoundError(f"{STYLE_DIR} 下没有 css")
-    return "\n".join(p.read_text(encoding="utf-8") for p in files)
+
+    blocks = vue_style_blocks()
+    vue_files = {path for path, _ in blocks}
+    if len(vue_files) < MIN_VUE_STYLE_FILES:
+        raise FileNotFoundError(
+            f"只从 {len(vue_files)} 个 .vue 里抽到 style（下限 {MIN_VUE_STYLE_FILES}），疑似抽取失效"
+        )
+
+    print(
+        f"扫描 {len(files)} 个 css + {len(vue_files)} 个 .vue 的 style 块",
+        flush=True,
+    )
+    return "\n".join(
+        [p.read_text(encoding="utf-8") for p in files] + [body for _, body in blocks]
+    )
 
 
 def audit(text: str) -> list[str]:
