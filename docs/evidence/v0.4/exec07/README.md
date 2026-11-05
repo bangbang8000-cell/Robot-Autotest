@@ -34,7 +34,7 @@ POST /api/execution/leases/force-release?projectId=<id>&resourceKey=<key>&confir
 ```
 
 - 列表只返回 `lease_state = held`（生效中）的租约；历史租约查审计。
-- 强制释放**只摘租约 + 标记运行失败**，不终止已拉起的 pabot 子进程（见残余 1）。
+- 强制释放的顺序与取消一致：**先杀该 run 的进程树 → 标记运行失败 → 摘租约**（2026-11-06 补齐，见第 6 节）。
 
 ## 3. 门禁实测
 
@@ -60,11 +60,48 @@ POST /api/execution/leases/force-release?projectId=<id>&resourceKey=<key>&confir
 
 ## 5. 残余与边界（验收时请重点看）
 
-1. **不杀进程**：强制释放摘掉租约并把运行标记为失败，但已拉起的 pabot 子进程仍会跑完
-   （本地无进程句柄持久化，跨重启不可杀）。要彻底终止需接 `RunCancellationService` 与子进程管理，另开包。
+1. ~~**不杀进程**：强制释放摘掉租约并把运行标记为失败，但已拉起的 pabot 子进程仍会跑完。~~
+   **2026-11-06 已补**：强制释放与取消同构，先杀进程树再摘租约（见第 6 节）；
+   仍无法处理的是「进程登记不跨重启持久化」——后端重启后残留进程只能现场收尾。
 2. **只列生效中的租约**：`held` 之外的历史租约不在页面上，只能查 `resource_lease_history` / 审计。
 3. **非管理员没有任何释放入口**：连按钮都不渲染，避免"点了报 403"。
 4. **剩余时间取服务端快照**：`remainingSeconds` 在请求时计算，页面不本地倒计时；刷新才更新。
 5. **审计只记录操作（`lease:force-release`）**：被标记失败的运行本身有状态历史（含 `lease_revoked`），
    两处可交叉验证。
 6. **实跑待现场**：真实占用 → 强制释放 → pabot 实际行为需验收人在有 DUT 的环境确认（ADR-0013）。
+
+## 6. 2026-11-06 补记：强制释放会杀进程树（残余 1 收口）
+
+### 改了什么
+
+| 文件 | 改动 |
+|---|---|
+| `application/execution/LeaseAdminService.java` | 注入 `ProcessRegistry` + `ProcessTreeKiller`；`forceRelease` 在标记失败前新增 `killProcesses(runId)`：按 `registry.processes(runId)` 逐个 `killer.kill(process, 5s)` 后 `registry.unregister(runId)`；javadoc 由「只摘租约、不杀进程」改为「先杀进程树 → 标记失败 → 摘租约」 |
+| `src/test/.../LeaseAdminServiceTest.java` | `service(...)` 构造补 `registry` / `new ProcessTreeKiller()`；新增用例「强制释放杀进程树」：真起 `sleep 60`（Windows 为 `ping -n 60`）注册到该 run，释放后断言子进程已退出、登记已清空 |
+
+### 为什么这个顺序不能反
+
+`CancelService` 已经踩过同样的坑：只摘租约不杀进程，pabot 会继续跑并占着设备；
+下一个任务拿到租约后与僵尸进程互踩，表现成「设备明明空着却数据错乱」。
+所以释放前必须先收尾，且顺序是 **杀进程 → 标记失败 → 摘租约**，
+避免「状态已失败但进程还在写产物」的窗口。
+
+### 边界
+
+- 进程登记（`ProcessRegistry`）是**进程内内存表**，后端重启即清空；重启前遗留的 pabot 子进程无法由本服务杀，
+  仍需现场处理（与 EXEC-09 的租约回收口径一致，见 ADR-0013）。
+- 杀了进程之后执行线程可能再尝试把 run 落成 `failed`，此时状态机已拒绝（`FAILED` 为终态），
+  以管理员触发的 `lease_revoked` 为准。
+
+### 门禁（全部 PASS）
+
+| 门禁 | 结果 | 日志 |
+|---|---|---|
+| 后端全量单测 | **558 tests / 0 failures / 0 errors**，BUILD SUCCESS（较上批次 +1） | `backend-test-20261106.log` |
+| 前端全量测试 | **199 passed / 28 files**（本批次未改前端） | `frontend-test-20261106.log` |
+| `vue-tsc --noEmit` | 0 错误 | `frontend-tsc-20261106.log` |
+| `vite build` | 成功 | `frontend-build-20261106.log` |
+| 字体子集 | **1028 字 / 178650 B gzip**，预算 800 KiB 内 | `font-20261106.log` |
+| `scripts/lint.sh` | PASS | `lint-20261106.log` |
+| 发布文档一致性 | FAIL 0 / WARN 0 | `release-docs-20261106.log` |
+| WBS 自洽 | PASS（96 包 / 待验 83 / 已完成 13） | `wbs-20261106.log` |

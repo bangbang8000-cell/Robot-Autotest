@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -31,6 +32,7 @@ class LeaseAdminServiceTest {
     private InMemoryLeaseRepository leases;
     private InMemoryRunRepository runRepo;
     private LeaseService leaseService;
+    private final ProcessRegistry registry = new ProcessRegistry();
 
     @BeforeEach
     void setUp() {
@@ -98,9 +100,31 @@ class LeaseAdminServiceTest {
         assertEquals("lease_revoked", run.failureReason());
     }
 
+    @Test
+    @DisplayName("强制释放：杀掉该 run 的进程树并注销登记，不给下一个任务留僵尸进程")
+    void 强制释放杀进程树() throws Exception {
+        Process process = new ProcessBuilder(longRunning()).start();
+        registry.register(RUN, process);
+        assertTrue(process.isAlive(), "前置：子进程应当已启动");
+
+        service(ExecutionTestSupport.access()).forceRelease(PROJECT, KEY, RUN);
+
+        assertFalse(process.isAlive(), "强制释放后原子进程必须已退出");
+        assertTrue(registry.processes(RUN).isEmpty(), "释放后必须注销进程登记");
+    }
+
+    private static List<String> longRunning() {
+        boolean windows = System.getProperty("os.name", "").toLowerCase(Locale.ROOT)
+                .startsWith("windows");
+        return windows
+                ? List.of("cmd", "/c", "ping -n 60 127.0.0.1")
+                : List.of("sh", "-c", "sleep 60");
+    }
+
     private LeaseAdminService service(AccessControlService access) {
         return new LeaseAdminService(leases, leaseService,
-                ExecutionTestSupport.runService(runRepo), access, ExecutionTestSupport.CLOCK);
+                ExecutionTestSupport.runService(runRepo), registry, new ProcessTreeKiller(),
+                access, ExecutionTestSupport.CLOCK);
     }
 
     private static AccessControlService viewerAccess() {

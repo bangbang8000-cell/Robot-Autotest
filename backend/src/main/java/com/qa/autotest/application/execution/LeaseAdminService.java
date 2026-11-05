@@ -7,6 +7,8 @@ import com.qa.autotest.common.ErrorCode;
 import com.qa.autotest.domain.execution.RunRecord;
 import com.qa.autotest.domain.execution.RunState;
 import java.time.Clock;
+import java.time.Duration;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,23 +23,30 @@ import org.springframework.transaction.annotation.Transactional;
  *   <li>释放动作复用 {@link LeaseService#forceReleaseRun}，历史表与取消/超时路径一致，另留强制释放审计。</li>
  * </ul>
  *
- * <p><b>注意</b>：强制释放只摘租约、不杀进程。原 pabot 子进程若还在跑，会失去续租资格；
- * 后续是否杀掉由执行器自身的取消语义处理，不在本服务越权终止进程。
+ * <p><b>顺序与取消一致</b>：先杀该 run 的进程树，再标记失败，最后摘租约。若只摘租约不杀进程，
+ * pabot 会继续跑并占着设备，下一个任务抢到租约后仍会与僵尸进程互踩——所以释放前必须收尾。
  */
 @Service
 public class LeaseAdminService {
 
+    private static final Duration KILL_GRACE = Duration.ofSeconds(5);
+
     private final ResourceLeaseRepository leases;
     private final LeaseService leaseService;
     private final RunService runs;
+    private final ProcessRegistry registry;
+    private final ProcessTreeKiller killer;
     private final AccessControlService access;
     private final Clock clock;
 
     public LeaseAdminService(ResourceLeaseRepository leases, LeaseService leaseService,
-                             RunService runs, AccessControlService access, Clock clock) {
+                             RunService runs, ProcessRegistry registry, ProcessTreeKiller killer,
+                             AccessControlService access, Clock clock) {
         this.leases = leases;
         this.leaseService = leaseService;
         this.runs = runs;
+        this.registry = registry;
+        this.killer = killer;
         this.access = access;
         this.clock = clock;
     }
@@ -63,9 +72,17 @@ public class LeaseAdminService {
                     "二次确认不足：confirm 必须等于占用该资源的 runId（" + target.runId() + "）");
         }
 
+        killProcesses(target.runId());
         String state = markFailedIfRunning(projectId, target.runId(), resourceKey);
         int released = leaseService.forceReleaseRun(target.runId(), "lease_revoked");
         return new ForceReleaseResult(target.runId(), state, released);
+    }
+
+    /** 与 {@link CancelService} 同构：先礼后兵杀进程树，再注销登记，避免僵尸进程继续占设备。 */
+    private void killProcesses(String runId) {
+        List<Process> active = registry.processes(runId);
+        active.forEach(process -> killer.kill(process, KILL_GRACE));
+        registry.unregister(runId);
     }
 
     private String markFailedIfRunning(long projectId, String runId, String resourceKey) {
