@@ -16,6 +16,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 勾选台账用例直接执行（EXEC-02，v0.4 候选提前实现）。
@@ -61,34 +62,14 @@ public class CaseRunService {
         access.bindProject(cmd.projectId());
         access.require(PermissionResource.EXECUTION, PermissionAction.EXECUTE);
 
-        Set<String> codes = new LinkedHashSet<>();
-        List<String> blocked = new ArrayList<>();
-        for (Long id : ids) {
-            if (id == null) {
-                continue;
-            }
-            TestCase testCase = cases.find(cmd.projectId(), id)
-                    .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND,
-                            "用例不存在: " + id));
-            if (testCase.caseCode() == null || testCase.caseCode().isBlank()) {
-                throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
-                        "用例缺少编号，无法解析脚本: " + id);
-            }
-            SafetyLevel level = SafetyLevel.from(testCase.safetyLevel());
-            if (level.blocksExecution()) {
-                blocked.add(testCase.caseCode().trim() + "(" + level.name() + ")");
-            }
-            codes.add(testCase.caseCode().trim());
-        }
-        if (codes.isEmpty()) {
-            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "至少选择一条用例");
-        }
+        Selection selection = collect(cmd.projectId(), ids);
         // G2-3 / ADR-0013：L2 高危与 LX 未判定一律不得自动执行，整单拒绝并列明编号
-        if (!blocked.isEmpty()) {
+        if (!selection.blocked().isEmpty()) {
             throw new BusinessException(ErrorCode.SAFETY_LEVEL_BLOCKED,
                     "以下用例安全级禁止自动执行（L2 高危 / LX 未判定按 L2 对待）："
-                            + blockedSummary(blocked));
+                            + blockedSummary(selection.blocked()));
         }
+        Set<String> codes = selection.codes();
 
         Map<String, List<CaseScriptResolver.Binding>> bindings = resolver.resolve(cmd.projectId(), codes);
         List<String> unbound = new ArrayList<>();
@@ -120,11 +101,77 @@ public class CaseRunService {
                 new ArrayList<>(testNames), "cases"));
     }
 
+    /**
+     * 安全级预检（EXEC-15 残余 / ADR-0013 / G2-3）。
+     *
+     * <p>前端勾选是**跨页**的，当前页之外那些用例的安全级前端根本看不到，
+     * 只能在点「执行所选」时被后端整单 403 兜底——体验上等于「点了才知道不行」。
+     * 这里按 id 一次性判级，把被拦的用例连同编号、安全级返回，前端可提前禁用并写明原因。
+     *
+     * <p>与 {@link #run} 用同一段判级逻辑（{@link #collect}），不会出现「预检放行、执行被拒」的错位。
+     */
+    public SafetyPrecheck precheck(long projectId, List<Long> caseIds) {
+        if (caseIds == null || caseIds.isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "至少选择一条用例");
+        }
+        if (caseIds.size() > MAX_CASES) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
+                    "单次最多执行 " + MAX_CASES + " 条用例，请分批提交");
+        }
+        access.bindProject(projectId);
+        access.require(PermissionResource.EXECUTION, PermissionAction.READ);
+        Selection selection = collect(projectId, caseIds);
+        return new SafetyPrecheck(selection.codes().size(), selection.blocked().isEmpty(),
+                selection.blocked());
+    }
+
+    /** 逐条取用例并判级：执行与预检共用，保证两条路径的结论一致。 */
+    private Selection collect(long projectId, List<Long> ids) {
+        Set<String> codes = new LinkedHashSet<>();
+        List<BlockedCase> blocked = new ArrayList<>();
+        for (Long id : ids) {
+            if (id == null) {
+                continue;
+            }
+            TestCase testCase = cases.find(projectId, id)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND,
+                            "用例不存在: " + id));
+            if (testCase.caseCode() == null || testCase.caseCode().isBlank()) {
+                throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
+                        "用例缺少编号，无法解析脚本: " + id);
+            }
+            SafetyLevel level = SafetyLevel.from(testCase.safetyLevel());
+            if (level.blocksExecution()) {
+                blocked.add(new BlockedCase(testCase.id(), testCase.caseCode().trim(), level.name()));
+            }
+            codes.add(testCase.caseCode().trim());
+        }
+        if (codes.isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "至少选择一条用例");
+        }
+        return new Selection(codes, blocked);
+    }
+
     /** 拒绝文案：超过 10 条只列前 10 条，避免长列表撑爆界面。 */
-    private static String blockedSummary(List<String> blocked) {
+    private static String blockedSummary(List<BlockedCase> blocked) {
         int limit = 10;
-        String head = String.join(", ", blocked.subList(0, Math.min(limit, blocked.size())));
+        String head = blocked.subList(0, Math.min(limit, blocked.size())).stream()
+                .map(item -> item.caseCode() + "(" + item.safetyLevel() + ")")
+                .collect(Collectors.joining(", "));
         return blocked.size() <= limit ? head : head + " 等 " + blocked.size() + " 条";
+    }
+
+    private record Selection(Set<String> codes, List<BlockedCase> blocked) {
+    }
+
+    /** 被安全级拦下的用例：编号给用户看，id 给前端勾选状态用。 */
+    public record BlockedCase(long caseId, String caseCode, String safetyLevel) {
+    }
+
+    /**
+     * 预检结果：{@code allowed = false} 表示这一单不能执行，{@code blocked} 逐条给出原因。
+     */
+    public record SafetyPrecheck(int total, boolean allowed, List<BlockedCase> blocked) {
     }
 
     public record CaseRunCommand(long projectId,

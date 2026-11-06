@@ -6,7 +6,8 @@
 
 给 `test_case` 加 `safety_level`（缺省 `LX`），在执行入口**两处**逐条判级，
 `L2` 与 `LX`（LX 按 L2 对待）**整单拒绝**（403 `SAFETY_LEVEL_BLOCKED`），
-并补一个批量 `setSafetyLevel` 作为人工补判通道。
+并补一个批量 `setSafetyLevel` 作为人工补判通道；前端再用只读预检接口
+（`POST /execution/cases/safety-precheck`）把**跨页选中**的 L2/LX 提前列出来（§7）。
 
 ## 2. 复现命令与读数
 
@@ -37,7 +38,7 @@
   - 拦截口径 `L2/LX=true`、`L0/L1=false`
   - 空值 / 未定义按 `LX`（`blocksExecution(null|undefined|'') === true`，不允许静默放行）
 - 前端 `CasesView.spec`
-  - 选中 `L2` 行 → 「执行所选」`disabled` 且页面出现 `cases.run.blocked` 原因（含 `DESTRUCT-001`）
+  - 选中 `L2` 行 → 「执行所选」`disabled` 且页面出现 `cases.run.blocked` 原因（含 `DESTRUCT-001(L2)`）
 
 ## 3.1 本机 HTTP 实测（补单测/IT 之上的接口级证据）
 
@@ -61,7 +62,8 @@
 - 台账 226 条没有安全级列 → 导入后全是 `LX`（不可执行），必须人工用 `setSafetyLevel` 补判；
   这是 ADR 想要的默认态，不是导入 bug。
 - 整单拒绝而非跳过坏用例：部分执行会让人误以为整套都跑过了。
-- 前端禁用只覆盖「当前页可见」的选中项；跨页选中的级差由后端兜底。
+- 前端禁用按**跨页全集**判断：选中一变就调后端预检 `POST /execution/cases/safety-precheck`，
+  不在当前页的 L2/LX 也会被列出（2026-11-06 补齐，见 §7）。
 
 ## 5. 复跑注意
 
@@ -78,5 +80,47 @@ bash artifacts/run_it.sh
 
 1. **现场**真实触发一次 `L2` 用例并留存 403 拒绝响应。本机接口级已验（§3.1，请求在派发前即被拒），
    但现场环境的后端版本、库与账号口径仍需各留一份读数。
-2. 跨页选中的安全级前端不可见（需新增预检接口才能做准）。
+2. ~~跨页选中的安全级前端不可见（需新增预检接口才能做准）~~ —— 2026-11-06 已补预检接口，见 §7。
 3. 台账 226 条的安全级补判仍需人工逐条完成。
+
+## 7. 2026-11-06 补记：跨页选中的安全级可见（残余 2 收口）
+
+**问题**：勾选是跨页的，`CasesView` 的「执行所选」只看得到 `cases.value`（当前页）的安全级，
+别的页选了 L2/LX 时按钮仍是可点的，点下去才吃整单 403——能拦住，但用户不知道为什么。
+
+**做法**：不动执行链路，只加一个**只读预检**接口，判级逻辑与执行入口共用同一份代码。
+
+| 层 | 改动 |
+|---|---|
+| 后端 `CaseRunService` | 把原来内联的判级循环抽成 `collect(projectId, ids)`，`run()` 与新增的 `precheck()` 共用；`precheck` 只取 `EXECUTION:READ`（执行仍是 `EXECUTE`），返回 `SafetyPrecheck(total, allowed, blocked[{caseId, caseCode, safetyLevel}])` |
+| 后端 `RunController` | 新增 `POST /api/execution/cases/safety-precheck`（`projectId` 查询参数 + `{caseIds}` 请求体） |
+| 前端 `api/execution.ts` | 新增 `SafetyPrecheck` / `BlockedCase` 类型与 `safetyPrecheck(projectId, caseIds)` |
+| 前端 `CasesView.vue` | 选中集合变化后 200ms 防抖调预检，用自增序号丢弃迟到响应；`blockedSelected` 以预检结果为准，预检未回/失败时退回「只看当前页」的本地判断；离开页面时清掉定时器 |
+
+**四条边界**：
+
+1. **预检失败不阻塞操作**：请求出错就退回本地判断，真正兜底仍是执行入口的 403，不因预检挂了而让按钮永远禁用。
+2. **预检与选中集合必须对得上**：用 `precheckedKey`（选中 id 排序拼接）比对，避免「旧选中集合的预检结论」被套到新集合上。
+3. **不看页、只看 id**：请求只带 id 列表，不受分页/筛选影响，跨页选中的 L2/LX 一样能被列出。
+4. **预检不写库、不触发执行**：`precheck` 全程只读，单测里断言派发器未被调用。
+
+**门禁（2026-11-06，日志同目录 `*-20261106.log`）**：
+
+| 门禁 | 读数 |
+|---|---|
+| 后端 `mvn -o test` | `Tests run: 562, Failures: 0, Errors: 0, Skipped: 0` · BUILD SUCCESS |
+| 前端 `npx vitest run` | `Tests 200 passed (200)` |
+| 前端 `vue-tsc --noEmit` | EXIT=0（0 行输出） |
+| 前端 `vite build` | `✓ built in 9.51s` |
+| 字体子集 | `1029 字 / 178798 B gzip`，未超 800 KiB |
+| `bash scripts/lint.sh` | `[lint] PASS` |
+| `check_release_docs.py` | `FAIL 0 项 / WARN 0 项` |
+| `check_wbs_consistency.py` | `[PASS] 96 个包 / 待验 83 / 已完成 13` |
+
+**新增断言**：
+
+- 后端 `CaseRunServiceTest`：「预检：跨页选中的 L2 / LX 逐条列出，allowed=false，不触发执行」、
+  「预检：全 L1 放行 allowed=true；空选 400」。
+- 后端 `RunControllerTest`：「安全级预检：透传 caseIds，返回被拦编号与安全级；空选 400」。
+- 前端 `CasesView.spec`：「跨页选中的 L2 不在当前页时，预检结果同样能提前禁用」（当前页只有 L1，
+  预检返回 `DESTRUCT-999(L2)`，断言按钮禁用且页面写出该编号）。

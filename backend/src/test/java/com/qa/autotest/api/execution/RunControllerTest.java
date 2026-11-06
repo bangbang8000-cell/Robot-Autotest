@@ -242,6 +242,31 @@ class RunControllerTest {
     }
 
     @Test
+    @DisplayName("安全级预检：透传 caseIds，返回被拦编号与安全级；空选 400")
+    void precheckCases_参数与结果() throws Exception {
+        when(caseRuns.precheck(7L, List.of(11L, 12L))).thenReturn(
+                new CaseRunService.SafetyPrecheck(2, false,
+                        List.of(new CaseRunService.BlockedCase(12L, "DESTRUCT-001", "L2"))));
+
+        mvc.perform(post("/api/execution/cases/safety-precheck?projectId=7")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"caseIds\":[11,12]}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.total").value(2))
+                .andExpect(jsonPath("$.data.allowed").value(false))
+                .andExpect(jsonPath("$.data.blocked[0].caseId").value(12))
+                .andExpect(jsonPath("$.data.blocked[0].caseCode").value("DESTRUCT-001"))
+                .andExpect(jsonPath("$.data.blocked[0].safetyLevel").value("L2"));
+
+        when(caseRuns.precheck(7L, null))
+                .thenThrow(new BusinessException(ErrorCode.INVALID_ARGUMENT, "至少选择一条用例"));
+        mvc.perform(post("/api/execution/cases/safety-precheck?projectId=7")
+                        .contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.codeName").value("INVALID_ARGUMENT"));
+    }
+
+    @Test
     @DisplayName("完整日志下载：attachment + text/plain；文件缺失 404")
     void downloadLog_响应头与404() throws Exception {
         RunRecord record = run("RUN-1");

@@ -132,7 +132,7 @@
 | 93 | **EXEC-12** | 单用例超时（FR-v0.4-24）：`execution.test-timeout-seconds`（默认 1800，`<=0` 关闭）+ 执行前向本 run 工作区副本的 `.robot` 套件 `*** Settings ***` 注入 `Test Timeout`（RF 7.5 无全局 CLI 开关；用户已显式写过则保留原值）；产物检出 `Test timeout ... exceeded` 时 run 原因记 `test_timeout`（按取消归类 CANCELED） | G | 待验 | `docs/evidence/v0.4/exec12/`；`TestTimeoutInjectorTest` 5 条、`ArtifactVerifierTest` 1 条、run 级覆盖 3 条；后端 555 / 集成 28 / 前端 197 / `vue-tsc`+`build` 0 / `lint.sh` PASS | `.resource` 资源文件不注入；未做「按用例单独配置超时」；支持每次触发覆盖（`testTimeoutSeconds`，0=全局默认，上限 86400）且运行记录页 / 用例页 UI 可调，该参数只随本次运行生效、不落库；注入只发生在 materialize 成功的副本上（回落 workspace-root 时不注入，避免改用户原脚本） |
 | 94 | **EXEC-13** | 运行详情重试可追溯（FR-v0.4-29）：日志面板在 `attemptNo > 1` 时显示「第 N 次尝试」（`execution.attemptLine`），并显示「重试自 {上一次 runId} · 上次失败：{failureReason}」；首次尝试两行都不渲染。配合列表既有「失败原因 / 状态」列，构成「第几次 / 原因 / 结果」三件可追溯信息 | G | 待验 | `docs/evidence/v0.4/exec13/`；前端 `RunsView.spec` 1 条（第 2 次显示两条标记、首次不显示且不请求）；后端 `GET /runs/{runId}/retry-origin` + `RunRetryOrigin`（`retry_of_run_id` 自连接）+ 1 条接口测试；后端 559 / 前端 199 / `vue-tsc`+`build` 0 / `lint.sh` PASS | 重试链仍按行平铺，未做成组/时间线视图（PRD 未要求）；`markAttempt` 的写入路径由 `RetryPolicyTest` 覆盖，本包只验读取与展示；端到端（真跑 env 失败 → 重试 → 详情带出上次原因）留到 v1.0 验收 |
 | 95 | **EXEC-14** | 日志级别过滤（FR-v0.4-20）：日志面板把单档「只看失败」换成 ERROR / WARN / INFO 三个可独立勾选的档位（默认全开，未知级别按 INFO 放行）；三档全关时明说「当前级别过滤下没有日志」，而不是假装这份 run 没日志 | G | 待验 | `docs/evidence/v0.4/exec14/`；前端 `RunsView.spec` 1 条（取消「信息」后 INFO 行隐藏、ERROR/WARN 保留、全关空态文案）；后端 539 / 集成 28 / 前端 164 / `vue-tsc`+`build` 0 / `lint.sh` PASS | 后端仍只产出 ERROR/WARN/INFO 三档（PRD 里的 FAIL 归 ERROR、DEBUG 未产出）；要真正的 DEBUG 档需在执行器侧采集 RF 的 DEBUG 日志，属 v0.5 日志补口 |
-| 96 | **EXEC-15** | 执行安全级闸门（ADR-0013 / G2-3）：`test_case.safety_level`（`V7_5` 迁移 + down，缺省 `LX`）落库并全链路回溯；执行入口两处（执行所选 `CaseRunService` / 执行用例集 `TestSetRunService`）逐条判级，**L2 高危与 LX 未判定一律整单拒绝**（403 `SAFETY_LEVEL_BLOCKED`，消息列出前 10 条 `code(level)`）；新增批量动作 `setSafetyLevel` 作人工补判；列表加安全级列与筛选，选中含 L2/LX 时前置禁用「执行所选」并写出用例编号 | G | 待验 | `docs/evidence/v1.0/g2-3/`（含本机 HTTP 实测 `http-verify-20261105.md`：`L2`/`LX` → 403、`L9` → 400）；后端 `CaseRunServiceTest` 2 条（L2 被拒 / LX 补判后放行）、`TestSetRunServiceTest` 集合级拦截、`CaseBatchIT`（落库 + 非法值 400）、`CaseImportIT`（无安全级列 → LX）、`MigrationFileTest` V7_5；前端 `statusLabels.spec` 3 条、`CasesView.spec` 1 条（L2 禁用执行） | 跨页选中的安全级前端不可见，只由后端整单拒绝兜底（要准需后端预检接口）；台账无安全级列，226 条导入后全为 `LX`，需人工逐条补判才能执行——这正是 ADR-0013 想要的默认态 |
+| 96 | **EXEC-15** | 执行安全级闸门（ADR-0013 / G2-3）：`test_case.safety_level`（`V7_5` 迁移 + down，缺省 `LX`）落库并全链路回溯；执行入口两处（执行所选 `CaseRunService` / 执行用例集 `TestSetRunService`）逐条判级，**L2 高危与 LX 未判定一律整单拒绝**（403 `SAFETY_LEVEL_BLOCKED`，消息列出前 10 条 `code(level)`）；新增批量动作 `setSafetyLevel` 作人工补判；列表加安全级列与筛选，选中含 L2/LX 时前置禁用「执行所选」并写出用例编号（跨页亦可见，走只读预检接口） | G | 待验 | `docs/evidence/v1.0/g2-3/`（含本机 HTTP 实测 `http-verify-20261105.md`：`L2`/`LX` → 403、`L9` → 400；§7 记 2026-11-06 跨页预检补口 + 8 份门禁日志）；后端 `CaseRunServiceTest` 4 条（L2 被拒 / LX 补判后放行 / 预检列出 L2+LX / 预检全 L1 放行且空选 400）、`RunControllerTest` 预检接口 1 条、`TestSetRunServiceTest` 集合级拦截、`CaseBatchIT`（落库 + 非法值 400）、`CaseImportIT`（无安全级列 → LX）、`MigrationFileTest` V7_5；前端 `statusLabels.spec` 3 条、`CasesView.spec` 2 条（L2 禁用执行 / 跨页 L2 由预检提前禁用）；后端 562 / 前端 200 / `vue-tsc`+`build` 0 / `lint.sh` PASS | 跨页选中的安全级已改由 `POST /execution/cases/safety-precheck` 提前暴露（2026-11-06 补齐，预检只读、失败时退回本地判断，执行入口仍整单兜底）；台账无安全级列，226 条导入后全为 `LX`，需人工逐条补判才能执行——这正是 ADR-0013 想要的默认态 |
 
 ---
 
@@ -527,6 +527,21 @@
    **顺带修一个缺陷**：并发撞唯一键原本抛 `DuplicateKeyException`，会落到兜底 **500**；
    现于 `CaseImportService.commit` 翻译成 `CONFLICT`（409）。证据 `docs/evidence/v1.0/cas03-tx/cas03-tx-it-20261106.md`。
    仍未覆盖：HTTP 层 403 状态码/响应体、多实例并发规模。**本包仍留 `待验`**——卡的是 461 vs 226 条数口径。
+
+### 2026-11-06 补记（EXEC-15 残余：跨页选中的安全级可见）
+
+1. **残余收口**：2026-11-05 补记第 5 条说「跨页选中的级差前端看不见，要做得准需加预检接口，本轮不做」——
+   本日补上。新增只读 `POST /api/execution/cases/safety-precheck`（`projectId` + `{caseIds}`），
+   判级逻辑与执行入口共用 `CaseRunService.collect(...)`，**同一份代码**，避免「预检放行、执行被拒」错位。
+2. **前端接线**：`CasesView` 选中集合一变（200ms 防抖）即预检，`blockedSelected` 以预检结果为准，
+   预检未回或失败退回「只看当前页」的本地判断（不阻塞操作，执行入口仍整单 403 兜底）；
+   用 `precheckedKey`（选中 id 排序拼接）防止旧结论套新集合，用自增序号丢弃迟到响应，卸载时清定时器。
+3. **权限**：预检只取 `EXECUTION:READ`（执行仍是 `EXECUTE`），不影响原有权限矩阵。
+4. 门禁：后端 **562/562**、前端 **28 文件 / 200 用例**、`vue-tsc` 0、`build` 9.51s、
+   字体子集 **1029 字 / 178798 B**、`lint.sh` PASS、`check_release_docs.py` 0 FAIL。
+   证据 `docs/evidence/v1.0/g2-3/README.md` §7 + 8 份 `*-20261106.log`。
+5. 汇总不变：**96 包 = 0 / 0 / 83 / 0 / 13**。`#96 EXEC-15` 仍留 `待验`——现场仍需真实触发一次 L2 用例留 403 读数，
+   台账 226 条补判仍需人工。
 
 ## 更新方式
 

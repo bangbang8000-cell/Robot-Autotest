@@ -17,9 +17,24 @@ import CasesView from '@/views/CasesView.vue'
 import { executionApi } from '@/api/execution'
 
 // EXEC-02：执行所选只依赖 runCases，绑定解析在后端；这里只断言前端把 id 与参数发出去
+// EXEC-15 残余：预检按真实后端规则从「全量选中」里挑出 L2/LX，用于验证跨页禁用的接线
 vi.mock('@/api/execution', () => ({
   executionApi: {
     runCases: vi.fn(async () => ({ runId: 'RUN-9' })),
+    safetyPrecheck: vi.fn(async (_projectId: number, ids: number[]) => {
+      const blocked = pageItems
+        .filter(
+          (item) =>
+            ids.includes(Number(item.id))
+            && (item.safetyLevel === 'L2' || item.safetyLevel === 'LX'),
+        )
+        .map((item) => ({
+          caseId: Number(item.id),
+          caseCode: String(item.caseCode),
+          safetyLevel: String(item.safetyLevel),
+        }))
+      return { total: ids.length, allowed: blocked.length === 0, blocked }
+    }),
   },
 }))
 
@@ -239,7 +254,27 @@ describe('CasesView 执行所选（EXEC-02）', () => {
     // 按钮禁用只是提前告知，真正的拦截在后端（整单 403 SAFETY_LEVEL_BLOCKED）
     expect(button(root, i18n.global.t('cases.run.open')).disabled).toBe(true)
     expect(root.textContent).toContain(
-      i18n.global.t('cases.run.blocked', { codes: 'DESTRUCT-001' }),
+      i18n.global.t('cases.run.blocked', { codes: 'DESTRUCT-001(L2)' }),
+    )
+  })
+
+  it('跨页选中的 L2 不在当前页时，预检结果同样能提前禁用（EXEC-15 残余）', async () => {
+    // 当前页只有 L1，被拦的那条来自别的页：本地过滤看不见，只能靠后端预检
+    vi.mocked(executionApi.safetyPrecheck).mockResolvedValueOnce({
+      total: 1,
+      allowed: false,
+      blocked: [{ caseId: 99, caseCode: 'DESTRUCT-999', safetyLevel: 'L2' }],
+    })
+    const root = await mountView()
+    checkboxes(root)[1].click()
+    // 预检有 200ms 防抖，等它发出去并渲染
+    await new Promise((resolve) => setTimeout(resolve, 250))
+    await nextTick()
+
+    expect(executionApi.safetyPrecheck).toHaveBeenCalledWith(1, [1])
+    expect(button(root, i18n.global.t('cases.run.open')).disabled).toBe(true)
+    expect(root.textContent).toContain(
+      i18n.global.t('cases.run.blocked', { codes: 'DESTRUCT-999(L2)' }),
     )
   })
 })

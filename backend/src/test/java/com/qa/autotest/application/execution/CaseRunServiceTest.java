@@ -166,6 +166,48 @@ class CaseRunServiceTest {
 
 
     @Test
+    @DisplayName("G2-3 预检：跨页选中的 L2 / LX 逐条列出，allowed=false，不触发执行")
+    void 预检列出被拦用例() {
+        Map<Long, TestCase> cases = Map.of(
+                11L, testCase(11L, "PERF-001", "L1"),
+                12L, testCase(12L, "DESTRUCT-001", "L2"),
+                13L, testCase(13L, "UNKNOWN-001", "LX"));
+        RecordingQuickRun quick = new RecordingQuickRun();
+        CaseRunService service = new CaseRunService(repo(cases), ExecutionTestSupport.access(),
+                new CaseScriptResolver(files(Map.of())), quick);
+
+        CaseRunService.SafetyPrecheck result = service.precheck(PROJECT, List.of(11L, 12L, 13L));
+
+        assertEquals(3, result.total());
+        assertTrue(!result.allowed(), "含 L2 与 LX 时必须判为不可执行");
+        assertEquals(List.of("DESTRUCT-001", "UNKNOWN-001"),
+                result.blocked().stream().map(CaseRunService.BlockedCase::caseCode).toList());
+        assertEquals(List.of(12L, 13L),
+                result.blocked().stream().map(CaseRunService.BlockedCase::caseId).toList());
+        assertTrue(quick.last == null, "预检是只读的，不得触发执行");
+    }
+
+    @Test
+    @DisplayName("G2-3 预检：全 L1 放行 allowed=true；空选 400")
+    void 预检全L1放行() {
+        Map<Long, TestCase> cases = Map.of(
+                11L, testCase(11L, "PERF-001", "L1"),
+                12L, testCase(12L, "PERF-002", "L0"));
+        CaseRunService service = new CaseRunService(repo(cases), ExecutionTestSupport.access(),
+                new CaseScriptResolver(files(Map.of())), new RecordingQuickRun());
+
+        CaseRunService.SafetyPrecheck result = service.precheck(PROJECT, List.of(11L, 12L));
+
+        assertEquals(2, result.total());
+        assertTrue(result.allowed());
+        assertTrue(result.blocked().isEmpty());
+
+        BusinessException empty = assertThrows(BusinessException.class,
+                () -> service.precheck(PROJECT, List.of()));
+        assertEquals(ErrorCode.INVALID_ARGUMENT, empty.errorCode());
+    }
+
+    @Test
     @DisplayName("访客只有 EXECUTION:READ，执行所选 403")
     void 访客被拒() {
         RecordingQuickRun quick = new RecordingQuickRun();

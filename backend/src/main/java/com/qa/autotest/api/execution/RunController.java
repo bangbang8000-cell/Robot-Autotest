@@ -122,6 +122,19 @@ public class RunController {
                 body.includeTag(), body.runRequestId())));
     }
 
+    /**
+     * 安全级预检（EXEC-15 残余 / ADR-0013）。
+     *
+     * <p>勾选是跨页的，当前页之外那些用例的安全级前端看不到；这里按 id 一次性判级，
+     * 把被拦的编号与安全级返回，前端可提前禁用「执行所选」并写出原因，而不是点了才吃 403。
+     */
+    @PostMapping("/cases/safety-precheck")
+    public ApiResponse<CaseRunService.SafetyPrecheck> precheckCases(
+            @RequestParam long projectId,
+            @RequestBody(required = false) CaseSafetyPrecheckRequest request) {
+        return ApiResponse.ok(caseRuns.precheck(projectId, request == null ? null : request.caseIds()));
+    }
+
     /** CI 专用直建端点（FR-v0.2-61）：落库后立即派发，不再停留 queued。 */
     @PostMapping("/runs")
     public ApiResponse<RunRecord> create(@RequestBody CreateRunRequest request) {
@@ -265,6 +278,10 @@ public class RunController {
                                  Integer testTimeoutSeconds,
                                  String includeTag,
                                  String runRequestId) {
+    }
+
+    /** 安全级预检请求：只需用例 id（跨页选中时可能来自不同页）。 */
+    public record CaseSafetyPrecheckRequest(List<Long> caseIds) {
     }
 
     public record CreateRunRequest(Long projectId,

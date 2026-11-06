@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, h, reactive, ref, watch } from 'vue'
+import { computed, h, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   NButton,
@@ -22,7 +22,7 @@ import {
   type TestCase,
 } from '@/api/cases'
 import { useAuthStore } from '@/stores/auth'
-import { executionApi } from '@/api/execution'
+import { executionApi, type BlockedCase, type SafetyPrecheck } from '@/api/execution'
 import DataTable from '@/components/DataTable.vue'
 import ProjectPicker from '@/components/ProjectPicker.vue'
 import SelectionBar from '@/components/SelectionBar.vue'
@@ -140,13 +140,27 @@ const formSafetyOptions = computed(() =>
 /**
  * 选中项里禁止自动执行的用例（ADR-0013：L2 高危 / LX 未判定按 L2 对待）。
  *
- * 只能看到**当前页**的选中项的安全级；跨页选中的 L2/LX 前端看不见，
- * 由 `CaseRunService` / `TestSetRunService` 整单拒绝兜底——前端禁用只是提前告知。
+ * 勾选是**跨页**的：当前页之外那些用例的安全级前端根本看不到，只靠本地过滤会漏。
+ * 因此选中集合一变就调后端预检（`POST /execution/cases/safety-precheck`），以预检结果为准；
+ * 预检还没回来（或请求失败）时退回「只看当前页」的本地判断，宁可先挡住眼前这一页，
+ * 真正兜底的仍是执行入口的整单 403。
  */
-const blockedSelected = computed(() =>
-  cases.value.filter((item) => isSelected(item.id) && blocksExecution(item.safetyLevel)),
+const precheck = ref<SafetyPrecheck | null>(null)
+const precheckedKey = ref('')
+
+const selectionKey = computed(() => [...selectedIds.value].sort((a, b) => a - b).join(','))
+
+const blockedSelected = computed<BlockedCase[]>(() => {
+  if (precheck.value && precheckedKey.value === selectionKey.value) {
+    return precheck.value.blocked
+  }
+  return cases.value
+    .filter((item) => isSelected(item.id) && blocksExecution(item.safetyLevel))
+    .map((item) => ({ caseId: item.id, caseCode: item.caseCode, safetyLevel: item.safetyLevel }))
+})
+const blockedCodes = computed(() =>
+  blockedSelected.value.map((item) => `${item.caseCode}(${item.safetyLevel})`).join('、'),
 )
-const blockedCodes = computed(() => blockedSelected.value.map((item) => item.caseCode).join('、'))
 
 /**
  * 用例列定义（UX-04b 逐页迁移）。
@@ -329,6 +343,46 @@ watch([keyword, priority, reviewStatus, domain, safetyLevel], () => {
   page.value = 1
   void load()
 })
+
+/**
+ * 选中集合变化 → 后端安全级预检（EXEC-15 残余）。
+ *
+ * 200ms 防抖：连点勾选时不必每条都打一次接口。用自增序号丢弃迟到响应，
+ * 避免「先发的请求后回来」把新选中集合的结论覆盖成旧的。
+ */
+let precheckTimer: number | undefined
+let precheckSeq = 0
+
+watch(selectedIds, () => {
+  window.clearTimeout(precheckTimer)
+  if (selectedIds.value.size === 0 || !projectId.value) {
+    precheck.value = null
+    precheckedKey.value = ''
+    return
+  }
+  precheckTimer = window.setTimeout(() => void loadPrecheck(), 200)
+})
+
+onBeforeUnmount(() => window.clearTimeout(precheckTimer))
+
+async function loadPrecheck(): Promise<void> {
+  const pid = projectId.value
+  const ids = [...selectedIds.value]
+  if (!pid || ids.length === 0) return
+  const seq = ++precheckSeq
+  try {
+    const result = await executionApi.safetyPrecheck(pid, ids)
+    if (seq !== precheckSeq) return
+    precheck.value = result
+    precheckedKey.value = selectionKey.value
+  } catch {
+    // 预检失败不阻塞操作：清空结果让它退回本地判断，执行入口仍会整单拦截
+    if (seq === precheckSeq) {
+      precheck.value = null
+      precheckedKey.value = ''
+    }
+  }
+}
 
 function turnPage(next: number): void {
   if (next < 1 || next > pageCount.value) return

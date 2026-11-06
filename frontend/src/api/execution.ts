@@ -146,6 +146,25 @@ export interface CaseRunPayload {
   runRequestId?: string
 }
 
+/** 被安全级拦下的用例（EXEC-15 残余）：编号给人看，id 用来定位勾选状态。 */
+export interface BlockedCase {
+  caseId: number
+  caseCode: string
+  safetyLevel: string
+}
+
+/**
+ * 安全级预检结果（EXEC-15 残余 / ADR-0013）。
+ *
+ * 勾选是跨页的，当前页之外的安全级前端看不到；`allowed = false` 时
+ * `blocked` 逐条给出「哪条、什么级」，调用方可提前禁用「执行所选」。
+ */
+export interface SafetyPrecheck {
+  total: number
+  allowed: boolean
+  blocked: BlockedCase[]
+}
+
 export interface RunPageQuery {
   state?: string
   page?: number
@@ -179,6 +198,17 @@ export const executionApi = {
       method: 'POST',
       body: JSON.stringify(payload),
     })
+  },
+
+  /**
+   * 安全级预检（EXEC-15 残余 / ADR-0013）：勾选变化时按 id 判级，
+   * 把当前页看不到的 L2 / LX 提前暴露出来，避免点了「执行所选」才吃 403。
+   */
+  safetyPrecheck(projectId: number, caseIds: number[]): Promise<SafetyPrecheck> {
+    return request<SafetyPrecheck>(
+      `/execution/cases/safety-precheck${toQuery({ projectId })}`,
+      { method: 'POST', body: JSON.stringify({ caseIds }) },
+    )
   },
 
   page(projectId: number, query: RunPageQuery = {}): Promise<PageResult<ExecutionRun>> {
