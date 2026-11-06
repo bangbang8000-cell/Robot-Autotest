@@ -15,6 +15,7 @@ import { i18n } from '@/locales'
 import { useAuthStore } from '@/stores/auth'
 import { executionApi } from '@/api/execution'
 import { useConfirmHost } from '@/composables/useConfirm'
+import { linkApi, type Link } from '@/api/asset'
 import AssetsView from '@/views/AssetsView.vue'
 
 // 工厂内写死数据（vi.mock 提升到 import 之前，引用外部 const 会 TDZ）
@@ -369,6 +370,89 @@ describe('AssetsView 链路拓扑（AST-02）', () => {
     await flush()
     expect(root.querySelector('.topo-link')).toBeNull()
     expect(root.querySelector('.n-data-table')).not.toBeNull()
+  })
+
+  /** 造一条两端都登记了设备的链路（拓扑用例只关心两端设备 id / 名称）。 */
+  function hop(id: number, name: string, a: [number, string], b: [number, string]): Link {
+    return {
+      id,
+      projectId: 1,
+      name,
+      linkType: 'ethernet',
+      protocol: 'roce',
+      speedGbps: 100,
+      mtu: 9000,
+      aDeviceId: a[0],
+      aDeviceName: a[1],
+      aPortId: null,
+      aPortName: null,
+      bDeviceId: b[0],
+      bDeviceName: b[1],
+      bPortId: null,
+      bPortName: null,
+      description: null,
+      enabled: true,
+    }
+  }
+
+  it('三跳链路串成一条链，节点按 A→B→C→D 排开且边不丢', async () => {
+    vi.mocked(linkApi.page).mockResolvedValueOnce({
+      items: [
+        hop(41, 'L1', [1, 'DUT-A'], [2, 'SW-01']),
+        hop(42, 'L2', [2, 'SW-01'], [3, 'SW-02']),
+        hop(43, 'L3', [3, 'SW-02'], [4, 'HOST-01']),
+      ],
+      total: 3,
+      page: 1,
+      size: 10,
+    })
+    const root = await mountView()
+    clickTab(root, 'links')
+    await flush()
+    clickByText(root, i18n.global.t('assets.link.topologyView'))
+    await flush()
+
+    // 三条链路共用中间设备，必须合成一行；按链路逐行画等于把一条链拆成三张断图
+    const chains = [...root.querySelectorAll<HTMLElement>('.topo-link')]
+    expect(chains).toHaveLength(1)
+    expect(chains[0].dataset.link).toBe('L1 → L2 → L3')
+
+    const names = [...chains[0].querySelectorAll<HTMLElement>('.topo-node-name')].map(
+      (node) => node.textContent?.trim(),
+    )
+    expect(names).toEqual(['DUT-A', 'SW-01', 'SW-02', 'HOST-01'])
+    // 4 个节点之间恰好 3 条边
+    expect(chains[0].querySelectorAll('.topo-edge')).toHaveLength(3)
+  })
+
+  it('分叉时每条链路仍各渲染一次，不会被主干吞掉', async () => {
+    vi.mocked(linkApi.page).mockResolvedValueOnce({
+      items: [
+        hop(51, 'AB', [1, 'DUT-A'], [2, 'HOST-B']),
+        hop(52, 'AC', [1, 'DUT-A'], [3, 'HOST-C']),
+        hop(53, 'AD', [1, 'DUT-A'], [4, 'HOST-D']),
+      ],
+      total: 3,
+      page: 1,
+      size: 10,
+    })
+    const root = await mountView()
+    clickTab(root, 'links')
+    await flush()
+    clickByText(root, i18n.global.t('assets.link.topologyView'))
+    await flush()
+
+    // 从 A 出发一次只能走一条路：剩下的支路另起一行，合计边数必须等于链路数
+    const edges = [...root.querySelectorAll<HTMLElement>('.topo-edge-name')].map(
+      (edge) => edge.textContent?.trim(),
+    )
+    expect(edges.sort()).toEqual(['AB', 'AC', 'AD'])
+    // 每条链的节点数 = 边数 + 1，没有节点凭空多出来或漏掉
+    for (const chain of root.querySelectorAll<HTMLElement>('.topo-link')) {
+      expect(chain.querySelectorAll('.topo-node')).toHaveLength(
+        chain.querySelectorAll('.topo-edge').length + 1,
+      )
+    }
   })
 })
 
