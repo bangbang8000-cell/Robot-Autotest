@@ -107,6 +107,31 @@ class ExecutionRequestPrecheckTest {
     }
 
     @Test
+    @DisplayName("磁盘回落：目录套件递归扫描子目录，重名同样拒绝")
+    void 磁盘回落目录套件重名拒绝() throws IOException {
+        writeSuite("suites/a.robot", "PERF-001");
+        writeSuite("suites/sub/b.robot", "PERF-001");
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> precheck(List.of()).requireUnambiguousTestNames(
+                        PROJECT, List.of("suites"), List.of("PERF-001")));
+
+        assertEquals(ErrorCode.INVALID_ARGUMENT, ex.errorCode());
+        assertTrue(ex.getMessage().contains("重复"), ex.getMessage());
+        assertTrue(ex.getMessage().contains("suites/sub/b.robot"), ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("磁盘回落：目录下测试名唯一放行")
+    void 磁盘回落目录唯一放行() throws IOException {
+        writeSuite("suites/a.robot", "PERF-001");
+        writeSuite("suites/sub/b.robot", "PERF-002");
+
+        precheck(List.of()).requireUnambiguousTestNames(
+                PROJECT, List.of("suites/a.robot", "suites/sub/b.robot"), List.of("PERF-001"));
+    }
+
+    @Test
     @DisplayName("数据库脚本测试名唯一：放行")
     void 数据库测试名唯一放行() {
         precheck(List.of(

@@ -17,6 +17,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * 请求期执行预检（EXEC-04 / EXEC-05）。
@@ -152,17 +153,35 @@ public class ExecutionRequestPrecheck {
         Map<String, List<String>> hits = new LinkedHashMap<>();
         Set<String> uniqueSuites = new LinkedHashSet<>(suitePaths);
         for (String suite : uniqueSuites) {
-            Path file = root.resolve(suite);
-            if (!Files.isRegularFile(file)) {
-                continue;
+            // 目录套件要递归展开：只扫传入路径本身会把目录下的同名测试漏掉，与数据库口径不一致。
+            for (Path file : robotFilesUnder(root.resolve(suite))) {
+                Set<String> names = new HashSet<>();
+                for (CaseScriptResolver.ScriptTest test : CaseScriptResolver.scan(read(file))) {
+                    names.add(test.name().trim());
+                }
+                collectHits(hits, root.relativize(file).toString().replace('\\', '/'),
+                        names, testNames);
             }
-            Set<String> names = new HashSet<>();
-            for (CaseScriptResolver.ScriptTest test : CaseScriptResolver.scan(read(file))) {
-                names.add(test.name().trim());
-            }
-            collectHits(hits, suite, names, testNames);
         }
         rejectAmbiguous(hits);
+    }
+
+    /** 文件直接返回；目录递归收集 {@code .robot}，与 {@code robot_file} 分支的扫描范围保持一致。 */
+    private static List<Path> robotFilesUnder(Path target) {
+        if (Files.isRegularFile(target)) {
+            return List.of(target);
+        }
+        if (!Files.isDirectory(target)) {
+            return List.of();
+        }
+        try (Stream<Path> walk = Files.walk(target)) {
+            return walk.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".robot"))
+                    .sorted()
+                    .toList();
+        } catch (IOException ex) {
+            return List.of();
+        }
     }
 
     private static String read(Path file) {

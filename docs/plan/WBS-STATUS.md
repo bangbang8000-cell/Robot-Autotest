@@ -121,7 +121,7 @@
 | 82 | **UX-04d** | 土豪金预设调优：亮色主色顶到 WCAG 亮度上限 + 手调金色 tint（`SOFT_OVERRIDE`）；暗色转更饱和亮金 | B3 | 待验 | `docs/evidence/v0.3/ux04c-20261105/accent-tokens.log`、`check-contrast.log` | **大师定「土豪金颜色可适当优化」**。先把约束算清楚：亮色金被 `accent/soft ≥ 4.5` 钉死，`#8a6300` 时余量只有 0.23 —— 靠「调亮主色」这条路口本走不通。真正的病根是机械派生 tint：暗金 × 10% + 白 = `#f3efe6`，一块几乎无彩的米灰，选中行看着像灰色。改为手调金色 tint `#fdf3d6`（仍是金），`accent/soft` 反升到 4.91，于是主色得以提亮到 `#8f6500`（5.21 / 4.71，已到上限，再浅一档即 4.43 FAIL）。暗色 `#f5c542 → #ffd24a`（13.00 / 10.63 / 8.78），tint 换暖金 `#3a3222`。`SOFT_OVERRIDE` 只对 gold 生效且**不豁免任何判据**，改错直接 FAIL；色板展示色同步 `--preset-gold`。14 组 280 项全部重算通过 |
 | 83 | **EXEC-02** | 勾选台账用例直接执行：`[Tags] case:<code>` 绑定解析 + 测试级 `--test` 透传（v0.4 补充包，2026-11-05 并入） | B4 | 待验 | `docs/evidence/v0.4/exec02/`（README + 9 份日志）；实现 `CaseScriptResolver`、`CaseRunService`、`POST /api/execution/cases/run`、`PabotCommandBuilder` 透传 `--test`、CasesView「执行所选」表单 | `--test` 实跑效果待验收人现场确认（ADR-0013 禁跑令）；绑定读 DB 与执行器读磁盘的工作区差异仍在 |
 | 84 | **EXEC-03** | 用例集测试级执行：`TestSetRunService` 解析绑定后透传 `testNames`，集合只跑所选测试（v0.4 补充包，2026-11-05 并入） | B4 | 待验 | `docs/evidence/v0.4/exec03/`（README + 5 份日志）；`TestSetRunService` + 2 个单测 | `--test` 实跑效果待验收人现场确认（ADR-0013）；空编号用例原静默跳过，EXEC-04 已改 400 |
-| 85 | **EXEC-04** | 执行前预检：套件路径存在性、用例编号非空、测试名跨套件重名，命中直接 400（v0.4 补充包，2026-11-05 并入） | B4 | 待验 | `docs/evidence/v0.4/exec04/`（README + 5 份日志）；新增 `ExecutionRequestPrecheck`、`QuickRunService` 接入、用例集空编号 400、5 个预检单测 | 工作区需先同步脚本（默认 `~/robot-test/infra-monitor`）；目录路径不查重名 |
+| 85 | **EXEC-04** | 执行前预检：套件路径存在性、用例编号非空、测试名跨套件重名，命中直接 400（v0.4 补充包，2026-11-05 并入） | B4 | 待验 | `docs/evidence/v0.4/exec04/`（README + 5 份日志）；新增 `ExecutionRequestPrecheck`、`QuickRunService` 接入、用例集空编号 400、5 个预检单测 | 工作区需先同步脚本（默认 `~/robot-test/infra-monitor`）；2026-11-06 已补磁盘目录递归查重（`docs/evidence/v1.0/exec04b/`） |
 | 86 | **EXEC-05** | 执行工作区落盘：`robot_file.content` 按路径写入 `<artifacts>/<runId>/workspace`，pabot 以该目录为工作目录 （v0.4 补充包，2026-11-05 并入） | B4 | 待验 | `docs/evidence/v0.4/exec05/`（README + 6 份日志）；新增 `ExecutionWorkspaceMaterializer`、`RobotFileRepository#listAll`、`PabotCommandBuilder` 工作目录重载、`RunExecutionService` 接入、请求期预检改 DB 优先/磁盘回落；9 个新增单测 | 数据库无脚本时仍回落 `execution.workspace-root`（兼容计划/CI）；真实 pabot 在落盘工作区执行待现场确认（ADR-0013） |
 | 87 | **EXEC-06** | 全量日志下载：`GET /api/execution/runs/{runId}/log/download` 返回 `run.log` 附件；运行页日志面板加「下载完整日志」（v0.4 补充包，2026-11-05 并入） | B4 | 待验 | `docs/evidence/v0.4/exec06/`（README + 9 份日志）；新增 `RunLogFileService`（定位与 404 口径）、控制器端点、1 接口测试 + 3 服务测试；前端 `downloadLog` + 按钮 + 1 视图测试 | 实时频道仍只保留最近 2000 行（完整日志走文件下载）；`run.log` 不存在或产物已清理时 404 |
 | 88 | **EXEC-07** | 租约可视化与管理员强制释放：资产页新增「租约」只读页签（资源 / 运行 / 剩余时间 / 状态，`FR-v0.4-09`）；行内「强制释放」仅管理员可见，二次确认以 `runId` 作 confirm，后端把原运行标记为 `failed(lease_revoked)` 并释放租约（`FR-v0.4-10`，v0.4 补充包，2026-11-05 并入） | B4 | 待验 | `docs/evidence/v0.4/exec07/`（README + 9 份原始日志 + 2026-11-06 补 8 份门禁日志）；新增 `LeaseAdminService`、`POST /api/execution/leases/force-release`、5 条服务测试 + 1 条接口测试；前端 `listLeases` / `forceReleaseLease` + 资产页租约页签 + 4 条视图测试；后端 558 / 前端 199 | **强制释放与取消同构**：先杀该 run 的进程树并注销登记，再标记失败、摘租约（2026-11-06 补齐）；进程登记不跨重启持久化，重启后残留进程仍需现场处理（ADR-0013）；租约列表只列 `lease_state = held`，历史租约需查审计 |
@@ -542,6 +542,20 @@
    证据 `docs/evidence/v1.0/g2-3/README.md` §7 + 8 份 `*-20261106.log`。
 5. 汇总不变：**96 包 = 0 / 0 / 83 / 0 / 13**。`#96 EXEC-15` 仍留 `待验`——现场仍需真实触发一次 L2 用例留 403 读数，
    台账 226 条补判仍需人工。
+
+### 2026-11-06 补记（EXEC-04 残余：磁盘回落时的目录套件查重）
+
+1. **残余收口**：EXEC-04 表格备注原写「目录路径不查重名」。核到根因是两条取数分支口径不一致 ——
+   数据库分支递归扫目录下全部 `.robot`，磁盘回落分支用 `Files.isRegularFile` 判断，目录被整段跳过。
+   未迁入文件工作区的项目选整个目录时，`--test` 的全局过滤会让同名但未勾选的测试一起跑，预检却不报错。
+2. **做法**：`ExecutionRequestPrecheck` 新增 `robotFilesUnder(Path)`，目录走 `Files.walk` 递归收集 `.robot`
+   并按路径排序；冲突登记改用相对工作区根的路径（`suites/sub/b.robot`），与 `robot_file.path` 同口径。
+   不可读目录按空处理，不把预检变成 500。数据库分支未动。
+3. 用例 +2（`ExecutionRequestPrecheckTest` 8 → 10）：磁盘回落目录子目录重名 400、目录下唯一放行。
+4. 门禁：后端 **600/600**（本批前 598）、前端 **28 文件 / 202 用例**、`vue-tsc` 0、`build` 8.56s、
+   `lint.sh` PASS、`check_release_docs.py` PASS、`check_wbs_consistency.py` PASS。
+5. 证据 `docs/evidence/v1.0/exec04b/`；`#85 EXEC-04` 仍留 `待验`——目录重名的端到端 pabot 读数待现场，
+   `--test` 实跑效果仍待验收人确认（ADR-0013）。汇总不变：**96 包 = 0 / 0 / 83 / 0 / 13**。
 
 ## 更新方式
 
