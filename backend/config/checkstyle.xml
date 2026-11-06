@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!--
+  WS-02 后端静态检查最小可用规则集（2026-11-06 接入）。
+  接入前实测（429 个 .java）：星号导入 0、制表符 0、src/main 的 System.out.println 0
+  （6 处 System.out.println 全在 src/test，按 includeTestSourceDirectory=false 不检查）。
+  规则集刻意从「存量零违规」起步并真实阻断（failOnViolation=true）；
+  后续按 DOC-02 逐条扩展时，必须先跑全量扫描、修完存量再开新规则，不得先开后修。
+-->
+<module name="Checker">
+  <property name="charset" value="UTF-8"/>
+  <property name="severity" value="error"/>
+
+  <module name="NewlineAtEndOfFile"/>
+  <module name="FileTabCharacter"/>
+
+  <module name="RegexpSingleline">
+    <property name="format" value="System\.out\.println"/>
+    <property name="message" value="生产代码禁止 System.out.println，请用日志框架"/>
+  </module>
+
+  <module name="TreeWalker">
+    <module name="AvoidStarImport"/>
+    <module name="RedundantImport"/>
+    <module name="UpperEll"/>
+    <module name="ArrayTypeStyle"/>
+    <module name="EmptyStatement"/>
+    <module name="EqualsHashCode"/>
+  </module>
+</module>

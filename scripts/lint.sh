@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# 后端 lint 占位：v0.1 只做密文扫描 + 编译；checkstyle 随 DOC-02（v0.2）接入。
-# 前端有真实 eslint。这里不假装有后端静态检查。
+# 后端 lint：密文扫描 + Checkstyle（WS-02 于 2026-11-06 接入，真实阻断）+ 编译。
+# 前端有真实 eslint。规则集见 backend/config/checkstyle.xml，扩展前须先清存量。
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -22,7 +22,9 @@ fi
 
 if [[ -f backend/pom.xml ]]; then
     command -v mvn >/dev/null 2>&1 || { echo "[lint] 缺少 mvn" >&2; exit 1; }
-    # 编译即最小静态检查（类型 / 语法）；checkstyle 未接入，见 docs/plan/WBS-STATUS.md 偏差记录
+    # WS-02：Checkstyle 真实阻断（规则 backend/config/checkstyle.xml，只扫 src/main）
+    echo "[lint] backend: mvn -B -q checkstyle:check"
+    (cd backend && mvn -B -q checkstyle:check) 2>&1 | tee "$ROOT/artifacts/mvn-checkstyle.log"
     echo "[lint] backend: mvn -B -DskipTests compile"
     (cd backend && mvn -B -q -DskipTests compile) 2>&1 | tee "$ROOT/artifacts/mvn-compile.log"
 fi
