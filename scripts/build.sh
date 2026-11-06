@@ -18,6 +18,14 @@ if [[ -f backend/pom.xml ]]; then
     built=$((built + 1))
 fi
 
+# NAV-03 / FR-v2.0-12：版本迭代页的数据源是根 CHANGELOG.md，vite 只认 frontend/public/。
+# 2026-11-06 实测：CHANGELOG.md 头部写着「build.sh 会同步」，但脚本里没有这一步，
+# public/ 下一直是手工副本 —— 根文件改了、页面不变。这里把契约补上，根文件是唯一真源。
+if [[ -f CHANGELOG.md && -d frontend/public ]]; then
+    cp -f CHANGELOG.md frontend/public/CHANGELOG.md
+    echo "[build] 同步 CHANGELOG.md -> frontend/public/CHANGELOG.md"
+fi
+
 # 顺序不能反：frontend 的 vite 别名指向 packages/editor/dist/editor.js，
 # 编辑器必须先构建，否则前端打进的是上一轮的旧产物（构建全绿但改动不生效）。
 if [[ -f packages/editor/package.json ]]; then
