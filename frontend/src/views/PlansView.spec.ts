@@ -308,6 +308,8 @@ describe('PlansView 依赖跳过事件（PLN-02）', () => {
     expect(auditApi.page).toHaveBeenCalledWith({
       projectId: 1,
       action: 'PLAN_DOWNSTREAM_SKIPPED',
+      from: undefined,
+      to: undefined,
       page: 1,
       size: 20,
     })
@@ -336,5 +338,69 @@ describe('PlansView 依赖跳过事件（PLN-02）', () => {
 
     expect(root.querySelector('.skipped-table')).toBeNull()
     expect(root.textContent).toContain(i18n.global.t('plans.skippedForbidden'))
+  })
+
+  it('超过一页时给翻页器，翻页带页码重新拉（PLN-02 残余）', async () => {
+    vi.mocked(auditApi.page).mockResolvedValueOnce({
+      items: [
+        {
+          id: 11,
+          projectId: 1,
+          actorId: 0,
+          operator: 'system',
+          action: 'PLAN_DOWNSTREAM_SKIPPED',
+          resourceType: 'execution_plan',
+          resourceId: '1',
+          detail: 'mark=skipped_dependency, downstream=2, reason=upstream_failed, upstream_run=RUN-1',
+          summary: null,
+          ip: null,
+          occurredAt: '2026-11-06T02:08:00+08:00',
+        },
+      ],
+      total: 45,
+      page: 1,
+      size: 20,
+    })
+    const root = await mountView()
+
+    toggle(root).click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    // 45 条 / 每页 20 → 3 页，翻页器必须出现（原来写死 20 条时根本没有这个东西）
+    const pager = root.querySelector('.skipped-pager')
+    expect(pager).not.toBeNull()
+    expect(root.textContent).toContain(i18n.global.t('plans.skippedTotal', { n: 45 }))
+
+    const page2 = [...pager!.querySelectorAll<HTMLElement>('.n-pagination-item')].find(
+      (el) => (el.textContent ?? '').trim() === '2',
+    )
+    if (!page2) throw new Error('page 2 button not found')
+    page2.click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(vi.mocked(auditApi.page).mock.calls.at(-1)?.[0]).toMatchObject({ page: 2, size: 20 })
+  })
+
+  it('填时间范围后回到第一页并按 from 重新拉（PLN-02 残余）', async () => {
+    const root = await mountView()
+
+    toggle(root).click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    const input = root.querySelector<HTMLInputElement>('.skipped-from input')
+    if (!input) throw new Error('from date input not found')
+    input.value = '2026-01-01'
+    input.dispatchEvent(new Event('input'))
+    input.dispatchEvent(new Event('change'))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(vi.mocked(auditApi.page).mock.calls.at(-1)?.[0]).toMatchObject({
+      from: '2026-01-01',
+      page: 1,
+    })
   })
 })

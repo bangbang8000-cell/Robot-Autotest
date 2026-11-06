@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, h, ref, watch } from 'vue'
+import { computed, h, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   NButton,
   NCheckbox,
+  NDatePicker,
   NInput,
   NInputNumber,
+  NPagination,
   NSelect,
   type DataTableColumns,
 } from 'naive-ui'
@@ -44,6 +46,15 @@ const skippedLoaded = ref(false)
 const skippedLoading = ref(false)
 const skippedError = ref('')
 const skippedEvents = ref<AuditEntry[]>([])
+// 分页与时间范围（PLN-02 残余）：原来写死「第一页 20 条」，多了就看不到、也筛不了。
+// 后端 /api/audit 早就支持 page/size/from/to，这里只是把入口补齐。
+const skippedPage = ref(1)
+const skippedSize = 20
+const skippedTotal = ref(0)
+// from / to 必须初始化为 null：NDatePicker 的 formatted-value 拿到 '' 会交给 date-fns
+// 解析，直接抛 RangeError（AuditView 早就踩过同一个坑）。
+const skippedRange = reactive({ from: null as string | null, to: null as string | null })
+const skippedPageCount = computed(() => Math.max(1, Math.ceil(skippedTotal.value / skippedSize)))
 
 const projectId = computed(() => auth.projectId ?? 0)
 
@@ -171,6 +182,10 @@ function resetSkipped(): void {
   skippedLoading.value = false
   skippedError.value = ''
   skippedEvents.value = []
+  skippedPage.value = 1
+  skippedTotal.value = 0
+  skippedRange.from = null
+  skippedRange.to = null
 }
 
 async function loadSkipped(): Promise<void> {
@@ -181,13 +196,17 @@ async function loadSkipped(): Promise<void> {
     const page = await auditApi.page({
       projectId: projectId.value,
       action: 'PLAN_DOWNSTREAM_SKIPPED',
-      page: 1,
-      size: 20,
+      from: skippedRange.from || undefined,
+      to: skippedRange.to || undefined,
+      page: skippedPage.value,
+      size: skippedSize,
     })
     skippedEvents.value = page.items
+    skippedTotal.value = page.total
     skippedLoaded.value = true
   } catch (e) {
     skippedEvents.value = []
+    skippedTotal.value = 0
     skippedError.value =
       e instanceof ApiError && e.codeName === 'FORBIDDEN'
         ? t('plans.skippedForbidden')
@@ -201,6 +220,20 @@ function toggleSkipped(): void {
   skippedOpen.value = !skippedOpen.value
   // 展开即拉；已拉过就保留上次结果，避免每次收起再展开都打一次接口
   if (skippedOpen.value && !skippedLoaded.value) void loadSkipped()
+}
+
+/** 翻页：只在已展开时拉；收起状态下先记页码，展开时由 toggleSkipped 统一拉。 */
+function turnSkippedPage(next: number): void {
+  if (next < 1 || next > skippedPageCount.value || next === skippedPage.value) return
+  skippedPage.value = next
+  if (skippedOpen.value) void loadSkipped()
+}
+
+/** 改时间范围必须回到第一页：否则筛完只剩 1 页却停在第 3 页，表格空得莫名其妙。 */
+function onSkippedRangeChange(): void {
+  skippedPage.value = 1
+  skippedLoaded.value = false
+  if (skippedOpen.value) void loadSkipped()
 }
 
 /**
@@ -507,6 +540,31 @@ void load()
         <span class="muted small">{{ t('plans.skippedHint') }}</span>
       </div>
       <template v-if="skippedOpen">
+        <div class="skipped-filters">
+          <NDatePicker
+            v-model:formatted-value="skippedRange.from"
+            class="skipped-from"
+            type="date"
+            value-format="yyyy-MM-dd"
+            clearable
+            size="small"
+            style="width: 180px"
+            :placeholder="t('plans.skippedFrom')"
+            @update:formatted-value="onSkippedRangeChange"
+          />
+          <NDatePicker
+            v-model:formatted-value="skippedRange.to"
+            class="skipped-to"
+            type="date"
+            value-format="yyyy-MM-dd"
+            clearable
+            size="small"
+            style="width: 180px"
+            :placeholder="t('plans.skippedTo')"
+            @update:formatted-value="onSkippedRangeChange"
+          />
+          <span class="muted small">{{ t('plans.skippedTotal', { n: skippedTotal }) }}</span>
+        </div>
         <ErrorLineView v-if="skippedError" :error="skippedError" />
         <DataTable
           v-else
@@ -519,6 +577,14 @@ void load()
           empty-icon="runs"
           max-height="240px"
         />
+        <div v-if="skippedPageCount > 1" class="skipped-pager">
+          <NPagination
+            :page="skippedPage"
+            :page-count="skippedPageCount"
+            size="small"
+            @update:page="turnSkippedPage"
+          />
+        </div>
       </template>
     </div>
 
@@ -633,7 +699,21 @@ void load()
   gap: var(--space-3);
 }
 
+.skipped-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
 .skipped-table {
+  margin-top: var(--space-3);
+}
+
+.skipped-pager {
+  display: flex;
+  justify-content: flex-end;
   margin-top: var(--space-3);
 }
 

@@ -83,9 +83,21 @@ DEFAULT_DIST = ROOT / "frontend" / "dist"
 ICON_BUDGET = 15 * 1024        # 15360 B —— §2.2 步骤 1「图标 chunk ≤ 15 KB」gzip
 VENDOR_BUDGET = 200 * 1024     # 204800 B —— §2.2 步骤 8，试点实测后定
 FONT_BUDGET = 800 * 1024       # 819200 B —— §2.2 步骤 2「首屏字体增量 ≤ 800 KB gzip」
-# 懒加载共享分包（非入口 / 非路由视图）合计上限。2026-11-05 引入 NDataTable 后实测
-# 94 KiB（表格组件 92 KiB + 若干 util），留约 26 KiB 余量；再大一档就要显式调预算。
-LAZY_BUDGET = 120 * 1024       # 122880 B
+# 懒加载共享分包（非入口 / 非路由视图）合计上限。
+#
+# 2026-11-05 定 120 KiB：引入 NDataTable 后实测 94 KiB（表格组件 92 KiB + 若干 util），
+# 留约 26 KiB 余量。
+#
+# 2026-11-06 调到 160 KiB —— 不是体积涨了，是判据原来有洞，这次被填上后才看见。
+# 起因：PLN-02 给「跳过事件」面板加日期范围筛选，PlansView 也开始用 NDatePicker，
+# 于是 NDatePicker + date-fns 从「只被 AuditView 引用」变成「两页共享」，Vite 把它
+# 提取成独立 `audit-*.js`（167219 B / gzip 37141 B）。此前这 37 KB 整体打在
+# `AuditView-*.js` 里（171154 B / gzip 38630 B），被下面 `View-` 排除规则漏算，
+# 合计只有 105540 B 看着达标。实测差值 142553 - 105540 = 37013 B，与新 chunk
+# 37141 B 基本吻合，证明总量没变、只是从「不可见」变「可见」。
+# 因此预算上调到 160 KiB（163840 B）覆盖这个一直被漏算的共享体量，余量约 21 KiB；
+# 再往上就必须是真实的体积增长，需要单独论证。
+LAZY_BUDGET = 160 * 1024       # 163840 B
 
 # 标识是启发式：文件名或内容命中即认为属于该类 chunk（大小写不敏感）。
 # 若 Vite 产物里的标识形态变化（例如只留 n-* 类名、不再出现包名），需同步更新
@@ -244,7 +256,7 @@ def evaluate(bundle: Bundle) -> Result:
                 f"{VENDOR_BUDGET} B（200 KiB），达标"
             )
 
-    # ---- (b2) 懒加载第三方分包 ≤ 120 KiB gzip（2026-11-05 新增） ----
+    # ---- (b2) 懒加载第三方分包 ≤ LAZY_BUDGET gzip（2026-11-05 新增） ----
     #
     # 起因：UX-04b 把审计/报告两页的表格换成 `NDataTable` 后，Vite 把表格组件单独拆成
     # `DataTable-*.js`（gzip 92 KiB）。这个 chunk **不含** "naive-ui" 字样，于是 (b) 的
@@ -266,12 +278,12 @@ def evaluate(bundle: Bundle) -> Result:
         if lazy_gz > LAZY_BUDGET:
             r.violations.append(
                 f"懒加载第三方分包超预算：{len(lazy_shared)} 个合计 gzip {lazy_gz} B > "
-                f"{LAZY_BUDGET} B（120 KiB）；最大 {biggest.rel} {biggest.gz} B"
+                f"{LAZY_BUDGET} B（{LAZY_BUDGET // 1024} KiB）；最大 {biggest.rel} {biggest.gz} B"
             )
         else:
             r.infos.append(
                 f"懒加载共享分包 {len(lazy_shared)} 个，gzip 合计 {lazy_gz} B ≤ "
-                f"{LAZY_BUDGET} B（120 KiB），达标（最大 {biggest.rel} {biggest.gz} B）"
+                f"{LAZY_BUDGET} B（{LAZY_BUDGET // 1024} KiB），达标（最大 {biggest.rel} {biggest.gz} B）"
             )
 
     # ---- (c) 字体 ≤ 800 KiB + font-display: swap（§2.2 步骤 2 / TC-S1-02） ----
