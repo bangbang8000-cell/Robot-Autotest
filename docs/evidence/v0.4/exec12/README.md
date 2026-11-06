@@ -110,3 +110,55 @@ Robot Framework **没有全局单用例超时命令行开关**（7.5.1 实测 `r
 日志文件：`backend-test-20261106.log`、`frontend-test-20261106.log`、`frontend-build-20261106.log`、
 `font-20261106.log`、`lint-20261106.log`、`release-docs-20261106.log`、`wbs-20261106.log`、`git-status-20261106.log`。
 
+## 8. 2026-11-06 补记：`.resource` 约束核实 + 逐用例超时口径订正
+
+### 8.1 先实测再定性
+
+用 RF 7.5.1 跑了三组探针（脚本与完整输出：`rf-timeout-probe-20261106.sh` / `.log`）：
+
+| 探针 | 输入 | 实测结果 | 结论 |
+|---|---|---|---|
+| 1 | `.resource` 的 `*** Settings ***` 写 `Test Timeout    5s`，套件 `Resource` 引入 | `[ ERROR ] ... Setting 'Test Timeout' is not allowed in resource file.`（robot exit=0，用例仍 PASS） | **资源文件不注入是 RF 语法约束**，不是实现取舍；写进去只会多一条 ERROR 且不生效 |
+| 2 | 套件级 `Test Timeout 1s` + 某用例 `[Timeout] 10s` | 无覆盖用例 `FAIL / Test timeout 1 second exceeded.`；有覆盖用例 `PASS` | 用例级 `[Timeout]` **优先于**套件级，两者可共存 |
+| 3 | 只写用例级 `[Timeout] 1s`，无套件级设置 | `FAIL / Test timeout 1 second exceeded.` | 逐用例超时**可完全由脚本承担**，不依赖平台注入 |
+
+因此第 5 节缺口 1、2 的措辞订正为：
+
+1. **`.resource` 不注入 = 约束**：资源文件不能承载 `Test Timeout`；将长步骤封装进 resource 关键字时，
+   超时仍按所属 test 整体计时，行为与 PRD 一致。
+2. **逐用例超时不另造平台字段**：由脚本作者在 `robot_file.content` 的用例内写 `[Timeout]`
+   （`robot_file.content` 是脚本唯一真源，materialize 原样落盘），平台只补套件级默认值。
+   PRD FR-v0.4-24 要求的是「单 run 总超时 + 单用例超时」，未要求平台级逐用例配置；
+   台账 `case_code` 与脚本测试名并无稳定映射，强加 DB 字段会变成不生效的装饰。
+
+### 8.2 顺带修掉的一个静默跳过
+
+原注入器在**全文件**扫 `test timeout` 前缀判断「用户已配置」，用例名或关键字名以 `Test Timeout`
+开头时会让整个套件静默不注入。现改为只看 `*** Settings ***` 段内（遇到下一个 `***` 段即停），
+用例级 `[Timeout]` 也不会再干扰判定。
+
+### 8.3 改动与用例
+
+- `TestTimeoutInjector.java`：`hasSuiteTimeout(lines, header)` 只扫 Settings 段；类注释补
+  resource 约束与「逐用例由 `[Timeout]` 承担」的口径。
+- `TestTimeoutInjectorTest`：5 → **8** 条，新增
+  1. `资源文件不注入` —— `.resource` 原样保留，改写数 0
+  2. `用例级_Timeout_保留且套件级默认仍注入` —— 注入 `Test Timeout 30s` 的同时保留 `[Timeout] 600s`
+  3. `用例名以_Test_Timeout_开头时不误判` —— 用例名 `Test Timeout 边界用例` 仍正常注入
+
+### 8.4 门禁（2026-11-06 复跑，日志同目录 `*-20261106.log`）
+
+| 门禁 | 结果 |
+|---|---|
+| 字体子集 | PASS 1035 字 / 179634 B gzip |
+| 前端单测 | **202** 通过（28 文件） |
+| 前端类型检查 / 构建 | `vue-tsc` exit 0 / `vite build` exit 0 |
+| 后端全量单测 | **576** 通过（原 573 + 3） |
+| 规范 / 发布文档 / WBS | PASS / FAIL 0 WARN 0 / PASS 96 包 · 待验 83 · 已完成 13 |
+
+### 8.5 仍未验
+
+- 真实长跑：未连 DUT，逐用例 `[Timeout]` 与注入默认值的组合只在本地套件验证（ADR-0013）。
+- 前端无改动，本轮不涉及 UI 变更。
+
+

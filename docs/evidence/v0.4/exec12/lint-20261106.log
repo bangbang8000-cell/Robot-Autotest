@@ -322,7 +322,7 @@
 
 [PASS] 14 组（主题 × 强调色）共 280 项对比度全部达标
 [lint]   - tools/check_i18n.py
-[1/5] 语言包解析：zh-CN 643 键 / en-US 643 键
+[1/5] 语言包解析：zh-CN 647 键 / en-US 647 键
 [2/5] 键集相等：通过
 [3/5] 源码扫描：66 个文件，硬编码中文 0 处
 [4/5] 同值漏译与键引用：通过
@@ -367,70 +367,71 @@ Excel      : fixtures/case-ledger/ledger-sample-226.xlsx
        未命中的列会被忽略（不报错）：二级分类 / 测试步骤（按序执行） / A端命令（设备见各用例预置条件） / B端命令（设备见各用例预置条件） / 交换机配置（按需） / 执行状态与证据
 [lint]   - tools/check_bundle_budget.py（UX-04 S1 产物体积守门）
 扫描产物目录：/home/evergreen/robot-autotest/frontend/dist
-产物概览：共 55 个文件（JS 33 / CSS 17 / woff2 3 / 其它 2）
-全量 JS ：原始   1994616 B / gzip    607104 B（33 个文件）
-全量 CSS：原始    124009 B / gzip     24160 B（17 个文件）
+产物概览：共 56 个文件（JS 34 / CSS 17 / woff2 3 / 其它 2）
+全量 JS ：原始   1998759 B / gzip    608788 B（34 个文件）
+全量 CSS：原始    124025 B / gzip     24169 B（17 个文件）
 
 === 产物文件清单（原始字节 / gzip 字节 / 文件名）===
         244 B / gzip       169 B  assets/AdminView-BjfRemK4.css
-      13598 B / gzip      3966 B  assets/AdminView-DEOnhSyy.js
-      58580 B / gzip     15817 B  assets/AssetsView-BsA5sFBE.js
-       1417 B / gzip       514 B  assets/AssetsView-CiTJn6yD.css
-     171238 B / gzip     38653 B  assets/AuditView-BIGPHAGs.js
+      13598 B / gzip      3967 B  assets/AdminView-NmSe7zX-.js
+       1433 B / gzip       525 B  assets/AssetsView--tXYBu-N.css
+      59868 B / gzip     16397 B  assets/AssetsView-r06L1SN-.js
+     171238 B / gzip     38653 B  assets/AuditView-DSn8bt5D.js
         963 B / gzip       425 B  assets/CaseSetsView--ZVMVdJf.css
-       9378 B / gzip      3107 B  assets/CaseSetsView-D7A5nlUS.js
-      16683 B / gzip      4804 B  assets/CasesView-BauP2l8R.js
-         64 B / gzip        84 B  assets/CasesView-aW6LVc9l.css
+       9378 B / gzip      3107 B  assets/CaseSetsView-Dnp4qf9M.js
+      17575 B / gzip      5117 B  assets/CasesView-CrjZQ9CX.js
+         64 B / gzip        84 B  assets/CasesView-D-ENjuZa.css
+     283015 B / gzip     80166 B  assets/DataTable-C4h00IrR.js
        1599 B / gzip       499 B  assets/DataTable-Cz2N77ej.css
-     283015 B / gzip     80166 B  assets/DataTable-D0fVbv5-.js
-     857958 B / gzip    263737 B  assets/EditorView-CGtBKubT.js
+     857958 B / gzip    263738 B  assets/EditorView-BEcOujIL.js
       86589 B / gzip     13247 B  assets/EditorView-DIZyKwLM.css
         707 B / gzip       341 B  assets/ErrorLine-D-aJ6yPk.css
-        739 B / gzip       434 B  assets/ErrorLine-jvOhQvEM.js
-       1007 B / gzip       548 B  assets/FormField-Bi0ASKQh.js
+        739 B / gzip       433 B  assets/ErrorLine-KP6bOLA_.js
         680 B / gzip       255 B  assets/FormField-CwkPrgJO.css
-      46861 B / gzip     14314 B  assets/Input-DxX8Q4Yu.js
-      10901 B / gzip      3771 B  assets/InputNumber-McsexB4v.js
-       2119 B / gzip      1035 B  assets/LoginView-CaRtuOo_.js
+       1007 B / gzip       548 B  assets/FormField-DZwde3-B.js
+      46861 B / gzip     14315 B  assets/Input-DX9eAipv.js
+      10901 B / gzip      3772 B  assets/InputNumber-CapEx6pc.js
         298 B / gzip       188 B  assets/LoginView-Xnuo_bJL.css
-        569 B / gzip       383 B  assets/NotFoundView-CVq_jK99.js
-      12507 B / gzip      3521 B  assets/OverviewView-BD1vgBfj.js
+       2119 B / gzip      1035 B  assets/LoginView-z47uBmnk.js
+        569 B / gzip       384 B  assets/NotFoundView-C9MlFNX-.js
+      12507 B / gzip      3522 B  assets/OverviewView-DQ6Y78X5.js
+      10544 B / gzip      3466 B  assets/PlansView-CS0TWUHz.js
         959 B / gzip       359 B  assets/PlansView-CVcSiCec.css
-      10544 B / gzip      3468 B  assets/PlansView-CtdoDh9X.js
-        822 B / gzip       486 B  assets/ProjectPicker.vue_vue_type_script_setup_true_lang-BTbXLUP9.js
-      24242 B / gzip      8012 B  assets/ReportDetailView-DGMz0iCU.js
+        822 B / gzip       487 B  assets/ProjectPicker.vue_vue_type_script_setup_true_lang-CcyJq7oA.js
+       1029 B / gzip       530 B  assets/RadioButton-o5fFb7am.js
        4619 B / gzip      1271 B  assets/ReportDetailView-DO1WqWYk.css
+      23387 B / gzip      7671 B  assets/ReportDetailView-YydiLKEH.js
+       4624 B / gzip      1806 B  assets/ReportPrintView-B0nZ-RA2.js
        2098 B / gzip       671 B  assets/ReportPrintView-BWBGy9fY.css
-       4624 B / gzip      1805 B  assets/ReportPrintView-CzMtyJ0l.js
-       5410 B / gzip      2109 B  assets/ReportsView-BNqoD-9W.js
+       5410 B / gzip      2109 B  assets/ReportsView-Ca4kuG_Z.js
         140 B / gzip       129 B  assets/ReportsView-Co3-ycdp.css
-      12854 B / gzip      4425 B  assets/RunsView-C_8N_P0e.js
-       1148 B / gzip       463 B  assets/RunsView-DrK9pewm.css
+       1148 B / gzip       462 B  assets/RunsView-Byp8J7qM.css
+      13747 B / gzip      4665 B  assets/RunsView-RoVEIqdV.js
         729 B / gzip       295 B  assets/StatusTag-BkZKYVEF.css
-        598 B / gzip       418 B  assets/StatusTag-C1YPA52e.js
-        871 B / gzip       305 B  assets/asset-1NRydFOn.js
-       1592 B / gzip       473 B  assets/cases-VZEMvmvT.js
-        584 B / gzip       345 B  assets/errors-C6G3NitG.js
-       1395 B / gzip       498 B  assets/execution-DFySZ2OR.js
-       1117 B / gzip       597 B  assets/format-DT-o903Y.js
-     335105 B / gzip    109992 B  assets/index-B4uYidRD.js
-      21241 B / gzip      4982 B  assets/index-DirJBocy.css
+        598 B / gzip       419 B  assets/StatusTag-Da2U6LoG.js
+        871 B / gzip       306 B  assets/asset-BiVr85JE.js
+       1592 B / gzip       473 B  assets/cases-C78OHRT1.js
+        584 B / gzip       347 B  assets/errors-VTfT1d3b.js
+       1637 B / gzip       547 B  assets/execution-DjnlQ24V.js
+       1117 B / gzip       599 B  assets/format-YH-UTAB6.js
+      21241 B / gzip      4981 B  assets/index-CgEXgfwl.css
+     335759 B / gzip    110290 B  assets/index-DH5GEp98.js
       21168 B / gzip     21196 B  assets/jetbrains-mono-latin-V6pRDFza.woff2
       19616 B / gzip      4207 B  assets/lucide-DIB1JHl6.js
       13304 B / gzip     13327 B  assets/noto-sans-sc-latin-C8q2FS1w.woff2
-     144048 B / gzip    144111 B  assets/noto-sans-sc-ui-BlfCOIIL.woff2
-       1383 B / gzip       533 B  assets/reports-BaJktStb.js
-       1327 B / gzip       549 B  assets/statusLabels-D3QywXZz.js
-        562 B / gzip       393 B  assets/useBatchAction-C741AkIz.js
+     145048 B / gzip    145111 B  assets/noto-sans-sc-ui-BFzwnoEq.woff2
+       1383 B / gzip       535 B  assets/reports-BN3gSchK.js
+       1327 B / gzip       551 B  assets/statusLabels-BmWE6ja6.js
+        562 B / gzip       392 B  assets/useBatchAction-KQJ7Yxeo.js
+       2099 B / gzip       977 B  assets/useSelection-7lb5z6SU.js
         514 B / gzip       268 B  assets/useSelection-Cge7ZJsy.css
-       2099 B / gzip       976 B  assets/useSelection-D2Xh9Gvd.js
       84718 B / gzip     33257 B  assets/vue-DhGmyL_7.js
 
 === 各项判定 ===
 [INFO] 图标 chunk 1 个，gzip 合计 4207 B ≤ 15360 B（15 KiB），达标
-[INFO] 组件库 vendor chunk 1 个，gzip 合计 109992 B ≤ 204800 B（200 KiB），达标
-[INFO] 懒加载共享分包 16 个，gzip 合计 104806 B ≤ 122880 B（120 KiB），达标（最大 assets/DataTable-D0fVbv5-.js 80166 B）
-[INFO] 字体 3 个 woff2：原始合计 178520 B、gzip 合计 178634 B ≤ 819200 B（800 KiB），达标
+[INFO] 组件库 vendor chunk 1 个，gzip 合计 110290 B ≤ 204800 B（200 KiB），达标
+[INFO] 懒加载共享分包 17 个，gzip 合计 105397 B ≤ 122880 B（120 KiB），达标（最大 assets/DataTable-C4h00IrR.js 80166 B）
+[INFO] 字体 3 个 woff2：原始合计 179520 B、gzip 合计 179634 B ≤ 819200 B（800 KiB），达标
 [INFO] CSS 中存在 font-display: swap，首帧不被字体阻塞，达标
 [INFO] styleguide 标记在源码中存在（StyleguideView.vue），产物侧 grep 因此具备判定力
 [INFO] 生产产物中未找到 __STYLEGUIDE_DEV_ONLY__ 标记，且源码侧标记确认存在（DEV 条件挂载 + tree-shaking 生效），本项已被反向验证
@@ -457,13 +458,13 @@ Excel      : fixtures/case-ledger/ledger-sample-226.xlsx
   [INFO] theme.css 变体块 12 个 / --preset-* 6 个；dialog 6 键；zh/en presets 6/6 键
 [PASS] 六预设清单七处一致（6 个预设）
 [lint]   - tools/subset_font.py --check（打包字体子集预算）
-扫描到界面汉字 1028 个（下限 200）
+扫描到界面汉字 1035 个（下限 200）
   noto-sans-sc-latin.woff2                 13304 B  gzip     13327 B
-  noto-sans-sc-ui.woff2                   144048 B  gzip    144111 B
+  noto-sans-sc-ui.woff2                   145048 B  gzip    145111 B
   jetbrains-mono-latin.woff2               21168 B  gzip     21196 B
-  中文字体 cmap 覆盖 1028 / 1028 字
-  合计（gzip）                                            178634 B  / 预算 819200 B
-[PASS] 字体子集 1028 字 / 178634 B gzip，未超 800 KiB 预算
+  中文字体 cmap 覆盖 1035 / 1035 字
+  合计（gzip）                                            179634 B  / 预算 819200 B
+[PASS] 字体子集 1035 字 / 179634 B gzip，未超 800 KiB 预算
 [lint]   - tools/check_icons.py（图标名 ↔ iconMap.ts 对账）
 图标映射表：41 个名字 - admin, alert, arrowUpRight, audit, bell, boxes, cases, check, chevronDown, chevronRight, close, copy, credential, dashboard, database, device, download, external, fail, help, inbox, info, language, link, loader, logout, moon, palette, plus, refresh, reports, runs, search, sliders, sparkles, success, sun, system, trash, users, warn
 静态引用：34 处；动态表达式（跳过）：11 处

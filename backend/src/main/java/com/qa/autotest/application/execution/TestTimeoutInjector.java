@@ -19,6 +19,13 @@ import java.util.stream.Stream;
  *
  * <p>只在工作区是「按 run 落盘的副本」时调用（见 {@code RunExecutionService}），
  * 回落到真实 workspace-root 时不注入，避免改动用户原脚本。
+ *
+ * <p>逐用例超时不另造平台字段：RF 原生的用例级 {@code [Timeout]} 由脚本作者在
+ * {@code robot_file.content} 里书写，本次只补套件级默认值，改写不会触碰 {@code [Timeout]} 行；
+ * RF 语义下用例级 {@code [Timeout]} 优先于套件级 {@code Test Timeout}。
+ *
+ * <p>只处理 {@code .robot}：{@code .resource} 文件里写 {@code Test Timeout} 会被 RF 判为
+ * 「Setting 'Test Timeout' is not allowed in resource file」，资源文件不注入是约束而非取舍。
  */
 public final class TestTimeoutInjector {
 
@@ -75,6 +82,25 @@ public final class TestTimeoutInjector {
         return path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".robot");
     }
 
+    /**
+     * 只看 {@code *** Settings ***} 段内的 {@code Test Timeout}。
+     *
+     * <p>不能全文件扫：用例名或关键字名以 {@code Test Timeout} 开头时会被误判成
+     * 「用户已配置」，导致整个套件静默不注入。
+     */
+    private static boolean hasSuiteTimeout(List<String> lines, int header) {
+        for (int i = header + 1; i < lines.size(); i++) {
+            String trimmed = lines.get(i).trim();
+            if (trimmed.startsWith("***")) {
+                return false; // 已进入下一个段
+            }
+            if (trimmed.toLowerCase(Locale.ROOT).startsWith("test timeout")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** @return 是否改写了文件 */
     private static boolean apply(Path file, int seconds) {
         List<String> lines;
@@ -83,12 +109,6 @@ public final class TestTimeoutInjector {
         } catch (IOException ex) {
             return false;
         }
-        for (String line : lines) {
-            if (line.trim().toLowerCase(Locale.ROOT).startsWith("test timeout")) {
-                return false; // 用户显式设置优先
-            }
-        }
-        String setting = "Test Timeout    " + seconds + "s";
         int header = -1;
         for (int i = 0; i < lines.size(); i++) {
             if (lines.get(i).trim().equalsIgnoreCase(SETTINGS_HEADER)) {
@@ -96,6 +116,10 @@ public final class TestTimeoutInjector {
                 break;
             }
         }
+        if (header >= 0 && hasSuiteTimeout(lines, header)) {
+            return false; // 用户显式设置优先
+        }
+        String setting = "Test Timeout    " + seconds + "s";
         List<String> out = new ArrayList<>(lines);
         if (header >= 0) {
             out.add(header + 1, setting);
