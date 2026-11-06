@@ -729,3 +729,19 @@ G4/G5/G8 未判过，本波「已完成」指功能实现 + 机器门全绿，�
 > 同轮把 `RPT-07` 的「导出期重算只验 DOCX」缺口用 pdf/docx 双格式参数化单测补齐并转 `已完成`。
 > 证据 `docs/evidence/v1.0/{w4-import,w5-group,w6-ai,w7-design}/` + 迁移日志。
 > G4/G5/G8 仍未判过、不申请；真机 / 真实浏览器 / 外部凭据仍归大师。
+
+> **库基线补记** 2026-11-06（补记三）：`db-audit` 与 `SchemaIT` 自 `V8_1` 起就是红的，本轮发现并修复。
+> ① **13 张 `V8_*` 新表缺审计四列**（W2–W6 建表时只写了 `created_at`，部分连它都没有）；
+> ② `user_group_member` / `project_group_role` 用复合主键，偏离「每表代理主键 `id` + 唯一键」约定
+>    （基线同类表 `project_member` / `user_role` 都是这么写的）；经查无任何外键引用这两张表；
+> ③ `db-audit` 自身有**两个 SQL 洞**：「一列审计字段都没有的表」和「连 `id` 列都没有的表」
+>    都逃检（`column_name IN (...)` 先过滤再分组），已改为从 `information_schema.tables` 左连，
+>    判据与 `SchemaIT` 对齐；时间列判据也从 `data_type='datetime'` 收紧为 `column_type='datetime(3)'`；
+> ④ **`db-audit` 纳入门禁第 12 步** —— 它以前从不在门禁里，`SchemaIT` 又带 `@Tag("it")` 默认跳过，
+>    于是「表建出来了、接口也通了」把约定缺失盖了整整一个版本。
+>
+> 修复：`V8_5__audit_columns_align.sql`（3 张可变表）+ `V8_6__audit_columns_rest.sql`（7 张表补列 +
+> 2 张关联表换代理主键），均配 down 脚本。实测：`robot_dev` `db-audit` **7 项全 PASS / 60 表**；
+> `robot_it` 空库 clean+migrate 后 `SchemaIT` **7/7**（30 个迁移至 `V8_6`）；门禁 **12 步 `FAILS=0`**。
+>
+> 教训（写给下一轮）：**机检不进门禁等于没有**；「单测绿 / 接口通」不覆盖 schema 约定与基线判据。

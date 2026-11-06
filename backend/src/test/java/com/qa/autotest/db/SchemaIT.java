@@ -28,19 +28,23 @@ class SchemaIT {
     private static final String DB_NAME = System.getenv().getOrDefault("DB_NAME", "robot_it");
 
     /**
-     * 业务表总数。v0.1 设计为 38 张；后续版本新增 8 张（editor_keyword / case_requirement /
-     * export_record / ci_trigger / execution_plan_dependency / schedule_dependency /
-     * project_asset / run_metadata），实测 47（2026-11-06 加 run_metadata，HRD-02）。
+     * 业务表总数。v0.1 设计为 38 张；v1.0 扩到 47 张（末位 run_metadata，V7_6）；
+     * v2.0 的 V8_1..V8_4 再增 13 张（报告三表 / 导入两表 / 组授权五表 / AI 三表），
+     * 实测 60（2026-11-06）。V8_5 只补列不加表，故仍为 60。
      * 这个值随迁移演进更新，不是「越多越好」。
      */
-    private static final int EXPECTED_TABLES = 47;
+    private static final int EXPECTED_TABLES = 60;
 
     /**
      * append-only 表：按设计只增不改，没有「更新人/更新时间」这回事。
      * 要求它们也有 updated_at/updated_by，只会逼业务代码写假值。
+     *
+     * <p>2026-11-06 补入 V8 的三张：{@code test_report_export}（每次导出插一行）、
+     * {@code test_report_audit}（审计日志）、{@code ai_action}（AI 动作留痕）。
      */
     private static final java.util.Set<String> APPEND_ONLY =
-            java.util.Set.of("resource_lease_history", "run_attempt");
+            java.util.Set.of("resource_lease_history", "run_attempt",
+                    "test_report_export", "test_report_audit", "ai_action");
 
     private static Flyway flyway;
 

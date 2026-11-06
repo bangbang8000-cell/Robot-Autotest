@@ -18,40 +18,60 @@ check() {
     fi
 }
 
-# 口径：v0.1 设计为 38 表；后续版本新增 8 张（editor_keyword / case_requirement /
-# export_record / ci_trigger / execution_plan_dependency / schedule_dependency /
-# project_asset / run_metadata），实测 47（2026-11-06 加 run_metadata，V7_6）。
+# 口径：v0.1 设计为 38 表；后续版本扩到 47（V7_6）；v2.0 的 V8_1..V8_4 再增 13 张
+# （test_report / _export / _audit、import_batch / case_source、user_group / _member /
+# project_group_role / project_template / test_scenario、ai_session / ai_action /
+# ai_cli_probe），实测 60（2026-11-06，V8_5 只加列不加表）。
 # 此处期望值随迁移演进而更新，不是「表越多越好」的口径。
-check "业务表数 = 47" "47" \
+check "业务表数 = 60" "60" \
     "SELECT COUNT(*) FROM information_schema.tables
      WHERE table_schema='$DB_NAME' AND table_name<>'flyway_schema_history';"
 
 # append-only 历史表只要求 created_at：这类表按设计只增不改，没有「更新人」这回事。
 # 要求它们也有 updated_at/updated_by 会逼着业务代码写假值，比缺列更糟。
+# 2026-11-06 补入 V8 的三张：test_report_export（每次导出插一行）、test_report_audit（审计）、
+# ai_action（AI 动作留痕）。它们与 resource_lease_history / run_attempt 同性质。
+#
+# 口径修正（2026-11-06）：原写法用 `column_name IN (四列) ... HAVING COUNT(*) < 4`，
+# **一列都没有的表根本不进分组**，直接漏检 —— V8_1..V8_4 有 7 张表正是这种，db-audit 报绿、
+# SchemaIT 报红。改为从 tables 左连 columns，缺列数 0 也能查出来。
 check "缺审计四列的表的数量 = 0" "0" \
     "SELECT COUNT(*) FROM (
-       SELECT table_name FROM information_schema.columns
-       WHERE table_schema='$DB_NAME' AND table_name<>'flyway_schema_history'
-         AND table_name NOT IN ('resource_lease_history','run_attempt')
-         AND column_name IN ('created_at','created_by','updated_at','updated_by')
-       GROUP BY table_name HAVING COUNT(*) < 4
-     ) t;"
-# 这两张 append-only 表必须各有一个 created_at（2 张 → 期望 2，少一张就报）。
-check "append-only 历史表都有 created_at" "2" \
+       SELECT t.table_name, COUNT(c.column_name) AS have
+       FROM information_schema.tables t
+       LEFT JOIN information_schema.columns c
+         ON c.table_schema = t.table_schema AND c.table_name = t.table_name
+        AND c.column_name IN ('created_at','created_by','updated_at','updated_by')
+       WHERE t.table_schema='$DB_NAME' AND t.table_name<>'flyway_schema_history'
+         AND t.table_name NOT IN ('resource_lease_history','run_attempt',
+                                  'test_report_export','test_report_audit','ai_action')
+       GROUP BY t.table_name HAVING have < 4
+     ) x;"
+# 这五张 append-only 表必须各有一个 created_at（5 张 → 期望 5，少一张就报）。
+check "append-only 历史表都有 created_at" "5" \
     "SELECT COUNT(DISTINCT table_name) FROM information_schema.columns
      WHERE table_schema='$DB_NAME'
-       AND table_name IN ('resource_lease_history','run_attempt')
+       AND table_name IN ('resource_lease_history','run_attempt',
+                          'test_report_export','test_report_audit','ai_action')
        AND column_name='created_at';"
 
-check "主键不是 id 的表数量 = 0" "0" \
+# 口径修正（2026-11-06）：原写法先筛 `column_name='id'` 再判它是否主键，
+# **连 id 列都没有的表直接逃检**（同上一项的漏法）。改为从 tables 左连主键分组，
+# 主键缺失、或主键不是「单列 id」，都算违规。
+check "主键不是单列 id 的表数量 = 0" "0" \
     "SELECT COUNT(*) FROM (
-       SELECT c.table_name FROM information_schema.columns c
-       LEFT JOIN information_schema.key_column_usage k
-         ON k.table_schema=c.table_schema AND k.table_name=c.table_name
-        AND k.constraint_name='PRIMARY' AND k.column_name='id'
-       WHERE c.table_schema='$DB_NAME' AND c.table_name<>'flyway_schema_history'
-         AND c.column_name='id' AND k.column_name IS NULL
-     ) t;"
+       SELECT t.table_name
+       FROM information_schema.tables t
+       LEFT JOIN (
+         SELECT k.table_name,
+                GROUP_CONCAT(k.column_name ORDER BY k.ordinal_position) AS pk
+         FROM information_schema.key_column_usage k
+         WHERE k.table_schema='$DB_NAME' AND k.constraint_name='PRIMARY'
+         GROUP BY k.table_name
+       ) p ON p.table_name = t.table_name
+       WHERE t.table_schema='$DB_NAME' AND t.table_name<>'flyway_schema_history'
+         AND (p.pk IS NULL OR p.pk <> 'id')
+     ) x;"
 
 check "缺主键的表数量 = 0" "0" \
     "SELECT COUNT(*) FROM (
@@ -64,11 +84,13 @@ check "缺主键的表数量 = 0" "0" \
        GROUP BY t.table_name
      ) x;"
 
+# 口径修正（2026-11-06）：原判据只看 data_type='datetime'，**精度不查** ——
+# datetime(0) 也能过检。改为比对 column_type，与 SchemaIT 的判据对齐。
 check "时间列不是 datetime(3) 的表数量 = 0" "0" \
     "SELECT COUNT(*) FROM (
        SELECT table_name FROM information_schema.columns
        WHERE table_schema='$DB_NAME' AND column_name IN ('created_at','updated_at')
-         AND data_type<>'datetime'
+         AND column_type <> 'datetime(3)'
        GROUP BY table_name
      ) t;"
 

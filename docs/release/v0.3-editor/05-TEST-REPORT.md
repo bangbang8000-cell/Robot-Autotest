@@ -33,7 +33,11 @@
 | WBS 自洽 | `python3 tools/check_wbs_consistency.py` | 130 包 / 87 已完成，五数自洽 | PASS |
 
 > 原始日志由 `docs/evidence/v1.0/policy-20261106/gates.sh` 复跑重建（logs/ 被 .gitignore 忽略）。
-> **2026-11-06 二轮复跑（本节读数为最终值）**：门禁从 10 步扩到 **11 步**（新增
+> **2026-11-06 三轮复跑（本节读数为最终值）**：门禁再扩到 **12 步**（补 `12-db_audit`，
+> 因为 `db-audit` 从不在门禁、`SchemaIT` 又默认跳过，导致 V8 系列 13 张表缺审计四列红了整版没人发现）。
+> 12 步 `GATES_RESULT FAILS=0`，读数：后端 **780**、frontend **37 文件 / 239**、editor **24 文件 / 219**、
+> `db-audit` **7 项 PASS / 60 表**、`SchemaIT` 空库 **7/7**（30 迁移至 `V8_6`），其余同下。
+> **2026-11-06 二轮复跑**：门禁从 10 步扩到 **11 步**（新增
 > `11-editor_test`：`packages/editor` 有自己的 vitest 工程，frontend 的 vitest 扫不到它，
 > 而 EDT-03/EDT-05 的回归用例正住在那里）。11 步 `GATES_RESULT FAILS=0`，实测读数：
 > 后端 **Tests run: 780, Failures: 0**、frontend **37 文件 / 239 用例**、editor 包 **24 文件 / 219 用例**、

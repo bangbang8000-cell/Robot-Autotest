@@ -29,6 +29,11 @@ run 10 diff_check      "git diff --check"
 # 编辑器包有独立的 vitest 工程（unplugin-vue + jsdom），frontend 的 vitest 扫不到它。
 # EDT-03/EDT-05 的回归用例住在这里，不接进来就会出现「门禁全绿但编辑器回归没人跑」。
 run 11 editor_test     "cd packages/editor && npx vitest run"
+# 库结构体检（TC-v0.1-023/024）。2026-11-06 之前它从不在门禁里，于是 `db-audit` 红了整一个版本
+# 没人发现（V8_1..V8_6 共 13 张表缺审计列 / 两张关联表复合主键）。
+# 显式指向 robot_dev：本脚本其它步骤会把 DB_NAME 覆盖成 robot_it（集成测试库，随时被 clean）。
+# 需要 ~/.config/robot-autotest/env 里的 DB_* —— 门禁本就要求先 source 该文件。
+run 12 db_audit        "DB_NAME=robot_dev bash scripts/db-audit.sh"
 
 printf '\nGATES_RESULT FAILS=%s\n' "$FAILS"
 exit "$FAILS"

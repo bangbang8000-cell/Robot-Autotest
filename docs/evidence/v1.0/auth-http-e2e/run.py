@@ -13,7 +13,8 @@
 夹具（幂等，可反复跑）
 --------------------
 - 项目 `qa-e2e-fixture`：专供本脚本，不动「演示项目」「AST-05 共享演示」
-- 账号 `qa-e2e-{viewer,engineer,pm,admin,nobody}`，口令见 FIXTURE_PASSWORD
+- 账号 `qa-e2e-{viewer,engineer,pm,admin,nobody}`，口令取本机 env 文件的 `QA_E2E_PASSWORD`
+  （**不入库**；2026-11-06 起不再写字面量，见下方 `fixture_password()`）
 - 角色写入 `project_member.member_role`；admin 另加平台 `user_role=admin`
 - 刻意不碰既有 4 个账号的口令（无需知道，也不该改）
 
@@ -36,7 +37,7 @@ import urllib.error
 import urllib.request
 import uuid
 
-FIXTURE_PASSWORD = "QaE2e!2026-fixture"
+FIXTURE_PASSWORD_ENV = "QA_E2E_PASSWORD"
 PROJECT_CODE = "qa-e2e-fixture"
 PROJECT_NAME = "验收夹具·HTTP 全链路"
 ACCOUNTS = {
@@ -62,6 +63,28 @@ def load_db_config() -> dict:
         k, v = line.split("=", 1)
         cfg[k.strip()] = v.strip().strip('"').strip("'")
     return cfg
+
+
+def fixture_password() -> str:
+    """夹具口令：环境变量优先，其次本机 env 文件；两处都没有就明确报错。
+
+    为什么要这么绕：口令不能进仓库（`scripts/secret-scan.sh` 会判明文），但又必须**可复现** ——
+    本脚本第二轮要能用同一个口令登录同一批账号，随机生成会让幂等失效。
+    折中做法是把口令放进 `~/.config/robot-autotest/env`（该文件不入库），
+    与 `DB_PASSWORD` / `CRED_MASTER_KEY` 同一处置方式。
+    """
+    val = os.environ.get(FIXTURE_PASSWORD_ENV)
+    if val:
+        return val
+    val = load_db_config().get(FIXTURE_PASSWORD_ENV)
+    if not val:
+        raise SystemExit(
+            f"缺少夹具口令：在 ~/.config/robot-autotest/env 里加一行 "
+            f"{FIXTURE_PASSWORD_ENV}=<口令>（该文件不入库），或设同名环境变量。")
+    return val
+
+
+FIXTURE_PASSWORD = fixture_password()
 
 
 def mysql(sql: str, cfg: dict) -> str:

@@ -30,7 +30,7 @@ python3 docs/evidence/v0.3/../v1.0/auth-http-e2e/run.py        # 即本目录 ru
 |---|---|
 | 项目 | `qa-e2e-fixture`（`project.id = 29`） |
 | 账号 | `qa-e2e-viewer` / `qa-e2e-engineer` / `qa-e2e-pm` / `qa-e2e-admin` / `qa-e2e-nobody` |
-| 口令 | `QaE2e!2026-fixture`（全部相同，PBKDF2-SHA256 12 万轮写入 `user.password_hash`） |
+| 口令 | 取本机 `~/.config/robot-autotest/env` 的 `QA_E2E_PASSWORD`（**不入库**，五个账号相同）；PBKDF2-SHA256 12 万轮写入 `user.password_hash` |
 | 数据库 | `robot_dev`（MySQL 8.0.46） |
 
 口令哈希格式与后端 `Pbkdf2PasswordEncoder` 一致，所以是**真登录**而不是伪造会话：

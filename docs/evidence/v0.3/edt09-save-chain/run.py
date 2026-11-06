@@ -22,15 +22,16 @@ WBS 原话：「本机无 RF，`--dryrun` 真实拦截与端到端保存链路�
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 import re
+import subprocess
 import sys
 import urllib.error
 import urllib.request
 
 BASE = "http://127.0.0.1:8001"
 USERNAME = "qa-e2e-engineer"
-PASSWORD = "QaE2e!2026-fixture"
 PROJECT_CODE = "qa-e2e-fixture"
 FILE_PATH = "qa-e2e/edt09-save-chain.robot"
 LOGFILE = pathlib.Path(__file__).resolve().parent / "run.log"
@@ -48,9 +49,25 @@ def load_db_config() -> dict:
     return cfg
 
 
+def fixture_password() -> str:
+    """夹具口令：环境变量优先，其次本机 env 文件；两处都没有就明确报错。
+
+    2026-11-06：原先写字面量，被 `scripts/secret-scan.sh` 判为明文口令。
+    本脚本只登录 `qa-e2e-engineer`（账号由 auth-http-e2e 建），口令必须与那里一致，
+    因此统一从 `~/.config/robot-autotest/env` 的 `QA_E2E_PASSWORD` 取（该文件不入库）。
+    """
+    val = os.environ.get("QA_E2E_PASSWORD") or load_db_config().get("QA_E2E_PASSWORD")
+    if not val:
+        raise SystemExit(
+            "缺少夹具口令：在 ~/.config/robot-autotest/env 里加一行 "
+            "QA_E2E_PASSWORD=<口令>（该文件不入库），或设同名环境变量。")
+    return val
+
+
+PASSWORD = fixture_password()
+
+
 def mysql(sql: str, cfg: dict) -> str:
-    import os
-    import subprocess
     db = cfg.get("DB_NAME") or "robot_dev"
     r = subprocess.run(["mysql", "-u", cfg.get("DB_USERNAME", "root"),
                         "-h", cfg.get("DB_HOST", "127.0.0.1"),

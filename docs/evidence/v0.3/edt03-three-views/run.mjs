@@ -12,6 +12,26 @@
  *   每次切回 code 视图时，编辑器内容 sha256 必须与初始一致；
  *   且三个视图都真实渲染出内容（不是空面板）。
  */
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { homedir } from 'node:os'
+
+/**
+ * 夹具口令不进仓库（2026-11-06：原来写成兜底字面量，`secret-scan` 扩展后会被判明文）。
+ * 统一从 `~/.config/robot-autotest/env` 的 `QA_E2E_PASSWORD` 取，与 PY 脚本同一处置。
+ */
+function envValue(key) {
+  if (process.env[key]) return process.env[key]
+  try {
+    const text = readFileSync(join(homedir(), '.config', 'robot-autotest', 'env'), 'utf8')
+    for (const line of text.split('\n')) {
+      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)$/)
+      if (m && m[1] === key) return m[2].trim()
+    }
+  } catch { /* 文件不存在就走下面的统一报错 */ }
+  return null
+}
+
 const CDP = process.env.CDP_BASE ?? 'http://127.0.0.1:9222'
 const APP = process.env.APP_BASE ?? 'http://localhost:8001'
 const PROJECT_ID = process.env.QA_PROJECT_ID ?? '29'
@@ -57,7 +77,11 @@ function record(id, desc, ok, detail) {
 
 async function main() {
   const QA_USER = process.env.QA_USER ?? 'qa-e2e-engineer'
-  const QA_PASS = process.env.QA_PASS ?? 'QaE2e!2026-fixture'
+  const QA_PASS = envValue('QA_E2E_PASSWORD')
+  if (!QA_PASS) {
+    console.error('缺少夹具口令：在 ~/.config/robot-autotest/env 里加 QA_E2E_PASSWORD=<口令>（不入库），或设同名环境变量。')
+    process.exit(2)
+  }
   const t = await (await fetch(`${CDP}/json/new?about:blank`, { method: 'PUT' })).json()
   const ws = new WebSocket(t.webSocketDebuggerUrl)
   await new Promise((r, j) => { ws.addEventListener('open', r, { once: true }); ws.addEventListener('error', j, { once: true }) })

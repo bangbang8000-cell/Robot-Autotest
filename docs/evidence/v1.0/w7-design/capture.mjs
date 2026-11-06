@@ -16,16 +16,37 @@
  * 用法：node docs/evidence/v1.0/w7-design/capture.mjs
  * 前置：Chrome 以 --remote-debugging-port=9222 启动；8001 入口可用。
  */
-import { writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { homedir } from 'node:os'
+
+/**
+ * 夹具口令不进仓库（2026-11-06：`scripts/secret-scan.sh` 判明文，且原来写成兜底字面量）。
+ * 统一从 `~/.config/robot-autotest/env` 的 `QA_E2E_PASSWORD` 取，与 PY 脚本同一处置。
+ */
+function envValue(key) {
+  if (process.env[key]) return process.env[key]
+  try {
+    const text = readFileSync(join(homedir(), '.config', 'robot-autotest', 'env'), 'utf8')
+    for (const line of text.split('\n')) {
+      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)$/)
+      if (m && m[1] === key) return m[2].trim()
+    }
+  } catch { /* 文件不存在就往下走，由下面统一报错 */ }
+  return null
+}
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const SHOTS = join(HERE, 'shots')
 const CDP = process.env.CDP_BASE ?? 'http://127.0.0.1:9222'
 const APP = process.env.APP_BASE ?? 'http://localhost:8001'
 const USER = process.env.QA_USER ?? 'qa-e2e-admin'
-const PASS = process.env.QA_PASS ?? 'QaE2e!2026-fixture'
+const PASS = envValue('QA_E2E_PASSWORD')
+if (!PASS) {
+  console.error('缺少夹具口令：在 ~/.config/robot-autotest/env 里加 QA_E2E_PASSWORD=<口令>（不入库），或设 QA_E2E_PASSWORD 环境变量。')
+  process.exit(2)
+}
 
 const PAGES = [
   ['overview', '/overview', '工作台'],
