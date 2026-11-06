@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.5.1 (Python 3.12.3 on linux)" generated="2026-11-06T20:11:49.512545" rpa="false" schemaversion="5">
+<suite id="s1" name="Robot" source="/home/evergreen/robot-autotest/fixtures/samples/v2.1/robot">
+<suite id="s1-s1" name="01 Pass" source="/home/evergreen/robot-autotest/fixtures/samples/v2.1/robot/01_pass.robot">
+<test id="s1-s1-t1" name="SMPL-RF-PASS-01 字符串相等" line="22">
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${LEFT}</arg>
+<arg>${RIGHT}</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-11-06T20:11:49.550776" elapsed="0.000498"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-06T20:11:49.551859" level="INFO">通过态样例 1：两个变量相等</msg>
+<arg>通过态样例 1：两个变量相等</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-06T20:11:49.551466" elapsed="0.000446"/>
+</kw>
+<doc>最朴素的通过路径：不依赖外部资源，任何环境都应为 PASS。</doc>
+<tag>L0</tag>
+<tag>pass</tag>
+<tag>sample</tag>
+<status status="PASS" start="2026-11-06T20:11:49.548465" elapsed="0.003550"/>
+</test>
+<test id="s1-s1-t2" name="SMPL-RF-PASS-02 列表长度与成员" line="28">
+<kw name="Create List" owner="BuiltIn">
+<msg time="2026-11-06T20:11:49.553591" level="INFO">${items} = ['1', '2', '3']</msg>
+<var>${items}</var>
+<arg>1</arg>
+<arg>2</arg>
+<arg>3</arg>
+<doc>Creates and returns a list containing the given items.</doc>
+<status status="PASS" start="2026-11-06T20:11:49.553334" elapsed="0.000281"/>
+</kw>
+<kw name="Length Should Be" owner="BuiltIn">
+<msg time="2026-11-06T20:11:49.554083" level="INFO">Length is 3.</msg>
+<arg>${items}</arg>
+<arg>3</arg>
+<doc>Verifies that the length of the given item is correct.</doc>
+<status status="PASS" start="2026-11-06T20:11:49.553717" elapsed="0.000406"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${items}</arg>
+<arg>2</arg>
+<doc>Fails if the `container` does not contain the `item` one or more times.</doc>
+<status status="PASS" start="2026-11-06T20:11:49.554246" elapsed="0.000228"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-06T20:11:49.554722" level="INFO">通过态样例 2：列表长度与成员均符合预期</msg>
+<arg>通过态样例 2：列表长度与成员均符合预期</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-06T20:11:49.554583" elapsed="0.000170"/>
+</kw>
+<doc>验证断言库在容器类型上的行为，仍不触外部。</doc>
+<tag>L0</tag>
+<tag>pass</tag>
+<tag>sample</tag>
+<status status="PASS" start="2026-11-06T20:11:49.552235" elapsed="0.002597"/>
+</test>
+<doc>示例用例（v2.1 / SMPL-01）：全部通过的取值。
+定位：**平台自身的回归底座**——只验证执行、解析、报告三条管道能把 pass 态
+正确送到底，不映射任何业务场景，不碰 DUT，不联网。
+跑法：robot fixtures/samples/v2.1/robot/01_pass.robot</doc>
+<meta name="BASELINE">sample-v2.1</meta>
+<meta name="CASE_ID">SMPL-RF-PASS</meta>
+<meta name="CASE_KIND">sample</meta>
+<meta name="DUT">none-synthetic</meta>
+<meta name="LINK">loopback-local</meta>
+<meta name="OPERATOR">local</meta>
+<meta name="QA_PROJECT">Robot-Autotest</meta>
+<meta name="RUN_ID">LOCAL-SMPL-0001</meta>
+<meta name="STARTED_AT">1970-01-01T00:00:00Z</meta>
+<meta name="SW_BUILD">v2.1-sample</meta>
+<status status="PASS" start="2026-11-06T20:11:49.543850" elapsed="0.011337"/>
+</suite>
+<suite id="s1-s2" name="02 Fail" source="/home/evergreen/robot-autotest/fixtures/samples/v2.1/robot/02_fail.robot">
+<test id="s1-s2-t1" name="SMPL-RF-FAIL-01 断言不等（固定失败）" line="18">
+<kw name="Should Be Equal" owner="BuiltIn">
+<msg time="2026-11-06T20:11:49.563238" level="FAIL">AssertionError: 3 != 5: 3 != 5</msg>
+<arg>3</arg>
+<arg>5</arg>
+<arg>AssertionError: 3 != 5</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="FAIL" start="2026-11-06T20:11:49.562722" elapsed="0.000696">AssertionError: 3 != 5: 3 != 5</status>
+</kw>
+<doc>失败信息固定为「3 != 5」形状，供聚类归一化（数字被归一）做对照。</doc>
+<tag>fail</tag>
+<tag>L0</tag>
+<tag>sample</tag>
+<status status="FAIL" start="2026-11-06T20:11:49.561111" elapsed="0.002479">AssertionError: 3 != 5: 3 != 5</status>
+</test>
+<test id="s1-s2-t2" name="SMPL-RF-FAIL-02 期望抛错但没有抛（固定失败）" line="23">
+<kw name="Run Keyword And Expect Error" owner="BuiltIn">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-06T20:11:49.567049" level="INFO">这里不会抛错</msg>
+<arg>这里不会抛错</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-06T20:11:49.566773" elapsed="0.000333"/>
+</kw>
+<msg time="2026-11-06T20:11:49.567209" level="FAIL">Expected error 'ValueError*' did not occur.</msg>
+<arg>ValueError*</arg>
+<arg>Log</arg>
+<arg>这里不会抛错</arg>
+<doc>Runs the keyword and checks that the expected error occurred.</doc>
+<status status="FAIL" start="2026-11-06T20:11:49.566064" elapsed="0.001216">Expected error 'ValueError*' did not occur.</status>
+</kw>
+<doc>失败原因落在「预期异常未发生」这一类，供聚类一级分类（ASSERT）做对照。</doc>
+<tag>fail</tag>
+<tag>L0</tag>
+<tag>sample</tag>
+<status status="FAIL" start="2026-11-06T20:11:49.563774" elapsed="0.003648">Expected error 'ValueError*' did not occur.</status>
+</test>
+<doc>示例用例（v2.1 / SMPL-01）：确定失败的取值。
+定位：给「失败聚合、失败聚类、重跑清单」提供**稳定的失败样本**——
+失败信息是写死的常量，不随环境变化，故可作为簇键归一化的对照基准。
+本套件**故意失败**，不得当作产品缺陷。</doc>
+<meta name="BASELINE">sample-v2.1</meta>
+<meta name="CASE_ID">SMPL-RF-FAIL</meta>
+<meta name="CASE_KIND">sample</meta>
+<meta name="DUT">none-synthetic</meta>
+<meta name="LINK">loopback-local</meta>
+<meta name="OPERATOR">local</meta>
+<meta name="QA_PROJECT">Robot-Autotest</meta>
+<meta name="RUN_ID">LOCAL-SMPL-0001</meta>
+<meta name="STARTED_AT">1970-01-01T00:00:00Z</meta>
+<meta name="SW_BUILD">v2.1-sample</meta>
+<status status="FAIL" start="2026-11-06T20:11:49.557497" elapsed="0.010221"/>
+</suite>
+<suite id="s1-s3" name="03 Skip" source="/home/evergreen/robot-autotest/fixtures/samples/v2.1/robot/03_skip.robot">
+<test id="s1-s3-t1" name="SMPL-RF-SKIP-01 主动跳过" line="17">
+<kw name="Skip" owner="BuiltIn">
+<msg time="2026-11-06T20:11:49.574432" level="SKIP">示例用例：主动跳过，不执行任何动作</msg>
+<arg>示例用例：主动跳过，不执行任何动作</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="SKIP" start="2026-11-06T20:11:49.574200" elapsed="0.000286">示例用例：主动跳过，不执行任何动作</status>
+</kw>
+<doc>无条件 Skip。跳过原因是常量，便于断言解析结果。</doc>
+<tag>L0</tag>
+<tag>sample</tag>
+<tag>skip</tag>
+<status status="SKIP" start="2026-11-06T20:11:49.573248" elapsed="0.001332">示例用例：主动跳过，不执行任何动作</status>
+</test>
+<test id="s1-s3-t2" name="SMPL-RF-SKIP-02 条件不满足而跳过" line="22">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-06T20:11:49.575991" level="INFO">${condition} = False</msg>
+<var>${condition}</var>
+<arg>${False}</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-06T20:11:49.575771" elapsed="0.000238"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${condition}">
+<kw name="Skip" owner="BuiltIn">
+<msg time="2026-11-06T20:11:49.576459" level="SKIP">示例用例：条件不满足，跳过</msg>
+<arg>示例用例：条件不满足，跳过</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="SKIP" start="2026-11-06T20:11:49.576286" elapsed="0.000217">示例用例：条件不满足，跳过</status>
+</kw>
+<status status="SKIP" start="2026-11-06T20:11:49.576089" elapsed="0.000535">示例用例：条件不满足，跳过</status>
+</branch>
+<status status="SKIP" start="2026-11-06T20:11:49.576062" elapsed="0.000598">示例用例：条件不满足，跳过</status>
+</if>
+<kw name="Fail" owner="BuiltIn">
+<arg>不应执行到这里</arg>
+<doc>Fails the test or task with the given message and optionally alters its tags.</doc>
+<status status="NOT RUN" start="2026-11-06T20:11:49.576831" elapsed="0.000018"/>
+</kw>
+<doc>通过 IF 分支跳过，验证「非首行 Skip」同样被识别为 SKIP。</doc>
+<tag>L0</tag>
+<tag>sample</tag>
+<tag>skip</tag>
+<status status="SKIP" start="2026-11-06T20:11:49.574729" elapsed="0.002207">示例用例：条件不满足，跳过</status>
+</test>
+<doc>示例用例（v2.1 / SMPL-01）：确定跳过的取值。
+定位：验证平台把 SKIP 与 PASS/FAIL 正确区分——跳过**不计入失败数**，
+也不应被失败聚类收进来。</doc>
+<meta name="BASELINE">sample-v2.1</meta>
+<meta name="CASE_ID">SMPL-RF-SKIP</meta>
+<meta name="CASE_KIND">sample</meta>
+<meta name="DUT">none-synthetic</meta>
+<meta name="LINK">loopback-local</meta>
+<meta name="OPERATOR">local</meta>
+<meta name="QA_PROJECT">Robot-Autotest</meta>
+<meta name="RUN_ID">LOCAL-SMPL-0001</meta>
+<meta name="STARTED_AT">1970-01-01T00:00:00Z</meta>
+<meta name="SW_BUILD">v2.1-sample</meta>
+<status status="SKIP" start="2026-11-06T20:11:49.570731" elapsed="0.006414"/>
+</suite>
+<status status="FAIL" start="2026-11-06T20:11:49.513478" elapsed="0.065468"/>
+</suite>
+<statistics>
+<total>
+<stat pass="2" fail="2" skip="2">All Tests</stat>
+</total>
+<tag>
+<stat pass="0" fail="2" skip="0">fail</stat>
+<stat pass="2" fail="2" skip="2">L0</stat>
+<stat pass="2" fail="0" skip="0">pass</stat>
+<stat pass="2" fail="2" skip="2">sample</stat>
+<stat pass="0" fail="0" skip="2">skip</stat>
+</tag>
+<suite>
+<stat name="Robot" id="s1" pass="2" fail="2" skip="2">Robot</stat>
+<stat name="01 Pass" id="s1-s1" pass="2" fail="0" skip="0">Robot.01 Pass</stat>
+<stat name="02 Fail" id="s1-s2" pass="0" fail="2" skip="0">Robot.02 Fail</stat>
+<stat name="03 Skip" id="s1-s3" pass="0" fail="0" skip="2">Robot.03 Skip</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

@@ -1,0 +1,25 @@
+..FsxE                                                                   [100%]
+==================================== ERRORS ====================================
+_____________________ ERROR at setup of test_error_fixture _____________________
+
+    @pytest.fixture()
+    def broken_resource():
+        """故意在 fixture 阶段抛错，用于产出 outcome=error（区别于断言失败）。"""
+>       raise RuntimeError("示例用例：fixture 构造失败，用于产出 error 态")
+E       RuntimeError: 示例用例：fixture 构造失败，用于产出 error 态
+
+fixtures/samples/v2.1/pytest/test_sample_states.py:41: RuntimeError
+=================================== FAILURES ===================================
+_____________________________ test_fail_assertion ______________________________
+
+    def test_fail_assertion():
+        """失败态：断言不等，失败信息形状固定（3 != 5），供聚类归一化对照。"""
+>       assert 3 == 5, "AssertionError: 3 != 5"
+E       AssertionError: AssertionError: 3 != 5
+E       assert 3 == 5
+
+fixtures/samples/v2.1/pytest/test_sample_states.py:58: AssertionError
+=========================== short test summary info ============================
+FAILED fixtures/samples/v2.1/pytest/test_sample_states.py::test_fail_assertion
+ERROR fixtures/samples/v2.1/pytest/test_sample_states.py::test_error_fixture
+1 failed, 2 passed, 1 skipped, 1 xfailed, 1 error in 0.02s
