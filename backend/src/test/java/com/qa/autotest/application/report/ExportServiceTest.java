@@ -55,6 +55,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * 导出编排（RPT-05）：门禁、成功落盘、内部版、export_record、跨项目下载拒绝。
@@ -252,6 +254,24 @@ class ExportServiceTest {
     private static RunArtifactRepository artifactRepository() {
         return proxy(RunArtifactRepository.class, (proxy, method, args) ->
                 defaultValue(method.getReturnType()));
+    }
+
+    /**
+     * RPT-07 residual (2026-11-06): the export-time metadata recomputation used to be
+     * verified only for docx. Both wire formats must reject on the same gate, otherwise
+     * a future format-specific branch could silently bypass it.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"pdf", "docx"})
+    @DisplayName("RPT-07 导出期重算：pdf/docx 两种格式都必须按 metadata 拒绝")
+    void externalRejectsMissingMetadataForEveryFormat(String format) {
+        reports.report = report(true, List.of(), metadataMissingDutAndLink());
+
+        ExportRejectedException ex = assertThrows(ExportRejectedException.class,
+                () -> service.export(PROJECT, RUN_ID, "external", format));
+
+        assertEquals(List.of("DUT", "LINK"), ex.metadataMissing(), format);
+        assertTrue(exportRecords.rows.isEmpty(), format + " 被拒绝时不得写 export_record");
     }
 
     private static ReportRecord report(boolean exportable, List<String> missing,

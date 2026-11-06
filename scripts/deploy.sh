@@ -58,16 +58,81 @@ stop_by_pidfile() {
   fi
 }
 
-echo "[deploy] 3/5 停旧进程（只停本脚本 pid 文件记录的进程）"
+echo "[deploy] 3/5 停旧进程（systemd unit + pid 文件 + 端口兜底）"
+# 2026-11-06 实测：本地旁观实例由 systemd --user 托管（enable-linger），
+# 不再 nohup —— nohup 起的进程随 wsl.exe 会话结束被 SIGTERM 杀掉，入口会静默消失。
+stop_unit() {
+  local unit="$1"
+  if systemctl --user cat "$unit" >/dev/null 2>&1; then
+    echo "[deploy] 停 unit $unit"
+    systemctl --user stop "$unit" 2>/dev/null || true
+  fi
+}
+stop_unit robot-autotest-entry.service
+stop_unit robot-autotest-backend.service
 stop_by_pidfile var/backend.pid
 stop_by_pidfile var/entry.pid
 
+# 2026-11-06 实测缺陷：W1 期间手工起过一次后端/入口，没写 pid 文件。
+# 之后跑 deploy.sh 时新 jar 因 8081 被占用直接启动失败，但 8001 上旧入口还活着，
+# /healthz 与 /api/health 照样 200 —— 部署脚本报 PASS，新接口却全是 404。
+# 只认本仓库的进程特征，不误杀别人占用的端口。
+stop_by_port() {
+  local port="$1" pattern="$2" pid
+  local pids
+  pids="$(ss -ltnpH "sport = :${port}" 2>/dev/null \
+    | grep -o 'pid=[0-9]*' | cut -d= -f2 | sort -u || true)"
+  for pid in $pids; do
+    if [[ -n "$pid" ]] && ps -p "$pid" -o args= | grep -q -- "$pattern"; then
+      echo "[deploy] 停端口 ${port} 上的遗留进程 ${pid}（pid 文件缺失/失效）"
+      kill "$pid" 2>/dev/null || true
+    fi
+  done
+}
+
+stop_by_port 8081 "backend/target/"
+stop_by_port 8001 "serve-entry.mjs"
+
+# 端口释放是异步的，不等就启动会复现上面的假绿
+for port in 8081 8001; do
+  for _ in $(seq 1 20); do
+    if ! ss -ltnH "sport = :${port}" 2>/dev/null | grep -q .; then
+      break
+    fi
+    sleep 1
+  done
+  if ss -ltnH "sport = :${port}" 2>/dev/null | grep -q .; then
+    echo "[deploy] FAIL 端口 ${port} 仍被占用，拒绝继续（避免旧进程假绿）"
+    exit 1
+  fi
+done
+
 echo "[deploy] 4/5 启动后端 :8081 与统一入口 :8001"
-nohup java -jar "$JAR" --spring.profiles.active="${SPRING_PROFILE:-dev}" \
-  > logs/backend.log 2>&1 &
-echo $! > var/backend.pid
-nohup node scripts/serve-entry.mjs > logs/entry.log 2>&1 &
-echo $! > var/entry.pid
+# 托管口径：有 systemd --user unit 就交给 unit（常驻、可 restart、开机自起）；
+# 没有 unit（新克隆未安装）才退回 nohup，并在输出里明示「会话结束会停」。
+if systemctl --user cat robot-autotest-backend.service >/dev/null 2>&1 \
+   && systemctl --user cat robot-autotest-entry.service >/dev/null 2>&1; then
+  echo "[deploy] 托管方式：systemd --user（robot-autotest-backend / robot-autotest-entry）"
+  systemctl --user start robot-autotest-backend.service
+  for _ in $(seq 1 60); do
+    ss -ltnH "sport = :8081" 2>/dev/null | grep -q . && break
+    sleep 1
+  done
+  ss -ltnH "sport = :8081" 2>/dev/null | grep -q . \
+    || { echo "[deploy] FAIL 后端 8081 未监听，看 journalctl --user -u robot-autotest-backend"; exit 1; }
+  systemctl --user start robot-autotest-entry.service
+else
+  echo "[deploy] 托管方式：nohup（未安装 systemd unit，wsl.exe 会话结束会停）"
+  nohup java -jar "$JAR" --planning.scheduler-enabled=true \
+    > logs/backend.log 2>&1 &
+  echo $! > var/backend.pid
+  for _ in $(seq 1 60); do
+    ss -ltnH "sport = :8081" 2>/dev/null | grep -q . && break
+    sleep 1
+  done
+  nohup node scripts/serve-entry.mjs > logs/entry.log 2>&1 &
+  echo $! > var/entry.pid
+fi
 
 echo "[deploy] 5/5 健康检查（最多 60 秒）"
 ok=0

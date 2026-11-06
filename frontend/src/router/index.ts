@@ -68,6 +68,11 @@ const router = createRouter({
       component: () => import('@/views/ReportDetailView.vue'),
     },
     {
+      path: '/test-reports',
+      name: 'test-reports',
+      component: () => import('@/views/TestReportsView.vue'),
+    },
+    {
       path: '/admin',
       name: 'admin',
       component: () => import('@/views/AdminView.vue'),
@@ -108,6 +113,24 @@ const router = createRouter({
       path: '/403',
       name: 'forbidden',
       component: () => import('@/views/ForbiddenView.vue'),
+    },
+    {
+      // v2.0 / W4 导入预检：不新增一级菜单，由命令面板与 CasesView 入口进入
+      path: '/imports',
+      name: 'imports',
+      component: () => import('@/views/ImportPreflightView.vue'),
+    },
+    {
+      // v2.0 / W5 组授权与一层场景编排
+      path: '/groups',
+      name: 'groups',
+      component: () => import('@/views/GroupsView.vue'),
+    },
+    {
+      // v2.0 / W3 双内核能力矩阵与选择来源
+      path: '/kernels',
+      name: 'kernels',
+      component: () => import('@/views/KernelsView.vue'),
     },
     {
       path: '/:pathMatch(.*)*',

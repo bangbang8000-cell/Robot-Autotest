@@ -1,0 +1,23 @@
+# C6 / W6 本机 AI CLI 配置档（探测结果以 docs/evidence/v1.0/w2-w7-preconditions/cli-probe.log 为准）
+version: 1
+candidates:
+  - claude
+  - codex
+  - gemini
+  - aider
+probe:
+  args: ["--version"]
+  timeout_seconds: 8
+  interactive: false
+levels:
+  L1: "静态建议：只打包脱敏上下文，不调用模型"
+  L2: "解释与分类：需要可用 CLI，且必须二次确认"
+  L3: "发起执行：需要可用 CLI + 二次确认 + 动作审计"
+degrade:
+  missing_cli: "面板保持可用，动作一律 DEGRADED，主功能完全不受影响"
+  timeout: "强制终止进程树，写失败审计，不留下孤儿进程"
+safety:
+  execute_requires_confirmation: true
+  one_click_terminate: true
+  context_max_chars: 8000
+  never_log_credentials: true

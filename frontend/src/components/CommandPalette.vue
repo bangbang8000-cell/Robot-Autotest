@@ -50,15 +50,27 @@ const capabilities = computed(() =>
 const entries = computed<PaletteEntry[]>(() =>
   allNavLeaves()
     .filter((leaf) => !leaf.capability || capabilities.value.includes(leaf.capability))
-    .map((leaf) => ({
+    .map((leaf): PaletteEntry => ({
       key: leaf.key,
       label: t(leaf.labelKey),
       alias: englishLabel(leaf.labelKey),
       path: leaf.path,
       query: leaf.query,
       capability: leaf.capability,
-    })),
+    })).concat(extraEntries()),
 )
+
+/**
+ * v2.0 W3/W4/W5 pages are tools rather than menu domains, so they are reachable
+ * from the palette without adding a seventh top-level nav item (NAV-01).
+ */
+function extraEntries(): PaletteEntry[] {
+  return [
+    { key: 'tool-imports', label: t('imports.title'), alias: enUS.imports.title, path: '/imports' },
+    { key: 'tool-groups', label: t('groups.title'), alias: enUS.groups.title, path: '/groups' },
+    { key: 'tool-kernels', label: t('kernels.title'), alias: enUS.kernels.title, path: '/kernels' },
+  ]
+}
 
 const results = computed<PaletteEntry[]>(() => {
   const matched = searchEntries(entries.value, keyword.value)

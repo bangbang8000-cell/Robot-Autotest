@@ -1,0 +1,49 @@
+# W4/W5/W6 迁移实跑日志（2026-11-06）
+
+## 1. bash scripts/db-migrate.sh
+```
+[db-migrate] robot@127.0.0.1:3306/robot_dev
+[db-migrate] 完成；当前业务表数：
+60
+mysql: [Warning] Using a password on the command line interface can be insecure.
+```
+
+## V8_2 导入沙箱表
+```
+import_batch
+case_source
+```
+
+## V8_3 组授权表
+```
+project_group_role
+user_group
+user_group_member
+test_scenario
+project_template
+```
+
+## V8_4 AI 面板表
+```
+ai_action
+ai_cli_probe
+ai_session
+```
+
+## flyway 最近 5 版
+```
+8.4	ai panel	1
+8.3	group auth	1
+8.2	import sandbox	1
+8.1	test report	1
+7.8	domain tag backfill	1
+```
+
+## 业务表总数
+```
+61
+```
+
+## 结论
+V8_2 / V8_3 / V8_4 已在本机库真实执行，9 张新表齐全，flyway 三版 success=1。
+C9：`scripts/rollback.sh` 走全库 mysqldump，新表自动纳入备份；逐波在证据 README 登记新表。

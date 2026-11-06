@@ -1,0 +1,32 @@
+# C4 · pytest 专用 venv 白名单（D2 案 A 的落地配置）
+# 定案日期 2026-11-06；由 W3 PytestKernel 与 W4 PytestImportAdapter 共同读取。
+version: 1
+venv:
+  # 与 RF 运行时 ~/rf-stack/.venv 严格隔离，不复用、不互装插件
+  path: "~/venvs/pytest-kernel"
+  python: ">=3.10"
+  created_by: "scripts/setup-pytest-venv.sh"
+  network_at_import: false
+  pip_install_at_import: false
+plugins:
+  allow:
+    - pytest
+    - pytest-json-report
+    - pytest-xdist
+  deny:
+    - "任何会执行宿主命令的插件"
+    - "任何联网插件"
+report:
+  primary: "--json-report --json-report-file=<artifacts>/pytest-report.json"
+  fallback: "--junitxml=<artifacts>/junit.xml"
+preflight:
+  collect_only: "pytest --collect-only -q"
+  dryrun: false
+  timeout_seconds: 60
+status_mapping:
+  passed: PASS
+  failed: FAIL
+  skipped: SKIP
+  xfailed: XFAIL
+  xpassed: XPASS
+  error: ERROR

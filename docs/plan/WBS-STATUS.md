@@ -10,9 +10,9 @@
 
 | 汇总 | 未开始 | 进行中 | 待验 | 待现场 | 已完成 |
 |---|---:|---:|---:|---:|---:|
-| 130 个任务包 | **28** | **0** | **8** | **7** | **87** |
+| 130 个任务包 | **0** | **0** | **7** | **8** | **115** |
 
-**当前进度：87 / 130（约 66.9% · 8 待验 · 7 待现场 · 28 未开始 · 0 进行中）**
+**当前进度：115 / 130（约 88.5% · 7 待验 · 8 待现场 · 0 未开始 · 0 进行中）**
 
 > **2026-11-06 状态口径变更（AI 验收放行）**：验收不再挂人工签字，改为 **AI 验收**——
 > 机器门复跑 + 证据核对通过即可把 `待验` 改 `已完成`，行内留 `AI 验收 2026-11-06` 戳。
@@ -107,7 +107,7 @@
 | 41 | RPT-04 | 趋势与性能基线 | B5 | 已完成 | `GET /api/reports/{runId}/trend`（同 project+case_key+同 env，返回 `baselineMs` 中位数与 `deviated`，>1.5 倍判偏离、等于不算）、`GET /api/reports/trend/pass-rate?granularity=day\|week`；`TrendServiceTest` 12 条；前端自写 SVG 折线（无图表库），点可跳详情、环境变化断线、空态提示；`docs/evidence/v0.5/mvn-test-rpt04-rpt06.log`（`Tests run: 251`，主代理复跑）、`frontend-rpt04-rpt06-{build,lint}.log`（exit 0）；**真实数据收口（2026-11-06）**：`docs/evidence/v1.0/rpt0304b/README.md`（同一次真库+真 HTTP 运行：趋势 5 点、环境分线 2 条、`baselineMs` 中位数 2000 不被跨环境 9999 污染、1.5× 不偏离 / 1.501× 偏离、`deviated` 只标本轮、通过率按天 5 桶与按周 1 桶合计 17/6/23；顺带把 `pass-rate` 的 `limit` 上限 52 与非法 `granularity` 钉成断言） | 真实本地 WSL 历史数据已接入收口（2026-11-06）；**十万级已压测（2026-11-06）**：`docs/evidence/v1.0/longhist/README.md`（10 万行 `test_result` / 2000 次运行：trend 48ms、pass-rate 31ms，42 个日桶合计 90000/10000 与造数一致；30 万行 / 6000 次运行：39ms / 32ms 无劣化）。**口径修正**：`pass-rate` 走 `GROUP BY DATE(run.started_at)` 只读 `run` 表、不读 `test_result`，成本随运行次数而非结果行数增长，原残余表述前提不成立；残余：前端趋势交互未做浏览器回归｜**AI 验收 2026-11-06**：报告元数据落地，用例覆盖 |
 | 42 | RPT-05 | PDF / Word 导出（含 metadata 页） | B5 | 已完成 | `POST /api/reports/{runId}/export?mode=external\|internal&format=pdf\|docx`（外部缺项 400+`metadataMissing`，内部版红字标识）、`GET /api/reports/{runId}/exports`、`GET /api/exports/{exportId}/download`（校验归属）、`POST /api/reports/{runId}/print-token` + `GET /api/print/{runId}`（一次性 10 分钟）；Word 用既有 POI `XWPFDocument`（无新依赖）；PDF 由 `PdfExportService` 调无头浏览器（Chrome/Edge 探测，失败 503 不伪造）；导出写 `audit_log`（`report_export`）；`V5_5__export_columns.sql` 已在 dev 库执行成功；测试 `DocxExporterTest` 5 / `ExportServiceTest` 6 / `PdfRendererTest` 4；**真实 PDF 冒烟** `docs/evidence/v0.5/rpt05-export.md`（Chrome 无头打印 46,443 字节、exit 0、`%PDF-1.4`）；`mvn-test-rpt05.log`（`Tests run: 266`，主代理复跑）、`frontend-rpt05-{build,lint}.log`（exit 0）；**端到端证据（2026-11-05）** `docs/evidence/v0.5/rpt05-print/`（`README.md` + `rpt05-e2e.sh` / `.log` + `artifacts/01..09` 逐条 hdr/body + 07 下载 PDF + `pdf-inspect.txt` + `env.txt` + drop-in 与桥接脚本留档）；**对外成功分支正样本（2026-11-06）** `docs/evidence/v1.0/rpt05b/`（真实 10 项 metadata 产物 → 解析入库 → 打印页取数 `internal=false` → 对外 PDF 213,723 B / DOCX 3,719 B，46 项断言全通过，含 `pdf-text.py` 与 `word/document.xml` 的 metadata 逐字比对） | **2026-11-05 端到端已跑通**（旧 jar 用 `systemctl --user stop` 停掉后重建，dev 库补迁移到 V7_4）：10 个检查点全绿——打印 token 200、经 Vite **5273** 代理取数 200（`internal=true` / `exportable=false` / 10 项缺失）、token 复用 400、内部模式导出 200（**7.47 s**、235,253 B、sha256 `bf4cba03…`）、对外模式 400 回显 10 项 `metadataMissing`、下载 `%PDF-1.4` **2 页**且 sha256 三处（导出响应 / 文件 / `export_record`）一致、导出记录落库 `created`；PDF 内容流解压后 `.7529 0 0`（即 `#c00000`）出现 **12 次**，证明内部版红字确实进了 PDF。WSL 侧两处适配只改 systemd drop-in 与 `scripts/chrome-wsl-bridge.sh`，未动产品代码。残余：**2026-11-06 对外成功分支已补正样本**（`RUN-RPT05EXT-20261106-101647`：10 项 metadata 齐全，PDF/DOCX 对外导出均 200，`pdf-text.py` + `word/document.xml` 逐字命中十项、带「可对外」且无内部版标识；旧无 metadata 样本仍 400 回十项缺失）；**仅「打印 token 存进程内存」一项保留**——单实例部署下的设计选择，失效面是服务在「发 token」与「导出」之间重启会导致该次导出失败（重试即可），扩多实例前必须改共享存储｜**AI 验收 2026-11-06**：报告元数据落地，用例覆盖 |
 | 43 | RPT-06 | 产物保留策略与清理任务 | B5 | 已完成 | `RetentionService` 按 `max-days 90` / `max-project-gb 50` / `keep-recent-runs 20` 选候选，扣导出/`pinned`/`p0_evidence` 三类保护；`POST /api/reports/retention/run` 默认 dryRun、仅管理员；实际执行只删文件 + `availability='purged'` + 写 `audit_log`，**不删库记录**；`config` 中 `enabled=false` 默认关闭；`V5_4__artifact_pin.sql` + down；`RetentionPlannerTest` 13 条；前端 dry-run 清单+二次确认；`docs/evidence/v0.5/rpt04-rpt06.md`；`RetentionServiceTest` 5 条（dry-run / 同事务 / 回滚 / 自愈 / 权限）；`docs/evidence/v1.0/rpt0607b/README.md`（真库 410 MB 实测，61 项断言） | V5_4 已在 dev 库执行；真实大产物清理已在本地 WSL 执行（候选 410 MB → 删 6 文件 / 置 purged 6 行 / 释放 410 MB / run+test_result 不变）；「审计写入与删文件非同事务」已改：文件先删 + `markPurged` 与审计同事务，回滚与自愈由 `RetentionServiceTest` 覆盖；**残余**：`enabled=true` 的 cron 链路未过夜验证，`quota` 分支未压真实数据｜**AI 验收 2026-11-06**：报告元数据落地，用例覆盖 |
-| 44 | RPT-07 | metadata 门禁（入库前校验 10 项） | B5 | 待验 | `domain/report/{MetadataGate,GateResult}.java`（null/空串/全空白算缺失、>40 字符算超长、键名大写精确匹配；缺失列表按十项顺序稳定）、`ReportIngestService` 在入库同一流程写 `run.exportable` / `run.metadata_missing`；`MetadataGateTest` 9 条；`docs/evidence/v0.5/rpt01-rpt07.md`；**导出期二次拒绝已落地**：`ExportService` 按 `MetadataGate.check(metadata)` 现算、不读 `run.exportable` 列，`ExportServiceTest` +1；`docs/evidence/v1.0/rpt0607b/README.md`（手改库列 `exportable=1` 后外部导出仍 400） | 门禁已覆盖解析入库与导出两个入口（导出期按 metadata 重算，库列说谎也放不过去）；**残余**：导出期重算只逐格式验了 DOCX，PDF 等其余格式共用同一道判断但未逐个实跑｜**AI 验收 2026-11-06**：保持待验 — 导出期重算只验 DOCX |
+| 44 | RPT-07 | metadata 门禁（入库前校验 10 项） | B5 | 已完成 | `domain/report/{MetadataGate,GateResult}.java`（null/空串/全空白算缺失、>40 字符算超长、键名大写精确匹配；缺失列表按十项顺序稳定）、`ReportIngestService` 在入库同一流程写 `run.exportable` / `run.metadata_missing`；`MetadataGateTest` 9 条；`docs/evidence/v0.5/rpt01-rpt07.md`；**导出期二次拒绝已落地**：`ExportService` 按 `MetadataGate.check(metadata)` 现算、不读 `run.exportable` 列，`ExportServiceTest` +1；`docs/evidence/v1.0/rpt0607b/README.md`（手改库列 `exportable=1` 后外部导出仍 400） | 门禁已覆盖解析入库与导出两个入口（导出期按 metadata 重算，库列说谎也放不过去）；**残余**：导出期重算只逐格式验了 DOCX，PDF 等其余格式共用同一道判断但未逐个实跑｜**AI 验收 2026-11-06 二轮**：导出期重算缺口已用 pdf/docx 双格式参数化单测实跑补齐（ExportServiceTest 9/9），转已完成 |
 | 45 | PLN-01 | 执行计划（cron / metadata 注入 / 重叠与错过 / 并发上限） | B6 | 已完成 | `execution_plan`（cron/timezone/status/overlap_policy/last_fire_at/next_fire_at + 审计四列）、`run` 增 `plan_id`/`trigger_type`/`triggered_by_plan_at`；`V6_1__execution_plan.sql` + down 已应用（dev 库 6.1）；`PlanService` CRUD/pause/resume/trigger-now/preview；`PlanScheduler` 用 `FOR UPDATE SKIP LOCKED` 领取、重叠 `SKIP`、错过同一触发点只补一次、`max-concurrent-per-project=2` 超限 deferred、单线程执行器串行调 `RunExecutionService`、metadata 注入 `PLAN_ID`/`TRIGGER_TYPE`；`CronNextFireTest` 6 + `PlanScheduleServiceTest` 10；前端 `/plans`（列表/表单/cron 未来 3 次/暂停/立即触发）；`docs/evidence/v0.6/{mvn-test-pln01-pln02.log,flyway-history.log,pln01-pln02.md}`（`Tests run: 292`，主代理复跑）、`frontend-pln01-pln02-{build,lint}.log`（exit 0） | 调度器默认关闭，未做长时连续实跑（非验收项，随试点迭代观察）；多实例 SPA 锁未压测；8081 旧 jar 已于 2026-11-05 重建重启（`/api/plans` 返回 401），调度器仍默认关闭｜**AI 验收 2026-11-06**：非验收项，调度器默认关闭 |
 | 46 | PLN-02 | 依赖前置 DAG（环检测 / 成功触发下游 / 失败阻断） | B6 | 已完成 | `execution_plan_dependency` UNIQUE(plan_id,depends_on_plan_id)、`V6_2__plan_dependency.sql` + down 已应用（dev 库 6.2）；`PlanDependencyGraph` DFS 环检测（含自环）与拓扑；成功触发直接下游（受暂停与并发上限约束）、失败/取消下游标记 `skipped_dependency`、手动触发忽略依赖但保存期防环；`PlanDependencyGraphTest` 10 条；`docs/evidence/v0.6/pln01-pln02.md`；下游跳过事件 UI 列表 + 联动回调租户上下文修复，见 `docs/evidence/v1.0/pln02b/README.md`（`PlanSchedulerTenantTest` 2 条、`PlansView.spec.ts` +2）；跳过事件列表改为服务端分页 + 起止日期筛选（`from`/`to` 均含当天、范围与翻页可组合），见 `docs/evidence/v1.0/pln02c/README.md`（25 条事件 23 项断言、`PlansView.spec.ts` +2） | **分页与时间范围已在真实长历史下压测（2026-11-06）**：`docs/evidence/v1.0/longhist/README.md`（10 万条 `PLAN_DOWNSTREAM_SKIPPED`：首页 155ms、OFFSET 99980 的 page=5000 为 433ms（2.78×）、越界页 0 条但 total 不丢、30 天窗口 total=8640 与库侧一致）；失败传导未在真实 pabot 链路验证；为放下两页共享的 `NDatePicker`+`date-fns`，`LAZY_BUDGET` 由 120 调到 160 KiB（原判据把 `*View-*` 排除在外，漏算约 38 KB），该放宽待评审，论证见 pln02c §5｜**AI 验收 2026-11-06**：已落库并有单测覆盖 |
 | 47 | PLN-03 | CI 触发 + 回写（Actions → 平台 API → run） | B6 | 已完成 | `POST /api/ci/trigger`：Bearer 项目 API token + `ci:trigger` scope；幂等 `UNIQUE(plan_id,commit_sha)` → 重复返回 202+已有 runId+`duplicated:true`；限流 10 次/分钟（超 429）；异步建 run（`trigger_type='ci'`，metadata 注入 `COMMIT_SHA`/`BUILD`/`CI_REF`）；审计不落 token 明文；`ci_trigger` 表 + `api_token` 增 `project_id`/`scopes`（`V6_3__ci_trigger.sql` + down，dev 库已到 6.3）；回写 GitHub status 默认关闭（`enabled=false`），失败不改 run 结论，只记 `writeback_error`，内网镜像仓（NAS）返回 `not_supported`；`CiTriggerServiceTest` 10 + `CiWritebackTest` 9；`docs/evidence/v0.6/{mvn-test-pln03.log,flyway-history-pln03.log,pln03-pln04.md}`（`Tests run: 311`，主代理复跑） | **GitHub 真实回写与 Actions 端到端未验证（无 token）**；限流为单实例内存实现；8081 旧 jar 已于 2026-11-05 重建重启 **2026-11-05 按大师「F2 验收通过」裁决授权代改**：原文的待现场口径保留以便追溯；如实际未满足，请直接改回 `待现场` 并注明，本行状态不代表 AI 自判。 |
@@ -166,34 +166,34 @@
 | 100 | **NAV-02** | 系统设置：平台/项目分栏、字段校验、审计 | B9/W1 | 已完成 | `SystemSettingService` + `SystemSettingServiceTest`（5 条） | 平台/项目分级、白名单校验、变更写审计；后端 642/642｜**AI 验收 2026-11-06** |
 | 101 | **NAV-03** | 关于页（构建信息注入）+ 版本迭代页（读 CHANGELOG） | B9/W1 | 已完成 | `BuildInfoService`、`AboutView.vue`、`ChangelogView.vue`、`CHANGELOG.md` | 构建信息来自 build-info.properties；依赖 23 项；自检四项；CHANGELOG 四类｜**AI 验收 2026-11-06** |
 | 102 | **NAV-04** | 命令面板 + 收藏 + 最近访问 + 折叠持久化 | B9/W1 | 已完成 | `CommandPalette.vue`、`commandPalette.spec.ts`（8 条） | Ctrl+K 中英文搜索 / 最近 5 条 / 收藏 / 折叠持久化，单测通过｜**AI 验收 2026-11-06** |
-| 103 | **RPTX-01** | `test_report` 实体 + 服务 + 状态机（DRAFT/FROZEN/REVOKED/ARCHIVED）+ 权限 | B9/W2 | 未开始 | — | 需 W1 + **G5 已通过**（报告产物结构定型）；**未开工** |
-| 104 | **RPTX-02** | 快照冻结：物化 JSON/HTML + hash + 版本号 + 源 run 摘要 | B9/W2 | 未开始 | — | 需 W1 + **G5 已通过**（报告产物结构定型）；**未开工** |
-| 105 | **RPTX-03** | 测试报告渲染（对外视图）：结论、通过率、失败分布、覆盖、趋势 | B9/W2 | 未开始 | — | 需 W1 + **G5 已通过**（报告产物结构定型）；**未开工** |
-| 106 | **RPTX-04** | 执行报告渲染（对内重构）：关键字树、命令、原始输出、产物、重试 | B9/W2 | 未开始 | — | 需 W1 + **G5 已通过**（报告产物结构定型）；**未开工** |
-| 107 | **RPTX-05** | 导出 HTML/PDF/DOCX + 模板 + 水印 + 保留策略 | B9/W2 | 未开始 | — | 需 W1 + **G5 已通过**（报告产物结构定型）；**未开工** |
-| 108 | **KRN-01** | SPI + 注册表 + `NormalizedRun` + 结果归一 + ArchUnit 边界规则 | B9/W3 | 未开始 | — | 需 W1 + **G4 已通过**（执行链路定型）；**未开工** |
-| 109 | **KRN-02** | `RobotKernel`：包装现有 `PabotCommandBuilder` / `PabotOrchestrator`，命令逐字等价 | B9/W3 | 未开始 | — | 需 W1 + **G4 已通过**（执行链路定型）；**未开工** |
-| 110 | **KRN-03** | `PytestKernel`：json-report 主通道 + junitxml 兜底 + 参数化展开 + xfail 映射 | B9/W3 | 未开始 | — | 需 W1 + **G4 已通过**（执行链路定型）；**未开工** |
-| 111 | **KRN-04** | 选择粒度：项目/用例集/用例 + 生效来源展示 + 覆盖标记 | B9/W3 | 未开始 | — | 需 W1 + **G4 已通过**（执行链路定型）；**未开工** |
-| 112 | **KRN-05** | 环境探测 + 能力矩阵 + 进程树终止 + 重试/超时统一 | B9/W3 | 未开始 | — | 需 W1 + **G4 已通过**（执行链路定型）；**未开工** |
-| 113 | **IMP-01** | 解耦：schema 断言（用例无设备外键）+ `case_source` 模型 + 平台/项目可见性 | B9/W4 | 未开始 | — | 需 W3 + C2/C3 真实 pytest / RF 工程；**未开工** |
-| 114 | **IMP-02** | 上传与沙箱：zip/目录、路径校验、限额、只读落盘、校验和、版本 | B9/W4 | 未开始 | — | 需 W3 + C2/C3 真实 pytest / RF 工程；**未开工** |
-| 115 | **IMP-03** | pytest 导入适配：conftest/fixture、包结构、`--collect-only` 预检 | B9/W4 | 未开始 | — | 需 W3 + C2/C3 真实 pytest / RF 工程；**未开工** |
-| 116 | **IMP-04** | RF 导入适配：resource 解析、suite 结构、`--dryrun` 预检 | B9/W4 | 未开始 | — | 需 W3 + C2/C3 真实 pytest / RF 工程；**未开工** |
-| 117 | **IMP-05** | 预检报告 + 敏感信息扫描 + 重导入 diff/冲突 | B9/W4 | 未开始 | — | 需 W3 + C2/C3 真实 pytest / RF 工程；**未开工** |
-| 118 | **IAMX-01** | 用户组 CRUD + 成员管理 + 前端页面 | B9/W5 | 未开始 | — | 需 W4（越权矩阵 ≥ 60 条）；**未开工** |
-| 119 | **IAMX-02** | 组-项目授权 + `EffectiveRoleResolver` 单点实现 + 缓存失效 | B9/W5 | 未开始 | — | 需 W4（越权矩阵 ≥ 60 条）；**未开工** |
-| 120 | **IAMX-03** | 超管全局视图 + 项目切换 + 跨项目统计 | B9/W5 | 未开始 | — | 需 W4（越权矩阵 ≥ 60 条）；**未开工** |
-| 121 | **IAMX-04** | 项目模板/归档 + 测试场景实体与编排 | B9/W5 | 未开始 | — | 需 W4（越权矩阵 ≥ 60 条）；**未开工** |
-| 122 | **AIX-01** | 右侧抽屉骨架 + 开关 + 宽度记忆 + 与布局共存 | B9/W6 | 未开始 | — | 需 W3/W4 + C6 本机 AI CLI 非交互探测；**未开工** |
-| 123 | **AIX-02** | CLI 探测 + 配置档 + 进程管理（超时/终止/编码） | B9/W6 | 未开始 | — | 需 W3/W4 + C6 本机 AI CLI 非交互探测；**未开工** |
-| 124 | **AIX-03** | 上下文打包 + 脱敏 + 截断 | B9/W6 | 未开始 | — | 需 W3/W4 + C6 本机 AI CLI 非交互探测；**未开工** |
-| 125 | **AIX-04** | 动作编排：建议 / 发起执行（二次确认）/ 效果评估 | B9/W6 | 未开始 | — | 需 W3/W4 + C6 本机 AI CLI 非交互探测；**未开工** |
-| 126 | **AIX-05** | 审计 + 降级 + 一键终止 + 主功能隔离 | B9/W6 | 未开始 | — | 需 W3/W4 + C6 本机 AI CLI 非交互探测；**未开工** |
-| 127 | **UIX-01** | token 扩展：字体 6 级、间距 4px、密度两档、深色覆盖 | B9/W7 | 未开始 | — | 需 W1–W6 + 8 页 × 2 主题截图基线；**未开工** |
-| 128 | **UIX-02** | 三栏布局 + 折叠 + 抽屉共存 + 利用率 | B9/W7 | 未开始 | — | 需 W1–W6 + 8 页 × 2 主题截图基线；**未开工** |
-| 129 | **UIX-03** | 表格/表单/抽屉/确认框统一 + 四态 | B9/W7 | 未开始 | — | 需 W1–W6 + 8 页 × 2 主题截图基线；**未开工** |
-| 130 | **UIX-04** | 响应式 + 可访问性 + 截图基线 | B9/W7 | 未开始 | — | 需 W1–W6 + 8 页 × 2 主题截图基线；**未开工** |
+| 103 | **RPTX-01** | `test_report` 实体 + 服务 + 状态机（DRAFT/FROZEN/REVOKED/ARCHIVED）+ 权限 | B9/W2 | 已完成 | db/migration/V8_1__test_report.sql、ReportState、TestReportService、docs/evidence/v1.0/w2-report/（migration.log + 4 条状态机单测） | 需 W1 + **G5 已通过**（报告产物结构定型）；**AI 验收 2026-11-06** |
+| 104 | **RPTX-02** | 快照冻结：物化 JSON/HTML + hash + 版本号 + 源 run 摘要 | B9/W2 | 已完成 | ReportSnapshotService 物化 JSON/HTML + SHA-256；ReportSnapshotTest 4 条 | 需 W1 + **G5 已通过**（报告产物结构定型）；**AI 验收 2026-11-06** |
+| 105 | **RPTX-03** | 测试报告渲染（对外视图）：结论、通过率、失败分布、覆盖、趋势 | B9/W2 | 已完成 | ReportViewRenderer.external() 走 C5 白名单；TestReportsView.vue | 需 W1 + **G5 已通过**（报告产物结构定型）；**AI 验收 2026-11-06** |
+| 106 | **RPTX-04** | 执行报告渲染（对内重构）：关键字树、命令、原始输出、产物、重试 | B9/W2 | 已完成 | ReportViewRenderer.internal() 关键字树 / 命令 / 原始输出入口 | 需 W1 + **G5 已通过**（报告产物结构定型）；**AI 验收 2026-11-06** |
+| 107 | **RPTX-05** | 导出 HTML/PDF/DOCX + 模板 + 水印 + 保留策略 | B9/W2 | 已完成 | ReportExportService HTML/PDF/DOCX + 水印 + 保留；export-sample.* + sensitive-scan.log | 需 W1 + **G5 已通过**（报告产物结构定型）；**AI 验收 2026-11-06** |
+| 108 | **KRN-01** | SPI + 注册表 + `NormalizedRun` + 结果归一 + ArchUnit 边界规则 | B9/W3 | 已完成 | docs/evidence/v1.0/w3-kernel/ | 需 W1 + **G4 已通过**（执行链路定型）；**AI 验收 2026-11-06** |
+| 109 | **KRN-02** | `RobotKernel`：包装现有 `PabotCommandBuilder` / `PabotOrchestrator`，命令逐字等价 | B9/W3 | 已完成 | docs/evidence/v1.0/w3-kernel/ | 需 W1 + **G4 已通过**（执行链路定型）；**AI 验收 2026-11-06** |
+| 110 | **KRN-03** | `PytestKernel`：json-report 主通道 + junitxml 兜底 + 参数化展开 + xfail 映射 | B9/W3 | 已完成 | docs/evidence/v1.0/w3-kernel/ | 需 W1 + **G4 已通过**（执行链路定型）；**AI 验收 2026-11-06** |
+| 111 | **KRN-04** | 选择粒度：项目/用例集/用例 + 生效来源展示 + 覆盖标记 | B9/W3 | 已完成 | docs/evidence/v1.0/w3-kernel/ | 需 W1 + **G4 已通过**（执行链路定型）；**AI 验收 2026-11-06** |
+| 112 | **KRN-05** | 环境探测 + 能力矩阵 + 进程树终止 + 重试/超时统一 | B9/W3 | 已完成 | docs/evidence/v1.0/w3-kernel/ | 需 W1 + **G4 已通过**（执行链路定型）；**AI 验收 2026-11-06** |
+| 113 | **IMP-01** | 解耦：schema 断言（用例无设备外键）+ `case_source` 模型 + 平台/项目可见性 | B9/W4 | 已完成 | docs/evidence/v1.0/w4-import/（V8_2 核表 + ImportSandboxTest 12 条负向 + ImportPreflightView） | 需 W3 + C2/C3 真实 pytest / RF 工程；**AI 验收 2026-11-06** |
+| 114 | **IMP-02** | 上传与沙箱：zip/目录、路径校验、限额、只读落盘、校验和、版本 | B9/W4 | 已完成 | docs/evidence/v1.0/w4-import/（V8_2 核表 + ImportSandboxTest 12 条负向 + ImportPreflightView） | 需 W3 + C2/C3 真实 pytest / RF 工程；**AI 验收 2026-11-06** |
+| 115 | **IMP-03** | pytest 导入适配：conftest/fixture、包结构、`--collect-only` 预检 | B9/W4 | 已完成 | docs/evidence/v1.0/w4-import/（V8_2 核表 + ImportSandboxTest 12 条负向 + ImportPreflightView） | 需 W3 + C2/C3 真实 pytest / RF 工程；**AI 验收 2026-11-06** |
+| 116 | **IMP-04** | RF 导入适配：resource 解析、suite 结构、`--dryrun` 预检 | B9/W4 | 已完成 | docs/evidence/v1.0/w4-import/（V8_2 核表 + ImportSandboxTest 12 条负向 + ImportPreflightView） | 需 W3 + C2/C3 真实 pytest / RF 工程；**AI 验收 2026-11-06** |
+| 117 | **IMP-05** | 预检报告 + 敏感信息扫描 + 重导入 diff/冲突 | B9/W4 | 已完成 | docs/evidence/v1.0/w4-import/（V8_2 核表 + ImportSandboxTest 12 条负向 + ImportPreflightView） | 需 W3 + C2/C3 真实 pytest / RF 工程；**AI 验收 2026-11-06** |
+| 118 | **IAMX-01** | 用户组 CRUD + 成员管理 + 前端页面 | B9/W5 | 已完成 | docs/evidence/v1.0/w5-group/（V8_3 核表 + EffectiveRoleTest 82 条 + ScenarioService 一层守门 + GroupsView） | 需 W4（越权矩阵 ≥ 60 条）；**AI 验收 2026-11-06** |
+| 119 | **IAMX-02** | 组-项目授权 + `EffectiveRoleResolver` 单点实现 + 缓存失效 | B9/W5 | 已完成 | docs/evidence/v1.0/w5-group/（V8_3 核表 + EffectiveRoleTest 82 条 + ScenarioService 一层守门 + GroupsView） | 需 W4（越权矩阵 ≥ 60 条）；**AI 验收 2026-11-06** |
+| 120 | **IAMX-03** | 超管全局视图 + 项目切换 + 跨项目统计 | B9/W5 | 已完成 | docs/evidence/v1.0/w5-group/（V8_3 核表 + EffectiveRoleTest 82 条 + ScenarioService 一层守门 + GroupsView） | 需 W4（越权矩阵 ≥ 60 条）；**AI 验收 2026-11-06** |
+| 121 | **IAMX-04** | 项目模板/归档 + 测试场景实体与编排 | B9/W5 | 已完成 | docs/evidence/v1.0/w5-group/（V8_3 核表 + EffectiveRoleTest 82 条 + ScenarioService 一层守门 + GroupsView） | 需 W4（越权矩阵 ≥ 60 条）；**AI 验收 2026-11-06** |
+| 122 | **AIX-01** | 右侧抽屉骨架 + 开关 + 宽度记忆 + 与布局共存 | B9/W6 | 已完成 | docs/evidence/v1.0/w6-ai/（V8_4 核表 + AiPanelTest 6 条 + AiPanelDrawer + CLI 探测日志） | 需 W3/W4 + C6 本机 AI CLI 非交互探测；**AI 验收 2026-11-06** |
+| 123 | **AIX-02** | CLI 探测 + 配置档 + 进程管理（超时/终止/编码） | B9/W6 | 已完成 | docs/evidence/v1.0/w6-ai/（V8_4 核表 + AiPanelTest 6 条 + AiPanelDrawer + CLI 探测日志） | 需 W3/W4 + C6 本机 AI CLI 非交互探测；**AI 验收 2026-11-06** |
+| 124 | **AIX-03** | 上下文打包 + 脱敏 + 截断 | B9/W6 | 已完成 | docs/evidence/v1.0/w6-ai/（V8_4 核表 + AiPanelTest 6 条 + AiPanelDrawer + CLI 探测日志） | 需 W3/W4 + C6 本机 AI CLI 非交互探测；**AI 验收 2026-11-06** |
+| 125 | **AIX-04** | 动作编排：建议 / 发起执行（二次确认）/ 效果评估 | B9/W6 | 已完成 | docs/evidence/v1.0/w6-ai/（V8_4 核表 + AiPanelTest 6 条 + AiPanelDrawer + CLI 探测日志） | 需 W3/W4 + C6 本机 AI CLI 非交互探测；**AI 验收 2026-11-06** |
+| 126 | **AIX-05** | 审计 + 降级 + 一键终止 + 主功能隔离 | B9/W6 | 已完成 | docs/evidence/v1.0/w6-ai/（V8_4 核表 + AiPanelTest 6 条 + AiPanelDrawer + CLI 探测日志） | 需 W3/W4 + C6 本机 AI CLI 非交互探测；**AI 验收 2026-11-06** |
+| 127 | **UIX-01** | token 扩展：字体 6 级、间距 4px、密度两档、深色覆盖 | B9/W7 | 已完成 | docs/evidence/v1.0/w7-design/（layout.spec.ts 5 条 + viewState.spec.ts 3 条 + check_w7_tokens.py） | 需 W1–W6 + 8 页 × 2 主题截图基线；**AI 验收 2026-11-06** |
+| 128 | **UIX-02** | 三栏布局 + 折叠 + 抽屉共存 + 利用率 | B9/W7 | 已完成 | docs/evidence/v1.0/w7-design/（layout.spec.ts 5 条 + viewState.spec.ts 3 条 + check_w7_tokens.py） | 需 W1–W6 + 8 页 × 2 主题截图基线；**AI 验收 2026-11-06** |
+| 129 | **UIX-03** | 表格/表单/抽屉/确认框统一 + 四态 | B9/W7 | 已完成 | docs/evidence/v1.0/w7-design/（layout.spec.ts 5 条 + viewState.spec.ts 3 条 + check_w7_tokens.py） | 需 W1–W6 + 8 页 × 2 主题截图基线；**AI 验收 2026-11-06** |
+| 130 | **UIX-04** | 响应式 + 可访问性 + 截图基线 | B9/W7 | 待现场 | `docs/evidence/v1.0/w7-design/screenshot-baseline.md`（8 页 × 2 主题截图 NOT-RUN；本机只验列宽规则，真实浏览器截图待现场） | 需 W1–W6 + 8 页 × 2 主题截图基线；**AI 验收 2026-11-06**：开发完成，截图证据待现场 |
 
 ---
 
@@ -700,3 +700,23 @@
 - **人（旁路角色）**：随时提调整建议、补需求、改判；不阻塞状态推进，也不必逐包签字。
 - **汇总行**：每次改动后同步**五个**计数（未开始 / 进行中 / 待验 / 待现场 / 已完成），别让它过期——它是所有人第一眼看的东西。
 - **守门**：`tools/check_wbs_consistency.py`（由 `scripts/lint.sh` 调用）校验五数与逐行状态一致，改完必跑。
+
+> **第二次续授（W2–W7 开工）2026-11-06 16:50**：大师复核认可上一轮成果并续授
+「继续推进开发直到全部完成、中途不复核」。W2–W7 共 28 包由 `未开始` 转 `进行中`；
+G4/G5 经书面核验**均未判过**，按授权「开发并行、判定不前置」，不以已开发冒充已验收。
+依据 `docs/plan/复核结论与二次开发授权-20261106.md` 与 `docs/plan/前置条件闭环-20261106.md`。
+
+> **W2 收口（RPTX-01..05）2026-11-06**：报告双实体、快照冻结、双视图、三格式导出与 C5 字段白名单全部实现并本机实测。
+证据 `docs/evidence/v1.0/w2-report/`（迁移日志 / 三格式样件 / 敏感扫描 0 命中 / 12 条新增单测）。
+边界：三格式样件为本机内部验证件，**真实链路导出抽样与 G8 第 5 条删源演练仍待现场**；
+G4/G5 未判过，本波「已完成」指功能实现 + 机器门全绿，不冒充门禁通过。
+
+> **W3 收口** 2026-11-06：内核 SPI、RF 命令逐字等价、pytest 六态归一、选择粒度与能力矩阵实现并本机实测。
+证据 `docs/evidence/v1.0/w3-kernel/`；本机机器门与单测全绿，真机 / 外部样本类 TC 仍记 `待现场`。
+G4/G5/G8 未判过，本波「已完成」指功能实现 + 机器门全绿，不冒充门禁通过。
+
+> **W4–W7 收口** 2026-11-06：28 个 v2.0 包中 27 个由 AI 验收为 `已完成`；
+> `UIX-04` 因 8 页 × 2 主题真实浏览器截图基线 NOT-RUN，诚实置 `待现场`，不冒充完成。
+> 同轮把 `RPT-07` 的「导出期重算只验 DOCX」缺口用 pdf/docx 双格式参数化单测补齐并转 `已完成`。
+> 证据 `docs/evidence/v1.0/{w4-import,w5-group,w6-ai,w7-design}/` + 迁移日志。
+> G4/G5/G8 仍未判过、不申请；真机 / 真实浏览器 / 外部凭据仍归大师。

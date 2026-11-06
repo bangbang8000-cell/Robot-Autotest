@@ -16,6 +16,8 @@ import AboutDialog from '@/components/AboutDialog.vue'
 import AppearanceDialog from '@/components/AppearanceDialog.vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import CommandPalette from '@/components/CommandPalette.vue'
+import AiPanelDrawer from '@/components/AiPanelDrawer.vue'
+import { useAiDrawer } from '@/composables/useAiDrawer'
 import type { IconName } from '@/components/iconMap'
 import {
   activeGroupKey,
@@ -39,6 +41,9 @@ const theme = useTheme()
 const accent = useAccent()
 const density = useDensity()
 const { overrides } = useNaiveTheme()
+// W7 / UIX-02: side rail collapse + AI drawer share one grid, never an overlay.
+const { open: aiOpen, width: aiWidth, sideCollapsed, toggleDrawer, toggleSide,
+        setWidth: setAiWidth } = useAiDrawer()
 
 // index.html 的内联脚本已设过 data-theme / data-accent（防闪）；这里再跑一次是兜底：
 // 万一内联脚本被 CSP 拦掉，或 localStorage 里的值与当前状态不一致，也需要纠正。
@@ -196,7 +201,7 @@ onMounted(async () => {
   <NConfigProvider abstract :theme-overrides="overrides">
     <RouterView v-if="isStandalone" />
 
-    <div v-else class="app-shell">
+    <div v-else class="app-shell" :class="{ 'has-drawer': aiOpen, 'side-collapsed': sideCollapsed }">
       <aside class="app-side">
         <div class="app-brand"><AppLogo with-wordmark /></div>
         <nav class="app-nav" :aria-label="t('menu.label')">
@@ -266,6 +271,24 @@ onMounted(async () => {
             <button
               class="btn btn-ghost"
               type="button"
+              :aria-label="t('layout.toggleSide')"
+              :title="t('layout.toggleSide')"
+              @click="toggleSide()"
+            >
+              <AppIcon :name="sideCollapsed ? 'chevronRight' : 'chevronDown'" :size="16" />
+            </button>
+            <button
+              class="btn btn-ghost"
+              type="button"
+              :aria-label="t('aiPanel.toggle')"
+              :title="t('aiPanel.toggle')"
+              @click="toggleDrawer()"
+            >
+              <AppIcon name="sparkles" :size="16" />
+            </button>
+            <button
+              class="btn btn-ghost"
+              type="button"
               :aria-label="t('palette.open')"
               :title="`${t('palette.open')} (${t('palette.shortcut')})`"
               @click="paletteOpen = true"
@@ -325,6 +348,7 @@ onMounted(async () => {
       <AboutDialog v-model:open="aboutOpen" />
       <ConfirmModal />
       <CommandPalette v-model:open="paletteOpen" />
+      <AiPanelDrawer v-model:open="aiOpen" :width="aiWidth" @update:width="setAiWidth" :project-id="auth.projectId ?? 0" />
     </div>
   </NConfigProvider>
 </template>

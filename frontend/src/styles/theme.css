@@ -397,3 +397,36 @@
 :root[data-density='compact'] {
   --table-row-h: 36px;
 }
+
+/* ============ 6. W7 / UIX-01: strict 4px grid + density + light/dark overrides ============ */
+:root {
+  --grid-1: 4px;
+  --grid-2: 8px;
+  --grid-3: 12px;
+  --grid-4: 16px;
+  --grid-5: 20px;
+  --grid-6: 24px;
+  --grid-7: 28px;
+  --grid-8: 32px;
+  --w7-surface: var(--panel);
+  --w7-border: var(--border);
+  --w7-gap: var(--grid-4);
+}
+
+:root[data-theme='light'] {
+  --w7-surface: var(--gray-0);
+  --w7-border: var(--gray-200);
+}
+
+:root[data-theme='dark'] {
+  --w7-surface: var(--panel);
+  --w7-border: var(--border);
+}
+
+:root[data-density='compact'] {
+  --w7-gap: var(--grid-2);
+}
+
+:root[data-density='comfortable'] {
+  --w7-gap: var(--grid-4);
+}

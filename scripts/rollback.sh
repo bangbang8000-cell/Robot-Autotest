@@ -11,6 +11,8 @@
 #
 # 口令只从环境变量读：DB_PASSWORD（库）、必要时 DB_HOST/DB_PORT/DB_NAME/DB_USERNAME。
 # 本脚本不写死任何口令，也不执行 DROP/DELETE 以外的数据清理动作。
+# C9（2026-11-06 实测订正）：备份走 mysqldump 全库，新增表自动纳入，
+# 不存在「逐表登记清单」；W2 起每波在证据 README 登记新表供人工核对。
 #
 # 用法：
 #   bash scripts/rollback.sh --to v0.6-automation --dry-run

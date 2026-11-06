@@ -175,6 +175,11 @@ watch(
 
 <template>
   <div class="page">
+  <div class="w2-entry">
+    <button class="btn" type="button" @click="router.push('/test-reports')">
+      {{ t('testReports.open') }}
+    </button>
+  </div>
     <div class="page-head">
       <h1 class="page-title">{{ t('menu.reports') }}</h1>
       <ProjectPicker />

@@ -1,0 +1,43 @@
+# W2 / V8_1 迁移实跑日志（2026-11-06）
+
+## 1. bash scripts/db-migrate.sh
+```
+[db-migrate] robot@127.0.0.1:3306/robot_dev
+[db-migrate] 完成；当前业务表数：
+50
+mysql: [Warning] Using a password on the command line interface can be insecure.
+```
+
+---- 三张新表 ----
+```
+test_report
+test_report_audit
+test_report_export
+```
+
+---- test_report 列数 ----
+```
+13
+```
+
+---- test_report_export 列数 ----
+```
+7
+```
+
+---- test_report_audit 列数 ----
+```
+7
+```
+
+---- flyway 最新版本 ----
+```
+8.1	test report	1
+7.8	domain tag backfill	1
+7.7	project owner backfill	1
+```
+
+## 3. 结论
+
+V8_1 已在本机库真实执行；`test_report` 13 列，导出与审计表齐全。
+新增表由 `scripts/rollback.sh` 的全库 mysqldump 自动纳入备份（C9 实测订正）。

@@ -852,3 +852,72 @@ textarea:focus-visible {
   align-items: center;
   gap: 8px;
 }
+
+/* ============ W7 / UIX-02 + UIX-04: three columns, responsive, a11y ============ */
+.app-shell {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+}
+
+.app-shell.side-collapsed {
+  grid-template-columns: 56px minmax(0, 1fr);
+}
+
+.app-shell.has-drawer {
+  grid-template-columns: 200px minmax(0, 1fr) 340px;
+}
+
+.app-shell.side-collapsed.has-drawer {
+  grid-template-columns: 56px minmax(0, 1fr) 340px;
+}
+
+.app-main { min-width: 0; }
+
+.app-shell.side-collapsed .app-side { padding: 16px 8px; }
+.app-shell.side-collapsed .app-side .app-brand,
+.app-shell.side-collapsed .app-side .app-nav-item span { display: none; }
+
+.ai-drawer {
+  min-width: 0;
+  height: 100vh;
+  overflow-y: auto;
+  position: sticky;
+  top: 0;
+  border-left: 1px solid var(--w7-border);
+  background: var(--w7-surface);
+}
+
+@media (max-width: 999px) {
+  .app-shell,
+  .app-shell.has-drawer,
+  .app-shell.side-collapsed,
+  .app-shell.side-collapsed.has-drawer {
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+
+  .ai-drawer {
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: var(--z-overlay);
+    width: 340px;
+    max-width: 100%;
+    box-shadow: var(--shadow);
+  }
+}
+
+@media (max-width: 760px) {
+  .app-header, .app-header-right { flex-wrap: wrap; gap: 8px; }
+}
+
+*:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

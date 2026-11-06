@@ -1,0 +1,10 @@
+# W2 / RPTX-05 EXTERNAL 导出敏感字段扫描（本机内部验证）
+# 命令 python3 tools/check_report_sensitive.py <三份样件>
+# 判据 docs/plan/C5-对外报告字段白名单-20261106.md
+# 说明 样件由本机白名单视图生成，**不是真实链路导出件**；真机抽样仍待现场。
+
+PASS docs/evidence/v1.0/w2-report/export-sample.html: 0 命中
+PASS docs/evidence/v1.0/w2-report/export-sample.pdf: 0 命中
+PASS docs/evidence/v1.0/w2-report/export-sample.docx: 0 命中
+
+EXIT=0

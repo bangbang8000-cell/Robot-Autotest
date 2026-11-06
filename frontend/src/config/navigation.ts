@@ -113,7 +113,7 @@ export const NAVIGATION: NavNode[] = [
     labelKey: 'menu.reports',
     icon: 'reports',
     path: '/reports',
-    alsoMatch: ['/reports'],
+    alsoMatch: ['/reports', '/test-reports'],
   },
   {
     key: 'admin',

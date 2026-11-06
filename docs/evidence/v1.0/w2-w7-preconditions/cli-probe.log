@@ -1,0 +1,11 @@
+# C6 · 本机 AI CLI 非交互探测日志
+# 时间 2026-11-06 · 执行环境 WSL2 Ubuntu-24.04
+# 方式 shutil.which + <bin> --version（timeout 8s，非交互）
+
+claude: FOUND /mnt/c/Users/everg/AppData/Roaming/npm/claude | rc=0 | 2.1.267 (Claude Code)
+codex: FOUND /home/evergreen/.local/bin/codex | rc=0 | codex-cli 0.166.0-alpha.6
+gemini: NOT_FOUND
+aider: NOT_FOUND
+
+# 结论：可用者进入 W6 L1-L3；不可用者按 R6 降级；AIX-04 二次确认不取消。
+# 无论结果如何，本探测不联网、不传凭据、不执行任何模型调用。
