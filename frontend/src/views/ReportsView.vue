@@ -194,6 +194,12 @@ watch(
         <template #icon><AppIcon name="trash" :size="16" /></template>
         {{ t('reports.retention.open') }}
       </NButton>
+      <!-- 报告模板（TPLX-01）：决定对外导出有哪些字段、什么顺序。 -->
+      <RouterLink v-slot="{ navigate }" to="/reports/templates" custom>
+        <NButton quaternary data-testid="entry-report-templates" @click="navigate">
+          {{ t('reports.templatesEntry') }}
+        </NButton>
+      </RouterLink>
     </div>
 
     <section v-if="retentionOpen && auth.isAdmin" class="card wide-card retention-panel">

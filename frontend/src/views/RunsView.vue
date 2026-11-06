@@ -563,6 +563,12 @@ onBeforeUnmount(() => {
       <RouterLink v-slot="{ navigate }" to="/plans" custom>
         <NButton quaternary @click="navigate">{{ t('plans.title') }}</NButton>
       </RouterLink>
+      <!-- 失败聚类（ORCH-03）是运行的下钻页：入口在这里，先选 runId 再下钻。 -->
+      <RouterLink v-slot="{ navigate }" to="/runs/failure-clusters" custom>
+        <NButton quaternary data-testid="entry-failure-clusters" @click="navigate">
+          {{ t('execution.clustersEntry') }}
+        </NButton>
+      </RouterLink>
     </div>
 
     <ErrorLineView v-if="error" :error="error" />

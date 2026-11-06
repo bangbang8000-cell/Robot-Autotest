@@ -1,0 +1,21 @@
+# 夹具项目 projectId=29，另一项目 projectId=44，已登录 qa-e2e-admin
+
+PASS  TPLX01-01   列表 200 且可见平台级 DEFAULT       HTTP 200 模板数=1
+PASS  TPLX01-02   内置模板落库 21 个字段（sort 0..20）   字段数=21
+PASS  TPLX01-03   内置模板字段顺序 = 白名单声明顺序          前三个=['reportId', 'title', 'version']
+PASS  TPLX01-04   可选字段 200 且 21 项，首尾与白名单一致    HTTP 200 项数=21
+PASS  TPLX01-05   建模板 200，version=1，顺序按提交顺序   HTTP 200 version=1 字段数=9
+PASS  TPLX01-06   自定义标题落库                     passRate.titleOverride=通过率
+PASS  TPLX01-07   白名单外字段 400 且点名非法键           HTTP 400 msg=字段不在 C5 白名单内: rawOutput, commands；可选字段见 GET /api/report-templates/fields
+PASS  TPLX01-08   非法请求未落库                     落库行数=0
+PASS  TPLX01-09   缺必填字段 400 且列出缺失项            HTTP 400 msg=模板缺少必填字段: watermark, frozenAt, version, title, disclaimer
+PASS  TPLX01-10   重复字段 400                    HTTP 400 msg=字段重复: passRate
+PASS  TPLX01-11   同项目重名 409                   HTTP 409 msg=同项目下已存在同名模板: tplx01-硬件组视图
+PASS  TPLX01-12   更新 200 且 version=2、字段数=7    HTTP 200 version=2 字段数=7
+PASS  TPLX01-13   库里 version=2 且字段被整体替换为 7 条  version/字段数=2/7
+PASS  TPLX01-14   改平台级模板 400 且提示平台级           HTTP 400 msg=平台级模板为内置模板，本版不可修改；请复制为项目模板后再改
+PASS  TPLX01-15   跨项目读模板 403 且点名『属于其它项目』      HTTP 403 msg=模板属于其它项目: 4
+PASS  TPLX01-16   删除返回 200                    HTTP 200
+PASS  TPLX01-17   删除后再取 404                   HTTP 404
+
+合计 17 项，FAIL 0 项

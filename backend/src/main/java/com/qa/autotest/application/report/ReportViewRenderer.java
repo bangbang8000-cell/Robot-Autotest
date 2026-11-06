@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.qa.autotest.domain.report.ReportSnapshot;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 
@@ -13,17 +12,13 @@ import org.springframework.stereotype.Service;
  *
  * <p>EXTERNAL 采用<b>白名单</b>而非黑名单：未来新增字段默认不出去。
  * 所有字符串再过一次 scrub，确保 IP / 命令 / 凭据 / 绝对路径不会随 metadata 泄漏。
+ *
+ * <p>白名单本身住在 {@link ReportFieldWhitelist}（TPLX-01 抽出）：报告模板要给用户
+ * 「勾选哪些字段」，那份清单必须能被接口和界面引用，不能只埋在本类里。
+ * 本类只负责**按白名单渲染**，不定义白名单。
  */
 @Service
 public class ReportViewRenderer {
-
-    /** 与 docs/plan/C5-对外报告字段白名单-20261106.md §2 逐项一致。 */
-    public static final Set<String> EXTERNAL_FIELDS = Set.of(
-            "reportId", "title", "version", "frozenAt", "conclusion",
-            "passCount", "failCount", "skipCount", "passRate", "caseTotal",
-            "caseCovered", "coverageRate", "failureDistribution", "trend",
-            "projectName", "swBuild", "caseKind", "startedAt", "finishedAt",
-            "disclaimer", "watermark");
 
     private static final Pattern IP = Pattern.compile("\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b");
     private static final Pattern CREDENTIAL = Pattern.compile(
@@ -75,7 +70,7 @@ public class ReportViewRenderer {
         view.put("watermark", watermark);
         Map<String, Object> result = new LinkedHashMap<>();
         for (Map.Entry<String, Object> e : view.entrySet()) {
-            if (!EXTERNAL_FIELDS.contains(e.getKey())) {
+            if (!ReportFieldWhitelist.EXTERNAL_FIELDS.contains(e.getKey())) {
                 throw new IllegalStateException("EXTERNAL 视图出现非白名单字段: " + e.getKey());
             }
             result.put(e.getKey(), e.getValue() instanceof String s ? scrub(s) : e.getValue());
@@ -121,7 +116,7 @@ public class ReportViewRenderer {
         if (metadata == null) {
             return safe;
         }
-        for (String key : new String[]{"SW_BUILD", "CASE_KIND", "QA_PROJECT", "DUT", "LINK"}) {
+        for (String key : ReportFieldWhitelist.METADATA_ORDER) {
             String value = metadata.get(key);
             if (value != null) {
                 safe.put(key, scrub(value));

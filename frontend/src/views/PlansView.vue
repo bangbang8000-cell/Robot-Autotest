@@ -513,6 +513,18 @@ void load()
     <div class="toolbar">
       <NButton type="primary" @click="openCreate">{{ t('plans.create') }}</NButton>
       <NButton quaternary :loading="loading" @click="load">{{ t('common.refresh') }}</NButton>
+      <!-- 计划组 / 依赖图（ORCH-01 / ORCH-02）是计划的子页面，入口放在这里：
+           没有入口的页面等于不存在，只能靠手输 URL 才能打开。 -->
+      <RouterLink v-slot="{ navigate }" to="/plans/groups" custom>
+        <NButton quaternary data-testid="entry-plan-groups" @click="navigate">
+          {{ t('plans.groupsEntry') }}
+        </NButton>
+      </RouterLink>
+      <RouterLink v-slot="{ navigate }" to="/plans/graph" custom>
+        <NButton quaternary data-testid="entry-plan-graph" @click="navigate">
+          {{ t('plans.graphEntry') }}
+        </NButton>
+      </RouterLink>
       <RouterLink v-slot="{ navigate }" to="/runs" custom>
         <NButton quaternary @click="navigate">{{ t('plans.backToRuns') }}</NButton>
       </RouterLink>

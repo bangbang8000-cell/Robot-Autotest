@@ -42,7 +42,7 @@ class ReportSnapshotTest {
         ReportSnapshot snapshot = snapshots.build(source(), 1);
         Map<String, Object> view = renderer.external(snapshot, 3L, "季度回归报告", "", "INTERNAL USE ONLY");
         for (String key : view.keySet()) {
-            assertTrue(ReportViewRenderer.EXTERNAL_FIELDS.contains(key), "非白名单字段: " + key);
+            assertTrue(ReportFieldWhitelist.EXTERNAL_FIELDS.contains(key), "非白名单字段: " + key);
         }
         assertEquals("FAIL", view.get("conclusion"));
         assertEquals("INTERNAL USE ONLY", view.get("watermark"));

@@ -75,6 +75,13 @@ const router = createRouter({
       component: () => import('@/views/ReportsView.vue'),
     },
     {
+      // 报告模板（TPLX-01，v2.1）：报告页的子页面，入口在报告页工具栏。
+      // 可选字段只来自后端白名单接口，页面不内联字段名单（见视图注释）。
+      path: '/reports/templates',
+      name: 'report-templates',
+      component: () => import('@/views/ReportTemplatesView.vue'),
+    },
+    {
       // 报告打印页（RPT-05）：无侧边栏、A4 白底，供 PDF 无头打印；
       // 授权靠 URL 上的一次性 token，因此标记 public，不能要求登录态。
       path: '/reports/:runId/print',

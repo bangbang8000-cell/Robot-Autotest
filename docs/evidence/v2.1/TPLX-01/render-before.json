@@ -1,0 +1,25 @@
+{
+  "reportId" : 42,
+  "title" : "季度回归报告",
+  "version" : 3,
+  "frozenAt" : "2026-11-06T08:20:00Z",
+  "conclusion" : "FAIL",
+  "passCount" : 8,
+  "failCount" : 1,
+  "skipCount" : 1,
+  "passRate" : 80.0,
+  "caseTotal" : 10,
+  "startedAt" : "2026-11-06T08:00:00Z",
+  "finishedAt" : "2026-11-06T08:10:00Z",
+  "caseCovered" : 10,
+  "coverageRate" : 100.0,
+  "failureDistribution" : {
+    "fail" : 1
+  },
+  "trend" : [ ],
+  "swBuild" : "build-2.1",
+  "caseKind" : "基本功能测试",
+  "projectName" : "project-7",
+  "disclaimer" : "INTERNAL USE ONLY - NOT FOR EXTERNAL DISTRIBUTION",
+  "watermark" : "INTERNAL USE ONLY"
+}

@@ -1,0 +1,42 @@
+package com.qa.autotest.domain.report;
+
+import java.time.Instant;
+import java.util.List;
+
+/**
+ * 报告模板（TPLX-01，v2.1）：一份「对外报告该有哪些字段、按什么顺序、叫什么名字」的配置。
+ *
+ * <p>两个刻意选择：
+ * <ol>
+ *   <li><b>字段存 key 不存下标</b>：白名单（{@code ReportFieldWhitelist}）一旦调整顺序，
+ *       存下标的模板会静默指到别的字段；存 key 至少能在校验时发现「这个键已经不在白名单了」。</li>
+ *   <li><b>平台级模板用 {@code projectId == 0} 表示</b>：与 V2_5 编辑器关键词同一套约定，
+ *       不新造 `is_platform` 标志。本版平台级模板只读（由迁移内置 DEFAULT 一份），
+ *       项目级模板才可增删改 —— 否则 A 项目改一下会影响 B 项目的导出。</li>
+ * </ol>
+ */
+public record ReportTemplate(long id, long projectId, String name, String description,
+                             int version, boolean isDefault,
+                             List<Field> fields, Long createdBy, Instant createdAt) {
+
+    /** 模板里的一项字段：key + 顺序 + 可选的自定义标题。 */
+    public record Field(String fieldKey, int sortOrder, String titleOverride) {
+    }
+
+    /** 平台级模板的 project_id 约定值。 */
+    public static final long PLATFORM_PROJECT_ID = 0L;
+
+    public static final int MAX_NAME_LENGTH = 128;
+    public static final int MAX_DESCRIPTION_LENGTH = 512;
+    public static final int MAX_TITLE_OVERRIDE_LENGTH = 128;
+    public static final int MAX_FIELDS = 32;
+
+    public boolean platform() {
+        return projectId == PLATFORM_PROJECT_ID;
+    }
+
+    /** 字段 key 列表（按 sortOrder），用于 diff / 校验。 */
+    public List<String> fieldKeys() {
+        return fields.stream().map(Field::fieldKey).toList();
+    }
+}
