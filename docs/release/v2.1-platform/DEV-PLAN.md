@@ -81,7 +81,7 @@
 |---|---|---|---|---|
 | ORCH-01 | 计划组实体 + 成员排序 + 批量加入自动建边（复用 `PlanDependencyGraph` 环检测，成环拒绝并指出环上计划） | V9_1 | 3 计划成组产生 2 条边；重复加入幂等；成环被拒且报出计划名 | 单测 + 接口测试 |
 | ORCH-02 | 依赖图只读视图 + 关键路径 + 预计时长（`timeout_seconds` 求和，标注估算） | ORCH-01 | 50 节点渲染 ≤ 1s；关键路径高亮正确；孤立点有区分 | Playwright 计时 + 截图 |
-| ORCH-03 | 失败聚类 + 建议重跑清单（簇键：`failure_reason` 优先，缺失取 `failure_message` 归一化首行） | ORCH-01 | 1 万条输入 ≤ 3s；同一输入两次划分一致；清单可直接发起 run | 基准脚本 + 两次结果 diff |
+| ORCH-03 | 失败聚类 + 建议重跑清单：**复用既有 `FailureClassifier` 作一级类**，在类之下按归一化文本建二级簇（簇键：`failure_reason` 优先，缺失取 `failure_message` 归一化首行） | ORCH-01 | 1 万条输入 ≤ 3s；同一输入两次划分一致；清单可直接发起 run | 基准脚本 + 两次结果 diff |
 
 ### 4.3 TPLX 模板与导出（FR-v2.1-06 ~ 09）
 
@@ -113,14 +113,17 @@
 
 ### 5.1 失败聚类簇键（最容易做成噪音，先定死）
 
-| 顺序 | 取值来源 | 归一化规则 |
-|---|---|---|
-| 1 | `test_result` 有 `failure_reason` | 直接作为簇键，trim 后取前 40 字符 |
-| 2 | 否则取 `failure_message` 首行 | 去路径（`/…/x.py` → `<path>`）、去数字（`\d+` → `<n>`）、去 IP、去端口、trim 后前 40 字符 |
-| 3 | 都为空 | 归入固定簇 `未分类` |
+**不重写分类器**：`FailureClassifier` 已实现 `CANCELED > ENV > INFRA > ASSERT` 四类判定（关键词 + 正则规则可配）。
+本版只在「类」之下加一层「簇」，两级都保留，界面按 类 → 簇 下钻。
 
-- **不得随机**：不做 k-means、不做 embedding，纯确定性规则（`FR-v2.1-04` 要求两次结果一致）。
-- 簇名展示「簇键 + 条数 + 占比」，不生成自然语言摘要（那是 AI 的事，本版不做）。
+| 级 | 取值 | 归一化规则 |
+|---|---|---|
+| 一级（复用） | `FailureClassifier.classify(...)` 的输出 | 不改判定逻辑、不改优先级 |
+| 二级（新增） | 有 `failure_reason` 取它；否则取 `failure_message` 首行 | 去路径（`/…/x.py` → `<path>`）、去数字（`\d+` → `<n>`）、去 IP、去端口，trim 后取前 40 字符 |
+| 兜底 | 两者都空 | 固定簇 `未分类`（一级类仍由分类器给） |
+
+- **不得随机**：不做 k-means、不做 embedding，纯确定性规则（`FR-v2.1-04` 要求两次结果逐字节一致）。
+- 簇名展示「一级类 / 二级簇键 + 条数 + 占比」，不生成自然语言摘要（那是 AI 的事，本版不做）。
 
 ### 5.2 模板安全边界
 
@@ -202,8 +205,129 @@
 
 ---
 
+## 10. 逐包开工单（v1.1 新增）
+
+> 每个包给五件事：**改哪里 / 做什么 / 跑什么 / 判什么 / 证据放哪**。文件路径全部按当前位置核对过，不写「待定」。
+> 五段式记法：**改**（触碰文件）· **做**（步骤）· **跑**（命令）· **判**（判据）· **证**（证据）。
+
+### 10.0 通用约定
+
+- **证据根目录**：`docs/evidence/v2.1/<包>/README.md`。v2.0 的历史证据散在 `docs/evidence/v1.0/w2-report…w7-design`，本轮起**按版本分根**，旧件不搬迁（搬了会断掉既有引用）。
+- **门禁**：`bash docs/evidence/v1.0/policy-20261106/gates.sh`（12 步）；B4 收敛后改跑 `bash scripts/gates.sh`。
+- **单跑一条测试**：后端 `cd backend && mvn -o -B test -Dtest=<类名>`；前端 `cd frontend && npx vitest run <路径>`；editor 单独 `cd packages/editor && npx vitest run`。
+- **迁移三件套**：`bash scripts/db-migrate.sh`（正向）、`bash scripts/db-undo.sh`（回退）、`bash scripts/db-audit.sh`（审计）。
+- **界面取图**：复用 `node docs/evidence/v1.0/w7-design/capture.mjs`，不新写截图脚本。
+- **一包一提交**：不把两个包的改动混进同一提交，否则回归红了分不清是谁。
+
+### 10.1 SMPL-01 · 示例用例集（W8，最先开工）
+
+- **改**：新建 `fixtures/samples/v2.1/robot/sample_states.robot`、`fixtures/samples/v2.1/pytest/test_sample_states.py`、`fixtures/samples/v2.1/README.md`
+- **做**：① RF 侧 3–5 条覆盖 pass/fail/skip；② pytest 侧 3–5 条覆盖 pass/fail/xfail/error；③ 每条带 metadata 六必填；④ README 写明「不映射业务、不碰 DUT、不联网」
+- **跑**：`~/rf-stack/.venv/bin/robot --dryrun fixtures/samples/v2.1/robot`，再实跑一遍；pytest 侧待 A1 完成后 `~/venvs/pytest-kernel/bin/python -m pytest fixtures/samples/v2.1/pytest -q`
+- **判**：dryrun 输出**无 `[ ERROR ]`**（退出码恒 0，不可信）；五态各 ≥1；metadata 六必填齐
+- **证**：`docs/evidence/v2.1/SMPL-01/`（dryrun 原文 + `output.xml` + 五态计数）
+
+### 10.2 ORCH-01 · 计划组实体与批量建边
+
+- **改**：`db/migration/V9_1__plan_group.sql` + `db/down/`；新增 `domain/plan/PlanGroup.java`、`application/plan/PlanGroupService.java`、`application/repository/PlanGroupRepository.java`、`infrastructure/PlanGroupRepositoryJdbc.java`、`api/plan/PlanGroupController.java`；改 `application/plan/PlanService.java`、`frontend/src/api/plans.ts`、`frontend/src/views/PlansView.vue`
+- **做**：① 两表 + down；② 组 CRUD 与成员排序；③ 批量建边**复用 `PlanDependencyGraph`**（成环抛 `PlanCycleException`，错误体带环上计划名）；④ 接口；⑤ 前端组面板
+- **跑**：`bash scripts/db-migrate.sh` → `mvn -o -B test -Dtest=PlanGroupServiceTest` → `cd frontend && npx vitest run src/views/PlansView.spec.ts`
+- **判**：3 计划成组产生 2 条边；重复加入幂等；成环被拒且错误含计划名；跨项目 403
+- **证**：`docs/evidence/v2.1/ORCH-01/`（正/负各 1 次接口输出 + 库内边数查询）
+
+### 10.3 ORCH-02 · 依赖图视图与关键路径
+
+- **改**：新增 `api/plan/PlanGraphController.java`、`application/plan/PlanGraphService.java`；新增前端 `components/plan/PlanGraph.vue` + spec；改 `Views/PlansView.vue`
+- **做**：① 接口返回 nodes/edges；② 关键路径 = 沿边累加 `execution_plan.timeout_seconds` 的最长路径；③ 前端 SVG 只读渲染，关键路径高亮、孤立点区分，标注「估算」；④ 复用 `capture.mjs` 取图
+- **跑**：`npx vitest run src/components/plan/PlanGraph.spec.ts`；`node docs/evidence/v1.0/w7-design/capture.mjs <url>`
+- **判**：50 节点首屏 ≤ 1s；关键路径与手算一致；孤立点视觉可辨
+- **证**：`docs/evidence/v2.1/ORCH-02/`（计时读数 + 截图 + 手算对照表）
+
+### 10.4 ORCH-03 · 失败聚类与重跑清单
+
+- **改**：新增 `application/execution/FailureClusterService.java`（**构造注入既有 `FailureClassifier`**）、`api/execution/FailureClusterController.java`；新增前端 `views/FailureClustersView.vue` + spec；改 `frontend/src/api/runs.ts`
+- **做**：① 取一轮/一组内的失败行；② 一级 `classify()`；③ 二级归一化簇键（§5.1）；④ **稳定排序**：类 → 条数倒序 → 簇键字典序（禁用 HashMap 迭代序）；⑤ 重跑清单复用 `CaseRunService`
+- **跑**：`mvn -o -B test -Dtest=FailureClusterServiceTest`；性能用 `-Dtest=FailureClusterPerfTest`（1 万条合成数据）
+- **判**：两次划分导出 JSON **逐字节一致**；1 万条 ≤ 3s；空字段入 `未分类`
+- **证**：`docs/evidence/v2.1/ORCH-03/`（两次导出 JSON + `diff` 空 + 计时）
+
+### 10.5 TPLX-01 · 模板实体与字段白名单
+
+- **改**：`db/migration/V9_2__report_template.sql` + `db/down/`；**把 `ReportViewRenderer` 里的 C5 白名单抽成 `application/report/ReportFieldWhitelist.java`**（内容逐项照 `docs/plan/C5-对外报告字段白名单-20261106.md` §2，只搬家不改项）；新增 `domain/report/ReportTemplate.java`、`application/report/ReportTemplateService.java`、`api/report/ReportTemplateController.java`、`infrastructure/ReportTemplateRepositoryJdbc.java`；新增前端 `views/ReportTemplatesView.vue` + spec
+- **做**：① 抽白名单并让 `ReportViewRenderer` 改为引用它（行为不变）；② 两表；③ 提交的 `field_key` 必须命中白名单，否则 400 并列出非法键；④ 平台级/项目级；⑤ 前端勾选 + 拖排 + 改名
+- **跑**：`mvn -o -B test -Dtest=ReportTemplateServiceTest`；`npx vitest run src/views/ReportTemplatesView.spec.ts`；回归 `mvn -o -B test -Dtest=ReportViewRendererTest`
+- **判**：白名单外字段双拦截（接口 400 + 前端不可选）；抽常量后 EXTERNAL 渲染结果**与抽前逐字段一致**
+- **证**：`docs/evidence/v2.1/TPLX-01/`（负向 2 条 + 抽前/抽后渲染 diff 空）
+
+### 10.6 TPLX-02 · 按模板冻结 + xlsx 导出
+
+- **改**：`application/report/ReportSnapshotService.java`（快照记 `template_id` / `template_version`）、`ReportViewRenderer.java`（按模板裁剪）、`ReportExportService.java`（**加 xlsx 分支**，POI 已在 DOCX 在用）、`api/report/ReportExportController.java`（`format` 加 xlsx）
+- **做**：① 冻结时把模板 ID 与版本写进快照，渲染**读快照内模板**而非当前模板；② xlsx 用 `XSSFWorkbook`，通过率等写数值型（`setCellValue(double)`）；③ 未指定模板回落 DEFAULT
+- **跑**：`mvn -o -B test -Dtest=ReportExportServiceTest`；端到端「冻结 → 改模板 → 重开报告」；`python3 -c "import openpyxl;..."` 读单元格类型
+- **判**：改模板不影响已冻结报告；xlsx 数值列 `cell.data_type == 'n'`；四格式内容一致
+- **证**：`docs/evidence/v2.1/TPLX-02/`（xlsx 文件 + openpyxl 读数 + 改模板前后渲染 diff）
+
+### 10.7 TPLX-03 · 四格式一致性校验
+
+- **改**：新增 `tools/check_report_consistency.py`；B4 收敛后往 `scripts/gates.sh` 加一步（第 14 步位置）
+- **做**：① 解析 HTML / DOCX（POI 或 python-docx）/ XLSX（openpyxl）/ PDF（ASCII 文本层）的字段表头；② 比对字段集合；③ 不一致时列出缺失字段并退出 1
+- **跑**：`python3 tools/check_report_consistency.py <html> <docx> <xlsx> <pdf>`
+- **判**：一致 → 0；人为从 xlsx 删一列 → 必须非 0 并指出缺哪列（负向自检）
+- **证**：`docs/evidence/v2.1/TPLX-03/`（正/负各 1 次输出）
+
+### 10.8 PUBX-01 · 版本标识与引用方检测
+
+- **改**：`db/migration/V9_3__case_source_version.sql` + `db/down/`；新增 `application/caseasset/AssetVersionService.java`；改 `infrastructure/ProjectAssetRepositoryJdbc.java`、`infrastructure/AssetScopeSql.java`（引用关系查询）、`application/caseasset/TestSetService.java`
+- **做**：① 平台资产算 `content_hash`（用例集内容规范化后哈希）+ 维护 `asset_version`；② 项目副本存 `synced_asset_version` / `fork_state`；③ 引用方列表带「有新版本」标记（hash 或版本任一变化才置位）
+- **跑**：`bash scripts/db-migrate.sh` → `mvn -o -B test -Dtest=AssetVersionServiceTest`
+- **判**：内容不变不出新版本（不误报）；变更后引用方可见提示；只改顺序按「算变更」处理并在文档写明
+- **证**：`docs/evidence/v2.1/PUBX-01/`（三种变更的版本读数）
+
+### 10.9 PUBX-02 · 差异对比与同步/分叉
+
+- **改**：`application/caseasset/AssetVersionService.java`（加 diff 与 apply）、`api/caseasset/` 增引用与差异接口；改前端 `views/AssetsView.vue`（或 `CaseSetsView.vue`）+ spec
+- **做**：① 差异分新增/修改/删除三类；② 同步 = 副本内容对齐平台库并更新 `synced_asset_version`；③ 保持分叉 = 只置 `fork_state=diverged`；④ 两个动作都写审计
+- **跑**：`mvn -o -B test -Dtest=AssetUpgradeServiceTest`；`npx vitest run src/views/AssetsView.spec.ts`
+- **判**：三类差异条数正确；同步后版本对齐；分叉后副本内容不变且列表可辨
+- **证**：`docs/evidence/v2.1/PUBX-02/`（端到端输出 + 审计查询结果）
+
+### 10.10 NODX-01 · 节点注册与心跳
+
+- **改**：`db/migration/V9_4__execution_node.sql` + `db/down/`；新增 `application/node/ExecutionNodeService.java`、`application/node/NodeHeartbeatMonitor.java`、`api/node/NodeController.java`、`infrastructure/ExecutionNodeRepositoryJdbc.java`；新增前端 `views/NodesView.vue` + spec
+- **做**：① 注册接口签发令牌，**只存哈希**、明文仅返回一次；② 心跳接口更新 `last_heartbeat_at`；③ 定时器连续 3 次缺心跳置 `OFFLINE`；④ 能力上报（RF / pytest 可用性）
+- **跑**：`bash scripts/db-migrate.sh` → `mvn -o -B test -Dtest=ExecutionNodeServiceTest,NodeHeartbeatMonitorTest`
+- **判**：3 次缺心跳转 `OFFLINE`；令牌不入日志、不入库明文；节点列表显示能力与并发占用
+- **证**：`docs/evidence/v2.1/NODX-01/`（心跳日志 + 日志抽样 + 库内哈希）
+
+### 10.11 NODX-02 · 指定节点执行与离线拒绝
+
+- **改**：`application/execution/RunDispatcher.java`、`infrastructure/ProjectRunDispatcher.java`（**只加分支，不改本机路径语义**）、新增 `application/node/NodeChannel.java`、改 `api/execution/` 发起接口加 `nodeId` 参数
+- **做**：① 发起时可选 `nodeId`，写 `run.node_id`；② 节点非 `ONLINE` → 直接拒绝并给原因，**不回落本机**；③ 节点并发按节点独立计数
+- **跑**：`mvn -o -B test -Dtest=RunDispatchNodeTest`（正/负各 1 条）
+- **判**：离线节点请求被拒且原因明确；未指定走本机（本机路径回归全绿）；并发独立
+- **证**：`docs/evidence/v2.1/NODX-02/`（正/负接口输出）
+
+### 10.12 NODX-03 · 执行端 agent 与命令等价
+
+- **改**：新增 `api/node/NodeAgentController.java`（接任务）、`application/node/NodeAgentRunner.java`（调 `RunExecutionService`，**命令仍由 `PabotCommandBuilder` / KRN 生成**）；新增 `application/node/NodeResultUploader.java`（产物与 `output.xml` 回传）；新增 `config/application-node.yml`（`--spring.profiles.active=node`）
+- **做**：① 同 jar 双角色（主控 / 节点）；② 任务签名校验；③ 产物回传后主控解析入库；④ agent 崩溃时主控按心跳超时判失败
+- **跑**：`mvn -o -B test -Dtest=NodeAgentRunnerTest`；端到端：本机 `:8082` 起节点跑 1 条示例用例；`python3 tools/kernel_cmd_diff.py`（命令 diff）
+- **判**：同参数命令 **diff 为空**；产物完整回传；节点崩溃不留悬挂 run
+- **证**：`docs/evidence/v2.1/NODX-03/`（命令 diff 空 + 产物清单 + 崩溃注入记录）
+
+### 10.13 NODX-04 · 节点页与离线口径
+
+- **改**：`views/NodesView.vue`（四态 + 离线时长 + 最近任务）、`docs/CONVENTIONS.md` 或本文件 §5.3 补口径
+- **做**：① 页面四态；② 离线时长计算与排序；③ 口径写入文档（本版：**拒绝发起，不排队**）
+- **跑**：`npx vitest run src/views/NodesView.spec.ts`；`node docs/evidence/v1.0/w7-design/capture.mjs <url>`
+- **判**：四态齐全；离线时长正确；口径在文档里可检索到并被 TEST-PLAN 引用
+- **证**：`docs/evidence/v2.1/NODX-04/`（4 张截图）
+
+---
+
 ## 修订记录
 
 | 日期 | 版本 | 改了什么 | 为什么改 |
 |---|---|---|---|
 | 2026-11-06 | v1.0 | 初版：三层结构 + 4 个迁移 + 4 波（W8–W11）+ 13 包 + 聚类簇键口径 + 模板安全边界 + 节点通道 + 文件冲突规避 + 9 条门禁 | 承接 PRD v1.0 的 17 条 FR，按「先底座、让开 A8、C 类最后」排波次 |
+| 2026-11-06 | v1.1 | ① 新增 **§10 逐包开工单**：13 包各给「改 / 做 / 跑 / 判 / 证」五段，文件路径逐条核对到类级；② §5.1 聚类改为**类 + 簇两级**（复用 `FailureClassifier`，不重写分类）；③ §4.2 ORCH-03 同步；④ 明确证据根改为 `docs/evidence/v2.1/`，v2.0 旧证据不搬迁 | 大师要求计划落到可执行粒度；写开工单时读代码发现分类器已存在，避免重复造组件 |

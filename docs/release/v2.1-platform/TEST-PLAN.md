@@ -74,10 +74,10 @@
 
 | TC | 层 | 覆盖 | 场景 | 期望结果 |
 |---|---|---|---|---|
-| TC-v2.1-09 | G | FR-v2.1-04 | 同一批 1 万个 `test_result` 跑两次聚类 | 两次簇划分**完全一致**（簇键集合、每簇条数、簇内用例 ID 列表逐一相等） |
+| TC-v2.1-09 | G | FR-v2.1-04 | 同一批 1 万个 `test_result` 跑两次聚类 | 两次划分**完全一致**：一级类集合、二级簇键集合、每簇条数、簇内用例 ID 列表逐一相等 |
 | TC-v2.1-10 | P | FR-v2.1-04 | 1 万条输入聚类计时 | ≤ 3s，留计时读数 |
-| TC-v2.1-11 | U | FR-v2.1-04 | 归一化规则固定样本（含路径、数字、IP、端口） | `/a/b/x.py:12` 与 `/c/d/y.py:98` 归一为同簇；`AssertionError: 3 != 5` 与 `3 != 7` 同簇（数字被归一） |
-| TC-v2.1-12 | I | FR-v2.1-04 | 无 `failure_reason` 且 `failure_message` 为空的结果 | 归入固定簇「未分类」，不丢数据 |
+| TC-v2.1-11 | U | FR-v2.1-04 | 归一化规则固定样本（含路径、数字、IP、端口）；构造四类各 1 条 | `/a/b/x.py:12` 与 `/c/d/y.py:98` 归一为同簇；`AssertionError: 3 != 5` 与 `3 != 7` 同簇（数字归一）；四类分别落到 CANCELED / ENV / INFRA / ASSERT（**复用既有 `FailureClassifier`，不新写判定**） |
+| TC-v2.1-12 | I | FR-v2.1-04 | 无 `failure_reason` 且 `failure_message` 为空的结果 | 二级簇入固定 `未分类`，一级类仍由分类器给出，不丢数据 |
 | TC-v2.1-13 | E | FR-v2.1-05 | 从最大簇生成重跑清单并发起 run | 清单条数 = 簇内可重跑条数；run 发起成功；动作落审计 |
 
 ### 4.3 报告模板与导出（FR-v2.1-06 ~ 09）
@@ -123,6 +123,65 @@
 |---|---|---|---|---|
 | TC-v2.1-31 | E | PRD §6 界面条 | 模板配置页 / 节点页 / 聚类页三页 × 1440 与 1280 | 四态齐全；1440 利用率 ≥ 78%；1280 无横滚（`scrollWidth` 读数） |
 | TC-v2.1-32 | G | NFR-v2.1-08 | V9_1–V9_4 逐个 down 再 up；备份恢复 | down 后表/列消失且不影响 V8_x 数据；重新 up 成功；备份恢复后行数一致 |
+
+### 4.8 执行器与 runner 映射（v1.1 新增）
+
+> 目的：32 条 TC 每条都要能落到「哪个脚本 / 哪个测试类 + 一条命令 + 一个证据文件」，
+> 否则「跑过」只是一句话。新增脚本统一放 `scripts/v21/`（本版新建），命名 `<主题>-<动作>.sh|mjs`。
+
+### 五个执行通道
+
+| 通道 | 用在哪层 | 命令模板 | 产物 |
+|---|---|---|---|
+| **BE** | U / I（后端） | `cd backend && mvn -o -B test -Dtest=<类名>` | surefire 摘要（条数 + 失败数） |
+| **FE** | U（前端） | `cd frontend && npx vitest run <路径>` | vitest 输出 |
+| **UI** | E | `node scripts/v21/ui-<主题>.mjs`（内部调 `docs/evidence/v1.0/w7-design/capture.mjs`） | 截图 + DOM 量测 JSON |
+| **CHAIN** | G | `bash scripts/v21/<主题>-<动作>.sh`（真起 `:8001`、真库、真节点 `:8082`） | 脚本 stdout + 落库查询结果 |
+| **NEG** | S | `bash scripts/v21/<主题>-<动作>.sh --negative` | 拒绝响应 + 日志抽样 |
+
+### 逐条映射
+
+| TC | 通道 | 执行器 | 证据文件名 |
+|---|---|---|---|
+| TC-v2.1-01 | CHAIN | `scripts/v21/plan-group-e2e.sh` | `01-group-lifecycle.log` |
+| TC-v2.1-02 | NEG | `scripts/v21/plan-group-authz.sh --negative` | `02-cross-project-403.log` |
+| TC-v2.1-03 | BE | `PlanGroupServiceTest#deletesGroupKeepsPlans` | `03-delete-group.txt` |
+| TC-v2.1-04 | BE | `PlanGroupServiceTest#autoBuildsEdges` | `04-edges-created.txt` |
+| TC-v2.1-05 | BE | `PlanGroupServiceTest#idempotentAdd` | `05-idempotent.txt` |
+| TC-v2.1-06 | BE | `PlanGroupServiceTest#rejectsCycle` | `06-cycle-rejected.txt` |
+| TC-v2.1-07 | UI | `scripts/v21/ui-plan-graph.mjs` | `07-graph.png` + `07-graph.json` |
+| TC-v2.1-08 | CHAIN | `scripts/v21/plan-graph-perf.sh` | `08-graph-perf.log` |
+| TC-v2.1-09 | CHAIN | `scripts/v21/cluster-determinism.sh` | `09-cluster-a.json` / `09-cluster-b.json` / `09-diff.log` |
+| TC-v2.1-10 | CHAIN | `scripts/v21/cluster-perf.sh` | `10-cluster-perf.log` |
+| TC-v2.1-11 | BE | `FailureClusterServiceTest#normalizationAndClass` | `11-normalize.txt` |
+| TC-v2.1-12 | BE | `FailureClusterServiceTest#uncategorizedFallback` | `12-uncategorized.txt` |
+| TC-v2.1-13 | CHAIN | `scripts/v21/cluster-rerun.sh` | `13-rerun.log` |
+| TC-v2.1-14 | NEG | `scripts/v21/template-whitelist.sh --negative` | `14-whitelist-reject.log` |
+| TC-v2.1-15 | BE | `ReportTemplateServiceTest` | `15-template-crud.txt` |
+| TC-v2.1-16 | CHAIN | `scripts/v21/report-freeze-template.sh` | `16-freeze-immutable.log` |
+| TC-v2.1-17 | CHAIN | `scripts/v21/report-export-xlsx.sh` | `17-export.xlsx` + `17-celltypes.log` |
+| TC-v2.1-18 | NEG | `scripts/v21/report-sensitive-4formats.sh --negative` | `18-sensitive-4f.log` |
+| TC-v2.1-19 | CHAIN | `scripts/v21/report-consistency.sh` | `19-consistency.log` |
+| TC-v2.1-20 | BE | `AssetVersionServiceTest#versionBump` | `20-version.txt` |
+| TC-v2.1-21 | UI | `scripts/v21/ui-asset-diff.mjs` | `21-diff.png` |
+| TC-v2.1-22 | CHAIN | `scripts/v21/asset-upgrade.sh` | `22-sync-fork.log` |
+| TC-v2.1-23 | CHAIN | `scripts/v21/node-heartbeat.sh` | `23-heartbeat.log` |
+| TC-v2.1-24 | NEG | `scripts/v21/node-auth.sh --negative` | `24-node-401.log` |
+| TC-v2.1-25 | BE | `RunDispatchNodeTest#offlineRejected` | `25-offline-rejected.txt` |
+| TC-v2.1-26 | CHAIN | `scripts/v21/node-cmd-diff.sh` | `26-cmddiff.log` |
+| TC-v2.1-27 | UI | `scripts/v21/ui-nodes.mjs` | `27-nodes.png` |
+| TC-v2.1-28 | CHAIN | `scripts/v21/sample-rf.sh` | `28-rf-dryrun.log` + `output.xml` |
+| TC-v2.1-29 | CHAIN | `scripts/v21/sample-pytest.sh` | `29-pytest-json.json` |
+| TC-v2.1-30 | CHAIN | `scripts/v21/sample-metadata.sh` | `30-metadata.log` |
+| TC-v2.1-31 | UI | `scripts/v21/ui-three-pages.mjs` | `31-*.png` + `31-measure.json` |
+| TC-v2.1-32 | CHAIN | `scripts/v21/migrate-roundtrip.sh` | `32-up-down-up.log` |
+
+**约定**
+
+1. 每个 `CHAIN` 脚本自己起服务、自己清理（跑完断言计数归零），**不依赖「先手动起服务」**。
+2. `NEG` 脚本必须同时留「负向被拒」和「正向仍通」两段，只测负向会把功能测死。
+3. 脚本未接入门禁前先手动跑，接入门禁是 B4 之后的第 13/14 步。
+4. 一个脚本对应一个 TC，不合并——合并后失败定位不到条。
 
 ---
 
@@ -196,3 +255,4 @@
 | 日期 | 版本 | 改了什么 | 为什么改 |
 |---|---|---|---|
 | 2026-11-06 | v1.0 | 初版：32 条 TC（7 域）+ 6 层代码图例 + 4 波出口 + 4 项专项 + 8 条退出标准 + 5 条风险 | 承接 PRD v1.0 的 17 条 FR（每条至少 1 条 TC）与 DEV-PLAN v1.0 的 4 波 |
+| 2026-11-06 | v1.1 | ① 新增 **§4.8 执行器与 runner 映射**：五个通道（BE/FE/UI/CHAIN/NEG）+ 32 条 TC 逐条落到「执行器 + 证据文件名」；② TC-09/11/12 改为**类 + 簇两级**判据（复用既有 `FailureClassifier`） | 大师要求测试计划落到可执行粒度；分类器已存在这一事实要求判据同步收紧到「类也要对」 |
