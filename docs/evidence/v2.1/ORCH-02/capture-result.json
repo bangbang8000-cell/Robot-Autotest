@@ -1,0 +1,98 @@
+{
+  "generatedAt": "2026-11-06T12:57:31.414Z",
+  "app": "http://localhost:8001",
+  "projectCode": "qa-e2e-orch02",
+  "projectId": 44,
+  "budgetMs": 1000,
+  "firstPaintMs": 172,
+  "apiMs": 25,
+  "metrics": {
+    "nodes": 52,
+    "edges": 50,
+    "criticalEdges": 50,
+    "criticalStrokeWidths": [
+      "2.5"
+    ],
+    "isolated": [
+      "orcho2-p52"
+    ],
+    "isolatedDash": "4px, 3px",
+    "nodeFills": [
+      "rgb(255, 255, 255)",
+      "rgb(238, 242, 247)"
+    ],
+    "criticalStroke": [
+      "rgb(21, 103, 201)"
+    ],
+    "edgeStroke": "rgb(21, 103, 201)",
+    "svgWidth": 9688,
+    "svgHeight": 176,
+    "viewport": 1440,
+    "pageScrollWidth": 1425,
+    "overflowX": false,
+    "criticalSectionText": "关键路径估算 4200s",
+    "stats": "共 52 个计划、50 条依赖",
+    "apiEntries": [
+      {
+        "duration": 25,
+        "transferSize": 7989
+      }
+    ]
+  },
+  "checks": [
+    {
+      "id": "ORCH02-B1",
+      "title": "首屏探针点火（≥50 节点入 DOM）",
+      "ok": true,
+      "detail": "firstPaint=172ms, wall=210ms"
+    },
+    {
+      "id": "ORCH02-B2",
+      "title": "首屏 <= 1000ms（导航 -> 50 节点首帧）",
+      "ok": true,
+      "detail": "172 ms"
+    },
+    {
+      "id": "ORCH02-B3",
+      "title": "DOM 节点数=52",
+      "ok": true,
+      "detail": "nodes=52"
+    },
+    {
+      "id": "ORCH02-B4",
+      "title": "DOM 边数=50",
+      "ok": true,
+      "detail": "edges=50"
+    },
+    {
+      "id": "ORCH02-B5",
+      "title": "关键路径边数=50 且加粗（stroke-width=2.5）",
+      "ok": true,
+      "detail": "criticalEdges=50, widths=2.5"
+    },
+    {
+      "id": "ORCH02-B6",
+      "title": "孤立点只有 1 个（orcho2-p52）且为虚线框",
+      "ok": true,
+      "detail": "isolated=[\"orcho2-p52\"], dasharray=4px, 3px"
+    },
+    {
+      "id": "ORCH02-B7",
+      "title": "节点着色真实生效（无黑色回落，var() 换成了 CSS 类）",
+      "ok": true,
+      "detail": "fills=rgb(255, 255, 255) / rgb(238, 242, 247), criticalStroke=rgb(21, 103, 201), edgeStroke=rgb(21, 103, 201)"
+    },
+    {
+      "id": "ORCH02-B8",
+      "title": "关键路径段落与接口一致（估算 4200s）",
+      "ok": true,
+      "detail": "关键路径估算 4200s"
+    },
+    {
+      "id": "ORCH02-B9",
+      "title": "图不顶破页面：无整页横向滚动（图在自身容器内滚）",
+      "ok": true,
+      "detail": "scrollWidth=1425, viewport=1440, svg=9688x176"
+    }
+  ]
+}

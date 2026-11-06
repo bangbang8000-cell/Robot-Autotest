@@ -9,10 +9,15 @@
  * ① `ratio` 是 0~1 的小数，展示要转百分比，不能直接拼 `%`（会显示 0.6667%）；
  * ② 簇的 `caseIds` 可能为空（导入的失败行没有关联台账），重跑按钮要禁用而不是发空请求；
  * ③ 同一 runId 重复查询结果必须一致——页面不做前端二次聚合，直接渲染后端顺序。
+ *
+ * 表格走 `DataTable` 壳而不是原生 `<table>`：门禁 `tools/check_tables.py` 要求数据网格统一走壳
+ * （壳负责总列宽、粘性表头、空态），原生表格只留在三处白名单里。
  */
-import { computed, ref } from 'vue'
+import { computed, h, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { failureClusterApi, type FailureClusterView } from '@/api/failureClusters'
+import type { DataTableColumns } from 'naive-ui'
+import DataTable from '@/components/DataTable.vue'
+import { failureClusterApi, type FailureCluster, type FailureClusterView } from '@/api/failureClusters'
 import { ApiError } from '@/api/http'
 import { useAuthStore } from '@/stores/auth'
 
@@ -62,6 +67,78 @@ function percent(ratio: number): string {
 function handle(error: unknown): void {
   errorText.value = error instanceof ApiError ? error.message : t('failureClusters.unknownError')
 }
+
+/**
+ * 列定义。单元格用 render 而不是模板 slot：每个类别是一张独立的表（分组展示），
+ * 列定义必须能复用，写进模板就得复制 5 份。
+ */
+const columns = computed<DataTableColumns<FailureCluster>>(() => [
+  {
+    title: t('failureClusters.clusterKey'),
+    key: 'key',
+    minWidth: 220,
+    render: (row) => h('span', { class: 'key' }, row.key),
+  },
+  {
+    title: t('failureClusters.count'),
+    key: 'count',
+    width: 90,
+    align: 'right',
+  },
+  {
+    title: t('failureClusters.share'),
+    key: 'ratio',
+    width: 100,
+    align: 'right',
+    render: (row) => percent(row.ratio),
+  },
+  {
+    title: t('failureClusters.samples'),
+    key: 'samples',
+    minWidth: 220,
+    render: (row) =>
+      h(
+        'div',
+        { class: 'samples' },
+        row.samples.map((sample, index) =>
+          // caseId 可能为 null（用例已删但结果还在），兜到下标，避免 key 出现 null
+          h(
+            'span',
+            { key: String(sample.caseId ?? sample.caseCode ?? index) },
+            sample.caseCode || sample.caseTitle || '—',
+          ),
+        ),
+      ),
+  },
+  {
+    title: '',
+    key: 'actions',
+    width: 170,
+    render: (row) =>
+      h(
+        'button',
+        {
+          class: 'btn btn-ghost',
+          type: 'button',
+          'data-testid': 'rerun',
+          disabled: row.caseIds.length === 0,
+          title: row.caseIds.length === 0 ? t('failureClusters.noCase') : '',
+          onClick: () => rerun(row.key, row.caseIds),
+        },
+        t('failureClusters.rerun', { count: row.caseIds.length }),
+      ),
+  },
+])
+
+/** 簇键在整轮里唯一，直接当行键。 */
+function rowKeyOf(row: FailureCluster): string {
+  return row.key
+}
+
+/** 行标记交给 `DataTable` 转发到 `<tr>`，验收脚本与单测都按它定位。 */
+function rowProps(): Record<string, unknown> {
+  return { 'data-testid': 'cluster-row' }
+}
 </script>
 
 <template>
@@ -104,41 +181,16 @@ function handle(error: unknown): void {
           </span>
         </h2>
 
-        <table class="clusters" data-testid="clusters">
-          <thead>
-            <tr>
-              <th>{{ t('failureClusters.clusterKey') }}</th>
-              <th class="num">{{ t('failureClusters.count') }}</th>
-              <th class="num">{{ t('failureClusters.share') }}</th>
-              <th>{{ t('failureClusters.samples') }}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="cluster in group.clusters" :key="cluster.key" data-testid="cluster-row">
-              <td class="key">{{ cluster.key }}</td>
-              <td class="num">{{ cluster.count }}</td>
-              <td class="num">{{ percent(cluster.ratio) }}</td>
-              <td class="samples">
-                <span v-for="sample in cluster.samples" :key="sample.caseId ?? sample.caseCode">
-                  {{ sample.caseCode || sample.caseTitle || '—' }}
-                </span>
-              </td>
-              <td>
-                <button
-                  class="btn btn-ghost"
-                  type="button"
-                  data-testid="rerun"
-                  :disabled="cluster.caseIds.length === 0"
-                  :title="cluster.caseIds.length === 0 ? t('failureClusters.noCase') : ''"
-                  @click="rerun(cluster.key, cluster.caseIds)"
-                >
-                  {{ t('failureClusters.rerun', { count: cluster.caseIds.length }) }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <!-- max-height=null：每个类别只有几行，套内滚会出现「小框里再滚一层」 -->
+        <DataTable
+          class="clusters"
+          :columns="columns"
+          :data="group.clusters"
+          :row-key="rowKeyOf"
+          :row-props="rowProps"
+          :max-height="null"
+          :skeleton-rows="1"
+        />
       </section>
 
       <p v-if="view.total === 0" class="muted" data-testid="no-failure">
@@ -156,45 +208,34 @@ function handle(error: unknown): void {
   display: inline-block;
   padding: 1px 8px;
   border-radius: 10px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border);
   font-size: 12px;
   margin-right: 8px;
 }
 .badge[data-class='ENV'] {
-  color: var(--text-warning);
+  color: var(--warn);
 }
 .badge[data-class='INFRA'] {
-  color: var(--text-danger);
+  color: var(--fail);
 }
 .badge[data-class='CANCELED'] {
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
-.clusters {
-  width: 100%;
-  border-collapse: collapse;
-}
-.clusters th,
-.clusters td {
-  text-align: left;
-  padding: 6px 8px;
-  border-bottom: 1px solid var(--border-subtle);
-  vertical-align: top;
-}
-.clusters .num {
-  text-align: right;
-  white-space: nowrap;
-}
-.clusters .key {
+/*
+ * 单元格由 render 函数产出，拿不到本组件的 scoped 属性，只能用 :deep 穿透。
+ * 锚点选 `.clusters`（挂在 DataTable 根节点上，根节点会继承本组件的 scope id）。
+ */
+.clusters :deep(.key) {
   font-family: var(--font-mono);
   word-break: break-all;
 }
-.samples {
+.clusters :deep(.samples) {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 .error {
-  color: var(--text-danger);
+  color: var(--fail);
 }
 </style>

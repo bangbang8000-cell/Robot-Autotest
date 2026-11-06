@@ -270,11 +270,11 @@ onMounted(async () => {
 <style scoped>
 .split {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) minmax(320px, 2fr);
+  grid-template-columns: minmax(240px, 1fr) minmax(240px, 2fr);
   gap: 16px;
 }
 .panel {
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px;
 }
@@ -297,14 +297,14 @@ onMounted(async () => {
 .order {
   display: inline-block;
   min-width: 20px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 .link {
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
-  color: var(--text-link);
+  color: var(--accent);
 }
 .actions {
   display: flex;
@@ -313,6 +313,6 @@ onMounted(async () => {
   margin-top: 12px;
 }
 .error {
-  color: var(--text-danger);
+  color: var(--fail);
 }
 </style>

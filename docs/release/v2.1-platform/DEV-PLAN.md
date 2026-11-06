@@ -192,7 +192,7 @@
 
 **v2.1 验收前置**
 
-- [ ] 12 步机器门 `FAILS=0`
+- [ ] 13 步机器门 `FAILS=0`（第 13 步 `css_vars` 于 ORCH-02 接入，见 §10.0）
 - [ ] 迁移 down 实跑过一次
 - [ ] 命令 diff 为空（`tools/kernel_cmd_diff.py`）
 
@@ -218,10 +218,13 @@
 ### 10.0 通用约定
 
 - **证据根目录**：`docs/evidence/v2.1/<包>/README.md`。v2.0 的历史证据散在 `docs/evidence/v1.0/w2-report…w7-design`，本轮起**按版本分根**，旧件不搬迁（搬了会断掉既有引用）。
-- **门禁**：`bash docs/evidence/v1.0/policy-20261106/gates.sh`（12 步）；B4 收敛后改跑 `bash scripts/gates.sh`。
+- **门禁**：`bash docs/evidence/v1.0/policy-20261106/gates.sh`（13 步）；B4 收敛后改跑 `bash scripts/gates.sh`。
 - **单跑一条测试**：后端 `cd backend && mvn -o -B test -Dtest=<类名>`；前端 `cd frontend && npx vitest run <路径>`；editor 单独 `cd packages/editor && npx vitest run`。
 - **迁移三件套**：`bash scripts/db-migrate.sh`（正向）、`bash scripts/db-undo.sh`（回退）、`bash scripts/db-audit.sh`（审计）。
-- **界面取图**：复用 `node docs/evidence/v1.0/w7-design/capture.mjs`，不新写截图脚本。
+- **界面取图**：优先复用 `node docs/evidence/v1.0/w7-design/capture.mjs`（逐页截图基线）。
+  **例外**：判据里有「首屏耗时」或「真实 computed style」的包，允许在本包证据目录下写专属
+  `capture.mjs`——通用脚本没有首屏探针，也不量渲染结果，拿它当证据等于没验
+  （ORCH-02 就是这么发现「节点渲染成黑块」的，见 `docs/evidence/v2.1/ORCH-02/README.md` §4）。
 - **一包一提交**：不把两个包的改动混进同一提交，否则回归红了分不清是谁。
 
 ### 10.1 SMPL-01 · 示例用例集（W8，最先开工）

@@ -1,0 +1,37 @@
+### ORCH-02 真实 HTTP 验收（run.py）
+### 2026-11-06T20:57:24+08:00
+# 夹具项目 projectId=44，52 个计划 / 50 条边
+
+PASS  ORCH02-01   接口返回 200                               HTTP 200
+PASS  ORCH02-02   节点数=52                                 nodes=52
+PASS  ORCH02-03   边数=50                                  edges=50
+PASS  ORCH02-04   关键路径与手算一致（p01→…→p50→p51）               长度=51 起=['orcho2-p01', 'orcho2-p02'] 止=['orcho2-p50', 'orcho2-p51']
+PASS  ORCH02-05   关键路径总时长=4200s                          criticalSeconds=4200 (手算 50×60+1200)
+PASS  ORCH02-06   孤立点只有 p52                              isolated=['orcho2-p52']
+PASS  ORCH02-07   分层正确（p01=0 / p50=49 / p51=50 / p52=0）  p01=0 p50=49 p51=50 p52=0
+PASS  ORCH02-08   接口耗时 ≤ 1000ms（首屏预算的后端部分）               15 ms
+PASS  ORCH02-09   两次请求结果逐字节一致                            diff 为空
+
+合计 9 项，FAIL 0 项
+
+### ORCH-02 真实浏览器验收（capture.mjs）
+### 2026-11-06T20:57:24+08:00
+[cdp] Chrome/159.0.8130.0
+[app] http://localhost:8001  夹具项目 code=qa-e2e-orch02
+
+[auth] 登录成功，projectId=44
+PASS  ORCH02-B1  首屏探针点火（≥50 节点入 DOM）  —  firstPaint=172ms, wall=210ms
+PASS  ORCH02-B2  首屏 <= 1000ms（导航 -> 50 节点首帧）  —  172 ms
+PASS  ORCH02-B3  DOM 节点数=52  —  nodes=52
+PASS  ORCH02-B4  DOM 边数=50  —  edges=50
+PASS  ORCH02-B5  关键路径边数=50 且加粗（stroke-width=2.5）  —  criticalEdges=50, widths=2.5
+PASS  ORCH02-B6  孤立点只有 1 个（orcho2-p52）且为虚线框  —  isolated=["orcho2-p52"], dasharray=4px, 3px
+PASS  ORCH02-B7  节点着色真实生效（无黑色回落，var() 换成了 CSS 类）  —  fills=rgb(255, 255, 255) / rgb(238, 242, 247), criticalStroke=rgb(21, 103, 201), edgeStroke=rgb(21, 103, 201)
+PASS  ORCH02-B8  关键路径段落与接口一致（估算 4200s）  —  关键路径估算 4200s
+PASS  ORCH02-B9  图不顶破页面：无整页横向滚动（图在自身容器内滚）  —  scrollWidth=1425, viewport=1440, svg=9688x176
+
+[shots] first-screen-1440.png / graph-mid-1440.png / graph-tail-1440.png
+[api] 浏览器侧 /api/plan-graph 耗时 25 ms
+[stats] 共 52 个计划、50 条依赖
+
+合计 9 项，FAIL 0 项

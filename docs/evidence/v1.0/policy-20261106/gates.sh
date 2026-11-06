@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# P0 口径回写批次 · 八步门禁（模板来自 docs/evidence/v1.0/longhist/gates.sh）+ 两项本包专属
+# P0 口径回写批次 · 八步门禁（模板来自 docs/evidence/v1.0/longhist/gates.sh）+ 五项后补
+# 后补：11-editor_test / 12-db_audit（v1.0）/ 13-css_vars（v2.1 ORCH-02）
 set -uo pipefail
 cd ~/robot-autotest || exit 1
 L=docs/evidence/v1.0/policy-20261106/logs
@@ -34,6 +35,10 @@ run 11 editor_test     "cd packages/editor && npx vitest run"
 # 显式指向 robot_dev：本脚本其它步骤会把 DB_NAME 覆盖成 robot_it（集成测试库，随时被 clean）。
 # 需要 ~/.config/robot-autotest/env 里的 DB_* —— 门禁本就要求先 source 该文件。
 run 12 db_audit        "DB_NAME=robot_dev bash scripts/db-audit.sh"
+# CSS 变量引用体检（v2.1 ORCH-02 起）。写错变量名不会报错：声明在计算期失效、属性回落初始值，
+# SVG 的 fill 初始值是黑色 —— 节点变黑块、文字看不见，而 vue-tsc / vitest(jsdom) / vite build
+# 三关全绿。判据只能落在「引用的名字必须有定义」这一条上，所以做成脚本进门禁。
+run 13 css_vars        "python3 tools/check_css_vars.py"
 
 printf '\nGATES_RESULT FAILS=%s\n' "$FAILS"
 exit "$FAILS"

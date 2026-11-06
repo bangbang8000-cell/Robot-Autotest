@@ -930,6 +930,21 @@ export default {
     empty: 'No cases parsed',
     failed: 'Preflight failed',
   },
+  planGraph: {
+    title: 'Plan Dependency Graph',
+    subtitle:
+      'Read-only: columns are dependency levels, bold lines form the critical path (estimated from timeouts, not historical durations)',
+    loading: 'Loading…',
+    stats: '{nodes} plans, {edges} dependencies',
+    criticalTitle: 'Critical path estimate {seconds}s',
+    criticalHint:
+      'Longest chain by summed timeout seconds; ties break on the smaller plan id so the view is stable',
+    noCritical: 'No dependencies yet — every plan is independent',
+    unknownError: 'Failed to load, please retry',
+    legendCritical: 'Critical path (est. {seconds}s)',
+    legendIsolated: 'Isolated plan',
+    graphAriaLabel: 'Plan dependency graph: {nodes} plans, {edges} dependencies',
+  },
   failureClusters: {
     title: 'Failure Clusters',
     subtitle:
