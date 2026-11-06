@@ -28,4 +28,10 @@ public interface ReportRepository {
 
     /** 分页查询项目下的报告视图。 */
     PageResult<ReportRecord> page(long projectId, int page, int size);
+
+    /**
+     * 回写门禁结论（HRD-02 补录后重算）：只改 {@code metadata_missing} / {@code exportable}，
+     * 不动解析出的 {@code metadata_json} —— 补录值在读取时叠加（{@code MetadataOverlay}）。
+     */
+    void updateGate(long projectId, String runId, GateResult gate);
 }

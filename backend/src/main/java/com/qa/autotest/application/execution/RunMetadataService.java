@@ -3,6 +3,7 @@ package com.qa.autotest.application.execution;
 import com.qa.autotest.application.iam.AccessControlService;
 import com.qa.autotest.application.iam.AuditService;
 import com.qa.autotest.application.iam.Audited;
+import com.qa.autotest.application.repository.ReportRepository;
 import com.qa.autotest.application.repository.RunMetadataRepository;
 import com.qa.autotest.application.repository.RunRepository;
 import com.qa.autotest.common.BusinessException;
@@ -10,6 +11,7 @@ import com.qa.autotest.common.ErrorCode;
 import com.qa.autotest.common.tenant.TenantContext;
 import com.qa.autotest.domain.iam.PermissionAction;
 import com.qa.autotest.domain.iam.PermissionResource;
+import com.qa.autotest.domain.report.MetadataGate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -34,13 +36,15 @@ public class RunMetadataService {
 
     private final RunRepository runs;
     private final RunMetadataRepository metadata;
+    private final ReportRepository reports;
     private final AccessControlService access;
     private final AuditService audit;
 
     public RunMetadataService(RunRepository runs, RunMetadataRepository metadata,
-                              AccessControlService access, AuditService audit) {
+                              ReportRepository reports, AccessControlService access, AuditService audit) {
         this.runs = runs;
         this.metadata = metadata;
+        this.reports = reports;
         this.access = access;
         this.audit = audit;
     }
@@ -108,6 +112,10 @@ public class RunMetadataService {
         metadata.save(projectId, runId, values, removed.keySet(), TenantContext.requireUserId());
         audit.recordChange("run:metadata-patch", "run", runId,
                 join(beforeChanged), join(afterChanged));
+        // 补录会改变「十项是否齐全」：按叠加后的全量 metadata 重算门禁并回写，
+        // 否则列表/导出仍会拿着入库时的旧结论（补录了也导不出去）。
+        reports.find(projectId, runId).ifPresent(record ->
+                reports.updateGate(projectId, runId, MetadataGate.check(record.metadata())));
         return metadata.findAll(projectId, runId);
     }
 

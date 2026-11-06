@@ -3,14 +3,20 @@ package com.qa.autotest.application.execution;
 import com.qa.autotest.application.iam.AccessControlService;
 import com.qa.autotest.application.iam.AuditService;
 import com.qa.autotest.application.repository.AuditRepository;
+import com.qa.autotest.application.repository.ReportRepository;
 import com.qa.autotest.application.repository.RunMetadataRepository;
 import com.qa.autotest.application.repository.RunRepository;
 import com.qa.autotest.common.BusinessException;
 import com.qa.autotest.common.ErrorCode;
 import com.qa.autotest.common.tenant.TenantContext;
+import com.qa.autotest.domain.common.PageResult;
 import com.qa.autotest.domain.execution.RunRecord;
 import com.qa.autotest.domain.execution.RunState;
 import com.qa.autotest.domain.iam.AuditEntry;
+import com.qa.autotest.domain.report.GateResult;
+import com.qa.autotest.domain.report.MetadataOverlay;
+import com.qa.autotest.domain.report.ParsedReport;
+import com.qa.autotest.domain.report.ReportRecord;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,6 +51,7 @@ class RunMetadataServiceTest {
     private RunMetadataService service;
     private RunRepository runs;
     private MemoryMetadata metadata;
+    private MemoryReports reports;
     private RecordingAudit auditRepo;
 
     @BeforeEach
@@ -53,8 +60,9 @@ class RunMetadataServiceTest {
         runs = mock(RunRepository.class);
         when(runs.findByRunId(PROJECT, RUN)).thenReturn(Optional.of(run()));
         metadata = new MemoryMetadata();
+        reports = new MemoryReports(metadata);
         auditRepo = new RecordingAudit();
-        service = new RunMetadataService(runs, metadata,
+        service = new RunMetadataService(runs, metadata, reports,
                 mock(AccessControlService.class), new AuditService(auditRepo, Runnable::run));
     }
 
@@ -164,7 +172,43 @@ class RunMetadataServiceTest {
         assertEquals(ErrorCode.INVALID_ARGUMENT, ex.errorCode());
     }
 
+    @Test
+    @DisplayName("补录补齐十项后门禁转为可导出")
+    void patchFillingAllTenTurnsGateGreen() {
+        service.patch(PROJECT, RUN, tenItems());
+
+        assertTrue(reports.lastGate.exportable(), "十项齐全应可对外导出");
+        assertTrue(reports.lastGate.missing().isEmpty());
+        assertTrue(reports.lastGate.tooLong().isEmpty());
+    }
+
+    @Test
+    @DisplayName("删除必填项后门禁回落：missing 指向被删项")
+    void deletingRequiredKeyTurnsGateRed() {
+        metadata.store.putAll(tenItems());
+
+        service.patch(PROJECT, RUN, Map.of("DUT", ""));
+
+        assertFalse(reports.lastGate.exportable(), "缺 DUT 不可对外导出");
+        assertEquals(List.of("DUT"), reports.lastGate.missing());
+    }
+
     // ------------------------------------------------------------------
+
+    private static Map<String, String> tenItems() {
+        Map<String, String> all = new LinkedHashMap<>();
+        all.put("CASE_ID", "CAS-001");
+        all.put("RUN_ID", "RUN-1-20261106");
+        all.put("QA_PROJECT", "robot-autotest");
+        all.put("DUT", "GPU-01");
+        all.put("LINK", "GPU-01 mlx5_0 -> SW-01");
+        all.put("SW_BUILD", "Ubuntu 24.04 / OFED 24.10");
+        all.put("BASELINE", "188~195 Gbps");
+        all.put("OPERATOR", "evergreen");
+        all.put("STARTED_AT", "2026-11-06T02:15:40Z");
+        all.put("CASE_KIND", "perf-throughput");
+        return all;
+    }
 
     private AuditEntry single() {
         assertEquals(1, auditRepo.entries.size(), "应恰好产生一条审计");
@@ -193,6 +237,40 @@ class RunMetadataServiceTest {
             removed.forEach(store::remove);
             store.putAll(values);
             saves++;
+        }
+    }
+
+    /** 内存报告仓储：find 走真实的 MetadataOverlay，只记录最近一次回写的门禁结论。 */
+    private static final class MemoryReports implements ReportRepository {
+        private final MemoryMetadata metadata;
+        private GateResult lastGate;
+
+        private MemoryReports(MemoryMetadata metadata) {
+            this.metadata = metadata;
+        }
+
+        @Override
+        public void replace(long projectId, long runDbId, ParsedReport parsed,
+                            GateResult gate, Instant startedAt) {
+            throw new UnsupportedOperationException("补录不改解析结果");
+        }
+
+        @Override
+        public Optional<ReportRecord> find(long projectId, String runId) {
+            Instant now = Instant.parse("2026-11-06T00:00:00Z");
+            ReportRecord parsed = new ReportRecord(projectId, runId, "FINISHED", false, List.of(),
+                    Map.of(), 1, 0, 0, now, now);
+            return Optional.of(MetadataOverlay.apply(parsed, metadata.findAll(projectId, runId)));
+        }
+
+        @Override
+        public PageResult<ReportRecord> page(long projectId, int page, int size) {
+            throw new UnsupportedOperationException("补录不涉及列表");
+        }
+
+        @Override
+        public void updateGate(long projectId, String runId, GateResult gate) {
+            this.lastGate = gate;
         }
     }
 

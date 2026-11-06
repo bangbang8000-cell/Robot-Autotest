@@ -5,6 +5,7 @@ import com.qa.autotest.application.execution.RunArtifact;
 import com.qa.autotest.application.iam.AccessControlService;
 import com.qa.autotest.application.repository.ReportRepository;
 import com.qa.autotest.application.repository.RunArtifactRepository;
+import com.qa.autotest.application.repository.RunMetadataRepository;
 import com.qa.autotest.application.repository.RunRepository;
 import com.qa.autotest.application.repository.CiTriggerRepository;
 import com.qa.autotest.common.BusinessException;
@@ -16,6 +17,7 @@ import com.qa.autotest.domain.iam.PermissionAction;
 import com.qa.autotest.domain.iam.PermissionResource;
 import com.qa.autotest.domain.report.GateResult;
 import com.qa.autotest.domain.report.MetadataGate;
+import com.qa.autotest.domain.report.MetadataOverlay;
 import com.qa.autotest.domain.report.ParsedReport;
 import com.qa.autotest.domain.report.ReportRecord;
 import java.nio.file.Files;
@@ -45,13 +47,23 @@ public class ReportIngestService {
     private final AccessControlService access;
     private final OutputXmlParser parser;
     private final CiTriggerRepository ciTriggers;
+    private final RunMetadataRepository runMetadata;
 
     public ReportIngestService(RunRepository runs,
                                RunArtifactRepository artifacts,
                                ReportRepository reports,
                                AccessControlService access,
                                OutputXmlParser parser) {
-        this(runs, artifacts, reports, access, parser, null);
+        this(runs, artifacts, reports, access, parser, null, null);
+    }
+
+    public ReportIngestService(RunRepository runs,
+                               RunArtifactRepository artifacts,
+                               ReportRepository reports,
+                               AccessControlService access,
+                               OutputXmlParser parser,
+                               CiTriggerRepository ciTriggers) {
+        this(runs, artifacts, reports, access, parser, ciTriggers, null);
     }
 
     @Autowired
@@ -60,13 +72,15 @@ public class ReportIngestService {
                                ReportRepository reports,
                                AccessControlService access,
                                OutputXmlParser parser,
-                               CiTriggerRepository ciTriggers) {
+                               CiTriggerRepository ciTriggers,
+                               RunMetadataRepository runMetadata) {
         this.runs = runs;
         this.artifacts = artifacts;
         this.reports = reports;
         this.access = access;
         this.parser = parser;
         this.ciTriggers = ciTriggers;
+        this.runMetadata = runMetadata;
     }
 
     /**
@@ -91,12 +105,23 @@ public class ReportIngestService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "运行不存在: " + runId));
         Path xml = resolveOutputXml(projectId, run, outputXmlPath);
         ParsedReport parsed = mergePlanMetadata(projectId, runId, parser.parse(xml));
-        GateResult gate = MetadataGate.check(parsed.metadata());
+        // 已补录过的 run 重新解析时，门禁必须按「解析值 + 补录值」计算，
+        // 否则人已补齐的十项会被一次重析冲回不可导出（HRD-02）。
+        GateResult gate = MetadataGate.check(effectiveMetadata(projectId, runId, parsed.metadata()));
         Instant startedAt = parseStartedAt(parsed.metadataValue("STARTED_AT"));
 
         reports.replace(projectId, run.id(), parsed, gate, startedAt);
         return reports.find(projectId, runId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "报告入库后读取失败: " + runId));
+    }
+
+    /** 解析值 + 补录值；无补录仓储（单测）时直接用解析值。 */
+    private java.util.Map<String, String> effectiveMetadata(long projectId, String runId,
+                                                           java.util.Map<String, String> parsed) {
+        if (runMetadata == null) {
+            return parsed;
+        }
+        return MetadataOverlay.merge(parsed, runMetadata.findAll(projectId, runId));
     }
 
     /**

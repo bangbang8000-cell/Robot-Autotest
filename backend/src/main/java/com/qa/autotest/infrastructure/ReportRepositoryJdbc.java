@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.qa.autotest.application.repository.ReportRepository;
+import com.qa.autotest.application.repository.RunMetadataRepository;
 import com.qa.autotest.common.BusinessException;
 import com.qa.autotest.common.ErrorCode;
 import com.qa.autotest.common.tenant.TenantGuard;
@@ -11,6 +12,7 @@ import com.qa.autotest.domain.common.PageResult;
 import com.qa.autotest.domain.report.CaseNode;
 import com.qa.autotest.domain.report.GateResult;
 import com.qa.autotest.domain.report.KeywordNode;
+import com.qa.autotest.domain.report.MetadataOverlay;
 import com.qa.autotest.domain.report.ParsedReport;
 import com.qa.autotest.domain.report.ReportRecord;
 import com.qa.autotest.domain.report.SuiteNode;
@@ -58,6 +60,12 @@ public class ReportRepositoryJdbc implements ReportRepository {
              WHERE `project_id` = ? AND `id` = ?
             """;
 
+    private static final String UPDATE_GATE = """
+            UPDATE run
+               SET `metadata_missing` = ?, `exportable` = ?, `updated_at` = CURRENT_TIMESTAMP(3)
+             WHERE `project_id` = ? AND `run_id` = ?
+            """;
+
     private static final String INSERT_TEST_RESULT = """
             INSERT INTO test_result (run_id, case_id, case_key, round_no, verdict,
                                      duration_ms, failure_msg, log_offset, log_span, failure_kind)
@@ -72,11 +80,14 @@ public class ReportRepositoryJdbc implements ReportRepository {
 
     private final JdbcTemplate jdbc;
     private final ObjectMapper objectMapper;
+    private final RunMetadataRepository runMetadata;
     private final RowMapper<ReportRecord> rowMapper = this::mapRow;
 
-    public ReportRepositoryJdbc(JdbcTemplate jdbc, ObjectMapper objectMapper) {
+    public ReportRepositoryJdbc(JdbcTemplate jdbc, ObjectMapper objectMapper,
+                                RunMetadataRepository runMetadata) {
         this.jdbc = jdbc;
         this.objectMapper = objectMapper;
+        this.runMetadata = runMetadata;
     }
 
     @Override
@@ -115,7 +126,14 @@ public class ReportRepositoryJdbc implements ReportRepository {
     public Optional<ReportRecord> find(long projectId, String runId) {
         String sql = REPORT_COLUMNS + " WHERE project_id = ? AND run_id = ?";
         TenantGuard.requireProjectScope(sql, "run");
-        return JdbcSupport.first(jdbc.query(sql, rowMapper, projectId, runId));
+        return JdbcSupport.first(jdbc.query(sql, rowMapper, projectId, runId))
+                .map(record -> MetadataOverlay.apply(record, runMetadata.findAll(projectId, runId)));
+    }
+
+    @Override
+    public void updateGate(long projectId, String runId, GateResult gate) {
+        TenantGuard.requireProjectScope(UPDATE_GATE, "run");
+        jdbc.update(UPDATE_GATE, gate.missingCsv(), gate.exportable() ? 1 : 0, projectId, runId);
     }
 
     @Override

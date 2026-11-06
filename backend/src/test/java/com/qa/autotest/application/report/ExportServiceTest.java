@@ -322,6 +322,11 @@ class ExportServiceTest {
         public PageResult<ReportRecord> page(long projectId, int page, int size) {
             return PageResult.empty(page, size);
         }
+
+        @Override
+        public void updateGate(long projectId, String runId, GateResult gate) {
+            // 导出路径不重算门禁
+        }
     }
 
     /** 导出记录仓储伪造：保存实际插入字段，供断言校验。 */

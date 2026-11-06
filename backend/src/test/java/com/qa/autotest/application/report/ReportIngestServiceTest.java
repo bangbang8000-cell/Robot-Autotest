@@ -9,6 +9,7 @@ import com.qa.autotest.application.iam.AccessControlService;
 import com.qa.autotest.application.repository.ProjectRepository;
 import com.qa.autotest.application.repository.ReportRepository;
 import com.qa.autotest.application.repository.RunArtifactRepository;
+import com.qa.autotest.application.repository.RunMetadataRepository;
 import com.qa.autotest.application.repository.RunRepository;
 import com.qa.autotest.application.repository.UserRepository;
 import com.qa.autotest.common.tenant.TenantContext;
@@ -110,6 +111,31 @@ class ReportIngestServiceTest {
         assertEquals(4, reports.testRowCount(RUN_ID), "test_result 行数不应翻倍");
         assertEquals(2, second.passCount());
         assertEquals(1, reports.storedRunCount(), "同一 run 只保留一条报告记录");
+    }
+
+    @Test
+    @DisplayName("已有补录时重析：门禁按解析值+补录值计算，不把补录冲掉")
+    void 重析时叠加补录值算门禁() throws Exception {
+        Map<String, String> overrides = new LinkedHashMap<>();
+        overrides.put("CASE_ID", "HRD02-PATCH-001");
+        overrides.put("RUN_ID", RUN_ID);
+        overrides.put("QA_PROJECT", "robot-autotest");
+        overrides.put("OPERATOR", "evergreen");
+        overrides.put("DUT", "WSL-DEV-NODE-02");
+        overrides.put("LINK", "wsl2-lo -> backend:8081");
+        overrides.put("SW_BUILD", "Ubuntu 24.04 / RF 7.5.1");
+        overrides.put("BASELINE", "2 passed 1 failed");
+        overrides.put("STARTED_AT", "2026-10-31T06:12:07Z");
+        overrides.put("CASE_KIND", "metadata-patch");
+        ReportIngestService withPatch = new ReportIngestService(runs, new FakeArtifacts(), reports,
+                new AccessControlService(adminUsers(), emptyProjects()), new OutputXmlParser(),
+                null, new FakeRunMetadata(overrides));
+
+        ReportRecord record = withPatch.parseAndIngest(PROJECT, RUN_ID, fixture("ok.xml").toString());
+
+        assertTrue(record.exportable(), "十项已由补录补齐，重析后仍应可导出");
+        assertTrue(record.metadataMissing().isEmpty());
+        assertEquals(1, reports.replaceCount);
     }
 
     private static UserRepository adminUsers() {
@@ -219,6 +245,26 @@ class ReportIngestServiceTest {
         }
     }
 
+    private static final class FakeRunMetadata implements RunMetadataRepository {
+
+        private final Map<String, String> values;
+
+        private FakeRunMetadata(Map<String, String> values) {
+            this.values = values;
+        }
+
+        @Override
+        public Map<String, String> findAll(long projectId, String runId) {
+            return values;
+        }
+
+        @Override
+        public void save(long projectId, String runId, Map<String, String> values,
+                         java.util.Collection<String> removed, Long operatorId) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
     private static final class FakeReportRepository implements ReportRepository {
 
         private final Map<String, ReportRecord> byRunId = new LinkedHashMap<>();
@@ -264,6 +310,11 @@ class ReportIngestServiceTest {
             List<ReportRecord> items = byRunId.values().stream()
                     .filter(r -> r.projectId() == projectId).toList();
             return new PageResult<>(items, items.size(), page, size);
+        }
+
+        @Override
+        public void updateGate(long projectId, String runId, GateResult gate) {
+            // 入库路径不重算门禁
         }
     }
 }
