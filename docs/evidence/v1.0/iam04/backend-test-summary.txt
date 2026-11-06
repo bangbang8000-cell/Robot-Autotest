@@ -1,0 +1,3 @@
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.879 s -- in com.qa.autotest.arch.LayerRulesTest
+[INFO] Tests run: 590, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
