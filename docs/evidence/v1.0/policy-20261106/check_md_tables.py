@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
-FILES = [
+DEFAULT_FILES = [
     "docs/自动化测试平台中长期工作规划.md",
     "docs/release/v2.0-platform/DEV-PLAN.md",
     "docs/release/README.md",
@@ -19,6 +19,8 @@ FILES = [
     "docs/plan/决策纪要-20261106.md",
     "docs/evidence/v1.0/policy-20261106/README.md",
 ]
+# 允许传入额外/替代文件（绝对路径亦可，用于校验仓库外的活文档，如 Windows 侧交接文档）
+FILES = sys.argv[1:] or DEFAULT_FILES
 SPLIT = re.compile(r"(?<!\\)\|")
 
 
