@@ -1,0 +1,288 @@
+# v2.0 平台化 · ④ 开发计划
+
+**文档编号** RA-REL-2026-020-D ｜ **版本** v2.0-platform ｜ **日期** 2026-11-06 ｜ **状态** 待评审
+**输入** `PRD.md`（55 条 FR）｜ **输出物** 代码、迁移脚本、测试、`docs/evidence/v2.0/<包>/`
+**硬约束** ① 不改 `WBS-STATUS.md` 的 96 包台账（v2.0 新包评审通过后再并入）；② 八步门禁每批必跑；③ Flyway 只前进，down 脚本同步写。
+
+---
+
+## 1. 总体架构改造
+
+### 1.1 分层与新增模块
+
+```
+api/            ReportController(新) SceneController(新) GroupController(新) AiController(新) KernelController(新)
+application/    report/  kernel/  importx/  iamx/  ai/  scene/
+domain/         report/Report, ReportVersion, ReportStatus
+                kernel/ExecutionKernel, NormalizedRun, NormalizedCase, Capability
+                importx/CaseSource, SourceItem, ImportPrecheck
+                iamx/UserGroup, GroupMember, ProjectGroup, EffectiveRoleResolver
+                ai/AgentProfile, AgentSession, AiAction
+infrastructure/ report/Jdbc..., kernel/robot/RobotKernel, kernel/pytest/PytestKernel,
+                importx/SandboxExtractor, ai/ProcessAgentRunner
+```
+
+### 1.2 内核 SPI（本版最关键的抽象）
+
+```java
+public interface ExecutionKernel {
+    KernelId id();                                  // ROBOT | PYTEST
+    Capability capability();                        // 参数化/fixture/标签/分片/dryrun
+    ProbeResult probe(ExecutionEnvironment env);    // 可执行文件、版本、插件
+    List<CollectedCase> collect(CaseSourceRef ref); // 用例树 + external_id
+    CommandSpec buildCommand(RunContext ctx);       // 只出命令，不执行
+    NormalizedRun parse(ArtifactSet artifacts);     // output.xml / json-report / junitxml
+    FailureCategory classify(int exitCode, String tailLog, NormalizedCase c);
+}
+```
+
+**边界纪律（写进 ArchUnit 规则）**
+- `kernel/**` 不得依赖 `application/execution`、不得直接申请设备租约、不得写 `run` 表。
+- `application/execution` 不得出现 `pabot` / `pytest` 字样（只能通过 SPI）。
+- `parse()` 必须纯函数：输入产物，输出模型，不做 IO 副作用（读文件除外，只读）。
+
+### 1.3 执行链路（改造后）
+
+```
+RunController → RunService.create（记录 kernel + kernel_source）
+  → KernelResolver（用例 > 用例集/场景 > 项目 > 系统）
+  → EnvironmentProbe（不可用则 422 + 指引）
+  → ProjectRunDispatcher（并发/租约/超时，不变）
+  → CommandSpec → ProcessLauncher（进程树管理）
+  → ArtifactSet → Kernel.parse → NormalizedRun → test_result 批量入库
+  → 执行报告（派生） / 测试报告（手动或按策略生成快照）
+```
+
+### 1.4 报告双实体
+
+```
+run ──1:N── test_report_run ──N:1── test_report ──1:N── test_report_version
+                                        └── status: DRAFT → FROZEN → REVOKED/ARCHIVED
+```
+
+- **执行报告**：不落库，`ReportRepositoryJdbc` 继续按 run 派生；新增聚合查询（失败分类、关键字耗时）。
+- **测试报告**：生成时把「渲染所需全部数据」写 `test_report_version.snapshot_json`，同时渲染 `snapshot_html`；冻结后读取只走快照。
+- 快照 hash = `sha256(snapshot_json 规范序列化)`，用于防篡改与去重。
+
+---
+
+## 2. 数据模型变更
+
+> 全部为 `db/migration/V8_*`，配套 `db/down/V8_*.down.sql`。现有最新为 V7_6，本版新增 6 个迁移、14 张表、5 处列扩张。
+
+| 迁移 | 表 / 列 | 要点 |
+|---|---|---|
+| `V8_1__kernel.sql` | `run` +`kernel`+`kernel_source`+`degraded`+`env_fingerprint`；`test_result` +`kernel`+`external_id`+`failure_category`+`parameters_json`；`test_case` +`kernel`；`test_set` +`kernel` | 历史回填 `kernel='robot'`、`failure_category='unknown'`；索引 `(run_id, kernel)`、`(project_id, external_id)` |
+| `V8_2__case_source.sql` | `case_source` / `case_source_item` / `case_source_version` | 来源登记：类型、可见性、许可证、校验和、存储路径、版本 |
+| `V8_3__test_report.sql` | `test_report` / `test_report_version` / `test_report_run` | 报告状态机、版本、快照路径与 hash、run 聚合摘要 |
+| `V8_4__user_group.sql` | `user_group` / `group_member` / `project_group` | `project_group.group_role` 映射项目角色；唯一键 `(project_id, group_id)` |
+| `V8_5__scene.sql` | `test_scene` / `test_scene_item` | 场景为有序步骤，`item_type=CASE/SET`，`seq` 唯一 |
+| `V8_6__ai_agent.sql` | `ai_agent_profile` / `ai_agent_session` / `ai_action_log` | 配置档、会话摘要、动作审计（不存思维链） |
+| `V8_7__settings_seed.sql` | `system_setting` 种子 | 入口端口 8001、默认内核、AI 开关、报告保留天数 |
+
+**兼容策略**
+- 所有新列可空或带默认值；旧代码读不到新列不报错。
+- `test_result.kernel` 先回填再置 `NOT NULL`（分两个迁移语句，同一文件内顺序执行）。
+- `TenantGuard` 白名单同步登记 14 张新表，并补元测试（漏登记即 FAIL）。
+- 备份脚本表清单同步更新，恢复演练纳入 W1 的完成定义。
+
+---
+
+## 3. 分批计划（Wave）
+
+| 波次 | 内容 | 包 | 依赖 | 交付判据 |
+|---|---|---|---|---|
+| **W1** | 统一入口 8001 + 菜单 IA + 设置/关于/版本页 + 命令面板 | ENVX-01,02；NAV-01..04 | 无 | `:8001` 打开首页；6 域菜单按权限过滤；设置可改可审计；关于页信息真实 |
+| **W2** | 报告双实体 + 快照冻结 + 双渲染 + 导出 | RPTX-01..05 | W1（页面骨架） | 冻结后删源 run 仍可渲染；EXTERNAL 导出无 IP/命令 |
+| **W3** | 内核 SPI + RF 适配 + pytest 内核 + 选择粒度 + 环境探测 | KRN-01..05 | W1 | 现有 RF 用例零回退；pytest 样本跑通；选择顺序可解释 |
+| **W4** | 解耦断言 + 原生用例导入 + 沙箱 + 预检 + 重导入 | IMP-01..05 | W3 | pytest/RF 各 1 个真实工程导入并执行成功 |
+| **W5** | 用户组 + 组授权 + 有效角色 + 超管视图 + 项目模板 + 场景 | IAMX-01..04 | W4（避免权限改造与执行改造交叉） | 越权矩阵 ≥ 60 条全绿；组授权即时生效 |
+| **W6** | AI 面板 + CLI 探测 + 上下文 + 建议/执行/评估 + 审计 | AIX-01..05 | W3, W4 | 无 CLI 时降级；有 CLI 时 L1–L3 可用；动作全留痕 |
+| **W7** | token 扩展 + 三栏布局 + 组件统一 + 响应式/可访问性 + 截图基线 | UIX-01..04 | W1–W6 | 8 页 × 2 主题基线；1440 利用率 ≥ 78%；1280 无横滚 |
+
+**排序理由**
+1. W1 先做端口与骨架：后面所有页面都要截图与走查，入口不稳会反复返工。
+2. W2 在 W3 前：报告双实体只依赖 run，先落地可先验证「对外交付」这条价值链。
+3. W3 在 W4 前：导入后必须能执行，否则导入只是文件管理器。
+4. W5 靠后：`AccessControlService` 被所有域引用，等执行域稳定后再改，减少冲突。
+5. W6 依赖 W3/W4 的能力（发起执行、读用例），放后面才能做「真动作」。
+6. W7 收口：所有页面就位后统一视觉，避免改两次。
+
+**可并行**：W2 与 W3 由不同人负责时可并行（互不触碰同一批文件）；W7 的 token 部分可提前到 W1 之后做，但布局必须等 W6。
+
+---
+
+## 4. 工作包
+
+> 完成定义（DoD）：代码 + 单测 + 至少 1 条集成/实测 + `docs/evidence/v2.0/<包>/README.md`（命令、原始输出、结论）+ 文档更新。
+> 证据目录统一 `docs/evidence/v2.0/`，不写「已验证」而无输出。
+
+### 4.1 ENVX 端口与交付（FR-v2.0-53 ~ 55）
+
+| 包 | 内容 | 依赖 | 验收 | 证据 |
+|---|---|---|---|---|
+| ENVX-01 | 静态承载 + 反代（nginx 或 Spring 静态 + 反代择一，需 ADR）+ SPA fallback + 缓存策略 + 报告打印 base URL 改 8001 | — | 深链接刷新 200；`/api`、`/ws` 通；资源指纹命中 | `curl -I` 三组 + 浏览器截图 |
+| ENVX-02 | `deploy.sh` / `rollback.sh` / systemd unit / `/healthz` / `/api/health` / 端口矩阵文档 + TLS 样例 | ENVX-01 | 一条命令部署并自检；回滚回上一版；矩阵三处一致（设置页/关于页/手册） | 部署日志 + 回滚日志 |
+
+### 4.2 NAV 菜单与系统页（FR-v2.0-07 ~ 13）
+
+| 包 | 内容 | 依赖 | 验收 | 证据 |
+|---|---|---|---|---|
+| NAV-01 | `navigation.ts` 重构为 6 域 + 能力驱动过滤 + 项目选择器上移 + 路由守卫补 403 页 | — | 4 角色菜单快照；直达无权限路由见 403 | vitest 快照 + 截图 |
+| NAV-02 | 系统设置：平台/项目分栏、字段校验、审计 | NAV-01 | 非法值拒绝；变更留痕；并发数生效 | 接口测试 + 审计查询 |
+| NAV-03 | 关于页（构建信息注入）+ 版本迭代页（读 CHANGELOG） | NAV-01 | 版本/commit 与构建一致；CHANGELOG 四类齐全 | 构建产物对照 |
+| NAV-04 | 命令面板 + 收藏 + 最近访问 + 折叠持久化 | NAV-01 | `Ctrl+K` 可搜中英文；最近 5 条；刷新保留 | 组件测试 + 走查 |
+
+### 4.3 RPTX 报告（FR-v2.0-01 ~ 06）
+
+| 包 | 内容 | 依赖 | 验收 | 证据 |
+|---|---|---|---|---|
+| RPTX-01 | `test_report` 实体 + 服务 + 状态机（DRAFT/FROZEN/REVOKED/ARCHIVED）+ 权限 | V8_3 | 非法跃迁拒绝；跨项目 403；列表与详情可分页 | 单测 + 接口测试 |
+| RPTX-02 | 快照冻结：物化 JSON/HTML + hash + 版本号 + 源 run 摘要 | RPTX-01 | 删源 run 后仍渲染；重复冻结幂等；篡改 hash 不匹配告警 | 端到端实测 |
+| RPTX-03 | 测试报告渲染（对外视图）：结论、通过率、失败分布、覆盖、趋势 | RPTX-02 | 聚合口径与测试计划一致；跳过单列；趋势对比可用 | 截图 + 数值断言 |
+| RPTX-04 | 执行报告渲染（对内重构）：关键字树、命令、原始输出、产物、重试 | — | 现有报告能力不回退；大 run（5k 结果）不卡死 | 回归 + 性能计时 |
+| RPTX-05 | 导出 HTML/PDF/DOCX + 模板 + 水印 + 保留策略 | RPTX-03 | 三格式一致；EXTERNAL 无敏感字段；过期可清理 | 导出文件抽样 + 字段扫描 |
+
+### 4.4 KRN 双内核（FR-v2.0-14 ~ 22）
+
+| 包 | 内容 | 依赖 | 验收 | 证据 |
+|---|---|---|---|---|
+| KRN-01 | SPI + 注册表 + `NormalizedRun` + 结果归一 + ArchUnit 边界规则 | V8_1 | 两内核实现同一契约；边界规则测试通过 | 单测 + ArchUnit |
+| KRN-02 | `RobotKernel`：包装现有 `PabotCommandBuilder` / `PabotOrchestrator`，命令逐字等价 | KRN-01 | 同参数生成命令与 v1.0 完全一致；既有 RF 用例全绿 | 命令 diff + 全量回归 |
+| KRN-03 | `PytestKernel`：json-report 主通道 + junitxml 兜底 + 参数化展开 + xfail 映射 | KRN-01 | 5 类状态映射正确；插件缺失降级不失败 | 真实样本执行日志 |
+| KRN-04 | 选择粒度：项目/用例集/用例 + 生效来源展示 + 覆盖标记 | KRN-01 | 四级顺序可解释；一 run 一内核；历史不可变 | 接口测试 + UI 截图 |
+| KRN-05 | 环境探测 + 能力矩阵 + 进程树终止 + 重试/超时统一 | KRN-01 | 缺环境 422 带指引；取消无残留子进程；重试留 attempt | `ps` 前后对比 + 实测 |
+
+### 4.5 IMP 解耦与导入（FR-v2.0-23 ~ 31）
+
+| 包 | 内容 | 依赖 | 验收 | 证据 |
+|---|---|---|---|---|
+| IMP-01 | 解耦：schema 断言（用例无设备外键）+ `case_source` 模型 + 平台/项目可见性 | V8_2 | 断言测试通过；PUBLIC 引用不复制；副本可独立演进 | 元测试 + 数据断言 |
+| IMP-02 | 上传与沙箱：zip/目录、路径校验、限额、只读落盘、校验和、版本 | IMP-01 | 7 类攻击样本全部拒绝；正常包落盘结构正确 | 安全用例（正/负各 7） |
+| IMP-03 | pytest 导入适配：conftest/fixture、包结构、`--collect-only` 预检 | IMP-02, KRN-03 | 真实工程清单与本地 `--collect-only` 数量一致 | 数量对账 |
+| IMP-04 | RF 导入适配：resource 解析、suite 结构、`--dryrun` 预检 | IMP-02, KRN-02 | 套件树与目录一致；dryrun 错误带行号 | 数量对账 |
+| IMP-05 | 预检报告 + 敏感信息扫描 + 重导入 diff/冲突 | IMP-03, IMP-04 | 三态判定准确；diff 三类清单；冲突不覆盖 | 报告样例 + 实测 |
+
+### 4.6 IAMX 组织（FR-v2.0-32 ~ 39）
+
+| 包 | 内容 | 依赖 | 验收 | 证据 |
+|---|---|---|---|---|
+| IAMX-01 | 用户组 CRUD + 成员管理 + 前端页面 | V8_4 | 组增删改查；成员去重；删除组不删用户 | 接口测试 |
+| IAMX-02 | 组-项目授权 + `EffectiveRoleResolver` 单点实现 + 缓存失效 | IAMX-01 | 优先级正确；移除即时生效；成员列表显示来源 | 单测 4 角色 × 场景 |
+| IAMX-03 | 超管全局视图 + 项目切换 + 跨项目统计 | IAMX-02 | 全局数据完整；非超管 403；切换上下文一致 | 接口 + 截图 |
+| IAMX-04 | 项目模板/归档 + 测试场景实体与编排 | IAMX-03 | 模板初始化 3 项；归档禁跑；场景可执行 | 实测 + 证据 |
+
+### 4.7 AIX 智能体（FR-v2.0-40 ~ 46）
+
+| 包 | 内容 | 依赖 | 验收 | 证据 |
+|---|---|---|---|---|
+| AIX-01 | 右侧抽屉骨架 + 开关 + 宽度记忆 + 与布局共存 | NAV-01 | 开合不影响内容区；关闭后无入口 | 截图 + DOM 量测 |
+| AIX-02 | CLI 探测 + 配置档 + 进程管理（超时/终止/编码） | V8_6 | 5 类 CLI 探测结果准确；无 CLI 提示安装 | 探测日志 |
+| AIX-03 | 上下文打包 + 脱敏 + 截断 | AIX-02 | 不含密钥/IP；超限提示；可复现 | 上下文样例（脱敏后） |
+| AIX-04 | 动作编排：建议 / 发起执行（二次确认）/ 效果评估 | AIX-03, KRN-04 | 越权发起被拒；建议不落盘；评估摘要可用 | 审计记录 + 实测 |
+| AIX-05 | 审计 + 降级 + 一键终止 + 主功能隔离 | AIX-04 | 断 CLI 主功能零影响；动作全留痕 | 故障注入 |
+
+### 4.8 UIX 界面体系（FR-v2.0-47 ~ 52）
+
+| 包 | 内容 | 依赖 | 验收 | 证据 |
+|---|---|---|---|---|
+| UIX-01 | token 扩展：字体 6 级、间距 4px、密度两档、深色覆盖 | — | 硬编码 0 处；对比度达标；深色无遗漏 | `check_tokens.py` + 截图 |
+| UIX-02 | 三栏布局 + 折叠 + 抽屉共存 + 利用率 | UIX-01, AIX-01 | 1440 利用率 ≥ 78%；抽屉打开无横滚 | Playwright 量测 |
+| UIX-03 | 表格/表单/抽屉/确认框统一 + 四态 | UIX-02 | 8 页四态齐全；危险操作二次确认 | 页面清单核对 |
+| UIX-04 | 响应式 + 可访问性 + 截图基线 | UIX-03 | 1280 无横滚；键盘可达；16 张基线入库 | Playwright + 截图 diff |
+
+---
+
+## 5. 关键实现约定
+
+### 5.1 pytest 结果归一
+
+| pytest 状态 | 平台状态 | 备注 |
+|---|---|---|
+| passed | PASSED | — |
+| failed | FAILED | 断言失败归 `ASSERTION`；collection error 归 `CASE_ERROR` |
+| error（setup/teardown） | FAILED | 归 `ENVIRONMENT` 或 `CASE_ERROR`，看阶段 |
+| skipped | SKIPPED | 不计入通过率分母 |
+| xfailed | SKIPPED（`expected_failure=true`） | 单列统计 |
+| xpassed | FAILED（`unexpected_pass=true`） | 严格口径，可配置 |
+| 超时 | FAILED（`TIMEOUT`） | 由平台超时监控写入，不由 pytest 插件 |
+
+参数化：`nodeid` 相同但 `params` 不同 → `external_id = nodeid + "#" + params_hash`，`parameters_json` 存参数。
+
+### 5.2 导入沙箱
+
+- 解压到 `tmp/import-<uuid>`，逐条校验后再原子移动到 `sources/<sourceId>/v<n>/`。
+- 拒绝：`..`、绝对路径、符号链接、设备文件、超限、非白名单可执行。
+- 只读：落盘后 `chmod -R a-w`（或应用层禁写），项目内副本另存 `workspace/`。
+- 预检在**独立 venv** 内跑 `--collect-only` / `--dryrun`，超时 120s，网络禁用的前提下执行。
+
+### 5.3 有效角色
+
+单点实现 `EffectiveRoleResolver`，禁止各处自行拼装；`AccessControlService` 改为调用它；缓存键含 `(userId, projectId, membershipVersion)`，任何组织变更 `bump` 版本。
+
+### 5.4 AI 进程
+
+- 以 `ProcessBuilder` 启动，`directory=项目工作区`，`environment` 白名单（PATH/HOME/LANG/TZ/TERM）。
+- 输出按行读，SSE 推送；最大会话 30 分钟；空闲 5 分钟终止；可一键 kill 进程树。
+- 所有「写动作」走 `ActionGate`：校验权限 → 二次确认 → 执行 → 审计，四步缺一不可。
+
+---
+
+## 6. 特性开关与灰度
+
+| 开关 | 默认 | 作用 |
+|---|---|---|
+| `feature.report.v2` | on（W2 后） | 新报告入口；关闭则回旧页面 |
+| `feature.kernel.pytest` | off → 试点项目 on（W3 后） | pytest 内核可选；关闭时项目设置不显示 |
+| `feature.ai.panel` | off（W6 后按需开） | 右侧面板入口 |
+| `feature.group` | off（W5 后开） | 组授权入口；关闭时按原项目成员逻辑 |
+
+开关值落 `system_setting`，变更需管理员并留痕；**不做按用户灰度**（自用规模，过度设计）。
+
+---
+
+## 7. 迁移与发布
+
+1. **备份**：`mysqldump` 全库 + `frontend/dist` + `docs/evidence`。
+2. **迁移演练**：空库从 V1 全量迁到 V8_7；生产库副本迁一次并跑 `db-audit`。
+3. **先部署后开开关**：W1 只换入口与菜单，不改数据；W2 起每波迁移前先备份。
+4. **回滚**：应用回上一镜像 + `db/down/V8_x`（只回滚本波新增，不跨波回滚）。
+5. **不兼容点**：`test_result.kernel` 置 NOT NULL 后，旧版本应用写库会失败 → 回滚必须同时回应用与 schema，写进回滚手册。
+
+---
+
+## 8. 质量门禁
+
+每批合并前跑八步门禁（模板 `docs/evidence/v1.0/longhist/gates.sh`）：
+
+1. `python3 tools/subset_font.py`
+2. `cd frontend && npx vitest run`
+3. `npx vue-tsc --noEmit`
+4. `npx vite build`
+5. `cd backend && mvn -o -B test`（含 `-Pit` 在集成批）
+6. `bash scripts/lint.sh`（secret-scan / eslint / compile / 14 个 check_*）
+7. `python3 tools/check_release_docs.py`
+8. `python3 tools/check_wbs_consistency.py`
+
+新增守门建议（随包落地）：`check_kernel_boundary.py`（禁止执行域出现 pabot/pytest 字样）、`check_report_sensitive.py`（EXTERNAL 模板字段扫描）。
+
+---
+
+## 9. 风险与降级
+
+| 风险 | 触发信号 | 降级方案 |
+|---|---|---|
+| pytest 归一失真 | 通过率与本地 `pytest` 输出差异 > 2% | 冻结 pytest 启用，仅保留 RF；补齐映射后重开 |
+| 导入成功率低 | 真实样本可执行率 < 60% | 预检前置、给出适配清单；不承诺零改 |
+| 组授权越权 | 越权矩阵出现 1 条失败 | 关闭 `feature.group`，回退项目成员模型 |
+| 8001 承载不稳 | 健康检查连续失败 | 回滚部署脚本；8081 直连仍可用 |
+| AI CLI 不可用 | 探测全失败 | 面板只显示安装指引；主功能不受影响 |
+| 报告快照膨胀 | 单份 > 20 MB | 快照只存结构化数据 + 引用制品；HTML 按需渲染 |
+
+---
+
+## 修订记录
+
+| 日期 | 版本 | 改了什么 | 为什么改 |
+|---|---|---|---|
+| 2026-11-06 | v1.0 | 初版：架构、14 表迁移、7 波次、34 包、5 项实现约定、4 个开关、门禁与降级 | 承接 PRD 55 条 FR |
