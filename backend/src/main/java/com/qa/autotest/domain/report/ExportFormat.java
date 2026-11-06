@@ -14,7 +14,9 @@ public enum ExportFormat {
     /** PDF（无头浏览器打印）。 */
     PDF("pdf", "application/pdf"),
     /** Word（POI 直接生成 docx）。 */
-    DOCX("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    DOCX("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+    /** Excel（POI 直接生成 xlsx，数值列保持数值型；TPLX-02 新增）。 */
+    XLSX("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
     private final String wireName;
     private final String contentType;

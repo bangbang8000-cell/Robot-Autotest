@@ -1,0 +1,30 @@
+/home/evergreen/rf-stack/.venv/lib/python3.12/site-packages/openpyxl/styles/stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+# 夹具 projectId=29 run=RUN-TPLX2-0001（pass=8 fail=1 skip=1），已登录 qa-e2e-admin
+
+
+# 产物落在 /home/evergreen/robot-autotest/docs/evidence/v2.1/TPLX-02/out
+PASS  TPLX2-01    建模板 200 version=1 字段 8 项                          HTTP 200 id=7 version=1
+PASS  TPLX2-02    设为默认 200 且 isDefault=true                         HTTP 200
+PASS  TPLX2-03    建报告 200 且状态 DRAFT                                 HTTP 200 id=5
+PASS  TPLX2-04    DRAFT 快照已把模板写进 MySQL（templateId/templateVersion）  LONGTEXT 长度=1036
+PASS  TPLX2-05    冻结 200 且 state=FROZEN、version=2                   HTTP 200 version=2
+PASS  TPLX2-06    报告回指冻结时的模板 id/版本/字段                               HTTP 200 id=7 v=1 字段=8
+PASS  TPLX2-07    对外视图字段集合与顺序 = 模板                                  HTTP 200 字段=['reportId', 'title', 'version', 'frozenAt', 'disclaimer', 'watermark', 'conclusion', 'passRate']
+PASS  TPLX2-08    xlsx 导出 200、Content-Type=spreadsheetml、PK 头       HTTP 200 3760B application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+PASS  TPLX2-09    openpyxl 可解析，表头 FIELD_KEY/TITLE/VALUE             header=['FIELD_KEY', 'TITLE', 'VALUE'] sheets=['report']
+PASS  TPLX2-10    xlsx 字段与顺序 = 冻结模板                                 字段=['reportId', 'title', 'version', 'frozenAt', 'disclaimer', 'watermark', 'conclusion', 'passRate']
+PASS  TPLX2-11    数值列是数字不是文本（passRate=80.0 type=n）                  passRate={'title': '通过率', 'value': 80.0, 'type': 'n'} version=n
+PASS  TPLX2-12    文本列仍是字符串，模板自定义标题生效                                conclusion.type=s passRate.title=通过率
+PASS  TPLX2-13    html 导出 200 且非空                                   HTTP 200 720B
+PASS  TPLX2-14    pdf 导出 200 且非空                                    HTTP 200 973B
+PASS  TPLX2-15    docx 导出 200 且非空                                   HTTP 200 2504B
+PASS  TPLX2-16    改模板 200 且 version=2、字段换成另一套                       HTTP 200 version=2
+PASS  TPLX2-17    改模板后已冻结报告字段集合不变（仍 8 项、顺序不变）                       字段=['reportId', 'title', 'version', 'frozenAt', 'disclaimer', 'watermark', 'conclusion', 'passRate']
+PASS  TPLX2-18    改模板后回指仍是冻结时的 v1，不是当前 v2                           version=1
+PASS  TPLX2-19    改模板后再导 xlsx，字段与冻结时逐项相同                            字段=['reportId', 'title', 'version', 'frozenAt', 'disclaimer', 'watermark', 'conclusion', 'passRate']
+PASS  TPLX2-20    两次 xlsx 内容一致（除时间戳外无差异）                            passRate={'title': '通过率', 'value': 80.0, 'type': 'n'}
+PASS  TPLX2-21    设项目默认不会清掉平台级 DEFAULT（全局回落值仍为 1）                   平台级 is_default=1
+PASS  TPLX2-22    无项目模板时回落平台级 DEFAULT（21 字段，顺序=白名单）                 模板id=1 字段=21
+
+合计 22 项，FAIL 0 项

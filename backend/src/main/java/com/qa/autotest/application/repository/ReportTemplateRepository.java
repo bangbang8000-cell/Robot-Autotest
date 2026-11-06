@@ -38,6 +38,9 @@ public interface ReportTemplateRepository {
     /** 项目的默认模板；没有项目级默认则回落到平台级，都没有则 empty。 */
     Optional<ReportTemplate> findDefault(long projectId);
 
-    /** 把某模板设为默认：先清掉本项目与平台级的默认标记，再置位（保证全局只有一个默认）。 */
+    /**
+     * 把某模板设为默认：只清**本项目**的默认标记再置位，平台级（{@code project_id = 0}）的
+     * 默认标记不动——它是所有项目的全局回落值，不能被单个项目的操作顺手清掉。
+     */
     void markDefault(long projectId, long id);
 }

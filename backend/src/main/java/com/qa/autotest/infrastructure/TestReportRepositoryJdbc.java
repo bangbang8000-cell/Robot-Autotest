@@ -101,9 +101,13 @@ public class TestReportRepositoryJdbc implements TestReportRepository {
 
     @Override
     public void freeze(long id, ReportSnapshot snapshot) {
-        jdbc.update("UPDATE test_report SET state = 'FROZEN', snapshot_hash = ?, snapshot_json = ?, "
-                        + "snapshot_html = ?, frozen_at = CURRENT_TIMESTAMP(3) WHERE id = ?",
-                snapshot.hash(), snapshot.json(), snapshot.html(), id);
+        // version 必须跟着快照一起推进：freeze 里 `report.version() + 1` 生成的是**新版本**的快照，
+        // 只写 snapshot_* 不写 version 会让「库里 v1 / 快照里 v2」长期不一致，
+        // uk_report_run_version 也就形同虚设（TPLX-02 真实 HTTP 验收 TPLX2-05 抓到的）。
+        jdbc.update("UPDATE test_report SET state = 'FROZEN', version = ?, snapshot_hash = ?, "
+                        + "snapshot_json = ?, snapshot_html = ?, "
+                        + "frozen_at = CURRENT_TIMESTAMP(3) WHERE id = ?",
+                snapshot.version(), snapshot.hash(), snapshot.json(), snapshot.html(), id);
     }
 
     @Override

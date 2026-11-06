@@ -1,6 +1,7 @@
 package com.qa.autotest.api.report;
 
 import com.qa.autotest.application.iam.AccessControlService;
+import com.qa.autotest.application.report.ReportViewRenderer;
 import com.qa.autotest.application.report.TestReportService;
 import com.qa.autotest.common.ApiResponse;
 import com.qa.autotest.common.BusinessException;
@@ -53,6 +54,18 @@ public class TestReportController {
                                                    boolean external) {
         access.requireProjectAccess(reports.find(id).projectId());
         return ApiResponse.ok(reports.render(id, external));
+    }
+
+    /**
+     * 报告冻结时绑定的模板（TPLX-02）。
+     *
+     * <p>刻意单独开一个只读接口而不是塞进渲染结果：渲染结果受 C5 白名单自检保护，
+     * 往里加 templateId 这种键就得给白名单开口子，而模板回指是**元信息**不是报告字段。
+     */
+    @GetMapping("/{id}/template")
+    public ApiResponse<ReportViewRenderer.TemplateRef> template(@PathVariable long id) {
+        access.requireProjectAccess(reports.find(id).projectId());
+        return ApiResponse.ok(reports.template(id));
     }
 
     @PostMapping("/{id}/freeze")

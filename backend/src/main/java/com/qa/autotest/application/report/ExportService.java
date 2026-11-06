@@ -54,6 +54,7 @@ public class ExportService {
     private final ExportRecordRepository exportRecords;
     private final DocxExporter docxExporter;
     private final PdfExportService pdfExportService;
+    private final ReportExportService reportExports;
     private final AccessControlService access;
     private final AuditService audit;
     private final ObjectMapper objectMapper;
@@ -66,6 +67,7 @@ public class ExportService {
                          ExportRecordRepository exportRecords,
                          DocxExporter docxExporter,
                          PdfExportService pdfExportService,
+                         ReportExportService reportExports,
                          AccessControlService access,
                          AuditService audit,
                          ObjectMapper objectMapper,
@@ -77,6 +79,7 @@ public class ExportService {
         this.exportRecords = exportRecords;
         this.docxExporter = docxExporter;
         this.pdfExportService = pdfExportService;
+        this.reportExports = reportExports;
         this.access = access;
         this.audit = audit;
         this.objectMapper = objectMapper;
@@ -103,7 +106,7 @@ public class ExportService {
                         "mode 只能是 external 或 internal"));
         ExportFormat format = ExportFormat.fromWire(formatRaw)
                 .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_ARGUMENT,
-                        "format 只能是 pdf 或 docx"));
+                        "format 只能是 pdf / docx / xlsx"));
 
         access.bindProject(projectId);
         access.require(PermissionResource.EXECUTION, PermissionAction.READ);
@@ -127,13 +130,15 @@ public class ExportService {
         String fileName = "report_" + safeName(runId) + "_" + mode.wireName()
                 + "." + format.extension();
         Instant exportedAt = clock.instant();
-        byte[] bytes;
-        if (format == ExportFormat.PDF) {
-            bytes = pdfExportService.render(projectId, runId, mode);
-        } else {
-            bytes = docxExporter.render(new ExportDocument(report,
+        byte[] bytes = switch (format) {
+            case PDF -> pdfExportService.render(projectId, runId, mode);
+            case DOCX -> docxExporter.render(new ExportDocument(report,
                     trees.treeForPrint(projectId, runId), mode, exportedAt, operator()));
-        }
+            // run 级导出的 xlsx 只给汇总计数 + metadata：模板化（按字段裁剪 + 自定义标题）
+            // 的报告导出在 /api/test-reports/{id}/export，那条链路才有快照内模板可用。
+            case XLSX -> reportExports.export("xlsx",
+                    summarySheet(report, mode));
+        };
         Path target = directory.resolve(fileName);
         try {
             Files.createDirectories(directory);
@@ -209,6 +214,19 @@ public class ExportService {
         }
         throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
                 "该运行尚未登记产物目录，无法导出（请先完成一次执行或解析报告）");
+    }
+
+    /**
+     * run 级 xlsx 的视图：汇总计数 + C5 metadata 白名单，内部版把水印换成内部标识。
+     * 与 docx / pdf 走同一份 ReportRecord，不另查库，避免三格式数字对不上。
+     */
+    private static Map<String, Object> summarySheet(ReportRecord report, ExportMode mode) {
+        Map<String, Object> sheet = ReportExportService.summaryView(report.runId(), report.state(),
+                report.passCount(), report.failCount(), report.skipCount(), report.metadata());
+        if (mode == ExportMode.INTERNAL) {
+            sheet.put("watermark", ReportExportService.WATERMARK + " / INTERNAL");
+        }
+        return sheet;
     }
 
     private String auditDetail(String runId, ExportFormat format, ExportMode mode, String sha256) {

@@ -157,7 +157,11 @@ public class ReportTemplateRepositoryJdbc implements ReportTemplateRepository {
 
     @Override
     public void markDefault(long projectId, long id) {
-        String clear = "UPDATE report_template SET is_default = 0 WHERE project_id IN (?, 0)";
+        // 只清**本项目**的默认标记，绝不能连平台级（project_id = 0）一起清：
+        // 平台级 DEFAULT 是所有项目的全局回落值，A 项目把自己的模板设为默认时顺手把
+        // 平台默认清掉，B 项目下次冻结就变成「没有模板」了——这是跨项目的隐形副作用
+        // （TPLX-02 真实 HTTP 验收 TPLX2-21 抓到的）。
+        String clear = "UPDATE report_template SET is_default = 0 WHERE project_id = ?";
         TenantGuard.requireProjectScope(clear, "report_template");
         jdbc.update(clear, projectId);
         String set = "UPDATE report_template SET is_default = 1 WHERE project_id = ? AND id = ?";

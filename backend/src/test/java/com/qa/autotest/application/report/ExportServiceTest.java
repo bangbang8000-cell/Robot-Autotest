@@ -207,8 +207,8 @@ class ExportServiceTest {
         PdfExportService pdf = new PdfExportService(
                 new PrintTokenService(CLOCK), new PdfRenderer(props, List.of("no-browser")), props);
         return new ExportService(reports, trees, runRepository(), artifactRepository(),
-                exportRecords, new DocxExporter(), pdf, passAccess(),
-                new AuditService(audit), new ObjectMapper(), CLOCK);
+                exportRecords, new DocxExporter(), pdf, new ReportExportService(),
+                passAccess(), new AuditService(audit), new ObjectMapper(), CLOCK);
     }
 
     private static AccessControlService passAccess() {
