@@ -10,6 +10,8 @@ import {
   type DataTableColumns,
 } from 'naive-ui'
 import { planApi, type ExecutionPlan, type PlanPayload } from '@/api/plans'
+import { auditApi, type AuditEntry } from '@/api/audit'
+import { ApiError } from '@/api/http'
 import { caseSetApi, type TestSet } from '@/api/cases'
 import { useAuthStore } from '@/stores/auth'
 import DataTable from '@/components/DataTable.vue'
@@ -35,6 +37,13 @@ const formOpen = ref(false)
 const editingId = ref<number | null>(null)
 const previewTimes = ref<string[]>([])
 const previewError = ref<ErrorLine | null>(null)
+
+/** 下游跳过事件（PLN-02）：来自审计记录，按需拉取，不在进页时多打一次接口。 */
+const skippedOpen = ref(false)
+const skippedLoaded = ref(false)
+const skippedLoading = ref(false)
+const skippedError = ref('')
+const skippedEvents = ref<AuditEntry[]>([])
 
 const projectId = computed(() => auth.projectId ?? 0)
 
@@ -96,6 +105,102 @@ function planStatusTone(status: string): StatusTone {
 
 function runStateLabel(state: string | null): string {
   return state ? runStatusLabel(state) : t('plans.noRun')
+}
+
+interface SkippedRow {
+  id: number
+  at: string
+  downstream: string
+  reason: string
+  upstreamRun: string
+}
+
+/** 审计 detail 是 `k=v, k=v` 的行式记录（见 PlanScheduleService 的 audit 调用）。 */
+function parseDetail(detail: string | null): Record<string, string> {
+  const fields: Record<string, string> = {}
+  for (const part of (detail ?? '').split(',')) {
+    const [key, ...rest] = part.split('=')
+    const name = key.trim()
+    if (name && rest.length > 0) fields[name] = rest.join('=').trim()
+  }
+  return fields
+}
+
+/** 原因码可能带尾巴（`upstream_error: xxx`），取冒号前的码去查文案，查不到就显示原文。 */
+function reasonLabel(raw: string): string {
+  const code = raw.split(':')[0].trim()
+  const key = `plans.skippedReasons.${code}`
+  return code && te(key) ? t(key) : raw || EMPTY
+}
+
+const skippedRows = computed<SkippedRow[]>(() =>
+  skippedEvents.value.map((entry) => {
+    const detail = parseDetail(entry.detail)
+    const downstreamId = detail.downstream ?? ''
+    const plan = plans.value.find((item) => String(item.id) === downstreamId)
+    return {
+      id: entry.id,
+      at: entry.occurredAt,
+      downstream: plan?.name ?? (downstreamId ? `#${downstreamId}` : EMPTY),
+      reason: reasonLabel(detail.reason ?? ''),
+      upstreamRun: detail.upstream_run ?? EMPTY,
+    }
+  }))
+
+const skippedColumns = computed<DataTableColumns<SkippedRow>>(() => [
+  {
+    title: t('plans.skippedTime'),
+    key: 'at',
+    width: 170,
+    render: (row) => formatDateTime(row.at),
+  },
+  { title: t('plans.skippedDownstream'), key: 'downstream', minWidth: 160 },
+  { title: t('plans.skippedReason'), key: 'reason', minWidth: 160 },
+  {
+    title: t('plans.skippedUpstreamRun'),
+    key: 'upstreamRun',
+    minWidth: 180,
+    // 运行号要和列表里的 `lastRunId` 一样等宽呈现，否则一列数字对不齐
+    render: (row) => h('span', { class: 'mono' }, row.upstreamRun),
+  },
+])
+
+function resetSkipped(): void {
+  skippedOpen.value = false
+  skippedLoaded.value = false
+  skippedLoading.value = false
+  skippedError.value = ''
+  skippedEvents.value = []
+}
+
+async function loadSkipped(): Promise<void> {
+  if (!projectId.value) return
+  skippedLoading.value = true
+  skippedError.value = ''
+  try {
+    const page = await auditApi.page({
+      projectId: projectId.value,
+      action: 'PLAN_DOWNSTREAM_SKIPPED',
+      page: 1,
+      size: 20,
+    })
+    skippedEvents.value = page.items
+    skippedLoaded.value = true
+  } catch (e) {
+    skippedEvents.value = []
+    skippedError.value =
+      e instanceof ApiError && e.codeName === 'FORBIDDEN'
+        ? t('plans.skippedForbidden')
+        : localizeError(e).summary
+  } finally {
+    skippedLoading.value = false
+  }
+}
+
+function toggleSkipped(): void {
+  skippedOpen.value = !skippedOpen.value
+  // 展开即拉；已拉过就保留上次结果，避免每次收起再展开都打一次接口
+  if (skippedOpen.value && !skippedLoaded.value) void loadSkipped()
 }
 
 /**
@@ -358,6 +463,7 @@ async function removePlan(plan: ExecutionPlan): Promise<void> {
 
 watch(projectId, () => {
   closeForm()
+  resetSkipped()
   void load()
 })
 
@@ -392,6 +498,29 @@ void load()
       empty-icon="runs"
       :error="Boolean(error)"
     />
+
+    <div class="card skipped-card">
+      <div class="skipped-head">
+        <NButton quaternary size="small" :loading="skippedLoading" @click="toggleSkipped">
+          {{ skippedOpen ? t('plans.skippedHide') : t('plans.skippedToggle') }}
+        </NButton>
+        <span class="muted small">{{ t('plans.skippedHint') }}</span>
+      </div>
+      <template v-if="skippedOpen">
+        <ErrorLineView v-if="skippedError" :error="skippedError" />
+        <DataTable
+          v-else
+          class="skipped-table"
+          :columns="skippedColumns"
+          :data="skippedRows"
+          :loading="skippedLoading"
+          :row-key="(row: SkippedRow) => row.id"
+          :empty-title="t('plans.skippedEmpty')"
+          empty-icon="runs"
+          max-height="240px"
+        />
+      </template>
+    </div>
 
     <div v-if="formOpen" class="card form-card">
       <h2 class="card-title">
@@ -491,6 +620,21 @@ void load()
 
 .form-card {
   margin-top: var(--space-4);
+}
+
+.skipped-card {
+  margin-top: var(--space-4);
+}
+
+.skipped-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.skipped-table {
+  margin-top: var(--space-3);
 }
 
 .form-grid {

@@ -14,6 +14,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import { i18n } from '@/locales'
 import { useAuthStore } from '@/stores/auth'
 import PlansView from '@/views/PlansView.vue'
+import { auditApi } from '@/api/audit'
+import { ApiError } from '@/api/http'
 
 vi.mock('@/api/plans', () => ({
   planApi: {
@@ -91,6 +93,47 @@ vi.mock('@/api/cases', () => ({
       size: 100,
     })),
     create: vi.fn(),
+  },
+}))
+
+vi.mock('@/api/audit', () => ({
+  auditApi: {
+    page: vi.fn(async () => ({
+      items: [
+        {
+          id: 11,
+          projectId: 1,
+          actorId: 0,
+          operator: 'system',
+          action: 'PLAN_DOWNSTREAM_SKIPPED',
+          resourceType: 'execution_plan',
+          resourceId: '1',
+          detail:
+            'mark=skipped_dependency, downstream=2, reason=upstream_failed, upstream_state=failed, upstream_run=RUN-FAIL-001',
+          summary: null,
+          ip: null,
+          occurredAt: '2026-11-06T02:08:00+08:00',
+        },
+        {
+          id: 12,
+          projectId: 1,
+          actorId: 0,
+          operator: 'system',
+          action: 'PLAN_DOWNSTREAM_SKIPPED',
+          resourceType: 'execution_plan',
+          resourceId: '1',
+          detail:
+            'mark=skipped_dependency, downstream=999, reason=downstream_paused, upstream_run=RUN-FAIL-002',
+          summary: null,
+          ip: null,
+          occurredAt: '2026-11-06T02:09:00+08:00',
+        },
+      ],
+      total: 2,
+      page: 1,
+      size: 20,
+    })),
+    exportCsv: vi.fn(),
   },
 }))
 
@@ -243,5 +286,55 @@ describe('PlansView 编辑对话框', () => {
     deps[0].click()
     await nextTick()
     expect(deps[0].className).toContain('n-checkbox--checked')
+  })
+})
+
+describe('PlansView 依赖跳过事件（PLN-02）', () => {
+  function toggle(root: HTMLElement): HTMLButtonElement {
+    const button = [...root.querySelectorAll<HTMLButtonElement>('.skipped-head button')][0]
+    if (!button) throw new Error('skipped toggle not found')
+    return button
+  }
+
+  it('展开后按审计 detail 还原下游计划名、原因文案与上游运行号', async () => {
+    const root = await mountView()
+    expect(root.querySelector('.skipped-table')).toBeNull()
+    expect(auditApi.page).not.toHaveBeenCalled()
+
+    toggle(root).click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(auditApi.page).toHaveBeenCalledWith({
+      projectId: 1,
+      action: 'PLAN_DOWNSTREAM_SKIPPED',
+      page: 1,
+      size: 20,
+    })
+    const body = [...root.querySelectorAll('.skipped-table .n-data-table-tbody .n-data-table-tr')].map(
+      (tr) => tr.textContent ?? '',
+    )
+    expect(body).toHaveLength(2)
+    // downstream=2 命中已有计划名；原因码 upstream_failed 走本地化，不显示原始码
+    expect(body[0]).toContain('手工回归')
+    expect(body[0]).toContain(i18n.global.t('plans.skippedReasons.upstream_failed'))
+    expect(body[0]).toContain('RUN-FAIL-001')
+    // downstream=999 在计划列表里查不到，退回 #id，不能显示成空
+    /* color-check: ignore-start 这里是计划 id 前缀，不是硬编码色值 */
+    expect(body[1]).toContain('#999')
+    /* color-check: ignore-end */
+    expect(body[1]).toContain(i18n.global.t('plans.skippedReasons.downstream_paused'))
+  })
+
+  it('无权限时不给空表格，明确提示仅管理员或项目所有者可看', async () => {
+    vi.mocked(auditApi.page).mockRejectedValueOnce(new ApiError(403, 'FORBIDDEN', 'forbidden'))
+    const root = await mountView()
+
+    toggle(root).click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(root.querySelector('.skipped-table')).toBeNull()
+    expect(root.textContent).toContain(i18n.global.t('plans.skippedForbidden'))
   })
 })

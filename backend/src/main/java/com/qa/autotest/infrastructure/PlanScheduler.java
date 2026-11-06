@@ -4,7 +4,9 @@ import com.qa.autotest.application.execution.RunExecutionService;
 import com.qa.autotest.application.plan.PlanScheduleService;
 import com.qa.autotest.application.plan.PlanScheduleService.PlannedRun;
 import com.qa.autotest.application.execution.RunDispatcher;
+import com.qa.autotest.common.tenant.TenantContext;
 import com.qa.autotest.domain.execution.RunRecord;
+import com.qa.autotest.domain.plan.PlanRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -60,15 +62,26 @@ public class PlanScheduler {
                         try {
                             result = executions.execute(planned.record(), planned.command());
                         } catch (RuntimeException ex) {
-                            schedules.afterExecutionError(planned.plan(), planned.record().runId(), ex);
+                            // 派发线程没有请求线程的租户上下文，不补的话跳过事件的审计行 project_id 为空，
+                            // 按项目查审计永远查不到，前端「依赖跳过事件」列表就是空的
+                            asPlanContext(planned.plan(), () ->
+                                    schedules.afterExecutionError(planned.plan(),
+                                            planned.record().runId(), ex));
                             return;
                         }
-                        try {
-                            schedules.afterRun(planned.plan(), result);
-                        } catch (RuntimeException ex) {
-                            LOG.warn("计划 {} 下游联动失败: {}", planned.plan().id(), ex.getMessage());
-                        }
+                        asPlanContext(planned.plan(), () -> {
+                            try {
+                                schedules.afterRun(planned.plan(), result);
+                            } catch (RuntimeException ex) {
+                                LOG.warn("计划 {} 下游联动失败: {}", planned.plan().id(), ex.getMessage());
+                            }
+                        });
                     });
         }
+    }
+
+    /** 按计划归属补租户上下文，回调结束自动还原，不污染派发线程后续任务。 */
+    private void asPlanContext(PlanRecord plan, Runnable action) {
+        TenantContext.runAs(plan.createdBy(), "planner", plan.projectId(), action);
     }
 }
