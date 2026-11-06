@@ -35,6 +35,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -181,6 +182,28 @@ class RunControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.state").value("waiting"))
                 .andExpect(jsonPath("$.data.maxParallel").value(4));
+    }
+
+    @Test
+    @DisplayName("lease-wait：等待中给出实时耗时、总耗时为空；拿到租约后回落到落库值（FR-08）")
+    void leaseWait_耗时回读() throws Exception {
+        when(runs.leaseWaitTotalMs(1L, "RUN-1")).thenReturn(null);
+        when(leaseWaits.waiting("RUN-1")).thenReturn(true);
+        when(leaseWaits.elapsed("RUN-1")).thenReturn(4200L);
+
+        mvc.perform(get("/api/execution/runs/RUN-1/lease-wait").param("projectId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.state").value("waiting"))
+                .andExpect(jsonPath("$.data.elapsedMs").value(4200))
+                .andExpect(jsonPath("$.data.totalMs").value(nullValue()));
+
+        when(leaseWaits.waiting("RUN-1")).thenReturn(false);
+        when(runs.leaseWaitTotalMs(1L, "RUN-1")).thenReturn(6500L);
+        mvc.perform(get("/api/execution/runs/RUN-1/lease-wait").param("projectId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.state").value("settled"))
+                .andExpect(jsonPath("$.data.elapsedMs").value(6500))
+                .andExpect(jsonPath("$.data.totalMs").value(6500));
     }
 
     @Test

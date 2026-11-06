@@ -37,6 +37,16 @@ public class LeaseWaitRegistry {
         return start == null ? 0 : Math.max(0, Duration.between(start, clock.instant()).toMillis());
     }
 
+    /**
+     * 仍在等待时返回已等待毫秒数，供接口回读「已等待 N 秒」；未登记过返回 0。
+     *
+     * <p>与 {@link #end(String)} 不同，这里不注销登记，只做只读快照。
+     */
+    public long elapsed(String runId) {
+        Instant start = waiting.get(runId);
+        return start == null ? 0 : Math.max(0, Duration.between(start, clock.instant()).toMillis());
+    }
+
     /** 当前是否仍在等租约。 */
     public boolean waiting(String runId) {
         return waiting.containsKey(runId);

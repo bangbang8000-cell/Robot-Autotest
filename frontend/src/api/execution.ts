@@ -84,6 +84,19 @@ export interface PendingActivity {
   maxParallel: number
 }
 
+/**
+ * 租约等待耗时（EXEC-09 残余 / FR-08）。
+ *
+ * - `state = waiting`：此刻仍在等租约，`elapsedMs` 是实时已等待毫秒（`totalMs` 通常为 null）。
+ * - `state = settled`：已拿到租约或已结束，`elapsedMs` 回落到落库的总耗时。
+ */
+export interface LeaseWait {
+  state: 'waiting' | 'settled'
+  elapsedMs: number
+  /** 落库的本次等待总耗时；还没回写为 null（不是 0 秒） */
+  totalMs: number | null
+}
+
 export interface PageResult<T> {
   items: T[]
   total: number
@@ -243,6 +256,13 @@ export const executionApi = {
   pendingActivity(projectId: number, runId: string): Promise<PendingActivity> {
     return request<PendingActivity>(
       `/execution/runs/${encodeURIComponent(runId)}/pending-activity${toQuery({ projectId })}`,
+    )
+  },
+
+  /** 租约等待耗时（EXEC-09 残余 / FR-08）：等待中展示「已等待 N 秒」。 */
+  leaseWait(projectId: number, runId: string): Promise<LeaseWait> {
+    return request<LeaseWait>(
+      `/execution/runs/${encodeURIComponent(runId)}/lease-wait${toQuery({ projectId })}`,
     )
   },
 

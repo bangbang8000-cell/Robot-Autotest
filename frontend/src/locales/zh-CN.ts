@@ -491,6 +491,7 @@ export default {
     queuePosition: '排队中 · 第 {position} 位 / 共 {waiting} 个',
     queueUnknown: '排队中 · 位次暂不可用',
     leaseWaiting: '等待资源 · 设备被其他运行占用，拿到租约后自动开始',
+    leaseWaitElapsed: '已等待 {seconds} 秒',
     downloadLog: '下载完整日志',
     logDownloaded: '完整日志已下载',
     manual: {

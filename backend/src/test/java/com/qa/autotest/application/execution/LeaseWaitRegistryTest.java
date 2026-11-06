@@ -25,10 +25,13 @@ class LeaseWaitRegistryTest {
         registry.begin("RUN-1");
         assertTrue(registry.waiting("RUN-1"));
 
-        clock.advanceMillis(2500);
+        clock.advanceMillis(1200);
+        assertEquals(1200L, registry.elapsed("RUN-1"), "等待中可回读实时已等待时长");
+        clock.advanceMillis(1300);
         assertEquals(2500L, registry.end("RUN-1"));
         assertFalse(registry.waiting("RUN-1"));
         assertEquals(0L, registry.end("RUN-1"), "重复结束不应叠加计时");
+        assertEquals(0L, registry.elapsed("RUN-1"), "结束登记后不再有实时等待时长");
     }
 
     private static final class MutableClock extends Clock {

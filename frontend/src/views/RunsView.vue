@@ -12,7 +12,7 @@ import {
   NSelect,
   type DataTableColumns,
 } from 'naive-ui'
-import { executionApi, runLogSocketUrl, type ExecutionRun, type PendingActivity, type RunLogLine, type RunRetryOrigin } from '@/api/execution'
+import { executionApi, runLogSocketUrl, type ExecutionRun, type LeaseWait, type PendingActivity, type RunLogLine, type RunRetryOrigin } from '@/api/execution'
 import { caseSetApi, type TestSet } from '@/api/cases'
 import { deviceApi, type Device } from '@/api/asset'
 import { useAuthStore } from '@/stores/auth'
@@ -41,6 +41,9 @@ const selected = ref<ExecutionRun | null>(null)
 const logLines = ref<RunLogLine[]>([])
 /** 排队位次（EXEC-10 残余）：只有 state=QUEUED 时才轮询，结束后不再请求。 */
 const pending = ref<PendingActivity | null>(null)
+/** 租约等待耗时（EXEC-09 残余 / FR-08）：等设备租约时显示「已等待 N 秒」。 */
+const leaseWait = ref<LeaseWait | null>(null)
+const leaseWaitSeconds = computed(() => Math.floor((leaseWait.value?.elapsedMs ?? 0) / 1000))
 /** 上一次尝试（EXEC-13 残余 / FR-v0.4-29）：只有重试记录才有值。 */
 const retryOrigin = ref<RunRetryOrigin | null>(null)
 let pendingTimer: number | undefined
@@ -315,6 +318,7 @@ async function selectRun(run: ExecutionRun): Promise<void> {
   logLines.value = []
   stopPendingPoll()
   pending.value = null
+  leaseWait.value = null
   retryOrigin.value = null
   await Promise.all([loadRecentLog(), loadRetryOrigin(run)])
   if (run.state === 'QUEUED' || run.state === 'PREPARING') {
@@ -344,12 +348,17 @@ async function loadPending(): Promise<void> {
   }
   try {
     pending.value = await executionApi.pendingActivity(projectId.value, run.runId)
+    // 等租约时补一次耗时：只写「等待资源」看不出已经等了多久（EXEC-09 残余 / FR-08）
+    leaseWait.value = pending.value.state === 'waiting'
+      ? await executionApi.leaseWait(projectId.value, run.runId)
+      : null
     // queued / waiting 都要继续轮询：位次会变，租约也会在拿到后转 running
     if (pending.value.state === 'running' || pending.value.state === 'terminal') {
       stopPendingPoll()
     }
   } catch {
     pending.value = null
+    leaseWait.value = null
   }
 }
 
@@ -519,6 +528,7 @@ watch([projectId], () => {
   disconnect()
   stopPendingPoll()
   pending.value = null
+  leaseWait.value = null
   logLines.value = []
   void load()
 }, { immediate: true })
@@ -688,6 +698,9 @@ onBeforeUnmount(() => {
         <!-- 等待资源（FR-08）：设备被占时不再显示成「运行中」，单独说明在等租约 -->
         <span v-if="pending && pending.state === 'waiting'" class="muted queue-hint">
           {{ t('execution.leaseWaiting') }}
+          <template v-if="leaseWait && leaseWait.state === 'waiting'">
+            · {{ t('execution.leaseWaitElapsed', { seconds: leaseWaitSeconds }) }}
+          </template>
         </span>
         <!-- 重试可追溯（FR-v0.4-29）：首次尝试不渲染，只有重试记录才带「第 N 次尝试」 -->
         <span v-if="selected.attemptNo > 1" class="muted">

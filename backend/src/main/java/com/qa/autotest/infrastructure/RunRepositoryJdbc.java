@@ -218,6 +218,20 @@ public class RunRepositoryJdbc implements RunRepository {
     }
 
     @Override
+    public Optional<Long> findLeaseWaitMs(long projectId, String runId) {
+        String sql = "SELECT lease_wait_ms FROM run WHERE project_id = ? AND run_id = ?";
+        TenantGuard.requireProjectScope(sql, "run");
+        // 列可空：还没有回写过时返回 empty，不能把 NULL 当成 0 秒等待。
+        return jdbc.query(sql, rs -> {
+            if (!rs.next()) {
+                return Optional.<Long>empty();
+            }
+            long value = rs.getLong("lease_wait_ms");
+            return rs.wasNull() ? Optional.<Long>empty() : Optional.of(value);
+        }, projectId, runId);
+    }
+
+    @Override
     public List<RunRecord> findActive() {
         String sql = SELECT + " WHERE project_id > 0 AND run_status IN ('preparing', 'running')";
         TenantGuard.requireProjectScope(sql, "run");

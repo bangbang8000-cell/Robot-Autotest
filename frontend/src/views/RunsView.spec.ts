@@ -81,6 +81,12 @@ vi.mock('@/api/execution', () => ({
           }
         : null,
     ),
+    // 租约等待耗时（EXEC-09 残余 / FR-08）：只在 waiting 态才会被请求
+    leaseWait: vi.fn(async (_projectId: number, runId: string) => ({
+      state: 'waiting' as const,
+      elapsedMs: runId === 'RUN-WAITING' ? 7400 : 0,
+      totalMs: null,
+    })),
   },
 }))
 
@@ -336,6 +342,11 @@ describe('RunsView 列表与日志联动', () => {
     // PREPARING 也要开始轮询，否则永远看不到等待态
     expect(executionApi.pendingActivity).toHaveBeenCalledWith(1, 'RUN-WAITING')
     expect(root.textContent).toContain(i18n.global.t('execution.leaseWaiting'))
+    // 等待时长从接口回读（EXEC-09 残余 / FR-08）：不能只写「等待资源」却看不出等了多久
+    expect(executionApi.leaseWait).toHaveBeenCalledWith(1, 'RUN-WAITING')
+    expect(root.textContent).toContain(
+      i18n.global.t('execution.leaseWaitElapsed', { seconds: 7 }),
+    )
   })
 
   it('已终止的行不再显示「取消」', async () => {

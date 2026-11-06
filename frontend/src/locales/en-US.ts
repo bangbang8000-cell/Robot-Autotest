@@ -481,6 +481,7 @@ export default {
     queuePosition: 'Queued · #{position} of {waiting}',
     queueUnknown: 'Queued · position unavailable',
     leaseWaiting: 'Waiting for resources · device is leased by another run; starts automatically',
+    leaseWaitElapsed: '{seconds}s elapsed',
     downloadLog: 'Download full log',
     logDownloaded: 'Full log downloaded',
     manual: {

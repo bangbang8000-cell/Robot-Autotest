@@ -245,6 +245,26 @@ public class RunController {
         return ApiResponse.ok(runs.retryOrigin(projectId, runId));
     }
 
+    /**
+     * 租约等待耗时（EXEC-09 残余 / FR-08）。
+     *
+     * <p>等待中的实时秒数取自进程内登记（{@code LeaseWaitRegistry}），落库总耗时取自
+     * {@code run.lease_wait_ms}：还在等待时 {@code totalMs} 为 {@code null}，界面按
+     * {@code elapsedMs} 显示「已等待 N 秒」；拿到租约后 {@code state} 转 {@code settled}，
+     * {@code elapsedMs} 回落到落库总耗时，两者不再打架。
+     */
+    @GetMapping("/runs/{runId}/lease-wait")
+    public ApiResponse<RunService.LeaseWait> leaseWait(@PathVariable String runId,
+                                                       @RequestParam long projectId) {
+        Long totalMs = runs.leaseWaitTotalMs(projectId, runId);
+        boolean waiting = leaseWaits.waiting(runId);
+        long elapsedMs = waiting
+                ? leaseWaits.elapsed(runId)
+                : (totalMs == null ? 0 : totalMs);
+        return ApiResponse.ok(new RunService.LeaseWait(waiting ? "waiting" : "settled",
+                elapsedMs, totalMs));
+    }
+
     public record CancelRequest(String reason) {
     }
 

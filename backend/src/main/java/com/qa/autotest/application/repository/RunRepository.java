@@ -61,6 +61,14 @@ public interface RunRepository {
         return 0;
     }
 
+    /**
+     * 回读已落库的租约等待耗时（{@code run.lease_wait_ms}，FR-08）。
+     * 默认返回空，保证内存仓储与既有测试无需改动；JDBC 实现必须覆盖。
+     */
+    default Optional<Long> findLeaseWaitMs(long projectId, String runId) {
+        return Optional.empty();
+    }
+
     List<RunRecord> findActive();
 
     PageResult<RunRecord> page(long projectId, RunState state, int page, int size);

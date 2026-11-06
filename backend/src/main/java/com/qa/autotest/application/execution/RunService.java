@@ -162,6 +162,19 @@ public class RunService {
     }
 
     /**
+     * 回读已落库的租约等待耗时（FR-08 残余）：等待态与实时秒数由 {@code LeaseWaitRegistry}
+     * 提供，这里只负责把「已落库的总耗时」读出来，并顺手做归属与权限校验。
+     * 还没回写（NULL）时返回 {@code null}，与「等待 0 秒」区分开。
+     */
+    public Long leaseWaitTotalMs(long projectId, String runId) {
+        access.bindProject(projectId);
+        access.require(PermissionResource.EXECUTION, PermissionAction.READ);
+        runs.findByRunId(projectId, runId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "运行不存在: " + runId));
+        return runs.findLeaseWaitMs(projectId, runId).orElse(null);
+    }
+
+    /**
      * 上一次尝试（FR-v0.4-29）：把 {@code retry_of_run_id} 背后的运行读出来，
      * 运行详情才能回答「为什么重试」。没有重试来源时返回 {@code null}。
      */
@@ -369,6 +382,16 @@ public class RunService {
                     "单用例超时最多 " + MAX_TEST_TIMEOUT_SECONDS + " 秒");
         }
         return seconds;
+    }
+
+    /**
+     * 租约等待现状（FR-08 残余：等待时长回读）。
+     *
+     * @param state     {@code waiting} = 此刻仍在等租约；{@code settled} = 已拿到或已结束
+     * @param elapsedMs 等待中为实时已等待毫秒；否则等于 {@code totalMs}（同样未回写时为 0）
+     * @param totalMs   落库的本次等待总耗时；还没回写为 {@code null}
+     */
+    public record LeaseWait(String state, long elapsedMs, Long totalMs) {
     }
 
     public record TransitionContext(Instant startedAt,
