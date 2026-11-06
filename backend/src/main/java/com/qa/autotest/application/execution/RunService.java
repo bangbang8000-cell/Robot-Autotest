@@ -2,6 +2,7 @@ package com.qa.autotest.application.execution;
 
 import com.qa.autotest.application.iam.AccessControlService;
 import com.qa.autotest.application.iam.AuditService;
+import com.qa.autotest.application.repository.ExecutionNodeRepository;
 import com.qa.autotest.application.repository.RunRepository;
 import com.qa.autotest.application.repository.RunRetryOrigin;
 import com.qa.autotest.common.BusinessException;
@@ -14,6 +15,7 @@ import com.qa.autotest.domain.execution.RunState;
 import com.qa.autotest.domain.execution.RunStateMachine;
 import com.qa.autotest.domain.iam.PermissionAction;
 import com.qa.autotest.domain.iam.PermissionResource;
+import com.qa.autotest.domain.node.ExecutionNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +47,8 @@ public class RunService {
     private final ExecutionProperties props;
     private final Clock clock;
     private final List<RunCompletionListener> completionListeners;
+    /** 节点发起校验用（NODX-02）；旧构造默认装配「无节点」桩，行为 = 任何 nodeId 都不存在。 */
+    private final ExecutionNodeRepository nodeRepo;
 
     /** 兼容既有装配与单测：默认没有完成监听器。 */
     public RunService(RunRepository runs,
@@ -56,7 +60,6 @@ public class RunService {
         this(runs, access, audit, ids, props, clock, List.of());
     }
 
-    @Autowired
     public RunService(RunRepository runs,
                       AccessControlService access,
                       AuditService audit,
@@ -64,6 +67,18 @@ public class RunService {
                       ExecutionProperties props,
                       Clock clock,
                       List<RunCompletionListener> completionListeners) {
+        this(runs, access, audit, ids, props, clock, completionListeners, NO_NODES);
+    }
+
+    @Autowired
+    public RunService(RunRepository runs,
+                      AccessControlService access,
+                      AuditService audit,
+                      RunIdGenerator ids,
+                      ExecutionProperties props,
+                      Clock clock,
+                      List<RunCompletionListener> completionListeners,
+                      ExecutionNodeRepository nodeRepo) {
         this.runs = runs;
         this.access = access;
         this.audit = audit;
@@ -72,7 +87,57 @@ public class RunService {
         this.clock = clock;
         this.completionListeners = completionListeners == null
                 ? List.of() : List.copyOf(completionListeners);
+        this.nodeRepo = nodeRepo;
     }
+
+    /** 「无节点」桩：旧构造（未装配节点域）下任何 nodeId 都判不存在，等价拒绝。 */
+    private static final ExecutionNodeRepository NO_NODES = new ExecutionNodeRepository() {
+        @Override
+        public java.util.Optional<ExecutionNode> find(long id) {
+            return java.util.Optional.empty();
+        }
+
+        @Override
+        public java.util.Optional<ExecutionNode> findByName(String name) {
+            return java.util.Optional.empty();
+        }
+
+        @Override
+        public boolean nameExists(String name) {
+            return false;
+        }
+
+        @Override
+        public List<ExecutionNode> list() {
+            return List.of();
+        }
+
+        @Override
+        public ExecutionNode insert(String name, String tokenHash, boolean rfAvailable,
+                                    boolean pytestAvailable, int maxConcurrency, Long operatorId) {
+            throw new UnsupportedOperationException("NO_NODES 桩不支持注册");
+        }
+
+        @Override
+        public void heartbeat(long id, boolean rfAvailable, boolean pytestAvailable) {
+            throw new UnsupportedOperationException("NO_NODES 桩不支持心跳");
+        }
+
+        @Override
+        public int markStaleOffline(java.time.Instant staleBefore) {
+            return 0;
+        }
+
+        @Override
+        public void updateStatus(long id, String status, Long operatorId) {
+            throw new UnsupportedOperationException("NO_NODES 桩不支持状态变更");
+        }
+
+        @Override
+        public java.util.Map<Long, Integer> runningRunsByNode() {
+            return java.util.Map.of();
+        }
+    };
 
     @Transactional
     public RunRecord create(CreateRunCommand cmd) {
@@ -116,6 +181,7 @@ public class RunService {
     }
 
     private RunRecord insertRun(CreateRunCommand cmd, String requestId, RunOrigin origin) {
+        Long nodeId = requireLaunchableNode(cmd.nodeId());
         Instant now = clock.instant();
         String runId = ids.next(resolveCasePrefix(cmd), now);
         String scope = deviceScope(cmd);
@@ -124,15 +190,47 @@ public class RunService {
                 0, 0, 0, null, null, null, null, now, null, null, scope);
         try {
             RunRecord inserted = runs.insert(draft, runId, requestId, TenantContext.userId(), origin);
+            if (nodeId != null) {
+                runs.assignNode(cmd.projectId(), runId, nodeId);
+            }
             audit.record("RUN_CREATE", "run", runId,
                     "suite=" + cmd.suitePaths().size() + ", concurrency=" + cmd.concurrency()
                             + ", trigger=" + origin.triggerType()
-                            + (origin.planId() == null ? "" : ", plan=" + origin.planId()));
+                            + (origin.planId() == null ? "" : ", plan=" + origin.planId())
+                            + (nodeId == null ? "" : ", node=" + nodeId));
             return inserted;
         } catch (DataIntegrityViolationException duplicate) {
             return runs.findByRequestId(cmd.projectId(), requestId)
                     .orElseThrow(() -> duplicate);
         }
+    }
+
+    /**
+     * 节点发起校验（NODX-02）：指定节点必须是 ONLINE，否则拒绝并给明原因，
+     * <b>不回落本机</b>（离线排队是 v2.1 明确不做的行为，口径见 DEV-PLAN §5.3）。
+     *
+     * @return 规范化后的 nodeId；未指定节点返回 null（走本机）
+     */
+    private Long requireLaunchableNode(Long nodeId) {
+        if (nodeId == null) {
+            return null;
+        }
+        ExecutionNode node = nodeRepo.find(nodeId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND,
+                        "执行节点不存在: " + nodeId));
+        if (ExecutionNode.ONLINE.equals(node.status())) {
+            return nodeId;
+        }
+        String reason = switch (node.status()) {
+            case ExecutionNode.NEW -> "节点已注册但尚未心跳上线（NEW）";
+            case ExecutionNode.OFFLINE -> "节点离线（OFFLINE"
+                    + (node.lastHeartbeatAt() == null
+                       ? "" : "，最后心跳 " + node.lastHeartbeatAt()) + "）";
+            case ExecutionNode.DISABLED -> "节点已停用（DISABLED），先由管理员启用";
+            default -> "节点状态不可发起（" + node.status() + "）";
+        };
+        throw new BusinessException(ErrorCode.CONFLICT,
+                "节点 " + node.name() + " 不可发起: " + reason + "；不回落本机执行");
     }
 
     public RunRecord get(long projectId, String runId) {
@@ -363,7 +461,19 @@ public class RunService {
                                    int timeoutSeconds,
                                    String includeTag,
                                    List<String> testNames,
-                                   int testTimeoutSeconds) {
+                                   int testTimeoutSeconds,
+                                   /** 指定执行节点；null = 本机执行（默认，v2.0 语义）。 */
+                                   Long nodeId) {
+
+        /** 兼容既有构造点（未指定节点 = 本机）。 */
+        public CreateRunCommand(long projectId, Long testSetId, List<String> suitePaths,
+                                int concurrency, Long environmentId, List<String> deviceKeys,
+                                String runRequestId, int priority, int timeoutSeconds,
+                                String includeTag, List<String> testNames, int testTimeoutSeconds) {
+            this(projectId, testSetId, suitePaths, concurrency, environmentId, deviceKeys,
+                    runRequestId, priority, timeoutSeconds, includeTag, testNames,
+                    testTimeoutSeconds, null);
+        }
     }
 
     /** 单用例超时（秒）上限；与前端输入框上限一致。 */

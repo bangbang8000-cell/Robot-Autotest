@@ -317,7 +317,11 @@
 - **做**：① 发起时可选 `nodeId`，写 `run.node_id`；② 节点非 `ONLINE` → 直接拒绝并给原因，**不回落本机**；③ 节点并发按节点独立计数
 - **跑**：`mvn -o -B test -Dtest=RunDispatchNodeTest`（正/负各 1 条）
 - **判**：离线节点请求被拒且原因明确；未指定走本机（本机路径回归全绿）；并发独立
-- **证**：`docs/evidence/v2.1/NODX-02/`（正/负接口输出）
+- **证**：`docs/evidence/v2.1/NODX-02/`（真实 HTTP 12 项全 PASS：NEW/OFFLINE/DISABLED 三类拒绝各带原因文案与「不回落本机」、拒绝发生在落库前、`run.node_id` 真实写库过租户守卫、`RUN_CREATE` 审计含 `node=`、未指定走本机 `node_id IS NULL`；`RunDispatchNodeTest` 6 条 + `NodeChannelTest` 4 条全绿——并发独立用真实 `ProjectRunDispatcher` 本机道占满时节点道照常并行验证）
+- **实测结论（2026-11-06/07，完成回写）**：
+  - 节点执行体（`RunExecutionService.executeOnNode`）本版为**诚实占位**：指定节点的 run 派发进节点道后判 FAILED（原因码 `node_channel_unavailable`，文案「不回落本机执行」）——节点接入地址随 NODX-03 迁移才登记，本版绝不静默回落本机 pabot；NODX-03 把该主体换成 NodeChannel 真实投递。
+  - §10.10 推迟项补齐：`GET /api/nodes` 每行带 `runningRuns`（按 `run.node_id` 聚合 `run_status='running'`），前端节点页加「在跑任务」列。
+  - 修订记录：① `RunService` 加节点仓储后 `@Autowired` 必须放全参主构造——留在便捷构造上生产装配拿到 NO_NODES 桩，症状是「刚注册的节点发起报不存在」，单测（手写构造）抓不到，HTTP 验收第一轮抓到；② `CreateRunCommand` 用旧 12 参构造委托新 13 参，8 处既有调用点零改动；③ `ProjectRunDispatcher` 内部道键从裸项目 id 换 `p<id>`/`n<nodeId>` 字符串，本机语义等价不变；④ `NodeChannel` 出站纪律（超时 10s / 网络失败重试 1 次 / HTTP 拒绝不重试）由 `NodeChannelTest` 锁死。
 
 ### 10.12 NODX-03 · 执行端 agent 与命令等价
 

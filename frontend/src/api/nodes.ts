@@ -17,6 +17,8 @@ export interface ExecutionNodeView {
   pytestAvailable: boolean
   maxConcurrency: number
   lastHeartbeatAt: string | null
+  /** 当前在该节点上 RUNNING 的 run 数（NODX-02 占用读数）。 */
+  runningRuns: number
 }
 
 export interface NodeRegisterResult {

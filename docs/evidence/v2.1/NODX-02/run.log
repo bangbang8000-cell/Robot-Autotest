@@ -1,0 +1,16 @@
+# 已登录 qa-e2e-admin
+
+PASS  NODX02-01   ONLINE 节点发起 200：run 创建成功                                   HTTP 200 runId=RUN-20261107002210-850000
+PASS  NODX02-02   run.node_id = 指定节点（真实写库，租户守卫通过）                            node_id=16 期望=16
+PASS  NODX02-03   RUN_CREATE 审计含 node=（派发去向可追溯）                              detail=suite=1, concurrency=1, trigger=ci, node=16
+PASS  NODX02-04   执行体不落本机：run FAILED，原因码 node_channel_unavailable + 文案不回落本机  reason=node_channel_unavailable msg=节点执行通道尚未启用（NODX-03 将实装 NodeChannel 投递）；本次运行已按节点 16 派发，不回落本机执
+PASS  NODX02-05   NEW 节点准备：重名注册被拒（NODX-01 语义保持）                              HTTP 409
+PASS  NODX02-06   NEW 节点发起 → 409，原因含 NEW 与 不回落本机                             HTTP 409 msg=节点 nodx02-node-new2 不可发起: 节点已注册但尚未心跳上线（NEW）；不回落本机执行
+PASS  NODX02-07   拒绝发生在落库前：run_request_id 无对应 run                            run rows=0
+PASS  NODX02-08   OFFLINE 节点发起 → 409，原因含 OFFLINE 与 不回落本机                     HTTP 409 msg=节点 nodx02-node-online 不可发起: 节点离线（OFFLINE，最后心跳 2026-11-06T16:22:10.014Z
+PASS  NODX02-09   DISABLED 节点发起 → 409，原因含 DISABLED（不回落本机）                    disable=200 HTTP 409 msg=节点 nodx02-node-online 不可发起: 节点已停用（DISABLED），先由管理员启
+PASS  NODX02-10   节点不存在 → 404（执行节点不存在: 99999）                                HTTP 404 msg=执行节点不存在: 99999
+PASS  NODX02-11   未指定 nodeId → 本机：run 落库且 node_id IS NULL                    HTTP 200 runId=RUN-20261107002210-850001 node_id=-1
+PASS  NODX02-12   节点列表每行带 runningRuns 占用读数（NODX-02 补齐）                       HTTP 200 nodes=3
+
+合计 12 项，FAIL 0 项

@@ -32,4 +32,10 @@ public interface ExecutionNodeRepository {
     int markStaleOffline(java.time.Instant staleBefore);
 
     void updateStatus(long id, String status, Long operatorId);
+
+    /**
+     * 各节点当前在跑的 run 数（NODX-02，占用读数）：按 {@code run.node_id} 聚合，
+     * 只数 {@code run_status='running'}。节点无在跑任务时不出现在结果里。
+     */
+    java.util.Map<Long, Integer> runningRunsByNode();
 }

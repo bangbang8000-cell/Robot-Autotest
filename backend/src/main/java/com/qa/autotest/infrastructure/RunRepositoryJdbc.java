@@ -131,6 +131,18 @@ public class RunRepositoryJdbc implements RunRepository {
                 0, 0, 0, null, null, null, null, draft.enqueuedAt(), null, null, draft.deviceScope());
     }
 
+    /** 指定执行节点（NODX-02）：与 insert 同事务调用，写 run.node_id。 */
+    @Override
+    public void assignNode(long projectId, String runId, long nodeId) {
+        String sql = """
+                UPDATE run
+                   SET node_id = ?
+                 WHERE project_id = ? AND run_id = ?
+                """;
+        TenantGuard.requireProjectScope(sql, "run");
+        jdbc.update(sql, nodeId, projectId, runId);
+    }
+
     @Override
     public Optional<RunOrigin> findOrigin(long projectId, String runId) {
         String sql = """

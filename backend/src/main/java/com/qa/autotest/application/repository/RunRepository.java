@@ -28,6 +28,14 @@ public interface RunRepository {
     }
 
     /**
+     * 指定执行节点（NODX-02）：把 {@code run.node_id} 落库。默认空实现保证
+     * 内存仓储/旧实现无需改动；JDBC 实现必须覆盖（带 project_id 租户条件）。
+     */
+    default void assignNode(long projectId, String runId, long nodeId) {
+        throw new UnsupportedOperationException("该仓储不支持节点指派: " + runId);
+    }
+
+    /**
      * 读取运行来源，供报告入库时把 PLAN_ID / TRIGGER_TYPE 合并进 metadata。
      * 默认返回空（内存仓储/旧实现没有来源概念）。
      */

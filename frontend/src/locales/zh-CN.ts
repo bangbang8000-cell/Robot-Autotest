@@ -1108,6 +1108,7 @@ export default {
     rfAvailable: 'Robot Framework 可用',
     pytestAvailable: 'pytest 可用',
     noCapability: '未上报能力',
+    runningRuns: '在跑任务',
     maxConcurrency: '并发上限',
     lastHeartbeat: '最近心跳',
     status: {

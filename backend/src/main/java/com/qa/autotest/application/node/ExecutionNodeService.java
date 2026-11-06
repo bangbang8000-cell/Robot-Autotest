@@ -55,10 +55,11 @@ public class ExecutionNodeService {
         return heartbeatIntervalSeconds;
     }
 
-    /** 节点列表读数（能力 + 并发上限 + 最近心跳）。不返回令牌哈希。 */
+    /** 节点列表读数（能力 + 并发上限 + 最近心跳 + 在跑占用）。不返回令牌哈希。 */
     public record NodeView(long id, String name, String status,
                            boolean rfAvailable, boolean pytestAvailable,
-                           int maxConcurrency, String lastHeartbeatAt) {
+                           int maxConcurrency, String lastHeartbeatAt,
+                           int runningRuns) {
     }
 
     /** 注册响应：明文令牌只在这里出现一次。 */
@@ -108,7 +109,10 @@ public class ExecutionNodeService {
 
     public List<NodeView> list() {
         requireAdmin();
-        return nodes.list().stream().map(this::view).toList();
+        java.util.Map<Long, Integer> running = nodes.runningRunsByNode();
+        return nodes.list().stream()
+                .map(node -> view(node, running.getOrDefault(node.id(), 0)))
+                .toList();
     }
 
     @Transactional
@@ -151,9 +155,14 @@ public class ExecutionNodeService {
     }
 
     private NodeView view(ExecutionNode node) {
+        return view(node, 0);
+    }
+
+    private NodeView view(ExecutionNode node, int runningRuns) {
         return new NodeView(node.id(), node.name(), node.status(),
                 node.rfAvailable(), node.pytestAvailable(), node.maxConcurrency(),
-                node.lastHeartbeatAt() == null ? null : node.lastHeartbeatAt().toString());
+                node.lastHeartbeatAt() == null ? null : node.lastHeartbeatAt().toString(),
+                runningRuns);
     }
 
     static String sha256(String text) {

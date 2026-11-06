@@ -1,0 +1,32 @@
+[
+  {
+    "id": 16,
+    "name": "nodx02-node-online",
+    "status": "DISABLED",
+    "rfAvailable": true,
+    "pytestAvailable": false,
+    "maxConcurrency": 1,
+    "lastHeartbeatAt": "2026-11-06T16:22:10.014Z",
+    "runningRuns": 0
+  },
+  {
+    "id": 17,
+    "name": "nodx02-node-new",
+    "status": "ONLINE",
+    "rfAvailable": true,
+    "pytestAvailable": false,
+    "maxConcurrency": 1,
+    "lastHeartbeatAt": "2026-11-06T16:22:10.178Z",
+    "runningRuns": 0
+  },
+  {
+    "id": 18,
+    "name": "nodx02-node-new2",
+    "status": "NEW",
+    "rfAvailable": false,
+    "pytestAvailable": false,
+    "maxConcurrency": 1,
+    "lastHeartbeatAt": null,
+    "runningRuns": 0
+  }
+]

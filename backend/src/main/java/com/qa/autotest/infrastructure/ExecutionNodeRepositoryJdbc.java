@@ -92,6 +92,27 @@ public class ExecutionNodeRepositoryJdbc implements ExecutionNodeRepository {
                 status, operatorId, id);
     }
 
+    /**
+     * 节点占用读数（NODX-02）：按 run.node_id 聚合在跑数。
+     * 平台级统计——节点本身是全局资源（V9_4 迁移注释同口径），跨项目聚合
+     * 在本仓储内完成（本类有意不进 TenantGuard），单条 SQL 一次聚合，不分页。
+     */
+    @Override
+    public java.util.Map<Long, Integer> runningRunsByNode() {
+        return jdbc.query("""
+                SELECT node_id, COUNT(*) AS running_runs
+                  FROM run
+                 WHERE node_id IS NOT NULL AND run_status = 'running'
+                 GROUP BY node_id
+                """, rs -> {
+            java.util.Map<Long, Integer> counts = new java.util.HashMap<>();
+            while (rs.next()) {
+                counts.put(rs.getLong("node_id"), rs.getInt("running_runs"));
+            }
+            return counts;
+        });
+    }
+
     private static ExecutionNode map(java.sql.ResultSet rs, int rowNum)
             throws java.sql.SQLException {
         Timestamp heartbeat = rs.getTimestamp("last_heartbeat_at");

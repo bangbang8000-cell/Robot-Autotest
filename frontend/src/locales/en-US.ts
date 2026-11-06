@@ -1106,6 +1106,7 @@ export default {
     rfAvailable: 'Robot Framework available',
     pytestAvailable: 'pytest available',
     noCapability: 'No capability reported',
+    runningRuns: 'Running runs',
     maxConcurrency: 'Max concurrency',
     lastHeartbeat: 'Last heartbeat',
     status: {

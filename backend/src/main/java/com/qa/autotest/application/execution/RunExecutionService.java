@@ -90,6 +90,9 @@ public class RunExecutionService {
      * 再通过单线程 TaskExecutor 调本方法，避免把长耗时的 pabot 执行包在调度事务里。
      */
     public RunRecord execute(RunRecord created, RunService.CreateRunCommand cmd) {
+        if (cmd.nodeId() != null) {
+            return executeOnNode(created, cmd);
+        }
         runs.transition(created.runId(), RunState.PREPARING, RunService.TransitionContext.plain());
 
         Path artifactsRoot = ExecutionPaths.resolve(props.getArtifactsRoot());
@@ -257,6 +260,22 @@ public class RunExecutionService {
         return runs.transition(created.runId(), RunState.FAILED,
                 new RunService.TransitionContext(null, clock.instant(), cls.name(), reason,
                         message, false, false));
+    }
+
+    /**
+     * 节点执行体（NODX-02 占位，NODX-03 实装）：指定节点的 run <b>不跑本机 pabot</b>。
+     *
+     * <p>本版只完成「派发进节点道 + run.node_id 落库」；真正的执行要经
+     * {@code NodeChannel} 把任务推到节点，而节点接入地址（agent 端点）随 NODX-03
+     * 的迁移才登记。通道未启用时 run 明确判 FAILED（原因入 failure_reason），
+     * 绝不静默回落本机——那是 v2.1 明确禁止的行为（DEV-PLAN §5.3）。
+     * NODX-03 把本方法主体换成 NodeChannel 投递 + 产物回传。
+     */
+    private RunRecord executeOnNode(RunRecord created, RunService.CreateRunCommand cmd) {
+        runs.transition(created.runId(), RunState.PREPARING, RunService.TransitionContext.plain());
+        return fail(created, "node_channel_unavailable",
+                "节点执行通道尚未启用（NODX-03 将实装 NodeChannel 投递）；"
+                        + "本次运行已按节点 " + cmd.nodeId() + " 派发，不回落本机执行");
     }
 
     /** 分类只依赖 reason 与产物结论；分片文本已由 {@link PabotOrchestrator} 落到 run.log。 */

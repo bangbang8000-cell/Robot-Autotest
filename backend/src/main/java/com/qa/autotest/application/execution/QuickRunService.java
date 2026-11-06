@@ -3,6 +3,7 @@ package com.qa.autotest.application.execution;
 import com.qa.autotest.application.iam.AccessControlService;
 import com.qa.autotest.application.iam.AuditService;
 import com.qa.autotest.application.execution.RunService.CreateRunCommand;
+import com.qa.autotest.application.repository.ExecutionNodeRepository;
 import com.qa.autotest.common.BusinessException;
 import com.qa.autotest.common.ErrorCode;
 import com.qa.autotest.common.tenant.TenantContext;
@@ -45,11 +46,20 @@ public class QuickRunService {
     private final AuditService audit;
     private final ExecutionProperties props;
     private final ExecutionRequestPrecheck precheck;
+    private final ExecutionNodeRepository nodeRepo;
 
     public QuickRunService(RunService runs, RunExecutionService executions,
                            RunDispatcher dispatcher, AccessControlService access,
                            AuditService audit, ExecutionProperties props,
                            ExecutionRequestPrecheck precheck) {
+        this(runs, executions, dispatcher, access, audit, props, precheck, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public QuickRunService(RunService runs, RunExecutionService executions,
+                           RunDispatcher dispatcher, AccessControlService access,
+                           AuditService audit, ExecutionProperties props,
+                           ExecutionRequestPrecheck precheck, ExecutionNodeRepository nodeRepo) {
         this.runs = runs;
         this.executions = executions;
         this.dispatcher = dispatcher;
@@ -57,6 +67,7 @@ public class QuickRunService {
         this.audit = audit;
         this.props = props;
         this.precheck = precheck;
+        this.nodeRepo = nodeRepo;
     }
 
     /**
@@ -112,6 +123,18 @@ public class QuickRunService {
     /** 交给公共派发器；仅 QUEUED 的 run 需要派发（重复请求直接返回原记录）。 */
     public void dispatch(RunRecord created, CreateRunCommand command) {
         if (created.state() != RunState.QUEUED) {
+            return;
+        }
+        if (command.nodeId() != null) {
+            // NODX-02：指定节点走节点道，并发按节点独立计数；发起校验已在 RunService 落库前完成，
+            // 这里只是取该节点的并发上限建道。节点缺失属异常竞态（无删除接口），按 404 快速失败。
+            int nodeConcurrency = nodeRepo.find(command.nodeId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND,
+                            "执行节点不存在: " + command.nodeId()))
+                    .maxConcurrency();
+            dispatcher.submitToNode(created.projectId(), command.nodeId(), nodeConcurrency,
+                    null, created.runId(), command.priority(),
+                    () -> executions.execute(created, command));
             return;
         }
         dispatcher.submit(created.projectId(), null, created.runId(), command.priority(),

@@ -152,7 +152,8 @@ public class RunController {
                 timeout,
                 request.includeTag(),
                 null,
-                RunService.normalizeTestTimeout(request.testTimeoutSeconds()));
+                RunService.normalizeTestTimeout(request.testTimeoutSeconds()),
+                request.nodeId());
         RunRecord created = runs.create(command, new RunOrigin(RunOrigin.CI, null, null));
         quickRuns.dispatch(created, command);
         return ApiResponse.ok(created);
@@ -314,6 +315,8 @@ public class RunController {
                                    Integer priority,
                                    Integer timeoutSeconds,
                                    Integer testTimeoutSeconds,
-                                   String includeTag) {
+                                   String includeTag,
+                                   /** 指定执行节点；null = 本机（默认）。节点非 ONLINE 直接拒绝。 */
+                                   Long nodeId) {
     }
 }

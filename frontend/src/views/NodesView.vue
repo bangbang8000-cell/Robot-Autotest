@@ -117,6 +117,7 @@ const columns = computed<DataTableColumns<ExecutionNodeView>>(() => [
     render: (row) => capability(row),
   },
   { title: t('nodesView.maxConcurrency'), key: 'maxConcurrency', width: 120, align: 'right' },
+  { title: t('nodesView.runningRuns'), key: 'runningRuns', width: 100, align: 'right' },
   {
     title: t('nodesView.lastHeartbeat'),
     key: 'lastHeartbeatAt',

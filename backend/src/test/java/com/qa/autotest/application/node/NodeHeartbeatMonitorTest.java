@@ -141,6 +141,11 @@ class NodeHeartbeatMonitorTest {
         }
 
         @Override
+        public java.util.Map<Long, Integer> runningRunsByNode() {
+            return java.util.Map.of();
+        }
+
+        @Override
         public void updateStatus(long id, String status, Long operatorId) {
             ExecutionNode node = nodes.get(id);
             nodes.put(id, new ExecutionNode(node.id(), node.name(), node.tokenHash(), status,

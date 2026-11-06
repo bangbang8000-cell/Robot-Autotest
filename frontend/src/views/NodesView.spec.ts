@@ -23,6 +23,7 @@ const nodes: ExecutionNodeView[] = [
     pytestAvailable: true,
     maxConcurrency: 2,
     lastHeartbeatAt: '2026-11-06T14:00:00Z',
+    runningRuns: 0,
   },
   {
     id: 2,
@@ -32,6 +33,7 @@ const nodes: ExecutionNodeView[] = [
     pytestAvailable: false,
     maxConcurrency: 1,
     lastHeartbeatAt: null,
+    runningRuns: 0,
   },
 ]
 
