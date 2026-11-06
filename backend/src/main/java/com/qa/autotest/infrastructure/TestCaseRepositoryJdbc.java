@@ -260,9 +260,10 @@ public class TestCaseRepositoryJdbc implements TestCaseRepository {
 
     @Override
     public List<CapabilityStat> capabilities(long projectId) {
+        // 空白串在库里既不等于 NULL 也不等于 ''，会被当成能力桶渲染出空标签，故按 trim 后判空
         String sql = """
                 SELECT capability, COUNT(*) AS cnt FROM test_case
-                 WHERE project_id = ? AND capability IS NOT NULL AND capability <> ''
+                 WHERE project_id = ? AND capability IS NOT NULL AND TRIM(capability) <> ''
                  GROUP BY capability ORDER BY cnt DESC, capability
                 """;
         TenantGuard.requireProjectScope(sql, "test_case");
