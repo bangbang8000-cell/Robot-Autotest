@@ -87,7 +87,8 @@ W1（未开工）、产品代码。
 | `lint.sh` 与 `git diff --check` | PASS / 无空白错误 |
 | 回写脚本幂等 | 首跑 **PASS=19**、重跑 **SKIP=19**，无重复追加 |
 
-> 门禁日志在 `docs/evidence/v1.0/policy-20261106/logs/`（本批为裁决落盘后重跑，覆盖上一批同名日志）。
+> 门禁日志在本机 `docs/evidence/v1.0/policy-20261106/logs/`，**被根 `.gitignore` 第 5 行 `logs/` 忽略、不入库**；
+> 换机或在别处核对读数时，复跑 `bash docs/evidence/v1.0/policy-20261106/gates.sh` 即可重建。
 
 ---
 
