@@ -1,12 +1,14 @@
 package com.qa.autotest.application.iam;
 
 import com.qa.autotest.application.asset.CredentialService;
+import com.qa.autotest.application.caseasset.AssetVersionService;
 import com.qa.autotest.application.caseasset.TestCaseService;
 import com.qa.autotest.application.caseasset.TestSetService;
 import com.qa.autotest.application.execution.ExecutionProperties;
 import com.qa.autotest.application.execution.LeaseService;
 import com.qa.autotest.application.plan.PlanCommand;
 import com.qa.autotest.application.plan.PlanService;
+import com.qa.autotest.application.repository.AssetVersionRepository;
 import com.qa.autotest.application.repository.ProjectAssetRepository;
 import com.qa.autotest.application.repository.AuditRepository;
 import com.qa.autotest.application.repository.CredentialRepository;
@@ -140,7 +142,9 @@ class AuditAspectTest {
                 SecretCipher.fromBase64Key(Base64.getEncoder().encodeToString(new byte[32])),
                 stub(ProjectAssetRepository.class, (name, args) -> UNHANDLED), access, audit);
         caseService = new TestCaseService(caseRepository(), access, audit);
-        setService = new TestSetService(setRepository(), caseRepository(), access, audit);
+        setService = new TestSetService(setRepository(), caseRepository(), access, audit,
+                new AssetVersionService(stub(AssetVersionRepository.class,
+                        (name, args) -> UNHANDLED), access, audit));
         planService = new PlanService(planRepository(), setRepository(), access, audit, null,
                 new ExecutionProperties(), Clock.systemUTC());
         leaseService = new LeaseService(leaseRepository(), Clock.systemUTC(),

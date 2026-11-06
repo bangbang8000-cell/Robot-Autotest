@@ -161,15 +161,45 @@ public class TestSetRepositoryJdbc implements TestSetRepository {
 
     @Override
     public void reorder(long projectId, long testSetId, List<Long> caseIds, Long operatorId) {
+        // uk_test_set_item = (test_set_id, seq_no)：直接把 A 从 1 挪到 2 会撞上还占着 2 的 B
+        //（实测 Duplicate entry）。三段式：先整体平移腾位 → 落新序 → 未点名的接在尾部。
+        String shift = """
+                UPDATE test_set_item SET seq_no = seq_no + 1000000
+                 WHERE test_set_id = ?
+                   AND test_set_id IN (SELECT id FROM test_set WHERE project_id = ? AND id = ?)
+                """;
+        TenantGuard.requireProjectScope(shift, "test_set_item");
+        jdbc.update(shift, testSetId, projectId, testSetId);
+
+        String place = """
+                UPDATE test_set_item SET seq_no = ?, updated_by = ?
+                 WHERE test_set_id = ? AND test_case_id = ?
+                   AND test_set_id IN (SELECT id FROM test_set WHERE project_id = ? AND id = ?)
+                """;
+        TenantGuard.requireProjectScope(place, "test_set_item");
         int seq = 1;
         for (Long caseId : caseIds) {
-            String sql = """
+            jdbc.update(place, seq, operatorId, testSetId, caseId, projectId, testSetId);
+            seq++;
+        }
+
+        // 只传了部分列表时，剩余条目按原相对顺序接在尾部（否则它们滞留在 100 万段，排序错乱）
+        String pull = """
+                SELECT id FROM test_set_item
+                 WHERE test_set_id = ? AND seq_no > 1000000
+                   AND test_set_id IN (SELECT id FROM test_set WHERE project_id = ? AND id = ?)
+                 ORDER BY seq_no
+                """;
+        TenantGuard.requireProjectScope(pull, "test_set_item");
+        List<Long> remainder = jdbc.queryForList(pull, Long.class, testSetId, projectId, testSetId);
+        for (Long itemId : remainder) {
+            String settle = """
                     UPDATE test_set_item SET seq_no = ?, updated_by = ?
-                     WHERE test_set_id = ? AND test_case_id = ?
+                     WHERE id = ?
                        AND test_set_id IN (SELECT id FROM test_set WHERE project_id = ? AND id = ?)
                     """;
-            TenantGuard.requireProjectScope(sql, "test_set_item");
-            jdbc.update(sql, seq, operatorId, testSetId, caseId, projectId, testSetId);
+            TenantGuard.requireProjectScope(settle, "test_set_item");
+            jdbc.update(settle, seq, operatorId, itemId, projectId, testSetId);
             seq++;
         }
     }

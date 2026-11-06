@@ -1,0 +1,19 @@
+# 夹具 projectId=29 cases=[274, 275, 276] platformSet=17，已登录 qa-e2e-admin
+
+
+# 夹具已清理（test_case 保留 PUBX01-TC-* 供人工核对）
+PASS  PUBX01-01   平台集 refresh(projectId=0) 200，version=1 且 hash 是 64 位十六进制    HTTP 200 v=1 hash=1a8e05b560d1…
+PASS  PUBX01-02   建项目集 200                                                    HTTP 200 id=18
+PASS  PUBX01-03   addItem 后版本行自动存在：两次内容变更 → v=2，hash 与平台集同内容同 hash            HTTP 200 v=2 hash=1a8e05b560d1…
+PASS  PUBX01-04   重复 refresh：version 仍 2、仍一行、updated_at 不动（幂等）                行数=1 updated_at 2026-11-06 22:14:20 → 2026-11-06 22:14:20
+PASS  PUBX01-05   removeItem 后 version=3 且 hash 变                             v=3
+PASS  PUBX01-06   reorder 后 version=5（顺序算内容：addItem→v4，换序→v5）                 v=5（items=[274]+TC003 换序）
+PASS  PUBX01-07   改名（PUT）后 version 仍 5、hash 不变                                v=5
+PASS  PUBX01-08   bindCopy 200：SYNCED、synced=平台 v1、source 指回平台集（库里同读数）        HTTP 200 库=SYNCED/1/1a8e05b560d1/17
+PASS  PUBX01-09   副本读数：hasNewVersion=false（刚对齐）、latest 反映平台 v1                hasNew=False latest=1
+PASS  PUBX01-10   平台集加条目后 refresh → version=2                                 v=2
+PASS  PUBX01-11   references：副本 hasNewVersion=true、latest=2、forkState=SYNCED  refs=1 副本读数={'projectId': 29, 'projectCode': 'qa-e2e-fixture', 'copyAssetId': 19, 'syncedAssetVersion': 1, 'forkState': 'SYNCED', 'latestAssetVersion': 2, 'hasNewVersion': True}
+PASS  PUBX01-12   绑到不存在的平台集 → 404，文案含「未登记版本信息」                                HTTP 404 msg=平台用例集未登记版本信息: 99999999
+PASS  PUBX01-13   副本指向自己 → 400                                                HTTP 400 msg=副本不能指向自己
+
+合计 13 项，FAIL 0 项

@@ -25,13 +25,16 @@ public class TestSetService {
     private final TestCaseRepository cases;
     private final AccessControlService access;
     private final AuditService audit;
+    private final AssetVersionService assetVersions;
 
     public TestSetService(TestSetRepository sets, TestCaseRepository cases,
-                          AccessControlService access, AuditService audit) {
+                          AccessControlService access, AuditService audit,
+                          AssetVersionService assetVersions) {
         this.sets = sets;
         this.cases = cases;
         this.access = access;
         this.audit = audit;
+        this.assetVersions = assetVersions;
     }
 
     public PageResult<TestSet> page(long projectId, String keyword, int page, int size) {
@@ -97,6 +100,8 @@ public class TestSetService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "用例不存在"));
         int seq = sets.items(projectId, setId).size() + 1;
         sets.addItem(projectId, setId, caseId, seq, TenantContext.userId());
+        // PUBX-01：内容变了才 +1 版本；钩子内部自己比 hash，重复调用无副作用
+        assetVersions.onChanged(projectId, setId);
         audit.record("set.add-item", "test_set_item", setId + ":" + caseId, "seq=" + seq);
     }
 
@@ -105,6 +110,7 @@ public class TestSetService {
         access.require(PermissionResource.CASE, PermissionAction.UPDATE);
         get(projectId, setId);
         sets.removeItem(projectId, setId, caseId);
+        assetVersions.onChanged(projectId, setId);
         audit.record("set.remove-item", "test_set_item", setId + ":" + caseId, "");
     }
 
@@ -116,6 +122,8 @@ public class TestSetService {
             throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "排序列表不能为空");
         }
         sets.reorder(projectId, setId, caseIds, TenantContext.userId());
+        // 顺序算内容：改顺序必须涨版本，否则引用方永远收不到「平台库换序了」的提示
+        assetVersions.onChanged(projectId, setId);
         audit.record("set.reorder", "test_set", String.valueOf(setId), "size=" + caseIds.size());
     }
 }

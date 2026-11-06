@@ -285,11 +285,13 @@
 
 ### 10.8 PUBX-01 · 版本标识与引用方检测
 
-- **改**：`db/migration/V9_3__case_source_version.sql` + `db/down/`；新增 `application/caseasset/AssetVersionService.java`；改 `infrastructure/ProjectAssetRepositoryJdbc.java`、`infrastructure/AssetScopeSql.java`（引用关系查询）、`application/caseasset/TestSetService.java`
+- **改**：`db/migration/V9_3__case_source_version.sql` + `db/down/`；新增 `domain/caseasset/AssetVersion.java`、`application/repository/AssetVersionRepository.java`、`infrastructure/AssetVersionRepositoryJdbc.java`、`application/caseasset/AssetVersionService.java`、`api/caseasset/AssetVersionController.java`；改 `application/caseasset/TestSetService.java`（add/remove/reorder 接版本钩子）、`infrastructure/TestSetRepositoryJdbc.java`（reorder 撞唯一键修复，见下）、`scripts/db-audit.sh`（64→65）、`application/iam/AuditAspectTest.java`（构造签名）
+  - 修订 2026-11-06：计划原写「改 ProjectAssetRepositoryJdbc / AssetScopeSql」，实际引用方检测走**新表 asset_version**（`source_asset_id` 反查），不动既有 `project_asset` 引用链——两套语义（资产引用 vs 内容副本）分开，避免把「引用了资产」误当成「做了副本」。
 - **做**：① 平台资产算 `content_hash`（用例集内容规范化后哈希）+ 维护 `asset_version`；② 项目副本存 `synced_asset_version` / `fork_state`；③ 引用方列表带「有新版本」标记（hash 或版本任一变化才置位）
-- **跑**：`bash scripts/db-migrate.sh` → `mvn -o -B test -Dtest=AssetVersionServiceTest`
+- **跑**：`bash scripts/db-migrate.sh` → `mvn -o -B test -Dtest=AssetVersionServiceTest,AuditAspectTest` → `python3 docs/evidence/v2.1/PUBX-01/run.py`
 - **判**：内容不变不出新版本（不误报）；变更后引用方可见提示；只改顺序按「算变更」处理并在文档写明
-- **证**：`docs/evidence/v2.1/PUBX-01/`（三种变更的版本读数）
+- **证**：`docs/evidence/v2.1/PUBX-01/`（真实 HTTP 13 项全 PASS，含三种变更的版本读数与 reorder 修复证据）
+- **顺带修复（存量 bug）**：`TestSetRepositoryJdbc.reorder` 两元素换序撞 `uk_test_set_item(test_set_id, seq_no)`（真实链路 500），改三段式（平移腾位 → 落新序 → 余量接尾），由本包验收暴露并留端到端证据
 
 ### 10.9 PUBX-02 · 差异对比与同步/分叉
 
