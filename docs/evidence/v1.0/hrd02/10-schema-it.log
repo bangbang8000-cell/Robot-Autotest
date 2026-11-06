@@ -1,0 +1,117 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< com.qa:robot-autotest-backend >--------------------
+[INFO] Building robot-autotest-backend 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- jacoco:0.8.12:prepare-agent (default) @ robot-autotest-backend ---
+[INFO] argLine set to -javaagent:/home/evergreen/.m2/repository/org/jacoco/org.jacoco.agent/0.8.12/org.jacoco.agent-0.8.12-runtime.jar=destfile=/tmp/jacoco-robot-autotest.exec
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ robot-autotest-backend ---
+[INFO] Copying 4 resources from src/main/resources to target/classes
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ robot-autotest-backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ robot-autotest-backend ---
+[INFO] Copying 10 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ robot-autotest-backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ robot-autotest-backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.qa.autotest.db.SchemaIT
+08:54:05.524 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:mariadb://127.0.0.1/robot_it (MySQL 8.0)
+08:54:05.537 [main] WARN org.mariadb.jdbc.message.server.ErrorPacket -- Error: 1142-42000: SELECT command denied to user 'robot'@'localhost' for table 'user_variables_by_thread'
+08:54:05.635 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped pre-schema database level objects (execution time 00:00.003s)
+08:54:07.506 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema `robot_it` (execution time 00:01.867s)
+08:54:07.516 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema `robot_it` (execution time 00:00.008s)
+08:54:07.518 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped post-schema database level objects (execution time 00:00.001s)
+08:54:07.618 [main] WARN org.mariadb.jdbc.message.server.ErrorPacket -- Error: 1142-42000: SELECT command denied to user 'robot'@'localhost' for table 'user_variables_by_thread'
+08:54:07.670 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table `robot_it`.`flyway_schema_history` does not exist yet
+08:54:07.677 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 22 migrations (execution time 00:00.045s)
+08:54:07.744 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table `robot_it`.`flyway_schema_history` ...
+08:54:07.891 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema `robot_it`: << Empty Schema >>
+08:54:07.970 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "1 - baseline"
+08:54:09.639 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.1 - iam fields"
+08:54:10.297 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.2 - asset fields"
+08:54:10.802 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.3 - case fields"
+08:54:11.255 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.4 - audit indexes"
+08:54:11.342 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.5 - editor keywords"
+08:54:11.410 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "4.1 - lease"
+08:54:11.629 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "4.2 - run artifact"
+08:54:11.723 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "4.3 - failure class"
+08:54:11.856 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "5.1 - report fields"
+08:54:11.938 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State:  - Error Code: 1681)
+08:54:12.059 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "5.3 - report log"
+08:54:12.193 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "5.4 - artifact pin"
+08:54:12.282 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "5.5 - export columns"
+08:54:12.356 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "6.1 - execution plan"
+08:54:12.500 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "6.2 - plan dependency"
+08:54:12.615 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "6.3 - ci trigger"
+08:54:12.745 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.1 - audit summary"
+08:54:12.871 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.2 - user preference"
+08:54:12.934 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.3 - asset pool"
+08:54:13.332 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.4 - run device scope"
+08:54:13.440 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.5 - case safety level"
+08:54:13.595 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.6 - run metadata"
+08:54:13.671 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 22 migrations to schema `robot_it`, now at version v7.6 (execution time 00:05.106s)
+08:54:15.637 [main] WARN org.mariadb.jdbc.message.server.ErrorPacket -- Error: 1062-23000: Duplicate entry 'IT-RUN-1' for key 'run.uk_run_run_id'
+08:54:15.661 [main] WARN org.mariadb.jdbc.message.server.ErrorPacket -- Error: 1062-23000: Duplicate entry 'GPU-01#mlx5_0' for key 'resource_lease.uk_resource_lease_key'
+08:54:15.679 [main] WARN org.mariadb.jdbc.message.server.ErrorPacket -- Error: 1142-42000: SELECT command denied to user 'robot'@'localhost' for table 'user_variables_by_thread'
+08:54:15.699 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped pre-schema database level objects (execution time 00:00.002s)
+08:54:16.807 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema `robot_it` (execution time 00:01.105s)
+08:54:16.820 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema `robot_it` (execution time 00:00.012s)
+08:54:16.822 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped post-schema database level objects (execution time 00:00.001s)
+08:54:16.841 [main] WARN org.mariadb.jdbc.message.server.ErrorPacket -- Error: 1142-42000: SELECT command denied to user 'robot'@'localhost' for table 'user_variables_by_thread'
+08:54:16.854 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table `robot_it`.`flyway_schema_history` does not exist yet
+08:54:16.856 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 22 migrations (execution time 00:00.008s)
+08:54:16.888 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table `robot_it`.`flyway_schema_history` ...
+08:54:16.944 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema `robot_it`: << Empty Schema >>
+08:54:16.976 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "1 - baseline"
+08:54:18.356 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.1 - iam fields"
+08:54:19.037 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.2 - asset fields"
+08:54:19.570 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.3 - case fields"
+08:54:20.062 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.4 - audit indexes"
+08:54:20.135 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "2.5 - editor keywords"
+08:54:20.206 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "4.1 - lease"
+08:54:20.438 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "4.2 - run artifact"
+08:54:20.530 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "4.3 - failure class"
+08:54:20.663 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "5.1 - report fields"
+08:54:20.745 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State:  - Error Code: 1681)
+08:54:20.890 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "5.3 - report log"
+08:54:21.079 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "5.4 - artifact pin"
+08:54:21.175 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "5.5 - export columns"
+08:54:21.252 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "6.1 - execution plan"
+08:54:21.470 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "6.2 - plan dependency"
+08:54:21.536 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "6.3 - ci trigger"
+08:54:21.695 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.1 - audit summary"
+08:54:21.787 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.2 - user preference"
+08:54:21.837 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.3 - asset pool"
+08:54:22.173 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.4 - run device scope"
+08:54:22.288 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.5 - case safety level"
+08:54:22.451 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `robot_it` to version "7.6 - run metadata"
+08:54:22.509 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 22 migrations to schema `robot_it`, now at version v7.6 (execution time 00:05.032s)
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 18.35 s -- in com.qa.autotest.db.SchemaIT
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jacoco:0.8.12:report (report) @ robot-autotest-backend ---
+[INFO] Loading execution data file /tmp/jacoco-robot-autotest.exec
+[INFO] Analyzed bundle 'robot-autotest-backend' with 432 classes
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  24.039 s
+[INFO] Finished at: 2026-11-06T08:54:24+08:00
+[INFO] ------------------------------------------------------------------------

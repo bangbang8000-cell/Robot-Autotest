@@ -30,7 +30,7 @@ public final class TenantGuard {
             "schedule", "schedule_dependency", "execution_job", "run", "export_record",
             "execution_plan", "execution_plan_dependency",
             "resource_lease", "resource_lease_history", "run_artifact", "run_attempt",
-            "ci_trigger");
+            "run_metadata", "ci_trigger");
 
     private TenantGuard() {
     }

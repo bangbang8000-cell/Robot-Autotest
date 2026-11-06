@@ -198,6 +198,94 @@ Tests run: 7,  Failures: 0, Errors: 0 ... AuditQueryTest
 
 1. **真实 HTTP 全链路未跑**：8081 服务按要求未重启，仍是改动前代码；本地 WSL 账号/真实库的「登录 → 产生审计 → 查询/导出」端到端未执行。当前证据为 MockMvc + 伪仓储 + dev 库迁移。
 2. **AOP 未引入**：见 §2.2；若后续允许联网，可补 `spring-boot-starter-aop` 后把显式调用收口为 `@Around`，注解契约已就位。
-3. **`run:metadata-patch` / `system:deploy` 无入口**：代码库当前没有这两个接口，未硬造；待后续版本补入口时再加审计。
+3. **`run:metadata-patch` / `system:deploy` 无入口**：~~代码库当前没有这两个接口，未硬造；待后续版本补入口时再加审计。~~
+   **2026-11-06 已补**：两个入口与审计已实现，见 §6；报告侧合并补录值仍缺，见 §6.5。
 4. **down 脚本未在真实库执行回滚**：避免破坏 dev 库现有数据，仅按 ADR-0003 提供文件；语法与列名已对齐 V7_1。
 5. **审计异步线程的租户上下文**：`AuditService.execute` 在调用线程先快照 `projectId/actorId/operator/ip` 再异步写，避免 ThreadLocal 丢失；该点由 `AuditAspectTest` 间接覆盖（测试用同步执行器）。
+
+---
+
+## 6. 2026-11-06 补口：两类「无入口」操作已落地（HRD-02 收尾）
+
+§2.3 与 §5.3 记录的两个缺口——`run:metadata-patch`、`system:deploy` 只有 action 名、没有入口——
+本次补齐为**可调用的 HTTP 接口 + 落库 + 审计**，并补了单测与真实库迁移验证。
+
+### 6.1 `run:metadata-patch`：运行记录补录 metadata
+
+**为什么单开表**：平台触发产生的报告固定叫 `output.xml`，metadata 常缺 `RUN_ID` / `DUT` / `LINK`，
+对外报告必须能补齐。补录是**按项**进行的，所以用 KV 表而不是给 `run` 加 JSON 列：
+键唯一由 SQL 唯一键保证，并发补录不同键不会互相覆盖，审计摘要也能落到字段级。
+
+| 项 | 内容 |
+|---|---|
+| 迁移 | `db/migration/V7_6__run_metadata.sql`（按现有最高位 V7_5 顺延；Flyway 不允许补插低位） |
+| 回滚 | `db/down/V7_6__run_metadata.down.sql` |
+| 表 | `run_metadata(id, project_id, run_id, meta_key, meta_value, 审计四列)`；`UNIQUE (run_id, meta_key)`；`FOREIGN KEY (run_id) → run(run_id) ON DELETE CASCADE`；InnoDB/utf8mb4 |
+| 租户守卫 | `TenantGuard.TENANT_TABLES` 登记 `run_metadata`，仓储每条 SQL 先 `requireProjectScope` |
+| 服务 | `RunMetadataService.list` / `patch`；`@Audited(action="run:metadata-patch", resource="run")` + 显式 `recordChange` |
+| 接口 | `GET /api/execution/runs/{runId}/metadata?projectId=`（执行-读）、`PATCH` 同路径（执行-更新），body `{"metadata":{"DUT":"GPU-01"}}` |
+
+**语义**（`RunMetadataService.patch`）：
+
+- 值非空 = 覆盖写；value 为**空串 = 删除该项**；值未变化 = 不落库、不写审计（避免噪音）。
+- 键名限 `[A-Z][A-Z0-9_]{0,39}`（与 RF metadata 口径一致），小写直接拒绝；值上限 200 字符。
+- 先 `requireRun`（不存在 → `NOT_FOUND`），再读旧值、比对、落库、写审计。
+- 审计摘要示例：`before={DUT=GPU-OLD}; after={DUT=GPU-NEW}`；
+  删除项记为 `after={BASELINE=（删除）}`，保证「删了哪项」也能在审计里看见。
+- 落库走 `INSERT ... ON DUPLICATE KEY UPDATE`，`save` 带 `@Transactional`，删除与写入同一事务。
+
+> 注意：值不允许存凭据。metadata 会进报告与审计摘要，`AuditService.sanitize` 只是兜底。
+
+### 6.2 `system:deploy`：部署 / 回滚留痕
+
+平台自身**不做发布编排**（版本切换由发布脚本完成），这里只提供唯一上报入口，
+让「谁在什么时候把哪个版本切上去/回滚」在审计里可查。因此该接口无副作用。
+
+| 项 | 内容 |
+|---|---|
+| 服务 | `DeployRecordService.record(version, mode, note)`；`@Audited(action="system:deploy", resource="system")` |
+| 接口 | `POST /api/system/deploy`，body `{"version":"v1.0.3","mode":"deploy|rollback","note":"可选"}` |
+| 权限 | **仅管理员**（`access.isAdmin()`），非管理员 `FORBIDDEN`，且不写成功审计 |
+| 校验 | 版本 `[A-Za-z0-9][A-Za-z0-9._+-]{0,31}`；`mode` 只认 `deploy`/`rollback`（大小写不敏感）；note 超 120 字符**拒绝**而非截断 |
+| 审计 | `resourceId=版本号`，after=`version=v1.0.3; action=DEPLOY; note=首次上线`，落库时 `created=true` |
+
+### 6.3 测试
+
+| 测试 | 条数 | 覆盖 |
+|---|---|---|
+| `RunMetadataServiceTest` | **8** | 补录写入并留痕、覆盖写记前值、空串删除只记前值、未变化不落库不写审计、小写键拒绝、值超长拒绝、运行不存在 NOT_FOUND、空补录体拒绝 |
+| `DeployRecordServiceTest` | **6** | 非管理员拒绝、deploy 摘要正确、rollback 大小写不敏感且无备注不写 note、非法 mode 拒绝、非法版本号拒绝、备注超长拒绝 |
+| `SchemaIT`（`-Pit`） | **7** | 空库全量迁移后 **47 张业务表**；审计四列、`id` 主键 bigint、`datetime(3)`、utf8mb4、`run_id` 唯一键均通过 |
+
+`EXPECTED_TABLES` 由 46 改为 **47** 并注明「2026-11-06 加 run_metadata，HRD-02」。
+
+两端点均为纯 MockMvc 之外的服务层单测 + 真实库迁移验证；HTTP 层路由靠 Spring 注解，
+未单写 `MockMvc` 用例（与 `RunMetadataController` / `SystemController` 的薄壳一致）。
+
+### 6.4 门禁读数（2026-11-06）
+
+日志目录：`docs/evidence/v1.0/hrd02/`
+
+| 项 | 命令 | 结果 | 日志 |
+|---|---|---|---|
+| 字体子集 | `python3 tools/subset_font.py` | PASS：1035 字 / 179634 B gzip，预算 800 KiB | `01-subset-font.log` |
+| 前端单测 | `npx vitest run` | **28 files / 202 tests 全通过** | `02-frontend-vitest.log` |
+| 类型检查 | `npx vue-tsc --noEmit` | 退出码 0 | `03-frontend-tsc.log` |
+| 前端构建 | `npx vite build` | `✓ built in 9.60s` | `04-frontend-build.log` |
+| 后端全量 | `mvn -o -B test` | **Tests run: 590, Failures: 0, Errors: 0, Skipped: 0**（较上批 576 增 14） | `05-backend-test.log` |
+| 品牌/文案 lint | `bash scripts/lint.sh` | `[lint] PASS` | `06-lint.log` |
+| 发布文档 | `python3 tools/check_release_docs.py` | 7 个版本 / FAIL 0 / WARN 0 | `07-release-docs.log` |
+| WBS 自洽 | `python3 tools/check_wbs_consistency.py` | 96 包 / 待验 83 / 已完成 13 | `08-wbs.log` |
+| dev 库迁移 | `mvn -o flyway:migrate` | `Successfully applied 1 migration to schema robot_dev, now at v7.6` | `09-flyway-dev.log` |
+| 基线集成测试 | `DB_NAME=robot_it mvn -o -Pit test -Dtest=SchemaIT` | **7 tests, 0 失败** | `10-schema-it.log` |
+
+### 6.5 仍未验
+
+1. **真实 HTTP 全链路未跑**：8081 未重启，`PATCH /api/execution/runs/{runId}/metadata` 与
+   `POST /api/system/deploy` 只经服务层单测与注解路由验证，未在运行中的服务上用真实账号调用。
+2. **未与报告生成联动**：补录的 metadata 目前只落 `run_metadata` 表，尚未注入报告渲染/导出流程——
+   「补录后对外报告里能看到」还差一步（需报告侧读取本表并合并 RF metadata）。
+3. **`system:deploy` 无调用方脚本**：发布脚本尚未接入该端点，当前只能手工 `curl` 上报；
+   接入后应把「切版本 → 上报 → 校验返回 `recorded=true`」写进发布流程。
+4. **down 脚本未在真实库执行回滚**（同 §5.4），仅提供文件。
+

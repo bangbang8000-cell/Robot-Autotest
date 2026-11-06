@@ -28,12 +28,12 @@ class SchemaIT {
     private static final String DB_NAME = System.getenv().getOrDefault("DB_NAME", "robot_it");
 
     /**
-     * 业务表总数。v0.1 设计为 38 张；后续版本新增 7 张（editor_keyword / case_requirement /
+     * 业务表总数。v0.1 设计为 38 张；后续版本新增 8 张（editor_keyword / case_requirement /
      * export_record / ci_trigger / execution_plan_dependency / schedule_dependency /
-     * project_asset），实测 46（2026-11-04 加 project_asset，AST-05）。
+     * project_asset / run_metadata），实测 47（2026-11-06 加 run_metadata，HRD-02）。
      * 这个值随迁移演进更新，不是「越多越好」。
      */
-    private static final int EXPECTED_TABLES = 46;
+    private static final int EXPECTED_TABLES = 47;
 
     /**
      * append-only 表：按设计只增不改，没有「更新人/更新时间」这回事。
