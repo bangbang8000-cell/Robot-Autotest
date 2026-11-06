@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # P0 口径回写批次 · 八步门禁（模板来自 docs/evidence/v1.0/longhist/gates.sh）+ 五项后补
-# 后补：11-editor_test / 12-db_audit（v1.0）/ 13-css_vars（v2.1 ORCH-02）
+# 后补：11-editor_test / 12-db_audit（v1.0）/ 13-css_vars（v2.1 ORCH-02）/ 14-report_consistency（v2.1 TPLX-03）
 set -uo pipefail
 cd ~/robot-autotest || exit 1
 L=docs/evidence/v1.0/policy-20261106/logs
@@ -39,6 +39,15 @@ run 12 db_audit        "DB_NAME=robot_dev bash scripts/db-audit.sh"
 # SVG 的 fill 初始值是黑色 —— 节点变黑块、文字看不见，而 vue-tsc / vitest(jsdom) / vite build
 # 三关全绿。判据只能落在「引用的名字必须有定义」这一条上，所以做成脚本进门禁。
 run 13 css_vars        "python3 tools/check_css_vars.py"
+# 四格式字段一致性（v2.1 TPLX-03 起）。导出器有四条独立分支，某条漏写一个字段时
+# 接口照样 200、文件照样能打开，只有把四份摆一起数才知道。样本由 05 步里的
+# ReportFourFormatDumpTest 用**当前代码**现生成，比对的是这一次的产物 —— 所以本步
+# 必须排在 05 之后；若样本缺失，脚本返回 2（与「不一致」的 1 区分）。
+run 14 report_consistency "python3 tools/check_report_consistency.py \
+  backend/target/evidence/four-formats/report.html \
+  backend/target/evidence/four-formats/report.docx \
+  backend/target/evidence/four-formats/report.xlsx \
+  backend/target/evidence/four-formats/report.pdf"
 
 printf '\nGATES_RESULT FAILS=%s\n' "$FAILS"
 exit "$FAILS"

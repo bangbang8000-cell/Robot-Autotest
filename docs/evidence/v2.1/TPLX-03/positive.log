@@ -1,0 +1,7 @@
+基准：HTML /home/evergreen/robot-autotest/docs/evidence/v2.1/TPLX-03/samples/report.html，共 21 个字段
+  字段：reportId, title, version, frozenAt, conclusion, passCount, failCount, skipCount, passRate, caseTotal, caseCovered, coverageRate, failureDistribution, trend, projectName, swBuild, caseKind, startedAt, finishedAt, disclaimer, watermark
+[PASS] DOCX: 21 个字段，集合与顺序都与 HTML 一致
+[PASS] XLSX: 21 个字段，集合与顺序都与 HTML 一致
+[PASS] PDF: 21 个字段，集合与顺序都与 HTML 一致
+
+结论：4 种格式字段集合与顺序完全一致，每种 21 个字段
