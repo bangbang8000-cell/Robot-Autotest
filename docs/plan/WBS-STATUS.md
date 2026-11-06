@@ -130,7 +130,7 @@
 | 91 | **EXEC-10** | 队列语义收口（FR-03/05）：派发器由全局单线程改为「按项目分道 + 单项目 `MAX_PARALLEL` 并发」，同项目按 priority 降序、再按提交先后排队，达上限只排队不拒绝；不同项目分属不同队列与线程池、互不阻塞；runId 在途去重保留 | G | 待验 | `docs/evidence/v0.4/exec10/`（含 `pending-activity/`）；`ProjectRunDispatcherTest` 5 条（优先级顺序 / 上限排队不拒绝 / 跨项目并行 / 在途去重 / 队列位次与 `queue_state` 回写）、`RunControllerTest#pendingActivity` 1 条、`RunsView.spec` 1 条 | 残余已补：`GET /api/execution/runs/{runId}/pending-activity` 返回 `queued/running/terminal` + 位次，`queue_state` 落 **`execution_queue`**（不是 `execution_job`，该表无此列）走 `waiting→running→done`；位次只在进程内精确，后端重启后退化为 DB 兜底（`position=0`，界面写「位次暂不可用」） |
 | 92 | **EXEC-11** | 设备范围落库与回溯（FR-v0.4-01）：新增 `run.device_scope`（`V7_4` 迁移 + down），创建时按 `deviceKeys` 去重保序落库（≤512 字符；空/全空白 = NULL，不自造键），`RunRecord` / JDBC 映射 / 前端类型全链路回溯；手动执行表单加「设备范围」多选（可手填端口键），日志面板显示当前运行的设备范围 | G | 待验 | `docs/evidence/v0.4/exec11/`；后端 `QuickRunServiceTest` 3 条（落库回溯 / 缺省 NULL / 超长 400）、`MigrationFileTest` V7_4 断言、前端 `RunsView.spec` 4 条（提交带 deviceKeys / 面板展示 / **列表列** / 并发三档），后端 555 / 集成 28 / 前端 198 / `vue-tsc`+`build` 0 / `lint.sh` PASS | **2026-11-06 列表补「设备范围」列**：未声明显示「全部设备」，与「字段丢失」区分，证据 `docs/evidence/v1.0/exec11-ast02/`。**并发度已按 PRD 固定 1/2/4 三档**（运行记录页手动执行 + 用例页「执行所选」），后端 `1..MAX_PARALLEL` 校验不变，`RunsView.spec` 断言三档且选 4 提交 4；执行期资源键仍按请求 `deviceKeys` 直取，未从 `device_scope` 反解 |
 | 93 | **EXEC-12** | 单用例超时（FR-v0.4-24）：`execution.test-timeout-seconds`（默认 1800，`<=0` 关闭）+ 执行前向本 run 工作区副本的 `.robot` 套件 `*** Settings ***` 注入 `Test Timeout`（RF 7.5 无全局 CLI 开关；用户已显式写过则保留原值）；产物检出 `Test timeout ... exceeded` 时 run 原因记 `test_timeout`（按取消归类 CANCELED） | G | 待验 | `docs/evidence/v0.4/exec12/`；`TestTimeoutInjectorTest` 8 条、`ArtifactVerifierTest` 1 条、run 级覆盖 3 条；后端 576 / 集成 28 / 前端 202 / `vue-tsc`+`build` 0 / `lint.sh` PASS | `.resource` 不注入是 RF 约束（实测 Settings 里写 `Test Timeout` 报 `not allowed in resource file`）；逐用例超时由脚本 `[Timeout]` 承担（RF 语义优先于套件级，注入不触碰该行），不新增台账字段；注入判定只看 `*** Settings ***` 段（避免用例名以 `Test Timeout` 开头时整套件误跳过）；支持每次触发覆盖（`testTimeoutSeconds`，0=全局默认，上限 86400）且运行记录页 / 用例页 UI 可调，该参数只随本次运行生效、不落库；注入只发生在 materialize 成功的副本上（回落 workspace-root 时不注入，避免改用户原脚本） |
-| 94 | **EXEC-13** | 运行详情重试可追溯（FR-v0.4-29）：日志面板在 `attemptNo > 1` 时显示「第 N 次尝试」（`execution.attemptLine`），并显示「重试自 {上一次 runId} · 上次失败：{failureReason}」；首次尝试两行都不渲染。配合列表既有「失败原因 / 状态」列，构成「第几次 / 原因 / 结果」三件可追溯信息 | G | 待验 | `docs/evidence/v0.4/exec13/`；前端 `RunsView.spec` 1 条（第 2 次显示两条标记、首次不显示且不请求）；后端 `GET /runs/{runId}/retry-origin` + `RunRetryOrigin`（`retry_of_run_id` 自连接）+ 1 条接口测试；后端 559 / 前端 199 / `vue-tsc`+`build` 0 / `lint.sh` PASS | 重试链仍按行平铺，未做成组/时间线视图（PRD 未要求）；`markAttempt` 的写入路径由 `RetryPolicyTest` 覆盖，本包只验读取与展示；端到端（真跑 env 失败 → 重试 → 详情带出上次原因）留到 v1.0 验收 |
+| 94 | **EXEC-13** | 运行详情重试可追溯（FR-v0.4-29）：日志面板在 `attemptNo > 1` 时显示「第 N 次尝试」（`execution.attemptLine`），并显示「重试自 {上一次 runId} · 上次失败：{failureReason}」；首次尝试两行都不渲染。配合列表既有「失败原因 / 状态」列，构成「第几次 / 原因 / 结果」三件可追溯信息 | G | 待验 | `docs/evidence/v0.4/exec13/`；前端 `RunsView.spec` 1 条（第 2 次显示两条标记、首次不显示且不请求）；后端 `GET /runs/{runId}/retry-origin` + `RunRetryOrigin`（`retry_of_run_id` 自连接）+ 1 条接口测试；后端 559 / 前端 199 / `vue-tsc`+`build` 0 / `lint.sh` PASS | 重试链仍按行平铺，未做成组/时间线视图（PRD 未要求）；`markAttempt` 的写入路径由 `RetryPolicyTest` 覆盖，本包只验读取与展示；端到端（真跑 env 失败 → 重试 → 详情带出上次原因）留到 v1.0 验收；2026-11-06 补真实 MariaDB 集成测试 3 条（`RetryOriginIT`，`docs/evidence/v1.0/exec13/`） |
 | 95 | **EXEC-14** | 日志级别过滤（FR-v0.4-20）：日志面板把单档「只看失败」换成 ERROR / WARN / INFO 三个可独立勾选的档位（默认全开，未知级别按 INFO 放行）；三档全关时明说「当前级别过滤下没有日志」，而不是假装这份 run 没日志 | G | 待验 | `docs/evidence/v0.4/exec14/`；前端 `RunsView.spec` 1 条（取消「信息」后 INFO 行隐藏、ERROR/WARN 保留、全关空态文案）；后端 539 / 集成 28 / 前端 164 / `vue-tsc`+`build` 0 / `lint.sh` PASS | 后端仍只产出 ERROR/WARN/INFO 三档（PRD 里的 FAIL 归 ERROR、DEBUG 未产出）；要真正的 DEBUG 档需在执行器侧采集 RF 的 DEBUG 日志，属 v0.5 日志补口 |
 | 96 | **EXEC-15** | 执行安全级闸门（ADR-0013 / G2-3）：`test_case.safety_level`（`V7_5` 迁移 + down，缺省 `LX`）落库并全链路回溯；执行入口两处（执行所选 `CaseRunService` / 执行用例集 `TestSetRunService`）逐条判级，**L2 高危与 LX 未判定一律整单拒绝**（403 `SAFETY_LEVEL_BLOCKED`，消息列出前 10 条 `code(level)`）；新增批量动作 `setSafetyLevel` 作人工补判；列表加安全级列与筛选，选中含 L2/LX 时前置禁用「执行所选」并写出用例编号（跨页亦可见，走只读预检接口） | G | 待验 | `docs/evidence/v1.0/g2-3/`（含本机 HTTP 实测 `http-verify-20261105.md`：`L2`/`LX` → 403、`L9` → 400；§7 记 2026-11-06 跨页预检补口 + 8 份门禁日志）；后端 `CaseRunServiceTest` 4 条（L2 被拒 / LX 补判后放行 / 预检列出 L2+LX / 预检全 L1 放行且空选 400）、`RunControllerTest` 预检接口 1 条、`TestSetRunServiceTest` 集合级拦截、`CaseBatchIT`（落库 + 非法值 400）、`CaseImportIT`（无安全级列 → LX）、`MigrationFileTest` V7_5；前端 `statusLabels.spec` 3 条、`CasesView.spec` 2 条（L2 禁用执行 / 跨页 L2 由预检提前禁用）；后端 562 / 前端 200 / `vue-tsc`+`build` 0 / `lint.sh` PASS | 跨页选中的安全级已改由 `POST /execution/cases/safety-precheck` 提前暴露（2026-11-06 补齐，预检只读、失败时退回本地判断，执行入口仍整单兜底）；台账无安全级列，226 条导入后全为 `LX`，需人工逐条补判才能执行——这正是 ADR-0013 想要的默认态 |
 
@@ -419,7 +419,9 @@
    「上一次失败原因」需要新增 API 字段，已在残余里登记。
 3. 状态 **`待验`**（后端 539 / 集成 28 / 前端 163 / `vue-tsc`+`build` 0 / `lint.sh` PASS）。
 4. 汇总同步为 **94 包 = 1 未开始 / 0 进行中 / 80 待验 / 0 待现场 / 13 已完成**；v0.4 交付包数 19→20。
-5. 证据 `docs/evidence/v0.4/exec13/`；残余：`retry_of_run_id` 未对外暴露，看不到「上一次失败原因」。
+5. 证据 `docs/evidence/v0.4/exec13/`；残余：重试链平铺视图（PRD 未要求）、端到端真跑待验收。
+   **2026-11-06 复核**：`retry_of_run_id` 已对外暴露（`GET /runs/{runId}/retry-origin`），
+   并补 `RetryOriginIT` 3 条真实 MariaDB 用例（`docs/evidence/v1.0/exec13/`），残余已收口。
 
 ### 2026-11-05 17:25 补记（近期计划 P1 / EXEC-14 日志级别过滤）
 
@@ -556,6 +558,19 @@
    `lint.sh` PASS、`check_release_docs.py` PASS、`check_wbs_consistency.py` PASS。
 5. 证据 `docs/evidence/v1.0/exec04b/`；`#85 EXEC-04` 仍留 `待验`——目录重名的端到端 pabot 读数待现场，
    `--test` 实跑效果仍待验收人确认（ADR-0013）。汇总不变：**96 包 = 0 / 0 / 83 / 0 / 13**。
+
+### 2026-11-06 补记（EXEC-13 残余：重试来源自连接的真实 SQL 覆盖）
+
+1. **残余订正**：EXEC-13 原备注写「`retry_of_run_id` 未对外暴露」，但 `GET /runs/{runId}/retry-origin`、
+   `RunRetryOrigin`、前端展示与 `RunControllerTest` 均已落地，该条已过时。真正缺的是
+   `RunRepositoryJdbc.findRetryOrigin` 的**自连接没有任何测试真正执行过**（接口测试打桩、前端测试不碰数据），
+   而它正是「跨项目串不串数据」「`markAttempt` 写入能否读回」两个风险点。
+2. **做法**：新增 `RetryOriginIT`（`@Tag("it")`，真实 MariaDB + Flyway `clean/migrate`，库名必须 `*_it`），
+   3 条用例：自连接带出原运行失败结论且 `attemptNo` 落库、首次尝试返回空、跨项目引用不拼接。生产代码未改。
+3. 门禁：后端 **600/600**、前端 **28 文件 / 202 用例**、`vue-tsc` 0、`build` 8.66s、
+   `RetryOriginIT` **3/3**（9.45s，Flyway v7.6）、`lint.sh` / `check_release_docs.py` / `check_wbs_consistency.py` 均 PASS。
+4. 证据 `docs/evidence/v1.0/exec13/`；`#94 EXEC-13` 仍留 `待验`——端到端真跑（env 失败 → 重试 → 详情带上次原因）
+   与重试链分组视图未做。汇总不变：**96 包 = 0 / 0 / 83 / 0 / 13**。
 
 ## 更新方式
 
