@@ -1,0 +1,5 @@
+ASSET_DIVERGE	24	project=29; platform=23; keptVersion=2
+ASSET_DIVERGE	27	project=29; platform=26; keptVersion=2
+ASSET_SYNC	27	project=29; platform=26; toVersion=2; imported=1; rows=2
+ASSET_DIVERGE	30	project=29; platform=29; keptVersion=2
+ASSET_SYNC	30	project=29; platform=29; toVersion=2; imported=1; updated=1; rows=2

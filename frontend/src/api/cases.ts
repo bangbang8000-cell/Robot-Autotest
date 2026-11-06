@@ -244,3 +244,53 @@ export const caseSetApi = {
     })
   },
 }
+
+/** 用例集的资产版本读数（PUBX-01）。 */
+export interface AssetVersionView {
+  assetVersion: number
+  contentHash: string | null
+  forkState: string
+  syncedAssetVersion: number | null
+  syncedContentHash: string | null
+  sourceAssetId: number | null
+  hasNewVersion: boolean
+  latestAssetVersion: number | null
+  latestContentHash: string | null
+}
+
+/** 差异一行（PUBX-02）：type ∈ ADDED（平台新增）/ MODIFIED / REMOVED（平台已删）。 */
+export interface AssetDiffRow {
+  type: 'ADDED' | 'MODIFIED' | 'REMOVED'
+  caseCode: string
+  title: string
+  detail: string
+}
+
+/**
+ * 用例集资产版本（PUBX-01/02）。
+ *
+ * 注意路径是 `/api/test-sets/{id}/asset-version`，不在 `/api/projects/{projectId}` 之下：
+ * 版本是用例集的属性，平台集（projectId=0 的管理路径）也要走同一组端点。
+ */
+export const assetVersionApi = {
+  version(projectId: number, setId: number) {
+    return request<AssetVersionView>(`/test-sets/${setId}/asset-version?projectId=${projectId}`)
+  },
+  diff(projectId: number, setId: number) {
+    return request<AssetDiffRow[]>(
+      `/test-sets/${setId}/asset-version/diff?projectId=${projectId}`,
+    )
+  },
+  sync(projectId: number, setId: number) {
+    return request<AssetVersionView>(
+      `/test-sets/${setId}/asset-version/sync?projectId=${projectId}`,
+      { method: 'POST' },
+    )
+  },
+  diverge(projectId: number, setId: number) {
+    return request<AssetVersionView>(
+      `/test-sets/${setId}/asset-version/diverge?projectId=${projectId}`,
+      { method: 'POST' },
+    )
+  },
+}

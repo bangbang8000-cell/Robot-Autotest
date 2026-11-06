@@ -12,7 +12,8 @@ import { createApp, h, nextTick, type App, type Slots } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { i18n } from '@/locales'
 import { useAuthStore } from '@/stores/auth'
-import { caseSetApi } from '@/api/cases'
+import { useConfirmHost } from '@/composables/useConfirm'
+import { caseSetApi, assetVersionApi } from '@/api/cases'
 import CaseSetsView from '@/views/CaseSetsView.vue'
 
 const sets = [
@@ -37,6 +38,24 @@ const items = [
   { id: 102, projectId: 1, caseCode: 'TC-002', title: '错误口令' },
 ]
 
+const syncedView = {
+  assetVersion: 2,
+  contentHash: 'a'.repeat(64),
+  forkState: 'SYNCED',
+  syncedAssetVersion: 2,
+  syncedContentHash: 'a'.repeat(64),
+  sourceAssetId: 101,
+  hasNewVersion: false,
+  latestAssetVersion: 2,
+  latestContentHash: 'a'.repeat(64),
+}
+
+const divergedView = {
+  ...syncedView,
+  forkState: 'DIVERGED',
+  hasNewVersion: true,
+}
+
 vi.mock('@/api/cases', () => ({
   caseSetApi: {
     page: vi.fn(async () => ({ items: sets, total: 2, page: 1, size: 100 })),
@@ -50,6 +69,12 @@ vi.mock('@/api/cases', () => ({
   },
   caseApi: {
     page: vi.fn(async () => ({ items, total: 2, page: 1, size: 50 })),
+  },
+  assetVersionApi: {
+    version: vi.fn(async () => syncedView),
+    diff: vi.fn(async () => []),
+    sync: vi.fn(async () => syncedView),
+    diverge: vi.fn(async () => divergedView),
   },
 }))
 
@@ -184,5 +209,93 @@ describe('CaseSetsView 成员管理', () => {
     expect(caseSetApi.reorder).toHaveBeenCalledWith(1, 7, [102, 101])
     const nodes = [...root.querySelectorAll<HTMLElement>('.set-item')]
     expect(nodes[0].textContent).toContain('TC-002')
+  })
+})
+
+describe('CaseSetsView 资产版本（PUBX-01/02）', () => {
+  async function openPanel(root: HTMLElement): Promise<void> {
+    rowButton(root, 0, i18n.global.t('caseSets.manage')).click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+  }
+
+  it('打开面板出现资产版本读数：v2 与「已同步」徽标', async () => {
+    const root = await mountView()
+    await openPanel(root)
+
+    const panel = root.querySelector<HTMLElement>('[data-testid="asset-panel"]')
+    expect(panel).not.toBeNull()
+    expect(assetVersionApi.version).toHaveBeenCalledWith(1, 7)
+    expect(panel!.textContent).toContain('v2')
+    const fork = panel!.querySelector<HTMLElement>('[data-testid="asset-fork"]')
+    expect(fork!.textContent?.trim()).toBe(i18n.global.t('caseSets.assetForkSynced'))
+  })
+
+  it('平台有新版本时显示提示；检查差异后按类型渲染 diff 行', async () => {
+    vi.mocked(assetVersionApi.version).mockResolvedValueOnce({
+      ...syncedView,
+      hasNewVersion: true,
+      latestAssetVersion: 3,
+    })
+    vi.mocked(assetVersionApi.diff).mockResolvedValueOnce([
+      { type: 'ADDED', caseCode: 'TC-003', title: '改密', detail: '平台 seq=3，副本缺这条' },
+      { type: 'MODIFIED', caseCode: 'TC-001', title: '登录', detail: '优先级 P1→P0' },
+      { type: 'REMOVED', caseCode: 'TC-002', title: '登出', detail: '平台已删除' },
+    ])
+    const root = await mountView()
+    await openPanel(root)
+
+    expect(root.querySelector('[data-testid="asset-has-new"]')!.textContent).toContain('v3')
+    const diffButton = [...root.querySelectorAll<HTMLButtonElement>('button')].find(
+      (b) => b.dataset.testid === 'asset-diff',
+    )
+    expect(diffButton).toBeTruthy()
+    diffButton!.click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    const diffRows = [...root.querySelectorAll<HTMLElement>('[data-testid="diff-row"]')]
+    expect(diffRows).toHaveLength(3)
+    expect(diffRows[0].textContent).toContain('TC-003')
+    expect(diffRows[2].textContent).toContain(i18n.global.t('caseSets.assetDiff.REMOVED'))
+  })
+
+  it('保持分叉：调用 diverge、徽标切到「已分叉」、内容接口不再动', async () => {
+    const root = await mountView()
+    await openPanel(root)
+
+    const divergeButton = [...root.querySelectorAll<HTMLButtonElement>('button')].find(
+      (b) => b.dataset.testid === 'asset-diverge',
+    )
+    expect(divergeButton).toBeTruthy()
+    divergeButton!.click()
+    // confirmAction 是模块级单例：直接结算「确定」，不等 Modal 挂载
+    useConfirmHost().settle(true)
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(assetVersionApi.diverge).toHaveBeenCalledWith(1, 7)
+    const fork = root.querySelector<HTMLElement>('[data-testid="asset-fork"]')
+    expect(fork!.textContent?.trim()).toBe(i18n.global.t('caseSets.assetForkDiverged'))
+    // 分叉不重建条目：reorder / addItem 都不许被顺手调用
+    expect(caseSetApi.reorder).not.toHaveBeenCalled()
+  })
+
+  it('非副本集合：面板显示占位，不渲染同步按钮', async () => {
+    vi.mocked(assetVersionApi.version).mockResolvedValueOnce({
+      ...syncedView,
+      sourceAssetId: null,
+      syncedAssetVersion: null,
+      syncedContentHash: null,
+    })
+    const root = await mountView()
+    await openPanel(root)
+
+    expect(root.textContent).toContain(i18n.global.t('caseSets.assetNoSource'))
+    expect(
+      [...root.querySelectorAll<HTMLButtonElement>('button')].find(
+        (b) => b.dataset.testid === 'asset-sync',
+      ),
+    ).toBeUndefined()
   })
 })

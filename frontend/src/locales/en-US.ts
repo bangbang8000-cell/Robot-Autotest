@@ -458,6 +458,28 @@ export default {
     runNow: 'Run now',
     backToCases: 'Back to case library',
     closeItems: 'Collapse',
+    assetTitle: 'Platform asset version',
+    assetReadout: 'Current v{version}',
+    assetForkSynced: 'Synced',
+    assetForkDiverged: 'Diverged',
+    assetHasNew: 'Platform has v{version}',
+    assetUpToDate: 'Up to date with platform',
+    assetNoSource: 'This set is not a platform asset copy — nothing to compare against',
+    assetCheckDiff: 'Check diff',
+    assetSync: 'Sync from platform',
+    assetDiverge: 'Keep diverged',
+    assetConfirmSync:
+      'Sync now? Members and order of this set will be overwritten by the platform; missing cases are imported into this project',
+    assetConfirmDiverge:
+      'Mark as “diverged”? Set content is not changed — you can sync again at any time',
+    assetSynced: 'Synced to platform v{version}',
+    assetDiverged: 'Marked as diverged; content unchanged',
+    assetDiffEmpty: 'No difference against the platform version',
+    assetDiff: {
+      ADDED: 'Added',
+      MODIFIED: 'Modified',
+      REMOVED: 'Removed',
+    },
   },
   execution: {
     clustersEntry: 'Failure clusters',

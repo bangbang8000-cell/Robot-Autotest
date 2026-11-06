@@ -146,6 +146,64 @@ public class AssetVersionRepositoryJdbc implements AssetVersionRepository {
                 rs.getString("synced_content_hash"), rs.getString("fork_state")), platformAssetId);
     }
 
+    @Override
+    public Optional<Long> findCaseIdByCode(long projectId, String caseCode) {
+        String sql = "SELECT id FROM test_case WHERE project_id = ? AND case_code = ?";
+        TenantGuard.requireProjectScope(sql, "test_case");
+        return jdbc.queryForList(sql, Long.class, projectId, caseCode).stream().findFirst();
+    }
+
+    @Override
+    public long insertCase(long projectId, String caseCode, String title, String priority,
+                           Long operatorId) {
+        // review_status / source 落表默认值（draft / import）；created_by 记操作人
+        String sql = """
+                INSERT INTO test_case (project_id, case_code, title, priority, created_by)
+                VALUES (?, ?, ?, ?, ?)
+                """;
+        TenantGuard.requireProjectScope(sql, "test_case");
+        jdbc.update(sql, projectId, caseCode, title, priority, operatorId);
+        return findCaseIdByCode(projectId, caseCode).orElseThrow(
+                () -> new IllegalStateException("同步导入用例后查不回来: " + caseCode));
+    }
+
+    @Override
+    public void updateCaseFields(long projectId, long caseId, String title, String priority,
+                                 Long operatorId) {
+        String sql = """
+                UPDATE test_case SET title = ?, priority = ?, updated_by = ?
+                 WHERE id = ? AND project_id = ?
+                """;
+        TenantGuard.requireProjectScope(sql, "test_case");
+        jdbc.update(sql, title, priority, operatorId, caseId, projectId);
+    }
+
+    @Override
+    public void replaceItems(long projectId, long setId, List<Long> orderedCaseIds,
+                             Long operatorId) {
+        String delete = """
+                DELETE FROM test_set_item
+                 WHERE test_set_id = ?
+                   AND test_set_id IN (SELECT id FROM test_set WHERE project_id = ? AND id = ?)
+                """;
+        TenantGuard.requireProjectScope(delete, "test_set_item");
+        jdbc.update(delete, setId, projectId, setId);
+
+        // INSERT ... SELECT：既带上租户条件（project_id 字面量），又在落行前再验一次集合归属
+        String insert = """
+                INSERT INTO test_set_item (test_set_id, test_case_id, seq_no, item_source, created_by)
+                SELECT ?, ?, ?, 'PLATFORM_SYNC', ?
+                  FROM test_set
+                 WHERE project_id = ? AND id = ?
+                """;
+        TenantGuard.requireProjectScope(insert, "test_set_item");
+        int seq = 1;
+        for (Long caseId : orderedCaseIds) {
+            jdbc.update(insert, setId, caseId, seq, operatorId, projectId, setId);
+            seq++;
+        }
+    }
+
     private static AssetVersion map(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
         return new AssetVersion(rs.getLong("id"), rs.getLong("project_id"),
                 rs.getString("asset_type"), rs.getLong("asset_id"), rs.getInt("asset_version"),

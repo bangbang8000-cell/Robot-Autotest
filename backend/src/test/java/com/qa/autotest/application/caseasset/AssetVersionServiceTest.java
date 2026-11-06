@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -350,6 +351,40 @@ class AssetVersionServiceTest {
         @Override
         public List<AssetVersion.CopyRef> copies(long platformAssetId) {
             return copyRefs.getOrDefault(platformAssetId, List.of());
+        }
+
+        // ---- PUBX-02 通道 ----
+
+        final Map<String, Long> casesByCode = new HashMap<>();
+        final List<List<Long>> replacedItems = new ArrayList<>();
+        final Map<String, AssetVersion.ContentRow> importedCases = new LinkedHashMap<>();
+        long caseSeq = 1000;
+
+        @Override
+        public Optional<Long> findCaseIdByCode(long projectId, String caseCode) {
+            return Optional.ofNullable(casesByCode.get(projectId + ":" + caseCode));
+        }
+
+        @Override
+        public long insertCase(long projectId, String caseCode, String title, String priority,
+                               Long operatorId) {
+            long id = ++caseSeq;
+            casesByCode.put(projectId + ":" + caseCode, id);
+            importedCases.put(projectId + ":" + caseCode,
+                    new AssetVersion.ContentRow(0, id, caseCode, title, priority));
+            return id;
+        }
+
+        @Override
+        public void updateCaseFields(long projectId, long caseId, String title, String priority,
+                                     Long operatorId) {
+            // PUBX-02 通道：本测试类不覆盖同步场景，记录即可
+        }
+
+        @Override
+        public void replaceItems(long projectId, long setId, List<Long> orderedCaseIds,
+                                 Long operatorId) {
+            replacedItems.add(new ArrayList<>(orderedCaseIds));
         }
 
         private static String setKey2(long projectId, String assetType, long assetId) {

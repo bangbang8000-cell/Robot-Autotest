@@ -295,11 +295,12 @@
 
 ### 10.9 PUBX-02 · 差异对比与同步/分叉
 
-- **改**：`application/caseasset/AssetVersionService.java`（加 diff 与 apply）、`api/caseasset/` 增引用与差异接口；改前端 `views/AssetsView.vue`（或 `CaseSetsView.vue`）+ spec
-- **做**：① 差异分新增/修改/删除三类；② 同步 = 副本内容对齐平台库并更新 `synced_asset_version`；③ 保持分叉 = 只置 `fork_state=diverged`；④ 两个动作都写审计
-- **跑**：`mvn -o -B test -Dtest=AssetUpgradeServiceTest`；`npx vitest run src/views/AssetsView.spec.ts`
+- **改**：`application/caseasset/AssetVersionService.java`（diff/sync/diverge）、`application/repository/AssetVersionRepository.java` + Jdbc（findCaseIdByCode / insertCase / updateCaseFields / replaceItems）、`api/caseasset/AssetVersionController.java`（/diff /sync /diverge）；改前端 `views/CaseSetsView.vue` + spec、`api/cases.ts`（assetVersionApi）、双语言包
+- **做**：① 差异分新增/修改/删除三类（按 case_code 匹配，顺序差异归 MODIFIED）；② 同步 = 缺失用例导入 + 复用行字段对齐 + 条目按平台顺序整体重建 + synced 读数推进；③ 保持分叉 = 只置 `fork_state=DIVERGED`，内容与 synced 读数原样保留；④ 两个动作都写审计（ASSET_SYNC / ASSET_DIVERGE）
+- **跑**：`mvn -o -B test -Dtest=AssetUpgradeServiceTest,AssetVersionServiceTest`；`npx vitest run src/views/CaseSetsView.spec.ts`；`python3 docs/evidence/v2.1/PUBX-02/run.py`
 - **判**：三类差异条数正确；同步后版本对齐；分叉后副本内容不变且列表可辨
-- **证**：`docs/evidence/v2.1/PUBX-02/`（端到端输出 + 审计查询结果）
+- **证**：`docs/evidence/v2.1/PUBX-02/`（真实 HTTP 15 项全 PASS + `out/audit.log` 审计查询结果）
+- 修订 2026-11-06：计划原写改 `AssetsView.vue`，实际落 `CaseSetsView.vue`（版本是用例集的属性，跟着成员面板走）；验收暴露两处实现修正——replaceItems 的 INSERT 补租户条件、同步补 updateCaseFields（复用行不对齐字段则 hash 永远差一版），详见证据 README「踩过的坑」
 
 ### 10.10 NODX-01 · 节点注册与心跳
 

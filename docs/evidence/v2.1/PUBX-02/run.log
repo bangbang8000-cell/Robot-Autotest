@@ -1,0 +1,21 @@
+# 夹具 projectId=29 ownerProject=61 platformSet=29，已登录 qa-e2e-admin
+
+
+# 审计取证落在 /home/evergreen/robot-autotest/docs/evidence/v2.1/PUBX-02/out/audit.log；夹具已清理（test_case 保留 PUBX02-TC-*）
+PASS  PUBX02-00   平台集 refresh(projectId=0) → v1（登记版本行）           HTTP 200 v=1
+PASS  PUBX02-01   bindCopy 200（副本已对齐平台 v1）                       HTTP 200
+PASS  PUBX02-02   刚对齐时 diff 为空                                   HTTP 200 rows=[]
+PASS  PUBX02-03   平台 refresh → v2                                v=2
+PASS  PUBX02-04   diff 三类各 1 条且方向不反（改=TC-001 删=TC-002 增=TC-003）  共 3 行：[('MODIFIED', 'PUBX02-TC-001'), ('ADDED', 'PUBX02-TC-003'), ('REMOVED', 'PUBX02-TC-002')]
+PASS  PUBX02-05   diverge 200：fork_state=DIVERGED（接口与库同读数）       HTTP 200 库=DIVERGED
+PASS  PUBX02-06   分叉不动内容：条目逐字节不变、版本号不变                           items 一致=True v=2
+PASS  PUBX02-07   audit_log 出现 ASSET_DIVERGE                     count=1
+PASS  PUBX02-08   sync 200：fork_state=SYNCED、synced=平台 v2（库同读数）  HTTP 200 库=SYNCED/2
+PASS  PUBX02-09   同步后条目 = 平台内容（TC-001 复用本项目行，TC-003 自动导入）        条目=['PUBX02-TC-001', 'PUBX02-TC-003']
+PASS  PUBX02-09b  缺失的 TC-003 真的导入本项目（test_case 新行）               count=1
+PASS  PUBX02-10   hash 对齐（副本内容 hash = 平台 v2 hash）                副本=571cd895d4f4… 平台=571cd895d4f4…
+PASS  PUBX02-11   同步后 diff 为空                                    rows=[]
+PASS  PUBX02-12   audit_log 出现 ASSET_SYNC                        count=1
+PASS  PUBX02-13   未绑定平台资产的集 sync → 400                           HTTP 400 msg=用例集未登记版本信息: 31
+
+合计 15 项，FAIL 0 项

@@ -35,4 +35,20 @@ public interface AssetVersionRepository {
 
     /** 某个平台用例集的所有副本登记。 */
     List<AssetVersion.CopyRef> copies(long platformAssetId);
+
+    // ---- PUBX-02：同步（apply）所需的内容落库通道 ----
+
+    /** 本项目里按 case_code 找用例（同步时决定「复用」还是「导入」）。 */
+    Optional<Long> findCaseIdByCode(long projectId, String caseCode);
+
+    /** 在本项目导入一条用例（同步时补齐平台有而本项目缺的），返回新 id。 */
+    long insertCase(long projectId, String caseCode, String title, String priority,
+                    Long operatorId);
+
+    /** 同步时把本项目已有用例的标题/优先级对齐平台值（hash 覆盖这两个字段，不对齐就永远差一版）。 */
+    void updateCaseFields(long projectId, long caseId, String title, String priority,
+                          Long operatorId);
+
+    /** 整体重建用例集条目（按给定顺序，seq 从 1 起）；旧条目全部删除。 */
+    void replaceItems(long projectId, long setId, List<Long> orderedCaseIds, Long operatorId);
 }

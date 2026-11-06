@@ -54,4 +54,25 @@ public class AssetVersionController {
                                                                 @RequestParam long platformSetId) {
         return ApiResponse.ok(versions.bindCopy(projectId, setId, platformSetId));
     }
+
+    /** 副本与来源平台的逐行差异（新增/修改/删除三类，只读）。 */
+    @GetMapping("/diff")
+    public ApiResponse<List<AssetVersionService.DiffRow>> diff(@PathVariable long setId,
+                                                               @RequestParam long projectId) {
+        return ApiResponse.ok(versions.diff(projectId, setId));
+    }
+
+    /** 同步：副本内容对齐平台库（缺的用例按 case_code 导入），synced 推到平台当前版本。 */
+    @PostMapping("/sync")
+    public ApiResponse<AssetVersionService.VersionView> sync(@PathVariable long setId,
+                                                             @RequestParam long projectId) {
+        return ApiResponse.ok(versions.sync(projectId, setId));
+    }
+
+    /** 保持分叉：只置 fork_state=DIVERGED，内容与 synced 读数原样保留。 */
+    @PostMapping("/diverge")
+    public ApiResponse<AssetVersionService.VersionView> diverge(@PathVariable long setId,
+                                                                @RequestParam long projectId) {
+        return ApiResponse.ok(versions.diverge(projectId, setId));
+    }
 }

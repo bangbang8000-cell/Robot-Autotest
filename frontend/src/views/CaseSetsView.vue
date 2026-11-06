@@ -9,7 +9,8 @@
 import { computed, h, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, NInput, NSelect, type DataTableColumns } from 'naive-ui'
-import { caseApi, caseSetApi, type TestCase, type TestSet } from '@/api/cases'
+import { caseApi, caseSetApi, assetVersionApi, type TestCase, type TestSet,
+         type AssetVersionView, type AssetDiffRow } from '@/api/cases'
 import { executionApi } from '@/api/execution'
 import { useAuthStore } from '@/stores/auth'
 import DataTable from '@/components/DataTable.vue'
@@ -44,6 +45,14 @@ const selectedCaseId = ref<number | null>(null)
 const caseOptions = ref<{ label: string; value: number }[]>([])
 const caseLoading = ref(false)
 let searchTimer: ReturnType<typeof setTimeout> | undefined
+
+/** 资产版本面板（PUBX-01/02）：读数、差异列表、同步/分叉动作。 */
+const assetView = ref<AssetVersionView | null>(null)
+const assetDiff = ref<AssetDiffRow[] | null>(null)
+const assetLoading = ref(false)
+const assetBusy = ref(false)
+const assetError = ref<ErrorLine | null>(null)
+const assetMessage = ref('')
 
 const canSubmit = computed(
   () =>
@@ -201,7 +210,7 @@ async function openItems(row: TestSet): Promise<void> {
   activeSet.value = row
   selectedCaseId.value = null
   message.value = ''
-  await Promise.all([loadItems(), searchCases('')])
+  await Promise.all([loadItems(), searchCases(''), loadAsset(row.id)])
 }
 
 function closeItems(): void {
@@ -210,6 +219,10 @@ function closeItems(): void {
   caseOptions.value = []
   selectedCaseId.value = null
   itemsError.value = null
+  assetView.value = null
+  assetDiff.value = null
+  assetError.value = null
+  assetMessage.value = ''
 }
 
 /**
@@ -305,6 +318,81 @@ async function runNow(row: TestSet): Promise<void> {
     error.value = localizeError(e)
   }
 }
+
+// ---------------------------------------------------------------- 资产版本（PUBX-01/02）
+
+async function loadAsset(setId: number): Promise<void> {
+  if (!projectId.value) return
+  assetLoading.value = true
+  try {
+    assetView.value = await assetVersionApi.version(projectId.value, setId)
+  } catch (e) {
+    // 400 = 未登记版本信息（旧数据），面板显示占位而不是整页报错
+    assetError.value = localizeError(e)
+  } finally {
+    assetLoading.value = false
+  }
+}
+
+async function checkDiff(): Promise<void> {
+  if (!activeSet.value) return
+  assetBusy.value = true
+  assetError.value = null
+  assetMessage.value = ''
+  try {
+    assetDiff.value = await assetVersionApi.diff(projectId.value, activeSet.value.id)
+  } catch (e) {
+    assetError.value = localizeError(e)
+  } finally {
+    assetBusy.value = false
+  }
+}
+
+async function syncAsset(): Promise<void> {
+  if (!activeSet.value) return
+  if (!(await confirmAction(t('caseSets.assetConfirmSync')))) return
+  assetBusy.value = true
+  assetError.value = null
+  assetMessage.value = ''
+  try {
+    assetView.value = await assetVersionApi.sync(projectId.value, activeSet.value.id)
+    assetDiff.value = []
+    assetMessage.value = t('caseSets.assetSynced', { version: assetView.value.assetVersion })
+    await loadItems()
+  } catch (e) {
+    assetError.value = localizeError(e)
+  } finally {
+    assetBusy.value = false
+  }
+}
+
+async function divergeAsset(): Promise<void> {
+  if (!activeSet.value) return
+  if (!(await confirmAction(t('caseSets.assetConfirmDiverge')))) return
+  assetBusy.value = true
+  assetError.value = null
+  assetMessage.value = ''
+  try {
+    assetView.value = await assetVersionApi.diverge(projectId.value, activeSet.value.id)
+    assetMessage.value = t('caseSets.assetDiverged')
+  } catch (e) {
+    assetError.value = localizeError(e)
+  } finally {
+    assetBusy.value = false
+  }
+}
+
+const isBound = computed(() => assetView.value?.sourceAssetId !== null)
+
+const forkClass = computed(() =>
+  assetView.value?.forkState === 'DIVERGED' ? 'is-diverged' : 'is-synced',
+)
+
+const forkLabel = computed(() =>
+  assetView.value?.forkState === 'DIVERGED'
+    ? 'caseSets.assetForkDiverged'
+    : 'caseSets.assetForkSynced',
+)
 
 watch(projectId, () => {
   closeForm()
@@ -440,6 +528,66 @@ void load()
           </span>
         </li>
       </ul>
+
+      <div v-if="assetView" class="asset-panel" data-testid="asset-panel">
+        <div class="asset-head">
+          <h3 class="asset-title">{{ t('caseSets.assetTitle') }}</h3>
+          <span data-testid="asset-fork" :class="['asset-fork', forkClass]">
+            {{ t(forkLabel) }}
+          </span>
+          <span
+            v-if="assetView.sourceAssetId !== null"
+            data-testid="asset-has-new"
+            :class="['asset-new', { 'is-new': assetView.hasNewVersion }]"
+          >
+            {{
+              assetView.hasNewVersion
+                ? t('caseSets.assetHasNew', { version: assetView.latestAssetVersion ?? '?' })
+                : t('caseSets.assetUpToDate')
+            }}
+          </span>
+        </div>
+        <p class="muted small">
+          {{ t('caseSets.assetReadout', { version: assetView.assetVersion }) }}
+          <template v-if="assetView.contentHash">
+            · hash {{ assetView.contentHash.slice(0, 12) }}
+          </template>
+        </p>
+
+        <div v-if="isBound" class="toolbar">
+          <NButton size="small" :disabled="assetBusy" data-testid="asset-diff" @click="checkDiff">
+            {{ t('caseSets.assetCheckDiff') }}
+          </NButton>
+          <NButton size="small" type="primary" :loading="assetBusy" data-testid="asset-sync"
+                   @click="syncAsset">
+            {{ t('caseSets.assetSync') }}
+          </NButton>
+          <NButton size="small" quaternary :disabled="assetBusy" data-testid="asset-diverge"
+                   @click="divergeAsset">
+            {{ t('caseSets.assetDiverge') }}
+          </NButton>
+        </div>
+        <p v-else class="muted small">{{ t('caseSets.assetNoSource') }}</p>
+
+        <ErrorLineView v-if="assetError" :error="assetError" />
+        <p v-if="assetMessage" class="text-ok">{{ assetMessage }}</p>
+
+        <ul v-if="assetDiff !== null && assetDiff.length > 0" class="asset-diff"
+            data-testid="asset-diff-list">
+          <li v-for="row in assetDiff" :key="`${row.type}-${row.caseCode}`"
+              class="asset-diff-row" data-testid="diff-row">
+            <span :class="['asset-diff-type', `is-${row.type}`]">
+              {{ t(`caseSets.assetDiff.${row.type}`) }}
+            </span>
+            <span class="set-item-code">{{ row.caseCode }}</span>
+            <span class="set-item-title">{{ row.title }}</span>
+            <span class="asset-diff-detail">{{ row.detail }}</span>
+          </li>
+        </ul>
+        <p v-else-if="assetDiff !== null" class="muted small" data-testid="diff-empty">
+          {{ t('caseSets.assetDiffEmpty') }}
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -498,6 +646,99 @@ void load()
 }
 
 .set-item-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- 资产版本面板（PUBX-01/02） ---- */
+.asset-panel {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--border);
+}
+
+.asset-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.asset-title {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.asset-fork {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+}
+
+.asset-fork.is-synced {
+  background: var(--surface-hover);
+  color: var(--text-muted);
+}
+
+.asset-fork.is-diverged {
+  background: var(--accent-soft);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.asset-new {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.asset-new.is-new {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.asset-diff {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.asset-diff-row {
+  display: grid;
+  grid-template-columns: 4.5rem 10rem minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+}
+
+.asset-diff-type {
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.asset-diff-type.is-ADDED {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.asset-diff-type.is-MODIFIED {
+  color: var(--text-muted);
+}
+
+.asset-diff-type.is-REMOVED {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.asset-diff-detail {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

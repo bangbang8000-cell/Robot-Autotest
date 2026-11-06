@@ -5,6 +5,7 @@ import com.qa.autotest.application.iam.AuditService;
 import com.qa.autotest.application.repository.AssetVersionRepository;
 import com.qa.autotest.common.BusinessException;
 import com.qa.autotest.common.ErrorCode;
+import com.qa.autotest.common.tenant.TenantContext;
 import com.qa.autotest.domain.caseasset.AssetVersion;
 import com.qa.autotest.domain.iam.PermissionAction;
 import com.qa.autotest.domain.iam.PermissionResource;
@@ -13,7 +14,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HexFormat;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -149,6 +152,149 @@ public class AssetVersionService {
                     ref.syncedAssetVersion(), ref.forkState(), platform.assetVersion(), behind));
         }
         return rows;
+    }
+
+    // ---------------------------------------------------------------- PUBX-02
+
+    /** 差异一行。type ∈ ADDED（平台新增）/ MODIFIED（内容或顺序不同）/ REMOVED（平台已删）。 */
+    public record DiffRow(String type, String caseCode, String title, String detail) {
+    }
+
+    /**
+     * 副本与来源平台的逐行差异（按 case_code 匹配；只读，不写库不写审计）。
+     *
+     * <p>「顺序不同」归入 MODIFIED：三类口径是产品定的（新增/修改/删除），
+     * 顺序差异在 detail 里写明两边的 seq。
+     */
+    public List<DiffRow> diff(long projectId, long copySetId) {
+        access.bindProject(projectId);
+        access.require(PermissionResource.CASE, PermissionAction.READ);
+        AssetVersion copy = requireBound(projectId, copySetId);
+        List<AssetVersion.ContentRow> platformRows =
+                versions.content(AssetVersion.PLATFORM_PROJECT_ID, copy.sourceAssetId());
+        List<AssetVersion.ContentRow> copyRows = versions.content(projectId, copySetId);
+        return diffRows(platformRows, copyRows);
+    }
+
+    /** 纯函数，便于单测：平台行 vs 副本行 → 三类差异。 */
+    static List<DiffRow> diffRows(List<AssetVersion.ContentRow> platformRows,
+                                  List<AssetVersion.ContentRow> copyRows) {
+        Map<String, AssetVersion.ContentRow> platformByCode = byCode(platformRows);
+        Map<String, AssetVersion.ContentRow> copyByCode = byCode(copyRows);
+        List<DiffRow> rows = new ArrayList<>();
+        for (AssetVersion.ContentRow platform : platformRows) {
+            AssetVersion.ContentRow copy = copyByCode.get(platform.caseCode());
+            if (copy == null) {
+                rows.add(new DiffRow("ADDED", platform.caseCode(), platform.title(),
+                        "平台 seq=" + platform.seqNo() + "，副本缺这条"));
+                continue;
+            }
+            List<String> changes = new ArrayList<>();
+            if (!nullSafe(platform.title()).equals(nullSafe(copy.title()))) {
+                changes.add("标题「" + copy.title() + "」→「" + platform.title() + "」");
+            }
+            if (!nullSafe(platform.priority()).equals(nullSafe(copy.priority()))) {
+                changes.add("优先级 " + copy.priority() + "→" + platform.priority());
+            }
+            if (platform.seqNo() != copy.seqNo()) {
+                changes.add("顺序 " + copy.seqNo() + "→" + platform.seqNo());
+            }
+            if (!changes.isEmpty()) {
+                rows.add(new DiffRow("MODIFIED", platform.caseCode(), platform.title(),
+                        String.join("；", changes)));
+            }
+        }
+        for (AssetVersion.ContentRow copy : copyRows) {
+            if (!platformByCode.containsKey(copy.caseCode())) {
+                rows.add(new DiffRow("REMOVED", copy.caseCode(), copy.title(),
+                        "平台已删除（副本 seq=" + copy.seqNo() + "）"));
+            }
+        }
+        return rows;
+    }
+
+    /**
+     * 同步：副本内容对齐平台库（缺的用例按 case_code 导入本项目、条目按平台顺序整体重建），
+     * 并把 synced 读数推到平台当前版本、fork_state 回 SYNCED。
+     */
+    @Transactional
+    public VersionView sync(long projectId, long copySetId) {
+        access.bindProject(projectId);
+        access.require(PermissionResource.CASE, PermissionAction.UPDATE);
+        AssetVersion copy = requireBound(projectId, copySetId);
+        AssetVersion platform = versions.find(AssetVersion.PLATFORM_PROJECT_ID,
+                        AssetVersion.TYPE_TESTSET, copy.sourceAssetId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND,
+                        "平台用例集未登记版本信息: " + copy.sourceAssetId()));
+        Long userId = TenantContext.userId();
+        List<AssetVersion.ContentRow> platformRows =
+                versions.content(AssetVersion.PLATFORM_PROJECT_ID, copy.sourceAssetId());
+        List<Long> orderedCaseIds = new ArrayList<>();
+        int imported = 0;
+        int updated = 0;
+        for (AssetVersion.ContentRow row : platformRows) {
+            Long caseId = versions.findCaseIdByCode(projectId, row.caseCode()).orElse(null);
+            if (caseId == null) {
+                caseId = versions.insertCase(projectId, row.caseCode(), row.title(),
+                        row.priority(), userId);
+                imported++;
+            } else {
+                // hash 覆盖 title/priority：复用的行不对齐平台值，同步后永远差一版
+                versions.updateCaseFields(projectId, caseId, row.title(), row.priority(), userId);
+                updated++;
+            }
+            orderedCaseIds.add(caseId);
+        }
+        versions.replaceItems(projectId, copySetId, orderedCaseIds, userId);
+        recomputeRow(projectId, copySetId);
+        versions.updateSync(projectId, AssetVersion.TYPE_TESTSET, copySetId,
+                platform.assetVersion(), platform.contentHash(), AssetVersion.SYNCED, userId);
+        audit.record("ASSET_SYNC", "asset_version", String.valueOf(copySetId),
+                "project=" + projectId + "; platform=" + copy.sourceAssetId()
+                        + "; toVersion=" + platform.assetVersion()
+                        + "; imported=" + imported + "; updated=" + updated
+                        + "; rows=" + orderedCaseIds.size());
+        return viewOf(projectId, copySetId,
+                versions.find(projectId, AssetVersion.TYPE_TESTSET, copySetId));
+    }
+
+    /**
+     * 保持分叉：只把 fork_state 置为 DIVERGED，副本内容与 synced 读数**原样保留**——
+     * 分叉是一个「声明」，不是一次修改；用户随时可以再点同步回到对齐。
+     */
+    @Transactional
+    public VersionView diverge(long projectId, long copySetId) {
+        access.bindProject(projectId);
+        access.require(PermissionResource.CASE, PermissionAction.UPDATE);
+        AssetVersion copy = requireBound(projectId, copySetId);
+        versions.updateSync(projectId, AssetVersion.TYPE_TESTSET, copySetId,
+                copy.syncedAssetVersion(), copy.syncedContentHash(), AssetVersion.DIVERGED,
+                TenantContext.userId());
+        audit.record("ASSET_DIVERGE", "asset_version", String.valueOf(copySetId),
+                "project=" + projectId + "; platform=" + copy.sourceAssetId()
+                        + "; keptVersion=" + copy.assetVersion());
+        return viewOf(projectId, copySetId,
+                versions.find(projectId, AssetVersion.TYPE_TESTSET, copySetId));
+    }
+
+    /** 副本行必须存在且已绑定来源，否则 400（未绑定的集没有「与平台比」的对象）。 */
+    private AssetVersion requireBound(long projectId, long copySetId) {
+        AssetVersion copy = versions.find(projectId, AssetVersion.TYPE_TESTSET, copySetId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_ARGUMENT,
+                        "用例集未登记版本信息: " + copySetId));
+        if (copy.sourceAssetId() == null) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
+                    "用例集未绑定平台资产副本: " + copySetId);
+        }
+        return copy;
+    }
+
+    private static Map<String, AssetVersion.ContentRow> byCode(List<AssetVersion.ContentRow> rows) {
+        Map<String, AssetVersion.ContentRow> map = new LinkedHashMap<>();
+        for (AssetVersion.ContentRow row : rows) {
+            map.putIfAbsent(row.caseCode(), row);
+        }
+        return map;
     }
 
     /** 规范化内容 hash（见类注释里写死的格式）。 */
