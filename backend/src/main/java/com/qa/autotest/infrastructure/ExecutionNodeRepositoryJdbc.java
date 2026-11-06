@@ -121,6 +121,32 @@ public class ExecutionNodeRepositoryJdbc implements ExecutionNodeRepository {
         });
     }
 
+    /**
+     * 节点最近任务（NODX-04）：平台级 SQL——与 runningRunsByNode 同口径
+     * （run.node_id 无租户路径，本类有意不进 TenantGuard）。
+     * 每节点取 MAX(id) 一条，时间用 finished/started/enqueued 三级回退。
+     */
+    @Override
+    public java.util.Map<Long, NodeLastRun> latestRunsByNode() {
+        return jdbc.query("""
+                SELECT r.node_id, r.run_id, r.run_status,
+                       COALESCE(r.finished_at, r.started_at, r.enqueued_at) AS last_at
+                  FROM run r
+                  JOIN (SELECT node_id, MAX(id) AS mid
+                          FROM run WHERE node_id IS NOT NULL GROUP BY node_id) t
+                    ON r.id = t.mid
+                """, rs -> {
+            java.util.Map<Long, NodeLastRun> latest = new java.util.HashMap<>();
+            while (rs.next()) {
+                java.sql.Timestamp at = rs.getTimestamp("last_at");
+                latest.put(rs.getLong("node_id"), new NodeLastRun(
+                        rs.getString("run_id"), rs.getString("run_status"),
+                        at == null ? null : at.toInstant().toString()));
+            }
+            return latest;
+        });
+    }
+
     @Override
     public List<Long> findStaleOnlineIds(Instant staleBefore) {
         return jdbc.queryForList("""

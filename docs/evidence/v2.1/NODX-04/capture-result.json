@@ -1,0 +1,29 @@
+{
+  "checks": [
+    {
+      "id": "NODX04-S1",
+      "title": "1440 列表：状态列与最近任务列真实渲染",
+      "ok": true,
+      "detail": "rows=8 statuses=[\"已停用\",\"离线\",\"待心跳\",\"离线\",\"离线\",\"已停用\",\"待心跳\",\"待心跳\"] lastRun0=RUN-20261107002210-850000 · 失败 hb0=1 小时前"
+    },
+    {
+      "id": "NODX04-S2",
+      "title": "注册表单含 agent 接入地址输入与提示",
+      "ok": true,
+      "detail": "inputs=3 hint=[\"节点上 agent 的 HTTP 入口；留空表示暂不参与分布式执行\"]"
+    },
+    {
+      "id": "NODX04-S3",
+      "title": "令牌一次性弹窗（明文 64 hex 只显示一次）",
+      "ok": true,
+      "detail": "len=64"
+    },
+    {
+      "id": "NODX04-S4",
+      "title": "1280 宽无横向滚动（TC-v2.1-31）",
+      "ok": true,
+      "detail": "scrollWidth=1280 clientWidth=1280"
+    }
+  ],
+  "fails": 0
+}

@@ -24,6 +24,8 @@ const nodes: ExecutionNodeView[] = [
     maxConcurrency: 2,
     lastHeartbeatAt: '2026-11-06T14:00:00Z',
     runningRuns: 0,
+    agentBaseUrl: 'http://10.0.0.8:8082',
+    lastRun: { runId: 'RUN-20261107-010000-1', state: 'FINISHED', finishedAt: '2026-11-06T14:00:00Z' },
   },
   {
     id: 2,
@@ -34,6 +36,8 @@ const nodes: ExecutionNodeView[] = [
     maxConcurrency: 1,
     lastHeartbeatAt: null,
     runningRuns: 0,
+    agentBaseUrl: null,
+    lastRun: null,
   },
 ]
 
@@ -154,6 +158,7 @@ describe('NodesView 注册', () => {
       rfAvailable: true,
       pytestAvailable: false,
       maxConcurrency: 1,
+      agentBaseUrl: undefined,
     })
     // NModal teleport 到 body，不在组件根里
     const tokenBox = document.querySelector<HTMLElement>('[data-testid="node-token"]')
@@ -161,5 +166,63 @@ describe('NodesView 注册', () => {
     // 明文令牌是「只显示一次」的承诺：页面任何持久面都不得留副本
     expect(localStorage.getItem('nodeToken')).toBeNull()
     expect(localStorage.length).toBe(0)
+  })
+
+  it('注册表单可填 agent 接入地址并随请求提交（NODX-04）', async () => {
+    const root = await mountView()
+    const register = [...root.querySelectorAll<HTMLButtonElement>('button')].find(
+      (b) => b.textContent?.trim() === i18n.global.t('nodesView.register'),
+    )
+    register!.click()
+    await nextTick()
+
+    const inputs = [...root.querySelectorAll<HTMLInputElement>('.form-card input')]
+    const nameInput = inputs[0]!
+    const agentPlaceholder = i18n.global.t('nodesView.agentBaseUrlPlaceholder')
+    const agentInput = inputs.find((i) => i.placeholder === agentPlaceholder)!
+    expect(agentInput).toBeTruthy()
+    nameInput.value = 'lab-node-03'
+    nameInput.dispatchEvent(new Event('input'))
+    agentInput.value = 'http://10.0.0.9:8082'
+    agentInput.dispatchEvent(new Event('input'))
+    await nextTick()
+
+    const submit = [...root.querySelectorAll<HTMLButtonElement>('button')].find(
+      (b) => b.textContent?.trim() === i18n.global.t('common.save'),
+    )
+    submit!.click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(nodeApi.register).toHaveBeenCalledWith(
+      expect.objectContaining({ agentBaseUrl: 'http://10.0.0.9:8082' }),
+    )
+  })
+})
+
+describe('NodesView 离线时长与最近任务（NODX-04）', () => {
+  it('心跳列显示相对时长且不在前端推断状态；无心跳显示空', async () => {
+    // 固定 5 分钟前的心跳
+    vi.mocked(nodeApi.list).mockResolvedValue([
+      { ...nodes[0]!, lastHeartbeatAt: new Date(Date.now() - 5 * 60000).toISOString() },
+      nodes[1]!,
+    ])
+    const root = await mountView()
+    const cells = [...root.querySelectorAll<HTMLElement>('[data-testid="node-heartbeat"]')]
+    expect(cells).toHaveLength(2)
+    expect(cells[0]!.textContent).toContain(
+      i18n.global.t('nodesView.minutesAgo', { n: 5 }),
+    )
+    // 无心跳的 NEW 节点只显示占位符（EMPTY='—'），不伪造「离线」字样
+    expect(cells[1]!.textContent?.trim()).toBe('—')
+  })
+
+  it('最近任务列显示 runId 与本地化状态；无 run 显示空', async () => {
+    const root = await mountView()
+    const cells = [...root.querySelectorAll<HTMLElement>('[data-testid="node-last-run"]')]
+    expect(cells).toHaveLength(2)
+    expect(cells[0]!.textContent).toContain('RUN-20261107-010000-1')
+    expect(cells[0]!.textContent).toContain(i18n.global.t('enum.runStatus.finished'))
+    expect(cells[1]!.textContent?.trim()).toBe('—')
   })
 })

@@ -55,11 +55,16 @@ public class ExecutionNodeService {
         return heartbeatIntervalSeconds;
     }
 
-    /** 节点列表读数（能力 + 并发上限 + 最近心跳 + 在跑占用）。不返回令牌哈希。 */
+    /** 节点最近一条 run 摘要（NODX-04「最近任务」列）。 */
+    public record LastRunView(String runId, String state, String finishedAt) {
+    }
+
+    /** 节点列表读数（能力 + 并发上限 + 最近心跳 + 在跑占用 + 最近任务）。不返回令牌哈希。 */
     public record NodeView(long id, String name, String status,
                            boolean rfAvailable, boolean pytestAvailable,
                            int maxConcurrency, String lastHeartbeatAt,
-                           int runningRuns) {
+                           int runningRuns, String agentBaseUrl,
+                           LastRunView lastRun) {
     }
 
     /** 注册响应：明文令牌只在这里出现一次。 */
@@ -111,8 +116,14 @@ public class ExecutionNodeService {
     public List<NodeView> list() {
         requireAdmin();
         java.util.Map<Long, Integer> running = nodes.runningRunsByNode();
+        java.util.Map<Long, ExecutionNodeRepository.NodeLastRun> latest = nodes.latestRunsByNode();
         return nodes.list().stream()
-                .map(node -> view(node, running.getOrDefault(node.id(), 0)))
+                .map(node -> {
+                    ExecutionNodeRepository.NodeLastRun lr = latest.get(node.id());
+                    LastRunView lastRun = lr == null ? null
+                            : new LastRunView(lr.runId(), lr.state(), lr.finishedAt());
+                    return view(node, running.getOrDefault(node.id(), 0), lastRun);
+                })
                 .toList();
     }
 
@@ -169,14 +180,14 @@ public class ExecutionNodeService {
     }
 
     private NodeView view(ExecutionNode node) {
-        return view(node, 0);
+        return view(node, 0, null);
     }
 
-    private NodeView view(ExecutionNode node, int runningRuns) {
+    private NodeView view(ExecutionNode node, int runningRuns, LastRunView lastRun) {
         return new NodeView(node.id(), node.name(), node.status(),
                 node.rfAvailable(), node.pytestAvailable(), node.maxConcurrency(),
                 node.lastHeartbeatAt() == null ? null : node.lastHeartbeatAt().toString(),
-                runningRuns);
+                runningRuns, node.agentBaseUrl(), lastRun);
     }
 
     static String sha256(String text) {

@@ -21,7 +21,7 @@ import { nodeApi, type ExecutionNodeView, type NodeStatus } from '@/api/nodes'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { EMPTY } from '@/utils/format'
 
-const { t } = useI18n()
+const { t, te } = useI18n()
 
 const nodes = ref<ExecutionNodeView[]>([])
 const loading = ref(false)
@@ -30,7 +30,13 @@ const message = ref('')
 
 const formOpen = ref(false)
 const saving = ref(false)
-const form = ref({ name: '', rfAvailable: true, pytestAvailable: false, maxConcurrency: 1 })
+const form = ref({
+  name: '',
+  rfAvailable: true,
+  pytestAvailable: false,
+  maxConcurrency: 1,
+  agentBaseUrl: '',
+})
 const issuedToken = ref<string | null>(null)
 
 async function load(): Promise<void> {
@@ -46,7 +52,13 @@ async function load(): Promise<void> {
 }
 
 function openCreate(): void {
-  form.value = { name: '', rfAvailable: true, pytestAvailable: false, maxConcurrency: 1 }
+  form.value = {
+    name: '',
+    rfAvailable: true,
+    pytestAvailable: false,
+    maxConcurrency: 1,
+    agentBaseUrl: '',
+  }
   formOpen.value = true
   message.value = ''
 }
@@ -60,6 +72,7 @@ async function submit(): Promise<void> {
       rfAvailable: form.value.rfAvailable,
       pytestAvailable: form.value.pytestAvailable,
       maxConcurrency: form.value.maxConcurrency,
+      agentBaseUrl: form.value.agentBaseUrl.trim() || undefined,
     })
     // 明文令牌只在此处出现一次；页面不把它存进 localStorage / store
     issuedToken.value = result.token
@@ -94,6 +107,37 @@ function statusLabel(status: NodeStatus): string {
   return t(`nodesView.status.${status}`)
 }
 
+/** 四态着色（data-testid 供 spec 断言，class 供样式）；前端不推断状态，只着色。 */
+function statusClass(status: NodeStatus): string {
+  return `node-status is-${status.toLowerCase()}`
+}
+
+/**
+ * 离线时长（NODX-04）：心跳在阈值内显示相对「x 前」，超阈值或 OFFLINE 明确显示
+ * 「离线 x」。前端只做展示换算，状态口径仍以后端四态为准（不把久无心跳的 ONLINE
+ * 擅自显示成 OFFLINE）。
+ */
+function heartbeatDisplay(row: ExecutionNodeView): string {
+  if (!row.lastHeartbeatAt) return EMPTY
+  const at = new Date(row.lastHeartbeatAt).getTime()
+  if (Number.isNaN(at)) return row.lastHeartbeatAt
+  const minutes = Math.max(0, Math.floor((Date.now() - at) / 60000))
+  if (minutes < 1) return t('nodesView.justNow')
+  if (minutes < 60) return t('nodesView.minutesAgo', { n: minutes })
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return t('nodesView.hoursAgo', { n: hours })
+  const days = Math.floor(hours / 24)
+  return t('nodesView.daysAgo', { n: days })
+}
+
+/** 最近任务列：runId + 状态词条；状态词条复用运行态的 i18n。 */
+function lastRunDisplay(row: ExecutionNodeView): string {
+  if (!row.lastRun) return EMPTY
+  const key = `enum.runStatus.${row.lastRun.state.toLowerCase()}`
+  const label = te(key) ? t(key) : row.lastRun.state
+  return `${row.lastRun.runId} · ${label}`
+}
+
 function capability(row: ExecutionNodeView): string {
   const parts: string[] = []
   if (row.rfAvailable) parts.push('RF')
@@ -108,7 +152,11 @@ const columns = computed<DataTableColumns<ExecutionNodeView>>(() => [
     key: 'status',
     width: 110,
     render: (row) =>
-      h('span', { class: 'node-status', 'data-testid': 'node-status' }, statusLabel(row.status)),
+      h(
+        'span',
+        { class: statusClass(row.status), 'data-testid': 'node-status' },
+        statusLabel(row.status),
+      ),
   },
   {
     title: t('nodesView.capabilities'),
@@ -122,7 +170,19 @@ const columns = computed<DataTableColumns<ExecutionNodeView>>(() => [
     title: t('nodesView.lastHeartbeat'),
     key: 'lastHeartbeatAt',
     minWidth: 180,
-    render: (row) => row.lastHeartbeatAt ?? EMPTY,
+    render: (row) =>
+      h(
+        'span',
+        { title: row.lastHeartbeatAt ?? '', 'data-testid': 'node-heartbeat' },
+        heartbeatDisplay(row),
+      ),
+  },
+  {
+    title: t('nodesView.lastRun'),
+    key: 'lastRun',
+    minWidth: 220,
+    render: (row) =>
+      h('span', { 'data-testid': 'node-last-run' }, lastRunDisplay(row)),
   },
   {
     title: '',
@@ -184,6 +244,14 @@ onMounted(() => {
         <span>{{ t('nodesView.maxConcurrency') }}</span>
         <NInputNumber v-model:value="form.maxConcurrency" :min="1" :max="64" />
       </label>
+      <label class="form-field">
+        <span>{{ t('nodesView.agentBaseUrl') }}</span>
+        <NInput
+          v-model:value="form.agentBaseUrl"
+          :placeholder="t('nodesView.agentBaseUrlPlaceholder')"
+        />
+        <span class="field-hint">{{ t('nodesView.agentBaseUrlHint') }}</span>
+      </label>
       <div class="toolbar">
         <NButton type="primary" attr-type="submit" :loading="saving" :disabled="!form.name.trim()">
           {{ t('common.save') }}
@@ -235,6 +303,23 @@ onMounted(() => {
 
 .node-status {
   font-weight: 600;
+}
+
+.node-status.is-online {
+  color: var(--ok);
+}
+
+.node-status.is-offline {
+  color: var(--fail);
+}
+
+.node-status.is-disabled {
+  color: var(--text-muted);
+}
+
+.field-hint {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
 }
 
 .token-box {

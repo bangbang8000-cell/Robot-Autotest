@@ -86,6 +86,12 @@ class NodeHeartbeatMonitorTest {
         }
 
         @Override
+        public java.util.Map<Long, ExecutionNodeRepository.NodeLastRun> latestRunsByNode() {
+            return java.util.Map.of();
+        }
+
+
+        @Override
         public void updateAgentBaseUrl(long id, String agentBaseUrl) {
             throw new UnsupportedOperationException("桩不支持地址更新");
         }

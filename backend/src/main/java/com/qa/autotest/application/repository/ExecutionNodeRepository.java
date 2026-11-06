@@ -37,6 +37,16 @@ public interface ExecutionNodeRepository {
 
     void updateStatus(long id, String status, Long operatorId);
 
+    /** 各节点最近一条 run 的摘要（NODX-04，最近任务读数）。 */
+    record NodeLastRun(String runId, String state, String finishedAt) {
+    }
+
+    /**
+     * 各节点最近一条 run（NODX-04）：按 {@code run.node_id} 取 MAX(id)，
+     * 供节点页「最近任务」列。节点从未接过 run 时不出现在结果里。
+     */
+    java.util.Map<Long, NodeLastRun> latestRunsByNode();
+
     /**
      * 各节点当前在跑的 run 数（NODX-02，占用读数）：按 {@code run.node_id} 聚合，
      * 只数 {@code run_status='running'}。节点无在跑任务时不出现在结果里。

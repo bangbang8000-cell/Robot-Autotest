@@ -1,0 +1,12 @@
+# 已登录 qa-e2e-admin
+
+PASS  NODX04-01  GET /api/nodes 返回新字段（agentBaseUrl / lastRun 键存在）  —  HTTP 200 rows=5
+PASS  NODX04-02  最近任务读数真实：lastRun.runId + 合法状态 + 时间  —  rows_with_lastRun=3 sample={'runId': 'RUN-20261107002210-850000', 'state': 'failed', 'finishedAt': '2026-11-06T16:22:10.091Z'}
+PASS  NODX04-03  注册节点带 agentBaseUrl（HTTP 200）  —  HTTP 200 id=29
+PASS  NODX04-04  agent_base_url 真实落库  —  db=http://127.0.0.1:8099
+PASS  NODX04-05  NEW 节点 lastHeartbeatAt=null（离线时长占位依据，不伪造离线）  —  status=NEW hb=None
+PASS  NODX04-06  NEW 节点发起 → 409 当场拒绝，原因含 NEW 与 不回落本机  —  HTTP 409 msg=节点 nodx04-node-agent-url 不可发起: 节点已注册但尚未心跳上线（NEW）；不回落本机执行
+PASS  NODX04-07  不排队不重投：拒绝发生在落库前（run 无记录）  —  run rows=0
+PASS  NODX04-08  disable 返回体保持新字段（agentBaseUrl / lastRun）  —  HTTP 200 keys_ok=True
+
+合计 8 项，FAIL 0 项

@@ -9,6 +9,13 @@ import { request } from './http'
 /** 节点四态：NEW（已注册未心跳）/ ONLINE / OFFLINE / DISABLED。 */
 export type NodeStatus = 'NEW' | 'ONLINE' | 'OFFLINE' | 'DISABLED'
 
+/** 节点最近一条 run 摘要（NODX-04「最近任务」列）。 */
+export interface NodeLastRunView {
+  runId: string
+  state: string
+  finishedAt: string | null
+}
+
 export interface ExecutionNodeView {
   id: number
   name: string
@@ -19,6 +26,10 @@ export interface ExecutionNodeView {
   lastHeartbeatAt: string | null
   /** 当前在该节点上 RUNNING 的 run 数（NODX-02 占用读数）。 */
   runningRuns: number
+  /** agent 接入地址（NODX-03），未部署 agent 时为 null。 */
+  agentBaseUrl: string | null
+  /** 该节点最近一条 run（NODX-04），从未接过 run 时为 null。 */
+  lastRun: NodeLastRunView | null
 }
 
 export interface NodeRegisterResult {
@@ -37,6 +48,7 @@ export const nodeApi = {
     rfAvailable: boolean
     pytestAvailable: boolean
     maxConcurrency: number
+    agentBaseUrl?: string
   }) {
     return request<NodeRegisterResult>('/nodes/register', {
       method: 'POST',

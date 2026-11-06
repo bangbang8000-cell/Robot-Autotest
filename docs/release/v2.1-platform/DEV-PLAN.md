@@ -144,8 +144,12 @@
 ### 5.3 节点通道
 
 - 主控 → 节点：`POST /node/run`（带签名任务 JSON），节点 → 主控：`POST /node/heartbeat`、`POST /node/result`。
-- 出站一律过 `NodeChannel`（统一超时 10s、重试 1 次、失败即判节点离线，不重试到底）。
+- 出站一律过 `NodeChannel`（统一超时 10s、重试 1 次且重试换新 HttpClient、失败即判节点离线，不重试到底）。
 - 本机执行路径**不经过** `NodeChannel`，保持 v2.0 语义不变（避免为了统一而引入回归）。
+- **离线口径（NODX-04 落文档）**：指定节点发起时，节点只要不是 `ONLINE`（NEW / OFFLINE /
+  DISABLED / 心跳缺席判离线）一律**当场拒绝**并给原因——**不排队、不重投、不回落本机执行**；
+  投递发出后节点失联的 run 由监视器判 FAILED（`node_agent_lost`），同样不排队不重投。
+  本口径被 TEST-PLAN TC-v2.1-25 引用为验收判据。
 
 ### 5.4 与收口版的文件冲突规避
 
@@ -341,6 +345,22 @@
 - **跑**：`npx vitest run src/views/NodesView.spec.ts`；`node docs/evidence/v1.0/w7-design/capture.mjs <url>`
 - **判**：四态齐全；离线时长正确；口径在文档里可检索到并被 TEST-PLAN 引用
 - **证**：`docs/evidence/v2.1/NODX-04/`（4 张截图）
+- **实测结论（2026-11-07，完成回写）**：HTTP 层 8 项全 PASS（`/api/nodes` 每行带
+  `agentBaseUrl`/`lastRun`；注册表单的 agent 接入地址真实落库；NEW 节点发起 409
+  当场拒绝且 run 未落库——不排队不重投不回落本机；NEW 节点 `lastHeartbeatAt=null`
+  前端只显占位不伪造离线）；浏览器层 4 张截图 + 4 项检查全 PASS（1440 列表真实渲染
+  最近任务 `RUN-… · 失败` 与心跳相对时长 `1 小时前`、注册表单含 agent 地址输入与
+  提示、令牌一次性弹窗 64 hex、1280 宽 scrollWidth=1280 无横滚）；`NodesView.spec.ts`
+  7 条全绿；后端 882 条测试全绿。
+  - 离线口径已写入本文件 §5.3（非 ONLINE 一律当场拒绝——不排队、不重投、不回落本机
+    执行；投递后失联由监视器判 `node_agent_lost`），TEST-PLAN TC-v2.1-25/27 判据同步引用。
+  - 实现与计划差异：计划只列前端与文档，实际为「最近任务」加了平台级读数
+    `latestRunsByNode()`（`ExecutionNodeRepository` + Jdbc，豁免口径与
+    runningRunsByNode 同注）与 `NodeView` 扩字段——前端只做展示，不发明数据。
+  - 修订记录：① `:8001` 服务构建产物，改完 NodesView 必须 `npm run build` 再截图，
+    否则取证拍的是旧行为（第一轮 S1/S2 因此 FAIL）；② NInputNumber 也渲染
+    `<input>`，spec 按 placeholder 定位输入框；③ 运行状态词条在 `enum.runStatus`
+    段，组件 `te()` 探测后回退原始 state；④ 截图脚本注册名带时间戳后缀，可重复执行。
 
 ---
 

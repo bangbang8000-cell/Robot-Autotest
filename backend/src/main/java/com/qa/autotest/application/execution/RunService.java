@@ -153,6 +153,11 @@ public class RunService {
         public int failRunningRunsByNodes(List<Long> nodeIds, String reason) {
             return 0;
         }
+
+        @Override
+        public java.util.Map<Long, ExecutionNodeRepository.NodeLastRun> latestRunsByNode() {
+            return java.util.Map.of();
+        }
     };
 
     @Transactional
