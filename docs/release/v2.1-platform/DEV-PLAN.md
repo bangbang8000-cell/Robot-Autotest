@@ -304,11 +304,12 @@
 
 ### 10.10 NODX-01 · 节点注册与心跳
 
-- **改**：`db/migration/V9_4__execution_node.sql` + `db/down/`；新增 `application/node/ExecutionNodeService.java`、`application/node/NodeHeartbeatMonitor.java`、`api/node/NodeController.java`、`infrastructure/ExecutionNodeRepositoryJdbc.java`；新增前端 `views/NodesView.vue` + spec
-- **做**：① 注册接口签发令牌，**只存哈希**、明文仅返回一次；② 心跳接口更新 `last_heartbeat_at`；③ 定时器连续 3 次缺心跳置 `OFFLINE`；④ 能力上报（RF / pytest 可用性）
-- **跑**：`bash scripts/db-migrate.sh` → `mvn -o -B test -Dtest=ExecutionNodeServiceTest,NodeHeartbeatMonitorTest`
+- **改**：`db/migration/V9_4__execution_node.sql` + `db/down/`（顺带加 `run.node_id` 列，NODX-02 不再单开迁移）；新增 `domain/node/ExecutionNode.java`、`application/repository/ExecutionNodeRepository.java` + Jdbc、`application/node/ExecutionNodeService.java`、`application/node/NodeHeartbeatMonitor.java`、`api/node/NodeController.java`；改 `api/WebConfig.java`（心跳端点加拦截器白名单）、`scripts/db-audit.sh`（65→66）；新增前端 `views/NodesView.vue` + spec、`api/nodes.ts`、`router/index.ts`（/nodes）、双语言包、`SettingsView.vue`（入口按钮）
+- **做**：① 注册接口签发令牌，**只存哈希**、明文仅返回一次；② 心跳接口（X-Node-Token 头自认证，拦截器白名单放行）更新 `last_heartbeat_at`；③ 定时器连续 3 次缺心跳置 `OFFLINE`；④ 能力上报（RF / pytest 可用性）；⑤ 四态 NEW/ONLINE/OFFLINE/DISABLED（停用心跳 403，启用回 NEW）
+- **跑**：`bash scripts/db-migrate.sh` → `mvn -o -B test -Dtest=ExecutionNodeServiceTest,NodeHeartbeatMonitorTest` → `npx vitest run src/views/NodesView.spec.ts` → `python3 docs/evidence/v2.1/NODX-01/run.py`
 - **判**：3 次缺心跳转 `OFFLINE`；令牌不入日志、不入库明文；节点列表显示能力与并发占用
-- **证**：`docs/evidence/v2.1/NODX-01/`（心跳日志 + 日志抽样 + 库内哈希）
+- **证**：`docs/evidence/v2.1/NODX-01/`（真实 HTTP 10 项全 PASS：16MB 日志无明文令牌、库内哈希逐字节比对、Monitor 真实扫描置离线；`out/log-sample.txt` 抽样）
+- 修订 2026-11-06：并发占用（runningRuns）显示推迟到 NODX-02 接上 run.node_id 之后（本迁移只加列，没有可计数的运行归属），判据的「占用」部分随 NODX-02 补齐
 
 ### 10.11 NODX-02 · 指定节点执行与离线拒绝
 

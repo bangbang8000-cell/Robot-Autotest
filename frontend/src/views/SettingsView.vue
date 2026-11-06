@@ -5,6 +5,7 @@
  */
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { NButton } from 'naive-ui'
 import { ApiError } from '@/api/http'
 import { settingsApi } from '@/api/settings'
 import { useAuthStore } from '@/stores/auth'
@@ -96,6 +97,11 @@ watch(projectId, load)
     <header class="page-head">
       <h1>{{ t('settings.title') }}</h1>
       <p class="muted">{{ t('settings.subtitle') }}</p>
+      <RouterLink v-slot="{ navigate }" to="/nodes" custom>
+        <NButton quaternary size="small" data-testid="entry-nodes" @click="navigate">
+          {{ t('settings.nodesEntry') }}
+        </NButton>
+      </RouterLink>
     </header>
 
     <p v-if="message" class="notice notice-ok">{{ message }}</p>

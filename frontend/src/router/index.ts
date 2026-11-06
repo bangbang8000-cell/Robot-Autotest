@@ -130,6 +130,12 @@ const router = createRouter({
       component: () => import('@/views/SettingsView.vue'),
       meta: { capability: 'settings:read' },
     },
+    {
+      // 执行节点（NODX-01，v2.1）：平台级资源，入口在设置页工具栏。
+      path: '/nodes',
+      name: 'nodes',
+      component: () => import('@/views/NodesView.vue'),
+    },
     { path: '/about', name: 'about', component: () => import('@/views/AboutView.vue') },
     {
       path: '/changelog',

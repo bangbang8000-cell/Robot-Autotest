@@ -1,0 +1,10 @@
+2026-11-06T23:15:57.192+08:00 DEBUG 1412257 --- [robot-autotest] [   scheduling-1] o.s.jdbc.core.JdbcTemplate               : Executing prepared SQL statement [UPDATE execution_node SET status = 'OFFLINE'
+2026-11-06T23:16:13.703+08:00 DEBUG 1412257 --- [robot-autotest] [   scheduling-1] o.s.jdbc.core.JdbcTemplate               : Executing prepared SQL statement [UPDATE execution_node SET status = 'OFFLINE'
+2026-11-06T23:16:28.709+08:00 DEBUG 1412257 --- [robot-autotest] [   scheduling-1] o.s.jdbc.core.JdbcTemplate               : Executing prepared SQL statement [UPDATE execution_node SET status = 'OFFLINE'
+2026-11-06T23:16:45.217+08:00 DEBUG 1412257 --- [robot-autotest] [   scheduling-1] o.s.jdbc.core.JdbcTemplate               : Executing prepared SQL statement [UPDATE execution_node SET status = 'OFFLINE'
+2026-11-06T23:17:00.224+08:00 DEBUG 1412257 --- [robot-autotest] [   scheduling-1] o.s.jdbc.core.JdbcTemplate               : Executing prepared SQL statement [UPDATE execution_node SET status = 'OFFLINE'
+2026-11-06T23:17:16.749+08:00 DEBUG 1412257 --- [robot-autotest] [   scheduling-1] o.s.jdbc.core.JdbcTemplate               : Executing prepared SQL statement [UPDATE execution_node SET status = 'OFFLINE'
+2026-11-06T23:17:31.751+08:00 DEBUG 1412257 --- [robot-autotest] [   scheduling-1] o.s.jdbc.core.JdbcTemplate               : Executing prepared SQL statement [UPDATE execution_node SET status = 'OFFLINE'
+2026-11-06T23:17:38.127+08:00 DEBUG 1412257 --- [robot-autotest] [nio-8081-exec-7] o.s.jdbc.core.JdbcTemplate               : Executing prepared SQL statement [SELECT COUNT(*) FROM execution_node WHERE name = ?]
+2026-11-06T23:17:38.131+08:00 DEBUG 1412257 --- [robot-autotest] [nio-8081-exec-7] o.s.jdbc.core.JdbcTemplate               : Executing prepared SQL statement [INSERT INTO execution_node
+  FROM execution_node

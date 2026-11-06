@@ -23,8 +23,10 @@ public class WebConfig implements WebMvcConfigurer {
                 // /api/ci/** 用项目 API token（Bearer，scope=ci:trigger）自认证，不走用户会话。
                 // /api/health 是就绪探针（ENVX-02）：容器 / 统一入口探活时没有登录态，
                 // 且它内部只做 SELECT 1，不读任何业务数据。
+                // /api/nodes/*/heartbeat（NODX-01）用节点令牌（X-Node-Token 头，服务端比哈希）
+                // 自认证——agent 上没有用户登录态；注册/列表仍走管理员会话，不排除。
                 .excludePathPatterns(
                         "/api/_ping", "/api/health", "/api/auth/login",
-                        "/api/print/**", "/api/ci/**");
+                        "/api/print/**", "/api/ci/**", "/api/nodes/*/heartbeat");
     }
 }

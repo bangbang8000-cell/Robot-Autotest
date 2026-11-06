@@ -1,0 +1,16 @@
+# 已登录 qa-e2e-admin
+
+
+# 验收节点已清理；日志抽样在 out/log-sample.txt
+PASS  NODX01-01   注册 200：nodeId/token(64 hex)/name 齐备       HTTP 200 id=1 token=e19a294c…
+PASS  NODX01-02   库内 token_hash = SHA-256(明文)，且 != 明文       hash=afa2b4a58050… 期望=afa2b4a58050…
+PASS  NODX01-03   明文令牌不出现在后端日志（抽样含 node 的行全部过滤比对）           日志 16477432B，命中明文=否
+PASS  NODX01-04   带令牌心跳 200：status=ONLINE、能力已上报             HTTP 200 status=ONLINE
+PASS  NODX01-05   错令牌心跳 → 401（文案不含节点是否存在）                   HTTP 401 msg=节点令牌无效
+PASS  NODX01-06   节点列表：能力 / 并发上限 / 最近心跳可见，令牌哈希不外泄           nodes=1 本节点={'id': 1, 'name': 'nodx01-node', 'status': 'ONLINE', 'rfAvailable': True, 'pytestAvailable': True, 'maxConcurrency': 2, 'lastHeartbeatAt': '2026-11-06T15:17:38.302Z'}
+PASS  NODX01-07   连续缺心跳（回拨 10 分钟）后 Monitor 置 OFFLINE，列表同读数  库=OFFLINE 列表=OFFLINE
+PASS  NODX01-08   停用 200：status=DISABLED                    HTTP 200
+PASS  NODX01-09   停用后心跳 → 403（不能靠心跳复活）                      HTTP 403 msg=节点已停用，先由管理员启用
+PASS  NODX01-10   启用 200：status=NEW（等下一次心跳上线）               HTTP 200
+
+合计 10 项，FAIL 0 项
