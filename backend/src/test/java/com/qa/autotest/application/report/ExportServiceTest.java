@@ -104,6 +104,21 @@ class ExportServiceTest {
     }
 
     @Test
+    @DisplayName("库列写着可导出但 metadata 缺项 → 导出期重算仍拒绝（RPT-07）")
+    void externalRejectsWhenStaleColumnSaysExportable() {
+        // run.exportable 由入库时写入，可能因重析/手工改库而与 metadata 脱节；
+        // 导出期必须按 metadata 重算，不能信这一列。
+        reports.report = report(true, List.of(), metadataMissingDutAndLink());
+
+        ExportRejectedException ex = assertThrows(ExportRejectedException.class,
+                () -> service.export(PROJECT, RUN_ID, "external", "docx"));
+
+        assertEquals(List.of("DUT", "LINK"), ex.metadataMissing());
+        assertTrue(exportRecords.rows.isEmpty(), "被拒绝的导出不能写 export_record");
+        assertFalse(Files.exists(artifactDir.resolve("report_" + RUN_ID + "_external.docx")));
+    }
+
+    @Test
     @DisplayName("外部齐全 → 成功并落盘")
     void externalSucceedsWhenComplete() throws IOException {
         reports.report = report(true, List.of(), fullMetadata());

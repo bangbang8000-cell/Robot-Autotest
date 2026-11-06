@@ -19,6 +19,7 @@ import com.qa.autotest.domain.iam.PermissionResource;
 import com.qa.autotest.domain.report.ExportFormat;
 import com.qa.autotest.domain.report.ExportMode;
 import com.qa.autotest.domain.report.ExportRecord;
+import com.qa.autotest.domain.report.GateResult;
 import com.qa.autotest.domain.report.MetadataGate;
 import com.qa.autotest.domain.report.ReportRecord;
 import java.io.IOException;
@@ -110,10 +111,11 @@ public class ExportService {
         ReportRecord report = reports.find(projectId, runId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND,
                         "报告不存在: " + runId));
-        if (mode == ExportMode.EXTERNAL && !report.exportable()) {
-            List<String> missing = report.metadataMissing().isEmpty()
-                    ? MetadataGate.check(report.metadata()).missing()
-                    : report.metadataMissing();
+        // 导出期二次拒绝（RPT-07）：按当前 metadata 重算门禁，不依赖 run.exportable 列的旧结论，
+        // 保证「入库时算过」与「导出时再算一次」是同一条口径，库列被改错也放不过去。
+        GateResult gate = MetadataGate.check(report.metadata());
+        if (mode == ExportMode.EXTERNAL && !gate.exportable()) {
+            List<String> missing = gate.missing();
             if (missing.isEmpty()) {
                 throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
                         "外部版导出被拒绝：metadata 存在超长项，请先修正");
