@@ -1,0 +1,354 @@
+[
+  {
+    "slug": "overview",
+    "route": "/overview",
+    "name": "工作台",
+    "theme": "light",
+    "metrics": {
+      "viewport": 1440,
+      "content": 1225,
+      "utilization": 0.8506944444444444,
+      "scrollWidth": 1425,
+      "overflowX": false,
+      "theme": "light",
+      "title": "AIDC自动化测试",
+      "bodyText": "AIDC自动化测试 工作台 资产 设备 链路 凭据 用例 执行 运行记录 执行计划 报告 管理 用户与项目 审计日志 系"
+    },
+    "narrow": {
+      "viewport": 1280,
+      "scrollWidth": 1265,
+      "overflow": false,
+      "content": 1065
+    }
+  },
+  {
+    "slug": "assets",
+    "route": "/assets",
+    "name": "资产",
+    "theme": "light",
+    "metrics": {
+      "viewport": 1440,
+      "content": 1240,
+      "utilization": 0.8611111111111112,
+      "scrollWidth": 1440,
+      "overflowX": false,
+      "theme": "light",
+      "title": "AIDC自动化测试",
+      "bodyText": "AIDC自动化测试 工作台 资产 设备 链路 凭据 用例 执行 运行记录 执行计划 报告 管理 用户与项目 审计日志 系"
+    },
+    "narrow": {
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "content": 1080
+    }
+  },
+  {
+    "slug": "cases",
+    "route": "/cases",
+    "name": "用例",
+    "theme": "light",
+    "metrics": {
+      "viewport": 1440,
+      "content": 1240,
+      "utilization": 0.8611111111111112,
+      "scrollWidth": 1440,
+      "overflowX": false,
+      "theme": "light",
+      "title": "AIDC自动化测试",
+      "bodyText": "AIDC自动化测试 工作台 资产 设备 链路 凭据 用例 执行 运行记录 执行计划 报告 管理 用户与项目 审计日志 系"
+    },
+    "narrow": {
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "content": 1080
+    }
+  },
+  {
+    "slug": "runs",
+    "route": "/runs",
+    "name": "执行",
+    "theme": "light",
+    "metrics": {
+      "viewport": 1440,
+      "content": 1240,
+      "utilization": 0.8611111111111112,
+      "scrollWidth": 1440,
+      "overflowX": false,
+      "theme": "light",
+      "title": "AIDC自动化测试",
+      "bodyText": "AIDC自动化测试 工作台 资产 设备 链路 凭据 用例 执行 运行记录 执行计划 报告 管理 用户与项目 审计日志 系"
+    },
+    "narrow": {
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "content": 1080
+    }
+  },
+  {
+    "slug": "reports",
+    "route": "/reports",
+    "name": "报告",
+    "theme": "light",
+    "metrics": {
+      "viewport": 1440,
+      "content": 1240,
+      "utilization": 0.8611111111111112,
+      "scrollWidth": 1440,
+      "overflowX": false,
+      "theme": "light",
+      "title": "AIDC自动化测试",
+      "bodyText": "AIDC自动化测试 工作台 资产 设备 链路 凭据 用例 执行 运行记录 执行计划 报告 管理 用户与项目 审计日志 系"
+    },
+    "narrow": {
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "content": 1080
+    }
+  },
+  {
+    "slug": "test-reports",
+    "route": "/test-reports",
+    "name": "对外测试报告",
+    "theme": "light",
+    "metrics": {
+      "viewport": 1440,
+      "content": 1240,
+      "utilization": 0.8611111111111112,
+      "scrollWidth": 1440,
+      "overflowX": false,
+      "theme": "light",
+      "title": "AIDC自动化测试",
+      "bodyText": "AIDC自动化测试 工作台 资产 设备 链路 凭据 用例 执行 运行记录 执行计划 报告 管理 用户与项目 审计日志 系"
+    },
+    "narrow": {
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "content": 1080
+    }
+  },
+  {
+    "slug": "imports",
+    "route": "/imports",
+    "name": "导入预检",
+    "theme": "light",
+    "metrics": {
+      "viewport": 1440,
+      "content": 1240,
+      "utilization": 0.8611111111111112,
+      "scrollWidth": 1440,
+      "overflowX": false,
+      "theme": "light",
+      "title": "AIDC自动化测试",
+      "bodyText": "AIDC自动化测试 工作台 资产 设备 链路 凭据 用例 执行 运行记录 执行计划 报告 管理 用户与项目 审计日志 系"
+    },
+    "narrow": {
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "content": 1080
+    }
+  },
+  {
+    "slug": "groups",
+    "route": "/groups",
+    "name": "用户组与授权",
+    "theme": "light",
+    "metrics": {
+      "viewport": 1440,
+      "content": 1240,
+      "utilization": 0.8611111111111112,
+      "scrollWidth": 1440,
+      "overflowX": false,
+      "theme": "light",
+      "title": "AIDC自动化测试",
+      "bodyText": "AIDC自动化测试 工作台 资产 设备 链路 凭据 用例 执行 运行记录 执行计划 报告 管理 用户与项目 审计日志 系"
+    },
+    "narrow": {
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "content": 1080
+    }
+  },
+  {
+    "slug": "overview",
+    "route": "/overview",
+    "name": "工作台",
+    "theme": "dark",
+    "metrics": {
+      "viewport": 1440,
+      "content": 1225,
+      "utilization": 0.8506944444444444,
+      "scrollWidth": 1425,
+      "overflowX": false,
+      "theme": "dark",
+      "title": "AIDC自动化测试",
+      "bodyText": "AIDC自动化测试 工作台 资产 设备 链路 凭据 用例 执行 运行记录 执行计划 报告 管理 用户与项目 审计日志 系"
+    },
+    "narrow": {
+      "viewport": 1280,
+      "scrollWidth": 1265,
+      "overflow": false,
+      "content": 1065
+    }
+  },
+  {
+    "slug": "assets",
+    "route": "/assets",
+    "name": "资产",
+    "theme": "dark",
+    "metrics": {
+      "viewport": 1440,
+      "content": 1240,
+      "utilization": 0.8611111111111112,
+      "scrollWidth": 1440,
+      "overflowX": false,
+      "theme": "dark",
+      "title": "AIDC自动化测试",
+      "bodyText": "AIDC自动化测试 工作台 资产 设备 链路 凭据 用例 执行 运行记录 执行计划 报告 管理 用户与项目 审计日志 系"
+    },
+    "narrow": {
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "content": 1080
+    }
+  },
+  {
+    "slug": "cases",
+    "route": "/cases",
+    "name": "用例",
+    "theme": "dark",
+    "metrics": {
+      "viewport": 1440,
+      "content": 1240,
+      "utilization": 0.8611111111111112,
+      "scrollWidth": 1440,
+      "overflowX": false,
+      "theme": "dark",
+      "title": "AIDC自动化测试",
+      "bodyText": "AIDC自动化测试 工作台 资产 设备 链路 凭据 用例 执行 运行记录 执行计划 报告 管理 用户与项目 审计日志 系"
+    },
+    "narrow": {
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "content": 1080
+    }
+  },
+  {
+    "slug": "runs",
+    "route": "/runs",
+    "name": "执行",
+    "theme": "dark",
+    "metrics": {
+      "viewport": 1440,
+      "content": 1240,
+      "utilization": 0.8611111111111112,
+      "scrollWidth": 1440,
+      "overflowX": false,
+      "theme": "dark",
+      "title": "AIDC自动化测试",
+      "bodyText": "AIDC自动化测试 工作台 资产 设备 链路 凭据 用例 执行 运行记录 执行计划 报告 管理 用户与项目 审计日志 系"
+    },
+    "narrow": {
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "content": 1080
+    }
+  },
+  {
+    "slug": "reports",
+    "route": "/reports",
+    "name": "报告",
+    "theme": "dark",
+    "metrics": {
+      "viewport": 1440,
+      "content": 1240,
+      "utilization": 0.8611111111111112,
+      "scrollWidth": 1440,
+      "overflowX": false,
+      "theme": "dark",
+      "title": "AIDC自动化测试",
+      "bodyText": "AIDC自动化测试 工作台 资产 设备 链路 凭据 用例 执行 运行记录 执行计划 报告 管理 用户与项目 审计日志 系"
+    },
+    "narrow": {
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "content": 1080
+    }
+  },
+  {
+    "slug": "test-reports",
+    "route": "/test-reports",
+    "name": "对外测试报告",
+    "theme": "dark",
+    "metrics": {
+      "viewport": 1440,
+      "content": 1240,
+      "utilization": 0.8611111111111112,
+      "scrollWidth": 1440,
+      "overflowX": false,
+      "theme": "dark",
+      "title": "AIDC自动化测试",
+      "bodyText": "AIDC自动化测试 工作台 资产 设备 链路 凭据 用例 执行 运行记录 执行计划 报告 管理 用户与项目 审计日志 系"
+    },
+    "narrow": {
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "content": 1080
+    }
+  },
+  {
+    "slug": "imports",
+    "route": "/imports",
+    "name": "导入预检",
+    "theme": "dark",
+    "metrics": {
+      "viewport": 1440,
+      "content": 1240,
+      "utilization": 0.8611111111111112,
+      "scrollWidth": 1440,
+      "overflowX": false,
+      "theme": "dark",
+      "title": "AIDC自动化测试",
+      "bodyText": "AIDC自动化测试 工作台 资产 设备 链路 凭据 用例 执行 运行记录 执行计划 报告 管理 用户与项目 审计日志 系"
+    },
+    "narrow": {
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "content": 1080
+    }
+  },
+  {
+    "slug": "groups",
+    "route": "/groups",
+    "name": "用户组与授权",
+    "theme": "dark",
+    "metrics": {
+      "viewport": 1440,
+      "content": 1240,
+      "utilization": 0.8611111111111112,
+      "scrollWidth": 1440,
+      "overflowX": false,
+      "theme": "dark",
+      "title": "AIDC自动化测试",
+      "bodyText": "AIDC自动化测试 工作台 资产 设备 链路 凭据 用例 执行 运行记录 执行计划 报告 管理 用户与项目 审计日志 系"
+    },
+    "narrow": {
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "content": 1080
+    }
+  }
+]

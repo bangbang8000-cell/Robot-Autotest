@@ -1,0 +1,19 @@
+# EDT-09 保存链路真实验收（真实 RF --dryrun）
+
+- 入口：`http://127.0.0.1:8001` · 项目 id=29 · 文件 `qa-e2e/edt09-save-chain.robot`
+- RF：`python3 -m robot`（Robot Framework 7.5.1，本机实测）
+
+| # | 断言 | 结果 | 实测 |
+|---|---|---|---|
+| EDT09-01 | 合法 .robot 保存成功 | PASS | HTTP 200 |
+| EDT09-02 | 保存时真的调用了 RF（syntaxChecked=true） | PASS | syntaxChecked=True |
+| EDT09-03 | 语法错误内容被 RF --dryrun 拦截 | PASS | HTTP 400 |
+| EDT09-04 | 拦截消息带行号线索 | PASS | {"code":40001,"codeName":"INVALID_ARGUMENT","message":"语法校验失败，第 5 行：[ ERROR ] Error in file '/tmp/editor-syntax-12130361 |
+| EDT09-05 | 内容未变再存 changed=false | PASS | HTTP 200 changed=False |
+| EDT09-06 | 内容未变时版本不增 | PASS | version=1 期望 1 |
+| EDT09-07 | 过期 baseVersion 保存被拒（乐观锁） | PASS | HTTP 409 |
+| EDT09-08 | 版本历史可列且至少有 1 版 | PASS | HTTP 200 versions=1 |
+| EDT09-09 | 回滚生成新版本（版本号递增，不删历史） | PASS | HTTP 200 version=2 原=1 |
+| EDT09-10 | 回滚后历史条数增加（历史保留） | PASS | 回滚前 1 → 回滚后 2 |
+
+**合计 10/10 通过**

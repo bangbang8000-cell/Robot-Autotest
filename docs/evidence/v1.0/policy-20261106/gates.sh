@@ -26,6 +26,9 @@ run 07 release_docs    "python3 tools/check_release_docs.py"
 run 08 wbs_consistency "python3 tools/check_wbs_consistency.py"
 run 09 md_tables       "python3 docs/evidence/v1.0/policy-20261106/check_md_tables.py"
 run 10 diff_check      "git diff --check"
+# 编辑器包有独立的 vitest 工程（unplugin-vue + jsdom），frontend 的 vitest 扫不到它。
+# EDT-03/EDT-05 的回归用例住在这里，不接进来就会出现「门禁全绿但编辑器回归没人跑」。
+run 11 editor_test     "cd packages/editor && npx vitest run"
 
 printf '\nGATES_RESULT FAILS=%s\n' "$FAILS"
 exit "$FAILS"

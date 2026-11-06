@@ -50,7 +50,7 @@ import {
 
 // CodeMirror imports
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightSpecialChars } from '@codemirror/view'
-import { EditorState } from '@codemirror/state'
+import { EditorState, Compartment } from '@codemirror/state'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { LanguageSupport } from '@codemirror/language'
 import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language'
@@ -83,6 +83,9 @@ const activeTab = ref<'visual' | 'flow' | 'code'>('code')
 const parseError = ref<string | null>(null)
 const codeEditorContainer = ref<HTMLElement | null>(null)
 const codeEditorView = shallowRef<EditorView | null>(null)
+// EDT-05：只读开关走 Compartment，权限异步到达时能原地 reconfigure，
+// 不必销毁重建（重建会丢 undo 历史与光标）。
+const readOnlyCompartment = new Compartment()
 const internalCode = ref('')
 
 // Collapsible state
@@ -364,8 +367,10 @@ function initCodeEditor() {
     doc: internalCode.value,
     extensions: [
       // EDT-05 / FR-v0.3-16：只读时 CodeMirror 本身也拒绝键入。
-      EditorState.readOnly.of(!!props.readonly),
-      EditorView.editable.of(!props.readonly),
+      readOnlyCompartment.of([
+        EditorState.readOnly.of(!!props.readonly),
+        EditorView.editable.of(!props.readonly),
+      ]),
       lineNumbers(),
       highlightActiveLine(),
       highlightSpecialChars(),
@@ -1533,6 +1538,21 @@ onMounted(() => {
   baselineContent = props.content
   lazyLoadKeywordArgs()
   nextTick(setupStepRowObserver)
+  // EDT-03 实测缺陷：activeTab 默认就是 'code'，而 initCodeEditor() 只挂在
+  // switchTab('code') 上。首次进入编辑器页从不切 tab → CodeMirror 永远不创建，
+  // 代码视图是一片空白（页面文本里只剩 v-show 隐藏的 visual 面板内容）。
+  if (activeTab.value === 'code') nextTick(initCodeEditor)
+})
+
+// EDT-05：权限异步加载完成时 readonly 会反转，编辑器必须跟着变（原来只读的是
+// 初始值，之后再也不更新）。用 compartment 原地改，不销毁实例。
+watch(() => props.readonly, (ro) => {
+  codeEditorView.value?.dispatch({
+    effects: readOnlyCompartment.reconfigure([
+      EditorState.readOnly.of(!!ro),
+      EditorView.editable.of(!ro),
+    ]),
+  })
 })
 onUnmounted(() => { destroyCodeEditor(); teardownStepRowObserver() })
 

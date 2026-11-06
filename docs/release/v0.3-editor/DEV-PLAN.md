@@ -298,3 +298,14 @@ bash scripts/brand-scan.sh   # 输出 0（白名单除外）
 | 代码 | `packages/editor`（39 文件闭包，15 文件改写）、平台宿主页、`/api/editor/*` 接口、版本表与迁移 |
 | 文档 | `CONVENTIONS-editor.md`、`ADR-0007 解析器归属`、`ADR-0008 移植边界`、许可说明 |
 | 证据 | `docs/evidence/v0.3/`：19 测试输出、50 样本往返报告、三视图 sha256 对比、品牌扫描、保存/版本日志、许可检查单 |
+
+---
+
+## 实际完成与偏差（2026-11-06 二轮）
+
+| 计划项 | 计划做法 | 实际 | 偏差原因 |
+|---|---|---|---|
+| EDT-03 的 E2E | 原计划等 Playwright 依赖装好后写 `e2e/editor-three-views.spec.ts` | **改用本机 Chrome + CDP 直驱**，`docs/evidence/v0.3/edt03-three-views/run.mjs` | 真实浏览器已在本机可用，不必等 Playwright 依赖；CDP 零依赖、可复跑 |
+| EDT-09 的语法校验 | 判 `robot --dryrun` 退出码 | **改为「退出码 + 输出里有无 `[ ERROR ]`」双判** | 实测 RF 7.5.1 语法错误退出码为 0，只判退出码等于没校验 |
+| 编辑器构建 | 按 build.sh 现有顺序 | **调换 editor / frontend 顺序** | frontend 别名指向 editor 的 `dist`，顺序错会让改动不生效而构建全绿 |
+| 工作量 | — | 多出 3 个缺陷修复 + 4 条回归用例 | 均为真链路暴露，非计划外功能扩张 |

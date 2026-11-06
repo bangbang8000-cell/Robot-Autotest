@@ -1,0 +1,48 @@
+# IAM-05 / HRD-01 / EDT-05 真实 HTTP 全链路验收
+
+- 入口：`http://127.0.0.1:8001`（8001 → 8081 反代）
+- 夹具项目：`qa-e2e-fixture` id=29；跨项目对照 id=1
+- 账号：qa-e2e-viewer, qa-e2e-engineer, qa-e2e-pm, qa-e2e-admin, qa-e2e-nobody（口令仅本地 dev 夹具）
+
+## 断言明细
+
+| # | 断言 | 结果 | 实测 |
+|---|---|---|---|
+| IAM05-HTTP-01 | 缺少令牌 GET 用例列表 | PASS | HTTP 401 (期望 (401,)) |
+| IAM05-HTTP-02 | 伪造令牌 GET 用例列表 | PASS | HTTP 401 (期望 (401,)) |
+| IAM05-HTTP-03 | 空令牌（Bearer 后双空格）GET 用例列表 | PASS | HTTP 401 (期望 (401,)) |
+| AUTH-HTTP-login-viewer | qa-e2e-viewer 登录并取令牌 | PASS | HTTP 200 token=有 |
+| AUTH-HTTP-login-engineer | qa-e2e-engineer 登录并取令牌 | PASS | HTTP 200 token=有 |
+| AUTH-HTTP-login-pm | qa-e2e-pm 登录并取令牌 | PASS | HTTP 200 token=有 |
+| AUTH-HTTP-login-admin | qa-e2e-admin 登录并取令牌 | PASS | HTTP 200 token=有 |
+| AUTH-HTTP-login-nobody | qa-e2e-nobody 登录并取令牌 | PASS | HTTP 200 token=有 |
+| IAM05-HTTP-04 | 访客读用例列表 | PASS | HTTP 200 (期望 (200,)) |
+| IAM05-HTTP-05 | 访客建用例 | PASS | HTTP 403 (期望 (403,)) |
+| IAM05-HTTP-06 | 访客建运行 | PASS | HTTP 403 (期望 (403,)) |
+| IAM05-HTTP-07 | 访客删设备 | PASS | HTTP 403 (期望 (403,)) |
+| IAM05-HTTP-08 | 工程师建用例 | PASS | HTTP 200 |
+| IAM05-HTTP-09 | 工程师删设备 | PASS | HTTP 403 (期望 (403,)) |
+| IAM05-HTTP-10 | 工程师管成员 | PASS | HTTP 403 (期望 (403,)) |
+| IAM05-HTTP-11 | 项目经理管成员 | PASS | HTTP 200 (期望 (200, 201)) |
+| IAM05-HTTP-11b | 项目经理移除刚加的成员（恢复夹具现场） | PASS | HTTP 200 |
+| IAM05-HTTP-12 | 项目经理建项目 | PASS | HTTP 403 (期望 (403,)) |
+| IAM05-HTTP-13 | 管理员跨项目读设备列表 | PASS | HTTP 200 (期望 (200,)) |
+| IAM05-HTTP-14 | 非成员读别的项目设备 | PASS | HTTP 403 (期望 (403,)) |
+| IAM05-HTTP-15 | 非成员读别的项目用例 | PASS | HTTP 403 (期望 (403,)) |
+| IAM05-HTTP-16 | 非成员读别的项目文件工作区 | PASS | HTTP 403 (期望 (403,)) |
+| IAM05-HTTP-17 | 存在项目与不存在项目同 403 同响应体 | PASS | exist=403 absent=403 bodySame=True |
+| IAM05-HTTP-18 | 无角色用户项目列表为空集 | PASS | HTTP 200 {"code":0,"codeName":"OK","message":"OK","data":[],"success":true} |
+| IAM05-HTTP-19 | 无角色用户访问项目资源 | PASS | HTTP 403 (期望 (403,)) |
+| IAM05-HTTP-20 | X-Project-Id 非数字 | PASS | HTTP 400 (期望 (400,)) |
+| EDT05-HTTP-01 | 访客读编辑器权限且 canWrite=false | PASS | HTTP 200 {"code":0,"codeName":"OK","message":"OK","data":{"role":"viewer","canRead":true,"canWrite":false},"success":true} |
+| EDT05-HTTP-04 | 工程师读编辑器权限且 canWrite=true | PASS | HTTP 200 {"code":0,"codeName":"OK","message":"OK","data":{"role":"engineer","canRead":true,"canWrite":true},"success":true} |
+| EDT05-HTTP-02 | 访客写文件工作区 | PASS | HTTP 403 (期望 (403,)) |
+| EDT05-HTTP-03 | 工程师写文件工作区 | PASS | HTTP 200 (期望 (200, 201)) |
+| EDT04-KW-01 | V2_5 编辑器词条迁移已在真实库应用 | PASS | flyway version=2.5 |
+| EDT04-KW-02 | 种子词条 ≥29 条且平台级 ≥29（BuiltIn ≥18） | PASS | total=29 platform=29 builtin=18 |
+| EDT04-KW-03 | 访客可检索平台级词条 | PASS | HTTP 200 (期望 (200,)) |
+| EDT04-KW-04 | 工程师写平台级词条（project_id=0） | PASS | HTTP 403 (期望 (403,)) |
+| EDT04-KW-05 | 管理员写平台级词条 | PASS | HTTP 200 |
+| EDT04-KW-05b | 管理员删除刚建的词条（恢复夹具现场） | PASS | HTTP 200 |
+
+**合计 36/36 通过**

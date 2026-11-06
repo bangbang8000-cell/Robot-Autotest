@@ -32,11 +32,36 @@ public class RunLogService {
         }
     }
 
+    /**
+     * 订阅者带自己的发送水位（{@code lastSeq}）。
+     *
+     * <p>没有水位时会出现真实缺陷：连上先同步补发最近 200 行，紧接着下一次
+     * 100ms flush 又把还没被取走的同一批行推一遍 —— 客户端收到重复行。
+     * 水位让「补发」与「增量」在同一订阅者内天然不重叠，且不影响别的订阅者。
+     */
+    private static final class Subscriber {
+        private final Consumer<List<LogLine>> sink;
+        private volatile long lastSeq;
+
+        private Subscriber(Consumer<List<LogLine>> sink) {
+            this.sink = sink;
+        }
+
+        private void acceptAll(List<LogLine> lines) {
+            for (LogLine line : lines) {
+                if (line.seq() > lastSeq) {
+                    lastSeq = line.seq();
+                }
+            }
+            sink.accept(lines);
+        }
+    }
+
     private static final class Channel {
         private final AtomicLong seq = new AtomicLong();
         private final LogRingBuffer ring = new LogRingBuffer(RING_CAPACITY);
         private final LogBatcher batcher = new LogBatcher(ring);
-        private final List<Consumer<List<LogLine>>> subscribers = new CopyOnWriteArrayList<>();
+        private final List<Subscriber> subscribers = new CopyOnWriteArrayList<>();
         private volatile boolean completed;
     }
 
@@ -66,13 +91,13 @@ public class RunLogService {
 
     public Registration subscribe(String runId, Consumer<List<LogLine>> subscriber) {
         Channel channel = channel(runId);
-        channel.subscribers.add(subscriber);
+        Subscriber watcher = new Subscriber(subscriber);
         List<LogLine> tail = channel.batcher.reconnect(RECONNECT_LINES);
         if (!tail.isEmpty()) {
-            subscriber.accept(tail);
+            watcher.acceptAll(tail);
         }
-        return new Registration(runId,
-                () -> channel.subscribers.remove(subscriber));
+        channel.subscribers.add(watcher);
+        return new Registration(runId, () -> channel.subscribers.remove(watcher));
     }
 
     public void complete(String runId) {
@@ -101,8 +126,16 @@ public class RunLogService {
         if (batch.isEmpty()) {
             return;
         }
-        for (Consumer<List<LogLine>> subscriber : channel.subscribers) {
-            subscriber.accept(batch);
+        for (Subscriber watcher : channel.subscribers) {
+            List<LogLine> fresh = new java.util.ArrayList<>(batch.size());
+            for (LogLine line : batch) {
+                if (line.seq() > watcher.lastSeq) {
+                    fresh.add(line);
+                }
+            }
+            if (!fresh.isEmpty()) {
+                watcher.acceptAll(fresh);
+            }
         }
     }
 

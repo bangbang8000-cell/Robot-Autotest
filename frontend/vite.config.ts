@@ -30,6 +30,10 @@ export default defineConfig({
   test,
   plugins: [vue()],
   resolve: {
+    // 单实例强制：packages/editor 把 pinia / vue / vue-i18n 声明为 peer，但它的
+    // node_modules 下实际存在副本；不 dedupe 时生产构建会打进**两份 pinia**，
+    // 编辑器页在真实浏览器里整页崩（pinia._s undefined）。dev 下顺序不同、看不出问题。
+    dedupe: ['pinia', 'vue', 'vue-i18n'],
     alias: [
       { find: /^@robot-autotest\/editor$/, replacement: editorDist },
       { find: '@robot-autotest/editor-css', replacement: editorCss },

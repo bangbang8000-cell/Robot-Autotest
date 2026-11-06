@@ -18,17 +18,19 @@ if [[ -f backend/pom.xml ]]; then
     built=$((built + 1))
 fi
 
-if [[ -f frontend/package.json ]]; then
-    command -v npm >/dev/null 2>&1 || { echo "[build] 缺少 npm，无法构建 frontend"; exit 1; }
-    echo "[build] frontend: npm ci && npm run build"
-    (cd frontend && npm ci && npm run build)
-    built=$((built + 1))
-fi
-
+# 顺序不能反：frontend 的 vite 别名指向 packages/editor/dist/editor.js，
+# 编辑器必须先构建，否则前端打进的是上一轮的旧产物（构建全绿但改动不生效）。
 if [[ -f packages/editor/package.json ]]; then
     command -v npm >/dev/null 2>&1 || { echo "[build] 缺少 npm，无法构建 packages/editor"; exit 1; }
     echo "[build] packages/editor: npm ci && npm run build"
     (cd packages/editor && npm ci && npm run build)
+    built=$((built + 1))
+fi
+
+if [[ -f frontend/package.json ]]; then
+    command -v npm >/dev/null 2>&1 || { echo "[build] 缺少 npm，无法构建 frontend"; exit 1; }
+    echo "[build] frontend: npm ci && npm run build"
+    (cd frontend && npm ci && npm run build)
     built=$((built + 1))
 fi
 

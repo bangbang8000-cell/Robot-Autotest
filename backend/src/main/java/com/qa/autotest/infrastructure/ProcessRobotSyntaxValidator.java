@@ -64,7 +64,7 @@ public class ProcessRobotSyntaxValidator implements RobotSyntaxValidator {
                 process.destroyForcibly();
                 return SyntaxReport.unchecked();
             }
-            if (process.exitValue() == 0) {
+            if (!looksFatal(process.exitValue(), output)) {
                 return SyntaxReport.pass();
             }
             return parseFailure(output);
@@ -84,6 +84,30 @@ public class ProcessRobotSyntaxValidator implements RobotSyntaxValidator {
                 }
             }
         }
+    }
+
+    /**
+     * 是否应当判为语法失败（纯函数，便于单测）。
+     *
+     * <p><b>为什么不能只看退出码：</b>实测 Robot Framework 7.5.1 对语法错误
+     * （未知 section、未知 setting）只打印 {@code [ ERROR ] Error in file '...' on line N}
+     * 到 stdout，<b>退出码仍然是 0</b>；只有用例执行失败才返回非 0。
+     * 旧实现 {@code exitValue() == 0 → pass} 因此把语法错误全部放行，
+     * 编辑器「保存时校验」的功能等于不存在。
+     */
+    static boolean looksFatal(int exitCode, String output) {
+        if (exitCode != 0) {
+            return true;
+        }
+        if (output == null || output.isBlank()) {
+            return false;
+        }
+        for (String raw : output.split("\\R")) {
+            if (ERROR_LINE.matcher(raw.trim()).find()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** 从 RF 输出里抠行号与错误摘要（纯函数，便于单测）。 */

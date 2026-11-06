@@ -1,10 +1,12 @@
 package com.qa.autotest.application.execution;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** 日志频道：seq 递增、级别识别、订阅补尾部、flush 才推送。 */
@@ -40,9 +42,17 @@ class RunLogServiceTest {
 
         logs.publish("RUN-1", "pabot", "after-subscribe");
         assertEquals(200, received.size());
-        logs.flush();
+        // pending 是 FIFO：补发后队列里还压着 250 行旧数据，每轮 flush 只取 50 行，
+        // 新行要排到后面才轮到；生产里 100ms 一轮，这里循环到它出现为止。
+        for (int i = 0; i < 12 && !received.contains("after-subscribe"); i++) {
+            logs.flush();
+        }
         assertTrue(received.size() > 200);
-        assertTrue(received.contains("line-1"));
+        assertTrue(received.contains("after-subscribe"), "订阅后新增的行必须推达");
+        assertEquals(received.size(), new HashSet<>(received).size(),
+                "同一行不得推两遍：补发与增量必须不重叠");
+        assertFalse(received.contains("line-1"),
+                "补发窗口(line-51..line-250)之外的行不得被 flush 补一遍");
 
         registration.close();
         logs.publish("RUN-1", "pabot", "after-close");

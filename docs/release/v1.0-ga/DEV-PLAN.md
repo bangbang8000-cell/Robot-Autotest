@@ -319,3 +319,16 @@ echo $(( ($(cat /tmp/t1) - $(cat /tmp/t0)) / 60 ))   # ≤30
 | 代码 | 审计切面与查询、权限矩阵测试（YAML 驱动）、`scripts/rollback.sh`、`scripts/window-stats.sql` |
 | 文档 | 运维手册、回滚预案、升级路径、UAT 记录表、试点迭代记录（每轮一份） |
 | 证据 | `docs/evidence/v1.0/`：authz.csv（签字）、audit-10.md、manual-test.md、rollback-timing.md、uat-8.md、pilot-iterations.md（每轮崩溃/重启/内存趋势/连接数）、iteration-review.md（每轮评审结论） |
+
+---
+
+## 实际完成与偏差（2026-11-06 二轮）
+
+| 计划项 | 实际 | 偏差原因 |
+|---|---|---|
+| 真实账号 HTTP 全链路 | 自建夹具项目 + 5 个 PBKDF2 账号，脚本化 36 条断言 | 「等人给账号」不是必要条件，库在本机就能造 |
+| 真实浏览器截图 | 复用既有 Chrome CDP 通道，脚本化 8 页 × 2 主题 | 不必等 Playwright 依赖 |
+| 只读联动 | 改 `Compartment` + `watch` | 原实现权限异步到达后不跟随，属越权可写 |
+| 布局 | `.page` 轨道钉成 `minmax(0,1fr)` | 单列 grid 按 max-content 撑宽，1280 横滚 |
+| 门禁 | 10 步 → 11 步（补 `packages/editor` 219 条） | 编辑器包有独立 vitest 工程，frontend 扫不到，其回归等于没人跑 |
+| 工作量 | 多出 2 个缺陷修复 + 4 条编辑器回归 + 1 份夹具脚本 | 均为真链路暴露，非功能扩张 |

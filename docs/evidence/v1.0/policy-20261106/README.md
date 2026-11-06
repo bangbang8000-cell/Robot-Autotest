@@ -98,3 +98,37 @@
 
 **刻意不动**：版本划分、KPI、G0–G8 检查项、v2.0 波次依赖（W2 需 G5、W3 需 G4）、
 C 类包风险要求、七道环节与 ⑥⑦ 不可裁、ADR-0013 禁跑令、发版与对外口径归属。
+
+---
+
+## 六、二轮扩门禁（2026-11-06 晚）：10 步 → 11 步
+
+### 6.1 为什么加一步
+
+`packages/editor` 有**独立的 vitest 工程**（`vitest.config.ts`：unplugin-vue + jsdom），
+`cd frontend && npx vitest run` **扫不到它**。而 `EDT-03`（三视图往返）与 `EDT-05`（只读联动）
+本轮的回归用例正住在 `packages/editor/tests/editor-code-mount.spec.ts`。
+
+后果是：改了编辑器源码 → 跑十步门禁 → 全绿 → 但那 4 条回归**根本没跑**。
+这和本轮另一个缺陷（`build.sh` 顺序错导致改编辑器源码不生效而构建全绿）是同一类问题：
+**门禁覆盖不到的绿，等于没绿。**
+
+新增 `run 11 editor_test "cd packages/editor && npx vitest run"`。
+
+### 6.2 二轮读数（11 步）
+
+| 步 | 门禁 | 结果 | 关键读数 |
+|---|---|---|---|
+| 01 | `subset_font.py` | PASS | 字体子集预算内 |
+| 02 | `frontend npx vitest run` | PASS | **37 文件 / 239 用例** |
+| 03 | `npx vue-tsc --noEmit` | PASS | 类型 0 错误 |
+| 04 | `npx vite build` | PASS | `EditorView` 809.56 kB |
+| 05 | `mvn -o -B test` | PASS | **780 / 780**，0 失败 0 错误 |
+| 06 | `scripts/lint.sh` | PASS | 含全部 `check_*` 守门 |
+| 07 | `check_release_docs.py` | PASS | **FAIL 0 / WARN 0** |
+| 08 | `check_wbs_consistency.py` | PASS | 130 包 / 待验 **0** / 待现场 6 / 已完成 **124** |
+| 09 | `check_md_tables.py` | PASS | 7 份文档 / 155 表格块 / 1233 数据行 |
+| 10 | `git diff --check` | PASS | 无空白错误 |
+| 11 | `packages/editor npx vitest run` | PASS | **24 文件 / 219 用例** |
+
+`GATES_RESULT FAILS=0`。

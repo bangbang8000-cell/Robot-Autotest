@@ -406,3 +406,15 @@ grep -E "speedup|conflict|p95" docs/evidence/v0.4/bench.txt
 | 迁移 | `V4_1__lease.sql`、`V4_2__run_artifact.sql`、`V4_3__failure_class.sql`、`V7_4__run_device_scope.sql`（EXEC-11） |
 | 文档 | 执行域设计说明（含 PATH/双日志/退出码三条硬约束）、`CONVENTIONS-exec`、ADR-0008 租约粒度、ADR-0009 加速比口径 |
 | 证据 | `docs/evidence/v0.4/`：并发单测、5 种故障注入、取消前后 `ps`、20 轮压测报告、DUT 实网采集日志 |
+
+---
+
+## 实际完成与偏差（2026-11-06 二轮）
+
+| 计划项 | 实际 | 偏差原因 |
+|---|---|---|
+| 租约并发验收 | 真库 100 连接压测，并在脚本里运行时读取引擎版本写进日志 | 原证据把 MySQL 写成 MariaDB，属事实错误，必须改 |
+| 实时日志验收 | 新增 `RunLogWebSocketE2ETest`（`@SpringBootTest(RANDOM_PORT)` + JDK WebSocket） | 「浏览器抽验」不是唯一路径；真实 Tomcat 已能覆盖协议层 |
+| 日志 flush | 抽出独立 `RunLogFlushConfig` | 原实现寄生在执行调度上，没开调度就不推日志 |
+| 推送去重 | 订阅者水位 `lastSeq` | 补发与增量重叠导致同一行推两遍 |
+| 工作量 | 多出 2 个缺陷修复 + 1 个 E2E 测试 + 1 处事实订正 | 均为真链路暴露 |

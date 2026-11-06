@@ -921,3 +921,13 @@ textarea:focus-visible {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* ============ UIX-04 实测修复（2026-11-06） ============
+ * 视图根 .page 是单列 grid，轨道默认 auto：轨道宽度会取所有子项的 max-content。
+ * 含宽表格的页面（对外测试报告 / 用户组授权）因此把轨道撑到 1144px，
+ * 1280 视口下整页横滚（实测 scrollWidth 1392 > 1280），违反「1280 无横滚」判据。
+ * 把轨道钉成可收缩的 minmax(0,1fr)，超宽表格的横向滚动交回 .table-scroll 容器
+ * 自己处理（FR-v0.2-57）。
+ */
+.page { grid-template-columns: minmax(0, 1fr); }
+.page > * { min-width: 0; }

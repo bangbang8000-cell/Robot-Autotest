@@ -1,20 +1,20 @@
-import { defineComponent as je, openBlock as i, createElementBlock as u, normalizeClass as ne, createCommentVNode as T, renderSlot as Yn, inject as rs, computed as O, ref as N, onBeforeUnmount as $n, createVNode as ve, unref as p, createElementVNode as t, withModifiers as re, toDisplayString as m, Fragment as x, renderList as X, normalizeStyle as Ee, createBlock as Ut, reactive as gn, onMounted as qo, watch as Le, createTextVNode as we, withDirectives as q, vModelText as le, nextTick as Xe, onUnmounted as Ho, Teleport as yn, Transition as is, withCtx as _e, vModelSelect as it, withKeys as Ye, provide as us, mergeProps as Uo, normalizeProps as cs, guardReactiveProps as ds, shallowRef as ps, vShow as eo } from "vue";
-import { useI18n as mt } from "vue-i18n";
-import { Handle as St, Position as Lt, useVueFlow as fs, VueFlow as ms } from "@vue-flow/core";
+import { defineComponent as qe, openBlock as i, createElementBlock as u, normalizeClass as te, createCommentVNode as $, renderSlot as Xn, inject as rs, computed as O, ref as N, onBeforeUnmount as Tn, createVNode as ve, unref as p, createElementVNode as o, withModifiers as le, toDisplayString as m, Fragment as U, renderList as Y, normalizeStyle as Ee, createBlock as xt, reactive as vn, onMounted as Go, watch as Se, createTextVNode as we, withDirectives as z, vModelText as ae, nextTick as je, onUnmounted as Io, Teleport as bn, Transition as is, withCtx as _e, vModelSelect as it, withKeys as Ze, provide as us, mergeProps as Bo, normalizeProps as cs, guardReactiveProps as ds, shallowRef as ps, vShow as Xt } from "vue";
+import { useI18n as ft } from "vue-i18n";
+import { Handle as Ct, Position as $t, useVueFlow as fs, VueFlow as ms } from "@vue-flow/core";
 import { Background as gs } from "@vue-flow/background";
 import { Controls as vs } from "@vue-flow/controls";
 import { MiniMap as hs } from "@vue-flow/minimap";
 import Va from "dompurify";
-import { defineStore as $o } from "pinia";
-import { HighlightStyle as ys, StreamLanguage as bs, LanguageSupport as ws, syntaxHighlighting as sa, defaultHighlightStyle as _s } from "@codemirror/language";
+import { defineStore as Co } from "pinia";
+import { HighlightStyle as ys, StreamLanguage as bs, LanguageSupport as ws, syntaxHighlighting as la, defaultHighlightStyle as _s } from "@codemirror/language";
 import { tags as Re } from "@lezer/highlight";
-import { EditorView as pn, lineNumbers as ks, highlightActiveLine as Cs, highlightSpecialChars as $s, keymap as Ts } from "@codemirror/view";
-import { EditorState as la } from "@codemirror/state";
-import { history as Es, defaultKeymap as Ss, historyKeymap as Ls } from "@codemirror/commands";
-const Vs = ["disabled"], As = {
+import { EditorView as Ko, lineNumbers as ks, highlightActiveLine as Cs, highlightSpecialChars as $s, keymap as Ts } from "@codemirror/view";
+import { Compartment as Es, EditorState as Wn } from "@codemirror/state";
+import { history as Ss, defaultKeymap as Ls, historyKeymap as Vs } from "@codemirror/commands";
+const As = ["disabled"], Ns = {
   key: 0,
   class: "spinner"
-}, Ns = /* @__PURE__ */ je({
+}, Rs = /* @__PURE__ */ qe({
   __name: "BaseButton",
   props: {
     variant: {},
@@ -24,55 +24,55 @@ const Vs = ["disabled"], As = {
   },
   emits: ["click"],
   setup(e) {
-    return (n, r) => (i(), u("button", {
-      class: ne(["btn", [`btn-${e.variant || "primary"}`, `btn-${e.size || "md"}`]]),
+    return (a, r) => (i(), u("button", {
+      class: te(["btn", [`btn-${e.variant || "primary"}`, `btn-${e.size || "md"}`]]),
       disabled: e.disabled || e.loading,
-      onClick: r[0] || (r[0] = (c) => n.$emit("click", c))
+      onClick: r[0] || (r[0] = (c) => a.$emit("click", c))
     }, [
-      e.loading ? (i(), u("span", As)) : T("", !0),
-      Yn(n.$slots, "default", {}, void 0, !0)
-    ], 10, Vs));
+      e.loading ? (i(), u("span", Ns)) : $("", !0),
+      Xn(a.$slots, "default", {}, void 0, !0)
+    ], 10, As));
   }
-}), qe = (e, n) => {
+}), ze = (e, a) => {
   const r = e.__vccOpts || e;
-  for (const [c, g] of n)
+  for (const [c, g] of a)
     r[c] = g;
   return r;
-}, Oe = /* @__PURE__ */ qe(Ns, [["__scopeId", "data-v-de5bd678"]]), ra = 1;
-function Rs(e) {
-  const n = e.schema_version;
-  if (n == null)
-    throw new Error("RecordedFlow missing schema_version");
-  if (typeof n != "number" || !Number.isInteger(n))
-    throw new Error(`RecordedFlow schema_version must be integer, got ${typeof n}`);
-  if (n > ra)
-    throw new Error(
-      `RecordedFlow schema_version ${n} newer than supported ${ra}. 请升级 Robot Autotest。`
-    );
-  if (n < 1)
-    throw new Error(`RecordedFlow schema_version must be >= 1, got ${n}`);
-}
+}, Oe = /* @__PURE__ */ ze(Rs, [["__scopeId", "data-v-de5bd678"]]), ra = 1;
 function Fs(e) {
+  const a = e.schema_version;
+  if (a == null)
+    throw new Error("RecordedFlow missing schema_version");
+  if (typeof a != "number" || !Number.isInteger(a))
+    throw new Error(`RecordedFlow schema_version must be integer, got ${typeof a}`);
+  if (a > ra)
+    throw new Error(
+      `RecordedFlow schema_version ${a} newer than supported ${ra}. 请升级 Robot Autotest。`
+    );
+  if (a < 1)
+    throw new Error(`RecordedFlow schema_version must be >= 1, got ${a}`);
+}
+function Ps(e) {
   return e.selector_candidates.length === 0 ? null : e.selector_candidates[e.active_candidate_index] ?? null;
 }
-function vn(e) {
+function hn(e) {
   return e >= 80 ? "good" : e >= 50 ? "ok" : "poor";
 }
-const Ps = /^(Given|When|Then|And|But)\s+(.+)$/i;
+const Ds = /^(Given|When|Then|And|But)\s+(.+)$/i;
 function Aa(e) {
-  const n = Ps.exec((e ?? "").trim());
-  return n ? { prefix: n[1].charAt(0).toUpperCase() + n[1].slice(1).toLowerCase(), rest: n[2].trim() } : null;
+  const a = Ds.exec((e ?? "").trim());
+  return a ? { prefix: a[1].charAt(0).toUpperCase() + a[1].slice(1).toLowerCase(), rest: a[2].trim() } : null;
 }
-function Ds(e) {
-  let n = 0, r = !1, c = !1, g = -1;
-  for (let a = 0; a < e.length; a++) {
-    const _ = e[a];
+function Ms(e) {
+  let a = 0, r = !1, c = !1, g = -1;
+  for (let s = 0; s < e.length; s++) {
+    const _ = e[s];
     if (r) {
-      _ === "'" && e[a - 1] !== "\\" && (r = !1);
+      _ === "'" && e[s - 1] !== "\\" && (r = !1);
       continue;
     }
     if (c) {
-      _ === '"' && e[a - 1] !== "\\" && (c = !1);
+      _ === '"' && e[s - 1] !== "\\" && (c = !1);
       continue;
     }
     if (_ === "'") {
@@ -84,54 +84,54 @@ function Ds(e) {
       continue;
     }
     if (_ === "(" || _ === "[" || _ === "{") {
-      n++;
+      a++;
       continue;
     }
     if (_ === ")" || _ === "]" || _ === "}") {
-      n--;
+      a--;
       continue;
     }
-    if (n === 0 && _ === "=") {
-      if (e[a - 1] === " " && e[a + 1] === " ") return a;
-      g === -1 && (g = a);
+    if (a === 0 && _ === "=") {
+      if (e[s - 1] === " " && e[s + 1] === " ") return s;
+      g === -1 && (g = s);
     }
   }
   return g;
 }
-function ta(e) {
-  const n = e.trim(), r = (E) => ({
+function oa(e) {
+  const a = e.trim(), r = (T) => ({
     name: "",
     type: null,
     defaultValue: null,
-    kind: E
+    kind: T
   });
-  if (n === "/") return r("positional-only-sep");
-  if (n === "*") return r("named-only-sep");
-  if (n === "?") return r("optional-sep");
-  let c = "positional", g = n;
+  if (a === "/") return r("positional-only-sep");
+  if (a === "*") return r("named-only-sep");
+  if (a === "?") return r("optional-sep");
+  let c = "positional", g = a;
   g.startsWith("**") ? (c = "kwargs", g = g.slice(2)) : g.startsWith("*") && (c = "varargs", g = g.slice(1));
-  let a = null, _ = g;
-  const y = Ds(g);
-  if (y >= 0) {
-    const E = g.slice(y + 1).trim();
-    a = E === "" ? null : E, _ = g.slice(0, y).trimEnd();
+  let s = null, _ = g;
+  const b = Ms(g);
+  if (b >= 0) {
+    const T = g.slice(b + 1).trim();
+    s = T === "" ? null : T, _ = g.slice(0, b).trimEnd();
   }
-  a !== null && c === "positional" && (c = "optional");
-  let k = _, A = null;
-  const V = _.indexOf(":");
-  return V >= 0 && (k = _.slice(0, V).trim(), A = _.slice(V + 1).trim(), A === "" && (A = null)), { name: k, type: A, defaultValue: a, kind: c };
+  s !== null && c === "positional" && (c = "optional");
+  let k = _, V = null;
+  const L = _.indexOf(":");
+  return L >= 0 && (k = _.slice(0, L).trim(), V = _.slice(L + 1).trim(), V === "" && (V = null)), { name: k, type: V, defaultValue: s, kind: c };
 }
-function Ms(e, n) {
+function xs(e, a) {
   const r = [];
-  let c = "", g = 0, a = !1, _ = !1;
-  for (let y = 0; y < e.length; y++) {
-    const k = e[y];
-    if ((a || _) && k === "\\" && y + 1 < e.length) {
-      c += k + e[y + 1], y++;
+  let c = "", g = 0, s = !1, _ = !1;
+  for (let b = 0; b < e.length; b++) {
+    const k = e[b];
+    if ((s || _) && k === "\\" && b + 1 < e.length) {
+      c += k + e[b + 1], b++;
       continue;
     }
-    if (a) {
-      k === "'" && (a = !1), c += k;
+    if (s) {
+      k === "'" && (s = !1), c += k;
       continue;
     }
     if (_) {
@@ -139,7 +139,7 @@ function Ms(e, n) {
       continue;
     }
     if (k === "'") {
-      a = !0, c += k;
+      s = !0, c += k;
       continue;
     }
     if (k === '"') {
@@ -154,7 +154,7 @@ function Ms(e, n) {
       g--, c += k;
       continue;
     }
-    if (g === 0 && k === n) {
+    if (g === 0 && k === a) {
       r.push(c), c = "";
       continue;
     }
@@ -162,86 +162,86 @@ function Ms(e, n) {
   }
   return r.push(c), r;
 }
-function xs(e) {
-  const n = /^(?:Literal|OneOf)\s*\[(.+)\]\s*$/is.exec(e);
-  if (!n) return null;
-  const r = n[1].trim();
+function Us(e) {
+  const a = /^(?:Literal|OneOf)\s*\[(.+)\]\s*$/is.exec(e);
+  if (!a) return null;
+  const r = a[1].trim();
   if (!r) return [];
   const c = [];
-  let g = "", a = !1, _ = !1, y = 0;
+  let g = "", s = !1, _ = !1, b = 0;
   for (let k = 0; k < r.length; k++) {
-    const A = r[k];
-    if ((a || _) && A === "\\" && k + 1 < r.length) {
-      g += A + r[k + 1], k++;
+    const V = r[k];
+    if ((s || _) && V === "\\" && k + 1 < r.length) {
+      g += V + r[k + 1], k++;
       continue;
     }
-    if (a) {
-      A === "'" ? a = !1 : g += A;
+    if (s) {
+      V === "'" ? s = !1 : g += V;
       continue;
     }
     if (_) {
-      A === '"' ? _ = !1 : g += A;
+      V === '"' ? _ = !1 : g += V;
       continue;
     }
-    if (A === "'") {
-      a = !0;
+    if (V === "'") {
+      s = !0;
       continue;
     }
-    if (A === '"') {
+    if (V === '"') {
       _ = !0;
       continue;
     }
-    if (A === "[" || A === "(" || A === "{") {
-      y++, g += A;
+    if (V === "[" || V === "(" || V === "{") {
+      b++, g += V;
       continue;
     }
-    if (A === "]" || A === ")" || A === "}") {
-      y--, g += A;
+    if (V === "]" || V === ")" || V === "}") {
+      b--, g += V;
       continue;
     }
-    if (A === "," && y === 0) {
+    if (V === "," && b === 0) {
       g.trim() && c.push(g.trim()), g = "";
       continue;
     }
-    g += A;
+    g += V;
   }
   return g.trim() && c.push(g.trim()), c;
 }
-function bn(e) {
-  const n = (e ?? "").trim(), r = /^Optional\s*\[\s*(.+)\s*\]\s*$/is.exec(n);
+function wn(e) {
+  const a = (e ?? "").trim(), r = /^Optional\s*\[\s*(.+)\s*\]\s*$/is.exec(a);
   if (r)
-    return { ...bn(r[1]), optional: !0, raw: n };
-  if (n.includes("|")) {
-    const A = Ms(n, "|").map((E) => E.trim()).filter(Boolean);
-    if (A.some((E) => E === "None") && A.length > 1) {
-      const E = A.filter((I) => I !== "None").join(" | ");
-      return { ...bn(E), optional: !0, raw: n };
+    return { ...wn(r[1]), optional: !0, raw: a };
+  if (a.includes("|")) {
+    const V = xs(a, "|").map((T) => T.trim()).filter(Boolean);
+    if (V.some((T) => T === "None") && V.length > 1) {
+      const T = V.filter((I) => I !== "None").join(" | ");
+      return { ...wn(T), optional: !0, raw: a };
     }
   }
-  const c = n.replace(/^\*\*?/, "").trim(), g = xs(c);
-  let a = "?", _ = "flowEditor.argTypes.unknown", y = "text", k = null;
-  return n === "" || (g ? (a = "▼", _ = "flowEditor.argTypes.choice", y = "select", k = g) : /^str$/i.test(c) ? (a = "Aa", _ = "flowEditor.argTypes.text", y = "text") : /^int$/i.test(c) ? (a = "123", _ = "flowEditor.argTypes.integer", y = "integer") : /^float$|^number$/i.test(c) ? (a = "1.0", _ = "flowEditor.argTypes.number", y = "number") : /^bool(ean)?$/i.test(c) ? (a = "✓", _ = "flowEditor.argTypes.yesNo", y = "checkbox") : /^timedelta$/i.test(c) ? (a = "⏱", _ = "flowEditor.argTypes.duration", y = "duration") : /^(pathlib\.)?path$/i.test(c) ? (a = "📁", _ = "flowEditor.argTypes.path", y = "text") : /^any$/i.test(c) ? (a = "*", _ = "flowEditor.argTypes.any", y = "text") : /^(dict|list|tuple|set|sequence|mapping|iterable)\b/i.test(c) && (a = "[ ]", _ = "flowEditor.argTypes.collection", y = "text")), { icon: a, labelKey: _, control: y, optional: !1, choices: k, raw: n };
+  const c = a.replace(/^\*\*?/, "").trim(), g = Us(c);
+  let s = "?", _ = "flowEditor.argTypes.unknown", b = "text", k = null;
+  return a === "" || (g ? (s = "▼", _ = "flowEditor.argTypes.choice", b = "select", k = g) : /^str$/i.test(c) ? (s = "Aa", _ = "flowEditor.argTypes.text", b = "text") : /^int$/i.test(c) ? (s = "123", _ = "flowEditor.argTypes.integer", b = "integer") : /^float$|^number$/i.test(c) ? (s = "1.0", _ = "flowEditor.argTypes.number", b = "number") : /^bool(ean)?$/i.test(c) ? (s = "✓", _ = "flowEditor.argTypes.yesNo", b = "checkbox") : /^timedelta$/i.test(c) ? (s = "⏱", _ = "flowEditor.argTypes.duration", b = "duration") : /^(pathlib\.)?path$/i.test(c) ? (s = "📁", _ = "flowEditor.argTypes.path", b = "text") : /^any$/i.test(c) ? (s = "*", _ = "flowEditor.argTypes.any", b = "text") : /^(dict|list|tuple|set|sequence|mapping|iterable)\b/i.test(c) && (s = "[ ]", _ = "flowEditor.argTypes.collection", b = "text")), { icon: s, labelKey: _, control: b, optional: !1, choices: k, raw: a };
 }
-const Us = /* @__PURE__ */ new Set(["true", "yes", "on", "1"]);
+const Bs = /* @__PURE__ */ new Set(["true", "yes", "on", "1"]);
 function ia(e) {
-  return e ? Us.has(e.trim().toLowerCase()) : !1;
+  return e ? Bs.has(e.trim().toLowerCase()) : !1;
 }
 function ua(e) {
   return e ? "True" : "False";
 }
-function Bs(e) {
+function Ks(e) {
   return e ? /^[$@&]\{.+\}$/.test(e.trim()) : !1;
 }
-function Na(e, n, r) {
-  const c = () => r("flowEditor.argLabels.fallback", { n: n + 1 });
+function Na(e, a, r) {
+  const c = () => r("flowEditor.argLabels.fallback", { n: a + 1 });
   if (!e || e.length === 0) return c();
-  const g = e.findIndex((y) => y.kind === "varargs"), a = e[n];
-  if (a)
-    return a.kind === "varargs" ? "1" : a.kind === "kwargs" ? r("flowEditor.argLabels.extraNamed") : a.name ? a.name : c();
+  const g = e.findIndex((b) => b.kind === "varargs"), s = e[a];
+  if (s)
+    return s.kind === "varargs" ? "1" : s.kind === "kwargs" ? r("flowEditor.argLabels.extraNamed") : s.name ? s.name : c();
   const _ = e[e.length - 1];
-  return g >= 0 && (_ == null ? void 0 : _.kind) === "varargs" ? String(n - g + 1) : (_ == null ? void 0 : _.kind) === "kwargs" ? r("flowEditor.argLabels.extraNamed") : c();
+  return g >= 0 && (_ == null ? void 0 : _.kind) === "varargs" ? String(a - g + 1) : (_ == null ? void 0 : _.kind) === "kwargs" ? r("flowEditor.argLabels.extraNamed") : c();
 }
-const _o = /* @__PURE__ */ new Map([
+const wo = /* @__PURE__ */ new Map([
   // =====================================================================
   // BuiltIn Library
   // =====================================================================
@@ -558,49 +558,49 @@ const _o = /* @__PURE__ */ new Map([
   ["set elements tag", ["source", "tag", "xpath=."]],
   ["set elements text", ["source", "text=None", "tail=None", "xpath=."]]
 ]), Ra = 200, ca = /%\{([^}=]+)(?:=([^}]*))?\}/g;
-function Ks(e) {
-  const n = [];
-  if (!e) return n;
+function Hs(e) {
+  const a = [];
+  if (!e) return a;
   ca.lastIndex = 0;
   let r;
   for (; (r = ca.exec(e)) !== null; )
-    n.push({ name: r[1].trim(), default: r[2] !== void 0 ? r[2] : null });
-  return n;
+    a.push({ name: r[1].trim(), default: r[2] !== void 0 ? r[2] : null });
+  return a;
 }
 function Fa(e) {
-  const n = /* @__PURE__ */ new Map();
+  const a = /* @__PURE__ */ new Map();
   for (const r of e)
-    for (const c of Ks(r)) {
-      const g = n.get(c.name);
-      g ? g.default === null && c.default !== null && n.set(c.name, c) : n.set(c.name, c);
+    for (const c of Hs(r)) {
+      const g = a.get(c.name);
+      g ? g.default === null && c.default !== null && a.set(c.name, c) : a.set(c.name, c);
     }
-  return [...n.values()];
+  return [...a.values()];
 }
-function Pa(e, n) {
+function Pa(e, a) {
   return e.map((r) => ({
     ref: r,
-    state: n === null ? "unknown" : n.has(r.name) ? "defined" : r.default !== null ? "default" : "missing"
+    state: a === null ? "unknown" : a.has(r.name) ? "defined" : r.default !== null ? "default" : "missing"
   }));
 }
-const Hs = { class: "flow-node-header" }, Os = ["draggable"], Is = {
+const Os = { class: "flow-node-header" }, Is = ["draggable"], Ws = {
   key: 1,
   class: "flow-node-bdd-badge",
   "data-testid": "bdd-badge"
-}, Ws = { class: "flow-node-label" }, js = ["title"], qs = {
+}, js = { class: "flow-node-label" }, qs = ["title"], zs = {
   key: 0,
   class: "flow-node-args"
-}, zs = ["title"], Gs = ["title"], Ys = {
+}, Gs = ["title"], Ys = ["title"], Xs = {
   key: 1,
   class: "flow-arg-type-icon-prefix",
   "data-testid": "arg-type-icon"
-}, Xs = {
+}, Zs = {
   key: 2,
   class: "flow-arg-name-prefix",
   "data-testid": "arg-name-prefix"
-}, Zs = { class: "flow-arg-value" }, Qs = ["title"], Js = {
+}, Qs = { class: "flow-arg-value" }, Js = ["title"], el = {
   key: 1,
   class: "flow-node-return"
-}, el = /* @__PURE__ */ je({
+}, tl = /* @__PURE__ */ qe({
   __name: "KeywordNode",
   props: {
     data: {},
@@ -608,132 +608,132 @@ const Hs = { class: "flow-node-header" }, Os = ["draggable"], Is = {
     selected: { type: Boolean }
   },
   emits: ["reorder-drag-start"],
-  setup(e, { emit: n }) {
-    const r = e, c = n, { t: g } = mt(), a = rs("envVarKeys", null), _ = O(() => new Set(
-      Pa(r.data.envRefs ?? [], (a == null ? void 0 : a.value) ?? null).filter((R) => R.state === "missing").map((R) => R.ref.name)
-    )), y = O(() => (r.data.envRefs ?? []).map(
-      (R) => (R.default !== null ? `%{${R.name}=${R.default}}` : `%{${R.name}}`) + (_.value.has(R.name) ? ` ${g("flowEditor.envVarNotDefined")}` : "")
+  setup(e, { emit: a }) {
+    const r = e, c = a, { t: g } = ft(), s = rs("envVarKeys", null), _ = O(() => new Set(
+      Pa(r.data.envRefs ?? [], (s == null ? void 0 : s.value) ?? null).filter((P) => P.state === "missing").map((P) => P.ref.name)
+    )), b = O(() => (r.data.envRefs ?? []).map(
+      (P) => (P.default !== null ? `%{${P.name}=${P.default}}` : `%{${P.name}}`) + (_.value.has(P.name) ? ` ${g("flowEditor.envVarNotDefined")}` : "")
     ).join(`
 `)), k = N(!1);
-    let A = null;
-    function V() {
-      E(), A = window.setTimeout(() => {
+    let V = null;
+    function L() {
+      T(), V = window.setTimeout(() => {
         k.value = !0;
       }, Ra);
     }
-    function E() {
-      A != null && (clearTimeout(A), A = null), k.value = !1;
+    function T() {
+      V != null && (clearTimeout(V), V = null), k.value = !1;
     }
-    $n(E);
-    function B(R) {
-      c("reorder-drag-start", R);
+    Tn(T);
+    function B(P) {
+      c("reorder-drag-start", P);
     }
     function I() {
-      E();
+      T();
     }
-    function j(R) {
-      const H = r.data.argSpecs;
-      if (!H || H.length === 0) return null;
-      const Y = Na(H, R, g), U = g("flowEditor.argLabels.fallback", { n: R + 1 });
-      return Y === U ? null : Y;
+    function W(P) {
+      const K = r.data.argSpecs;
+      if (!K || K.length === 0) return null;
+      const j = Na(K, P, g), D = g("flowEditor.argLabels.fallback", { n: P + 1 });
+      return j === D ? null : j;
     }
-    function ue(R) {
-      var Z;
-      const H = r.data.step.args[R], Y = (Z = r.data.argSpecs) == null ? void 0 : Z[R], U = [];
-      if (H && H.length > 0 && U.push(H), Y != null && Y.name) {
-        let ce = Y.name;
-        Y.type && (ce += `: ${Y.type}`), Y.defaultValue != null && (ce += ` = ${Y.defaultValue}`), U.push(ce);
+    function re(P) {
+      var se;
+      const K = r.data.step.args[P], j = (se = r.data.argSpecs) == null ? void 0 : se[P], D = [];
+      if (K && K.length > 0 && D.push(K), j != null && j.name) {
+        let oe = j.name;
+        j.type && (oe += `: ${j.type}`), j.defaultValue != null && (oe += ` = ${j.defaultValue}`), D.push(oe);
       }
-      return U.length > 0 ? U.join(`
+      return D.length > 0 ? D.join(`
 `) : void 0;
     }
-    function M(R) {
-      var U;
-      const H = (U = r.data.argSpecs) == null ? void 0 : U[R];
-      if (!(H != null && H.type)) return null;
-      const Y = bn(H.type);
-      return Y.labelKey === "flowEditor.argTypes.unknown" ? null : Y.icon;
+    function x(P) {
+      var D;
+      const K = (D = r.data.argSpecs) == null ? void 0 : D[P];
+      if (!(K != null && K.type)) return null;
+      const j = wn(K.type);
+      return j.labelKey === "flowEditor.argTypes.unknown" ? null : j.icon;
     }
-    const J = O(() => {
-      var R;
-      return ((R = r.data.recording) == null ? void 0 : R.selector_candidates.length) ?? 0;
-    }), ae = O(() => J.value > 0), z = O(() => {
-      const R = r.data.recording ? Fs(r.data.recording) : null;
-      return vn((R == null ? void 0 : R.quality_score) ?? 0);
-    }), D = O(
-      () => g("flowEditor.selector.tooltipHasCandidates", { count: J.value })
+    const Z = O(() => {
+      var P;
+      return ((P = r.data.recording) == null ? void 0 : P.selector_candidates.length) ?? 0;
+    }), Q = O(() => Z.value > 0), G = O(() => {
+      const P = r.data.recording ? Ps(r.data.recording) : null;
+      return hn((P == null ? void 0 : P.quality_score) ?? 0);
+    }), R = O(
+      () => g("flowEditor.selector.tooltipHasCandidates", { count: Z.value })
     );
-    return (R, H) => (i(), u("div", {
-      class: ne(["flow-node flow-node-keyword", { "flow-node--selected": e.selected }])
+    return (P, K) => (i(), u("div", {
+      class: te(["flow-node flow-node-keyword", { "flow-node--selected": e.selected }])
     }, [
-      ve(p(St), {
+      ve(p(Ct), {
         type: "target",
-        position: p(Lt).Top
+        position: p($t).Top
       }, null, 8, ["position"]),
-      t("div", Hs, [
+      o("div", Os, [
         e.reorderEnabled ? (i(), u("div", {
           key: 0,
-          class: ne(["flow-drag-handle", { "flow-drag-handle--armed": k.value }]),
+          class: te(["flow-drag-handle", { "flow-drag-handle--armed": k.value }]),
           draggable: k.value,
-          onPointerdown: re(V, ["stop"]),
-          onPointerup: E,
-          onPointerleave: E,
-          onPointercancel: E,
-          onMousedown: H[0] || (H[0] = re(() => {
+          onPointerdown: le(L, ["stop"]),
+          onPointerup: T,
+          onPointerleave: T,
+          onPointercancel: T,
+          onMousedown: K[0] || (K[0] = le(() => {
           }, ["stop"])),
-          onDragstart: re(B, ["stop"]),
+          onDragstart: le(B, ["stop"]),
           onDragend: I
-        }, "☰", 42, Os)) : T("", !0),
-        H[1] || (H[1] = t("span", { class: "flow-node-icon" }, "⚙", -1)),
-        e.data.bdd ? (i(), u("span", Is, m(e.data.bdd.prefix), 1)) : T("", !0),
-        t("span", Ws, m(e.data.bdd ? e.data.bdd.rest : e.data.step.keyword || "Keyword"), 1),
+        }, "☰", 42, Is)) : $("", !0),
+        K[1] || (K[1] = o("span", { class: "flow-node-icon" }, "⚙", -1)),
+        e.data.bdd ? (i(), u("span", Ws, m(e.data.bdd.prefix), 1)) : $("", !0),
+        o("span", js, m(e.data.bdd ? e.data.bdd.rest : e.data.step.keyword || "Keyword"), 1),
         e.data.envRefs && e.data.envRefs.length ? (i(), u("span", {
           key: 2,
-          class: ne(["flow-node-env-badge", { "flow-node-env-badge--missing": _.value.size > 0 }]),
+          class: te(["flow-node-env-badge", { "flow-node-env-badge--missing": _.value.size > 0 }]),
           "data-testid": "env-badge",
-          title: y.value
-        }, "%{}", 10, js)) : T("", !0)
+          title: b.value
+        }, "%{}", 10, qs)) : $("", !0)
       ]),
-      e.data.step.args.length ? (i(), u("div", qs, [
-        (i(!0), u(x, null, X(e.data.step.args, (Y, U) => (i(), u("span", {
-          key: U,
-          class: ne(["flow-arg", { "flow-arg--has-candidates": U === 0 && ae.value }]),
-          title: ue(U)
+      e.data.step.args.length ? (i(), u("div", zs, [
+        (i(!0), u(U, null, Y(e.data.step.args, (j, D) => (i(), u("span", {
+          key: D,
+          class: te(["flow-arg", { "flow-arg--has-candidates": D === 0 && Q.value }]),
+          title: re(D)
         }, [
-          U === 0 && ae.value ? (i(), u("span", {
+          D === 0 && Q.value ? (i(), u("span", {
             key: 0,
-            class: ne(["flow-arg-dot", `flow-arg-dot--${z.value}`]),
-            title: D.value,
+            class: te(["flow-arg-dot", `flow-arg-dot--${G.value}`]),
+            title: R.value,
             "aria-hidden": "true"
-          }, null, 10, Gs)) : T("", !0),
-          M(U) ? (i(), u("span", Ys, m(M(U)), 1)) : T("", !0),
-          j(U) ? (i(), u("span", Xs, m(j(U)) + ": ", 1)) : T("", !0),
-          t("span", Zs, m(Y), 1),
-          U === 0 && ae.value ? (i(), u("span", {
+          }, null, 10, Ys)) : $("", !0),
+          x(D) ? (i(), u("span", Xs, m(x(D)), 1)) : $("", !0),
+          W(D) ? (i(), u("span", Zs, m(W(D)) + ": ", 1)) : $("", !0),
+          o("span", Qs, m(j), 1),
+          D === 0 && Q.value ? (i(), u("span", {
             key: 3,
             class: "flow-arg-count",
-            title: D.value,
+            title: R.value,
             "data-testid": "selector-candidate-count"
-          }, m(p(g)("flowEditor.selector.candidatesBadge", { count: J.value })), 9, Qs)) : T("", !0)
-        ], 10, zs))), 128))
-      ])) : T("", !0),
-      e.data.step.returnVars.length ? (i(), u("div", Js, m(e.data.step.returnVars.join(", ")) + " = ", 1)) : T("", !0),
-      ve(p(St), {
+          }, m(p(g)("flowEditor.selector.candidatesBadge", { count: Z.value })), 9, Js)) : $("", !0)
+        ], 10, Gs))), 128))
+      ])) : $("", !0),
+      e.data.step.returnVars.length ? (i(), u("div", el, m(e.data.step.returnVars.join(", ")) + " = ", 1)) : $("", !0),
+      ve(p(Ct), {
         type: "source",
-        position: p(Lt).Bottom
+        position: p($t).Bottom
       }, null, 8, ["position"])
     ], 2));
   }
-}), da = /* @__PURE__ */ qe(el, [["__scopeId", "data-v-dcd7105e"]]), tl = { class: "flow-node-header" }, ol = ["draggable"], nl = ["innerHTML"], al = { class: "flow-node-type" }, sl = {
+}), da = /* @__PURE__ */ ze(tl, [["__scopeId", "data-v-dcd7105e"]]), ol = { class: "flow-node-header" }, nl = ["draggable"], al = ["innerHTML"], sl = { class: "flow-node-type" }, ll = {
   key: 0,
   class: "flow-node-condition"
-}, ll = {
+}, rl = {
   key: 1,
   class: "flow-node-condition"
-}, rl = {
+}, il = {
   key: 2,
   class: "flow-node-condition"
-}, il = /* @__PURE__ */ je({
+}, ul = /* @__PURE__ */ qe({
   __name: "ControlNode",
   props: {
     data: {},
@@ -741,10 +741,10 @@ const Hs = { class: "flow-node-header" }, Os = ["draggable"], Is = {
     selected: { type: Boolean }
   },
   emits: ["reorder-drag-start"],
-  setup(e, { emit: n }) {
-    const r = n, c = N(!1);
+  setup(e, { emit: a }) {
+    const r = a, c = N(!1);
     let g = null;
-    function a() {
+    function s() {
       _(), g = window.setTimeout(() => {
         c.value = !0;
       }, Ra);
@@ -752,14 +752,14 @@ const Hs = { class: "flow-node-header" }, Os = ["draggable"], Is = {
     function _() {
       g != null && (clearTimeout(g), g = null), c.value = !1;
     }
-    $n(_);
-    function y(E) {
-      r("reorder-drag-start", E);
+    Tn(_);
+    function b(T) {
+      r("reorder-drag-start", T);
     }
     function k() {
       _();
     }
-    const A = {
+    const V = {
       if: "#E8A838",
       else_if: "#E8A838",
       else: "#E8A838",
@@ -768,7 +768,7 @@ const Hs = { class: "flow-node-header" }, Os = ["draggable"], Is = {
       try: "#38B2AC",
       except: "#E53E3E",
       finally: "#38B2AC"
-    }, V = {
+    }, L = {
       if: "&#x2753;",
       // ?
       else_if: "&#x2753;",
@@ -784,50 +784,50 @@ const Hs = { class: "flow-node-header" }, Os = ["draggable"], Is = {
       finally: "&#x2705;"
       // ✅
     };
-    return (E, B) => (i(), u("div", {
-      class: ne(["flow-node flow-node-control", { "flow-node--selected": e.selected }]),
-      style: Ee({ borderColor: A[e.data.stepType] || "#888" })
+    return (T, B) => (i(), u("div", {
+      class: te(["flow-node flow-node-control", { "flow-node--selected": e.selected }]),
+      style: Ee({ borderColor: V[e.data.stepType] || "#888" })
     }, [
-      ve(p(St), {
+      ve(p(Ct), {
         type: "target",
-        position: p(Lt).Top
+        position: p($t).Top
       }, null, 8, ["position"]),
-      t("div", tl, [
+      o("div", ol, [
         e.reorderEnabled ? (i(), u("div", {
           key: 0,
-          class: ne(["flow-drag-handle", { "flow-drag-handle--armed": c.value }]),
+          class: te(["flow-drag-handle", { "flow-drag-handle--armed": c.value }]),
           draggable: c.value,
-          onPointerdown: re(a, ["stop"]),
+          onPointerdown: le(s, ["stop"]),
           onPointerup: _,
           onPointerleave: _,
           onPointercancel: _,
-          onMousedown: B[0] || (B[0] = re(() => {
+          onMousedown: B[0] || (B[0] = le(() => {
           }, ["stop"])),
-          onDragstart: re(y, ["stop"]),
+          onDragstart: le(b, ["stop"]),
           onDragend: k
-        }, "☰", 42, ol)) : T("", !0),
-        t("span", {
+        }, "☰", 42, nl)) : $("", !0),
+        o("span", {
           class: "flow-node-icon",
-          innerHTML: V[e.data.stepType] || "◆"
-        }, null, 8, nl),
-        t("span", al, m(e.data.stepType.toUpperCase().replace("_", " ")), 1)
+          innerHTML: L[e.data.stepType] || "◆"
+        }, null, 8, al),
+        o("span", sl, m(e.data.stepType.toUpperCase().replace("_", " ")), 1)
       ]),
-      e.data.step.condition ? (i(), u("div", sl, m(e.data.step.condition), 1)) : T("", !0),
-      e.data.stepType === "for" || e.data.stepType === "while" ? (i(), u("div", ll, m(e.data.step.loopVar) + " " + m(e.data.step.loopFlavor) + " " + m(e.data.step.loopValues.join("  ")), 1)) : T("", !0),
-      e.data.step.exceptPattern ? (i(), u("div", rl, m(e.data.step.exceptPattern), 1)) : T("", !0),
-      ve(p(St), {
+      e.data.step.condition ? (i(), u("div", ll, m(e.data.step.condition), 1)) : $("", !0),
+      e.data.stepType === "for" || e.data.stepType === "while" ? (i(), u("div", rl, m(e.data.step.loopVar) + " " + m(e.data.step.loopFlavor) + " " + m(e.data.step.loopValues.join("  ")), 1)) : $("", !0),
+      e.data.step.exceptPattern ? (i(), u("div", il, m(e.data.step.exceptPattern), 1)) : $("", !0),
+      ve(p(Ct), {
         type: "source",
-        position: p(Lt).Bottom
+        position: p($t).Bottom
       }, null, 8, ["position"])
     ], 6));
   }
-}), ul = /* @__PURE__ */ qe(il, [["__scopeId", "data-v-b5f0e3b6"]]), cl = /* @__PURE__ */ je({
+}), cl = /* @__PURE__ */ ze(ul, [["__scopeId", "data-v-b5f0e3b6"]]), dl = /* @__PURE__ */ qe({
   __name: "ControlGroupNode",
   props: {
     data: {}
   },
   setup(e) {
-    return (n, r) => (i(), u("div", {
+    return (a, r) => (i(), u("div", {
       class: "control-frame",
       style: Ee({
         borderColor: e.data.borderColor,
@@ -837,56 +837,56 @@ const Hs = { class: "flow-node-header" }, Os = ["draggable"], Is = {
       })
     }, null, 4));
   }
-}), dl = /* @__PURE__ */ qe(cl, [["__scopeId", "data-v-5c4a8d41"]]), pl = { class: "flow-terminal-label" }, fl = /* @__PURE__ */ je({
+}), pl = /* @__PURE__ */ ze(dl, [["__scopeId", "data-v-5c4a8d41"]]), fl = { class: "flow-terminal-label" }, ml = /* @__PURE__ */ qe({
   __name: "StartEndNode",
   props: {
     data: {},
     type: {}
   },
   setup(e) {
-    const n = e, { t: r } = mt(), c = O(() => {
+    const a = e, { t: r } = ft(), c = O(() => {
       var g;
-      return (g = n.data) != null && g.label && n.data.label.trim() ? n.data.label : n.type === "start" ? r("flowEditor.startNodeLabel") : r("flowEditor.endNodeLabel");
+      return (g = a.data) != null && g.label && a.data.label.trim() ? a.data.label : a.type === "start" ? r("flowEditor.startNodeLabel") : r("flowEditor.endNodeLabel");
     });
-    return (g, a) => (i(), u("div", {
-      class: ne(["flow-node-terminal", e.type === "start" ? "flow-node-start" : "flow-node-end"])
+    return (g, s) => (i(), u("div", {
+      class: te(["flow-node-terminal", e.type === "start" ? "flow-node-start" : "flow-node-end"])
     }, [
-      e.type === "end" ? (i(), Ut(p(St), {
+      e.type === "end" ? (i(), xt(p(Ct), {
         key: 0,
         type: "target",
-        position: p(Lt).Top
-      }, null, 8, ["position"])) : T("", !0),
-      e.type === "start" ? (i(), Ut(p(St), {
+        position: p($t).Top
+      }, null, 8, ["position"])) : $("", !0),
+      e.type === "start" ? (i(), xt(p(Ct), {
         key: 1,
         type: "target",
-        position: p(Lt).Left,
+        position: p($t).Left,
         id: "left",
         style: { opacity: "0", "pointer-events": "none" }
-      }, null, 8, ["position"])) : T("", !0),
-      t("span", pl, m(c.value), 1),
-      e.type === "start" ? (i(), Ut(p(St), {
+      }, null, 8, ["position"])) : $("", !0),
+      o("span", fl, m(c.value), 1),
+      e.type === "start" ? (i(), xt(p(Ct), {
         key: 2,
         type: "source",
-        position: p(Lt).Bottom
-      }, null, 8, ["position"])) : T("", !0)
+        position: p($t).Bottom
+      }, null, 8, ["position"])) : $("", !0)
     ], 2));
   }
-}), pa = /* @__PURE__ */ qe(fl, [["__scopeId", "data-v-088ff712"]]), wn = gn({ scopeId: null, filePath: "" });
-function S_(e) {
-  Object.assign(wn, e);
+}), pa = /* @__PURE__ */ ze(ml, [["__scopeId", "data-v-088ff712"]]), _n = vn({ scopeId: null, filePath: "" });
+function L_(e) {
+  Object.assign(_n, e);
 }
-function L_() {
-  wn.scopeId = null, wn.filePath = "";
+function V_() {
+  _n.scopeId = null, _n.filePath = "";
 }
 function Da() {
-  return wn;
+  return _n;
 }
-const fn = (e, n = "") => ({
+const mn = (e, a = "") => ({
   path: e,
   name: e.split("/").pop() ?? e,
-  content: n,
+  content: a,
   extension: e.includes(".") ? e.slice(e.lastIndexOf(".") + 1) : null,
-  line_count: n ? n.split(/\r\n|\r|\n/).length : 0
+  line_count: a ? a.split(/\r\n|\r|\n/).length : 0
 }), We = (e) => () => {
   throw new Error(`编辑器适配器未实现 ${e}（请宿主通过 configureEditorAdapter 注入）`);
 }, Ma = {
@@ -895,12 +895,12 @@ const fn = (e, n = "") => ({
   },
   getEnvironmentKeywords: async () => ({ keywords: [], status: "unavailable" }),
   getTree: async () => ({ name: "", path: "", type: "directory", extension: null, children: [], test_count: 0 }),
-  getFile: async (e, n) => fn(n),
-  saveFile: async (e, n, r) => fn(n, r),
-  createFile: async (e, n, r = "") => fn(n, r),
+  getFile: async (e, a) => mn(a),
+  saveFile: async (e, a, r) => mn(a, r),
+  createFile: async (e, a, r = "") => mn(a, r),
   deleteFile: async () => {
   },
-  renameFile: async (e, n, r) => fn(r),
+  renameFile: async (e, a, r) => mn(r),
   search: async () => [],
   getTestCases: async () => [],
   getEnvironments: async () => [],
@@ -950,479 +950,479 @@ const fn = (e, n = "") => ({
   },
   installDebugPrerequisites: async () => ({ already_installed: !1, log_tail: null })
 };
-let _n = Ma;
-function V_(e) {
-  _n = { ..._n, ...e };
+let kn = Ma;
+function A_(e) {
+  kn = { ...kn, ...e };
 }
-function A_() {
-  _n = Ma;
+function N_() {
+  kn = Ma;
 }
 function ye() {
-  return _n;
+  return kn;
 }
-const ml = (e, n = "") => ye().getTree(e, n), xa = (e, n, r) => ye().getFile(e, n, r), Ua = (e, n, r) => ye().saveFile(e, n, r), gl = (e, n, r = "") => ye().createFile(e, n, r), vl = (e, n) => ye().deleteFile(e, n), hl = (e, n, r) => ye().renameFile(e, n, r), yl = (e, n, r) => ye().search(e, n, r), bl = (e) => ye().getTestCases(e);
-async function wl(e, n) {
+const gl = (e, a = "") => ye().getTree(e, a), xa = (e, a, r) => ye().getFile(e, a, r), Ua = (e, a, r) => ye().saveFile(e, a, r), vl = (e, a, r = "") => ye().createFile(e, a, r), hl = (e, a) => ye().deleteFile(e, a), yl = (e, a, r) => ye().renameFile(e, a, r), bl = (e, a, r) => ye().search(e, a, r), wl = (e) => ye().getTestCases(e);
+async function _l(e, a) {
 }
-async function _l(e, n) {
-}
-async function kl(e) {
-  return [];
-}
-async function Oo(e, n) {
-  return ye().searchKeywords(e, n);
+async function kl(e, a) {
 }
 async function Cl(e) {
+  return [];
+}
+async function Wo(e, a) {
+  return ye().searchKeywords(e, a);
+}
+async function $l(e) {
   return ye().invalidateKeywordCache(e);
 }
-const $l = () => ye().getEnvironments(), Tl = (e) => ye().getPackages(e), El = (e) => ye().getInstalledPackages(e), Ba = (e, n) => ye().installPackage(e, n), Sl = (e, n) => ye().uninstallPackage(e, n), Ll = (e) => ye().getVariables(e), Vl = (e, n) => ye().createVariable(e, n), Al = (e, n, r) => ye().updateVariable(e, n, r), Nl = (e, n) => ye().deleteVariable(e, n), Rl = (e) => ye().createEnvironment(e), Fl = (e) => ye().deleteEnvironment(e), Pl = () => ye().setupDefaultEnvironment(), Dl = (e, n) => ye().cloneEnvironment(e, n);
-async function Ml(e) {
+const Tl = () => ye().getEnvironments(), El = (e) => ye().getPackages(e), Sl = (e) => ye().getInstalledPackages(e), Ba = (e, a) => ye().installPackage(e, a), Ll = (e, a) => ye().uninstallPackage(e, a), Vl = (e) => ye().getVariables(e), Al = (e, a) => ye().createVariable(e, a), Nl = (e, a, r) => ye().updateVariable(e, a, r), Rl = (e, a) => ye().deleteVariable(e, a), Fl = (e) => ye().createEnvironment(e), Pl = (e) => ye().deleteEnvironment(e), Dl = () => ye().setupDefaultEnvironment(), Ml = (e, a) => ye().cloneEnvironment(e, a);
+async function xl(e) {
   return ye().getEnvironmentKeywords(e);
 }
-const xl = () => ye().getRepos(), Ul = (e) => ye().createRepo(e), Bl = (e, n) => ye().updateRepo(e, n), Kl = (e) => ye().deleteRepo(e), Hl = (e) => ye().syncRepo(e), Ol = (e) => ye().getBranches(e), Il = (e, n) => ye().checkoutBranch(e, n), Wl = (e) => ye().getProjectMembers(e), jl = (e, n, r) => ye().addProjectMember(e, n, r), ql = (e, n, r) => ye().updateProjectMember(e, n, r), zl = (e, n) => ye().removeProjectMember(e, n), Ka = $o("repos", () => {
-  const e = N([]), n = N(!1), r = N({}), c = N({});
+const Ul = () => ye().getRepos(), Bl = (e) => ye().createRepo(e), Kl = (e, a) => ye().updateRepo(e, a), Hl = (e) => ye().deleteRepo(e), Ol = (e) => ye().syncRepo(e), Il = (e) => ye().getBranches(e), Wl = (e, a) => ye().checkoutBranch(e, a), jl = (e) => ye().getProjectMembers(e), ql = (e, a, r) => ye().addProjectMember(e, a, r), zl = (e, a, r) => ye().updateProjectMember(e, a, r), Gl = (e, a) => ye().removeProjectMember(e, a), Ka = Co("repos", () => {
+  const e = N([]), a = N(!1), r = N({}), c = N({});
   async function g() {
-    n.value = !0;
+    a.value = !0;
     try {
-      e.value = await xl();
+      e.value = await Ul();
     } finally {
-      n.value = !1;
+      a.value = !1;
     }
   }
-  async function a(M) {
-    const J = await Ul(M);
-    return e.value.push(J), J;
+  async function s(x) {
+    const Z = await Bl(x);
+    return e.value.push(Z), Z;
   }
-  async function _(M) {
-    return await Hl(M);
+  async function _(x) {
+    return await Ol(x);
   }
-  async function y(M, J) {
-    const ae = await Bl(M, J), z = e.value.findIndex((D) => D.id === M);
-    return z >= 0 && (e.value[z] = ae), ae;
+  async function b(x, Z) {
+    const Q = await Kl(x, Z), G = e.value.findIndex((R) => R.id === x);
+    return G >= 0 && (e.value[G] = Q), Q;
   }
-  async function k(M) {
-    await Kl(M), e.value = e.value.filter((J) => J.id !== M);
+  async function k(x) {
+    await Hl(x), e.value = e.value.filter((Z) => Z.id !== x);
   }
-  async function A(M) {
-    r.value[M] = await Ol(M);
+  async function V(x) {
+    r.value[x] = await Il(x);
   }
-  async function V(M, J) {
-    await Il(M, J);
-    const ae = e.value.find((z) => z.id === M);
-    ae && (ae.default_branch = J), r.value[M] && (r.value[M] = r.value[M].map((z) => ({
-      ...z,
-      is_active: z.name === J
+  async function L(x, Z) {
+    await Wl(x, Z);
+    const Q = e.value.find((G) => G.id === x);
+    Q && (Q.default_branch = Z), r.value[x] && (r.value[x] = r.value[x].map((G) => ({
+      ...G,
+      is_active: G.name === Z
     })));
   }
-  function E(M) {
-    return e.value.find((J) => J.id === M);
+  function T(x) {
+    return e.value.find((Z) => Z.id === x);
   }
-  async function B(M) {
-    c.value[M] = await Wl(M);
+  async function B(x) {
+    c.value[x] = await jl(x);
   }
-  async function I(M, J, ae) {
-    const z = await jl(M, J, ae);
-    c.value[M] || (c.value[M] = []);
-    const D = c.value[M].findIndex((R) => R.user_id === J);
-    return D >= 0 ? c.value[M][D] = z : c.value[M].push(z), z;
+  async function I(x, Z, Q) {
+    const G = await ql(x, Z, Q);
+    c.value[x] || (c.value[x] = []);
+    const R = c.value[x].findIndex((P) => P.user_id === Z);
+    return R >= 0 ? c.value[x][R] = G : c.value[x].push(G), G;
   }
-  async function j(M, J, ae) {
-    var R;
-    const z = await ql(M, J, ae), D = (R = c.value[M]) == null ? void 0 : R.findIndex((H) => H.id === J);
-    return D !== void 0 && D >= 0 && (c.value[M][D] = z), z;
+  async function W(x, Z, Q) {
+    var P;
+    const G = await zl(x, Z, Q), R = (P = c.value[x]) == null ? void 0 : P.findIndex((K) => K.id === Z);
+    return R !== void 0 && R >= 0 && (c.value[x][R] = G), G;
   }
-  async function ue(M, J) {
-    await zl(M, J), c.value[M] && (c.value[M] = c.value[M].filter((ae) => ae.id !== J));
+  async function re(x, Z) {
+    await Gl(x, Z), c.value[x] && (c.value[x] = c.value[x].filter((Q) => Q.id !== Z));
   }
-  return { repos: e, loading: n, branches: r, members: c, fetchRepos: g, addRepo: a, updateRepo: y, syncRepo: _, removeRepo: k, fetchBranches: A, checkoutBranch: V, getRepo: E, fetchMembers: B, addMember: I, updateMember: j, removeMember: ue };
-}), oa = $o("environments", () => {
-  const e = N([]), n = N({}), r = N({}), c = N({}), g = N(!1);
-  async function a() {
+  return { repos: e, loading: a, branches: r, members: c, fetchRepos: g, addRepo: s, updateRepo: b, syncRepo: _, removeRepo: k, fetchBranches: V, checkoutBranch: L, getRepo: T, fetchMembers: B, addMember: I, updateMember: W, removeMember: re };
+}), na = Co("environments", () => {
+  const e = N([]), a = N({}), r = N({}), c = N({}), g = N(!1);
+  async function s() {
     g.value = !0;
     try {
-      e.value = await $l();
+      e.value = await Tl();
     } finally {
       g.value = !1;
     }
   }
-  async function _(D) {
-    const R = await Rl(D);
-    return e.value.push(R), R;
+  async function _(R) {
+    const P = await Fl(R);
+    return e.value.push(P), P;
   }
-  async function y(D) {
-    await Fl(D), e.value = e.value.filter((R) => R.id !== D);
+  async function b(R) {
+    await Pl(R), e.value = e.value.filter((P) => P.id !== R);
   }
   async function k() {
-    const D = await Pl();
-    return e.value.push(D), D;
+    const R = await Dl();
+    return e.value.push(R), R;
   }
-  async function A(D, R) {
-    const H = await Dl(D, R);
-    return e.value.push(H), H;
+  async function V(R, P) {
+    const K = await Ml(R, P);
+    return e.value.push(K), K;
   }
-  async function V(D) {
-    const R = await Tl(D), H = /* @__PURE__ */ new Set();
-    n.value[D] = R.filter((Y) => H.has(Y.package_name) ? !1 : (H.add(Y.package_name), !0));
+  async function L(R) {
+    const P = await El(R), K = /* @__PURE__ */ new Set();
+    a.value[R] = P.filter((j) => K.has(j.package_name) ? !1 : (K.add(j.package_name), !0));
   }
-  async function E(D, R) {
-    const H = await Ba(D, R);
-    n.value[D] || (n.value[D] = []), n.value[D].some((Y) => Y.package_name === H.package_name) || n.value[D].push(H);
+  async function T(R, P) {
+    const K = await Ba(R, P);
+    a.value[R] || (a.value[R] = []), a.value[R].some((j) => j.package_name === K.package_name) || a.value[R].push(K);
   }
-  async function B(D, R) {
-    await Sl(D, R), n.value[D] && (n.value[D] = n.value[D].filter((H) => H.package_name !== R));
+  async function B(R, P) {
+    await Ll(R, P), a.value[R] && (a.value[R] = a.value[R].filter((K) => K.package_name !== P));
   }
-  async function I(D) {
-    r.value[D] = await Ll(D);
+  async function I(R) {
+    r.value[R] = await Vl(R);
   }
-  async function j(D, R) {
-    await Vl(D, R), await I(D);
+  async function W(R, P) {
+    await Al(R, P), await I(R);
   }
-  async function ue(D, R, H) {
-    await Al(D, R, H), await I(D);
+  async function re(R, P, K) {
+    await Nl(R, P, K), await I(R);
   }
-  async function M(D, R) {
-    await Nl(D, R), r.value[D] = (r.value[D] || []).filter((H) => H.id !== R);
+  async function x(R, P) {
+    await Rl(R, P), r.value[R] = (r.value[R] || []).filter((K) => K.id !== P);
   }
-  function J(D, R, H, Y) {
-    const U = n.value[D];
-    if (!U) return;
-    const Z = U.findIndex((ce) => ce.package_name === R);
-    Z < 0 || (U[Z] = {
-      ...U[Z],
-      install_status: H,
-      install_error: Y.error || null,
-      installed_version: Y.installed_version || U[Z].installed_version
+  function Z(R, P, K, j) {
+    const D = a.value[R];
+    if (!D) return;
+    const se = D.findIndex((oe) => oe.package_name === P);
+    se < 0 || (D[se] = {
+      ...D[se],
+      install_status: K,
+      install_error: j.error || null,
+      installed_version: j.installed_version || D[se].installed_version
     });
   }
-  function ae(D, R, H) {
-    c.value[D] || (c.value[D] = []), R && c.value[D].push(R), H && a();
+  function Q(R, P, K) {
+    c.value[R] || (c.value[R] = []), P && c.value[R].push(P), K && s();
   }
-  function z(D) {
-    delete c.value[D];
+  function G(R) {
+    delete c.value[R];
   }
   return {
     environments: e,
-    packages: n,
+    packages: a,
     variables: r,
     buildLogs: c,
     loading: g,
-    fetchEnvironments: a,
+    fetchEnvironments: s,
     addEnvironment: _,
     setupDefault: k,
-    removeEnvironment: y,
-    cloneEnvironment: A,
-    fetchPackages: V,
-    installPackage: E,
+    removeEnvironment: b,
+    cloneEnvironment: V,
+    fetchPackages: L,
+    installPackage: T,
     uninstallPackage: B,
     fetchVariables: I,
-    updatePackageFromWs: J,
-    createVariable: j,
-    updateVariable: ue,
-    deleteVariable: M,
-    appendBuildLog: ae,
-    clearBuildLogs: z
+    updatePackageFromWs: Z,
+    createVariable: W,
+    updateVariable: re,
+    deleteVariable: x,
+    appendBuildLog: Q,
+    clearBuildLogs: G
   };
-}), zo = $o("explorer", () => {
-  const e = N(null), n = N(null), r = N([]), c = N([]), g = N(!1), a = N(null), _ = N([]), y = N(!1), k = N(!1), A = N(null);
-  let V = null;
-  const E = N([]);
-  function B(ee) {
-    E.value = ee;
+}), Yo = Co("explorer", () => {
+  const e = N(null), a = N(null), r = N([]), c = N([]), g = N(!1), s = N(null), _ = N([]), b = N(!1), k = N(!1), V = N(null);
+  let L = null;
+  const T = N([]);
+  function B(J) {
+    T.value = J;
   }
-  async function I(ee, W = "") {
-    g.value = !0, a.value = ee;
+  async function I(J, H = "") {
+    g.value = !0, s.value = J;
     try {
-      e.value = await ml(ee, W);
+      e.value = await gl(J, H);
     } finally {
       g.value = !1;
     }
   }
-  async function j(ee, W, oe) {
+  async function W(J, H, ue) {
     g.value = !0;
     try {
-      n.value = await xa(ee, W, oe);
+      a.value = await xa(J, H, ue);
     } finally {
       g.value = !1;
     }
   }
-  async function ue(ee, W, oe) {
+  async function re(J, H, ue) {
     g.value = !0;
     try {
-      r.value = await yl(ee, W, oe);
+      r.value = await bl(J, H, ue);
     } finally {
       g.value = !1;
     }
   }
-  async function M(ee) {
+  async function x(J) {
     g.value = !0;
     try {
-      c.value = await bl(ee);
+      c.value = await wl(J);
     } finally {
       g.value = !1;
     }
   }
-  async function J(ee, W, oe) {
-    const fe = await Ua(ee, W, oe);
-    return n.value = fe, fe;
+  async function Z(J, H, ue) {
+    const ce = await Ua(J, H, ue);
+    return a.value = ce, ce;
   }
-  async function ae(ee, W, oe = "") {
-    const fe = await gl(ee, W, oe);
-    return await I(ee), fe;
+  async function Q(J, H, ue = "") {
+    const ce = await vl(J, H, ue);
+    return await I(J), ce;
   }
-  async function z(ee, W) {
-    var oe;
-    await vl(ee, W), ((oe = n.value) == null ? void 0 : oe.path) === W && (n.value = null), await I(ee);
+  async function G(J, H) {
+    var ue;
+    await hl(J, H), ((ue = a.value) == null ? void 0 : ue.path) === H && (a.value = null), await I(J);
   }
-  async function D(ee, W, oe) {
-    var be;
-    const fe = await hl(ee, W, oe);
-    return ((be = n.value) == null ? void 0 : be.path) === W && (n.value = fe), await I(ee), fe;
+  async function R(J, H, ue) {
+    var ge;
+    const ce = await yl(J, H, ue);
+    return ((ge = a.value) == null ? void 0 : ge.path) === H && (a.value = ce), await I(J), ce;
   }
-  async function R(ee, W) {
-    await wl();
-  }
-  async function H(ee, W) {
+  async function P(J, H) {
     await _l();
   }
-  function Y() {
-    n.value = null, r.value = [];
+  async function K(J, H) {
+    await kl();
   }
-  function U(ee) {
+  function j() {
+    a.value = null, r.value = [];
+  }
+  function D(J) {
     try {
-      const W = Ka().getRepo(ee);
-      if ((W == null ? void 0 : W.environment_id) != null) return W.environment_id;
-      const oe = oa().environments.find((fe) => fe.is_default);
-      return (oe == null ? void 0 : oe.id) ?? null;
+      const H = Ka().getRepo(J);
+      if ((H == null ? void 0 : H.environment_id) != null) return H.environment_id;
+      const ue = na().environments.find((ce) => ce.is_default);
+      return (ue == null ? void 0 : ue.id) ?? null;
     } catch {
       return null;
     }
   }
-  async function Z(ee) {
-    if (!(k.value && A.value === ee)) {
-      if (y.value) {
-        V = ee;
+  async function se(J) {
+    if (!(k.value && V.value === J)) {
+      if (b.value) {
+        L = J;
         return;
       }
-      y.value = !0, k.value = !1;
+      b.value = !0, k.value = !1;
       try {
-        const W = U(ee);
-        if (W != null)
+        const H = D(J);
+        if (H != null)
           try {
-            const fe = await Ml(W);
-            if (fe.keywords && fe.keywords.length > 0) {
-              _.value = fe.keywords.map((be) => ({
-                name: be.name,
-                library: be.library,
-                doc: be.shortdoc || "",
+            const ce = await xl(H);
+            if (ce.keywords && ce.keywords.length > 0) {
+              _.value = ce.keywords.map((ge) => ({
+                name: ge.name,
+                library: ge.library,
+                doc: ge.shortdoc || "",
                 doc_format: "text",
-                args: be.args || []
-              })), k.value = !0, A.value = ee;
+                args: ge.args || []
+              })), k.value = !0, V.value = J;
               return;
             }
           } catch {
           }
-        const oe = await Oo("*", ee);
-        _.value = (oe.results || []).map((fe) => ({
-          name: fe.name,
-          library: fe.library,
-          doc: fe.doc || "",
-          doc_format: fe.doc_format || "text",
-          args: fe.args || []
-        })), k.value = !0, A.value = ee;
+        const ue = await Wo("*", J);
+        _.value = (ue.results || []).map((ce) => ({
+          name: ce.name,
+          library: ce.library,
+          doc: ce.doc || "",
+          doc_format: ce.doc_format || "text",
+          args: ce.args || []
+        })), k.value = !0, V.value = J;
       } catch {
-        _.value = [], A.value = null;
+        _.value = [], V.value = null;
       } finally {
-        if (y.value = !1, V !== null && V !== A.value) {
-          const W = V;
-          V = null, Z(W);
+        if (b.value = !1, L !== null && L !== V.value) {
+          const H = L;
+          L = null, se(H);
         } else
-          V = null;
+          L = null;
       }
     }
   }
-  async function ce(ee) {
+  async function oe(J) {
     try {
-      await Cl(ee);
+      await $l(J);
     } catch {
     }
-    k.value = !1, await Z(ee);
+    k.value = !1, await se(J);
   }
-  function ke() {
-    e.value = null, n.value = null, r.value = [], c.value = [], _.value = [], k.value = !1, A.value = null, E.value = [];
+  function be() {
+    e.value = null, a.value = null, r.value = [], c.value = [], _.value = [], k.value = !1, V.value = null, T.value = [];
   }
   return {
     tree: e,
-    selectedFile: n,
+    selectedFile: a,
     searchResults: r,
     testCases: c,
     loading: g,
-    currentscopeId: a,
+    currentscopeId: s,
     keywords: _,
-    keywordsLoading: y,
+    keywordsLoading: b,
     keywordsLoaded: k,
-    keywordsscopeId: A,
-    projectKeywords: E,
+    keywordsscopeId: V,
+    projectKeywords: T,
     fetchTree: I,
-    openFile: j,
-    searchInRepo: ue,
-    fetchTestCases: M,
-    clearSelection: Y,
-    clearAll: ke,
-    saveFile: J,
-    createFile: ae,
-    deleteFileAction: z,
-    renameFileAction: D,
-    openInEditorAction: R,
-    openInFileBrowserAction: H,
-    preloadKeywords: Z,
-    refreshKeywords: ce,
+    openFile: W,
+    searchInRepo: re,
+    fetchTestCases: x,
+    clearSelection: j,
+    clearAll: be,
+    saveFile: Z,
+    createFile: Q,
+    deleteFileAction: G,
+    renameFileAction: R,
+    openInEditorAction: P,
+    openInFileBrowserAction: K,
+    preloadKeywords: se,
+    refreshKeywords: oe,
     setProjectKeywords: B,
-    resolveEnvironmentId: U
+    resolveEnvironmentId: D
   };
 });
-function Tn() {
-  const e = zo(), n = O(() => {
+function En() {
+  const e = Yo(), a = O(() => {
     const _ = /* @__PURE__ */ new Map();
-    for (const [y, k] of _o) _.set(y.toLowerCase(), k);
-    for (const y of e.keywords)
-      y.args && y.args.length && _.set(y.name.toLowerCase(), y.args);
-    for (const y of e.projectKeywords)
-      y.name && _.set(y.name.toLowerCase(), y.arguments ?? []);
+    for (const [b, k] of wo) _.set(b.toLowerCase(), k);
+    for (const b of e.keywords)
+      b.args && b.args.length && _.set(b.name.toLowerCase(), b.args);
+    for (const b of e.projectKeywords)
+      b.name && _.set(b.name.toLowerCase(), b.arguments ?? []);
     return _;
   });
   function r(_) {
     if (!_) return null;
-    const y = n.value.get(_.toLowerCase());
-    if (y) return y;
+    const b = a.value.get(_.toLowerCase());
+    if (b) return b;
     const k = Aa(_);
-    return k ? n.value.get(k.rest.toLowerCase()) ?? null : null;
+    return k ? a.value.get(k.rest.toLowerCase()) ?? null : null;
   }
   function c(_) {
-    const y = r(_);
-    return y ? y.map(ta) : null;
+    const b = r(_);
+    return b ? b.map(oa) : null;
   }
   function g(_) {
     if (!_) return null;
-    const y = _.toLowerCase(), k = n.value.get(y);
+    const b = _.toLowerCase(), k = a.value.get(b);
     if (!k) return null;
-    const A = e.keywords.find((E) => E.name.toLowerCase() === y), V = e.projectKeywords.find((E) => E.name.toLowerCase() === y);
-    return V ? {
-      display: V.name,
-      library: V.file_path,
-      doc: V.doc ?? "",
+    const V = e.keywords.find((T) => T.name.toLowerCase() === b), L = e.projectKeywords.find((T) => T.name.toLowerCase() === b);
+    return L ? {
+      display: L.name,
+      library: L.file_path,
+      doc: L.doc ?? "",
       docFormat: "text",
       args: k
     } : {
-      display: (A == null ? void 0 : A.name) ?? _,
-      library: (A == null ? void 0 : A.library) ?? "BuiltIn",
-      doc: (A == null ? void 0 : A.doc) ?? "",
-      docFormat: (A == null ? void 0 : A.doc_format) ?? "text",
+      display: (V == null ? void 0 : V.name) ?? _,
+      library: (V == null ? void 0 : V.library) ?? "BuiltIn",
+      doc: (V == null ? void 0 : V.doc) ?? "",
+      docFormat: (V == null ? void 0 : V.doc_format) ?? "text",
       args: k
     };
   }
-  async function a(_, y) {
+  async function s(_, b) {
     if (!_) return null;
     try {
-      const k = await Oo(_, y), A = _.toLowerCase(), V = k.results.find((B) => B.name.toLowerCase() === A) ?? k.results[0];
-      return V ? (e.keywords.some((B) => B.name.toLowerCase() === V.name.toLowerCase()) || e.keywords.push({
-        name: V.name,
-        library: V.library || "",
-        doc: V.doc || "",
-        doc_format: V.doc_format || "text",
-        args: V.args || []
+      const k = await Wo(_, b), V = _.toLowerCase(), L = k.results.find((B) => B.name.toLowerCase() === V) ?? k.results[0];
+      return L ? (e.keywords.some((B) => B.name.toLowerCase() === L.name.toLowerCase()) || e.keywords.push({
+        name: L.name,
+        library: L.library || "",
+        doc: L.doc || "",
+        doc_format: L.doc_format || "text",
+        args: L.args || []
       }), {
-        display: V.name,
-        library: V.library || "BuiltIn",
-        doc: V.doc || "",
-        docFormat: V.doc_format || "text",
-        args: V.args ?? r(_) ?? []
+        display: L.name,
+        library: L.library || "BuiltIn",
+        doc: L.doc || "",
+        docFormat: L.doc_format || "text",
+        args: L.args ?? r(_) ?? []
       }) : g(_);
     } catch {
       return g(_);
     }
   }
-  return { argsByName: n, getArgs: r, getParsedArgs: c, getKeywordInfo: g, fetchKeywordInfo: a };
+  return { argsByName: a, getArgs: r, getParsedArgs: c, getKeywordInfo: g, fetchKeywordInfo: s };
 }
-function Gl(e, n) {
-  const r = (E) => E.replace(/\\/g, "/").replace(/^\.\//, ""), c = r(e), g = r(n);
+function Yl(e, a) {
+  const r = (T) => T.replace(/\\/g, "/").replace(/^\.\//, ""), c = r(e), g = r(a);
   if (!c) return g;
-  const a = c.split("/").slice(0, -1), _ = g.split("/");
-  let y = 0;
-  for (; y < a.length && y < _.length - 1 && a[y] === _[y]; )
-    y++;
-  const k = a.length - y, A = _.slice(y);
-  return [...Array(k).fill(".."), ...A].join("/") || g;
+  const s = c.split("/").slice(0, -1), _ = g.split("/");
+  let b = 0;
+  for (; b < s.length && b < _.length - 1 && s[b] === _[b]; )
+    b++;
+  const k = s.length - b, V = _.slice(b);
+  return [...Array(k).fill(".."), ...V].join("/") || g;
 }
-const Yl = /\.(resource|robot|txt|tsv)$/i;
-function Xl(e) {
-  const n = e.trim();
-  return Yl.test(n) || n.includes("/");
+const Xl = /\.(resource|robot|txt|tsv)$/i;
+function Zl(e) {
+  const a = e.trim();
+  return Xl.test(a) || a.includes("/");
 }
-const Wn = "robot-autotest.flowPalette.filter", fa = "robot-autotest.flowPalette.sort", Zl = 1, Ql = 5;
-function Jl(e) {
-  return e.importCount >= Zl || e.stepCount >= Ql;
+const jn = "robot-autotest.flowPalette.filter", fa = "robot-autotest.flowPalette.sort", Ql = 1, Jl = 5;
+function er(e) {
+  return e.importCount >= Ql || e.stepCount >= Jl;
 }
-const er = {
+const tr = {
   resources: !0,
   importedLibs: !0,
   exampleLibs: !0,
   builtin: !0
-}, tr = {
+}, or = {
   resources: !0,
   importedLibs: !0,
   exampleLibs: !1,
   // hide the not-installed example noise
   builtin: !0
 };
-function or(e) {
-  return e.hasEnvData && Jl(e.file) ? { ...tr } : { ...er };
-}
 function nr(e) {
+  return e.hasEnvData && er(e.file) ? { ...or } : { ...tr };
+}
+function ar(e) {
   if (!e) return null;
   try {
-    const n = JSON.parse(e);
-    if (typeof (n == null ? void 0 : n.resources) == "boolean" && typeof (n == null ? void 0 : n.importedLibs) == "boolean" && typeof (n == null ? void 0 : n.exampleLibs) == "boolean" && typeof (n == null ? void 0 : n.builtin) == "boolean")
-      return { resources: n.resources, importedLibs: n.importedLibs, exampleLibs: n.exampleLibs, builtin: n.builtin };
+    const a = JSON.parse(e);
+    if (typeof (a == null ? void 0 : a.resources) == "boolean" && typeof (a == null ? void 0 : a.importedLibs) == "boolean" && typeof (a == null ? void 0 : a.exampleLibs) == "boolean" && typeof (a == null ? void 0 : a.builtin) == "boolean")
+      return { resources: a.resources, importedLibs: a.importedLibs, exampleLibs: a.exampleLibs, builtin: a.builtin };
   } catch {
   }
   return null;
 }
-function ar(e) {
+function sr(e) {
   return e === "mostUsed" || e === "alpha" || e === "importedFirst" ? e : null;
 }
-function sr(e) {
-  const n = /* @__PURE__ */ new Set();
+function lr(e) {
+  const a = /* @__PURE__ */ new Set();
   for (const r of e) {
     const g = (r.split("/").pop() || r).trim().replace(/\.[^.]+$/, "");
-    g && n.add(g.toLowerCase());
+    g && a.add(g.toLowerCase());
   }
-  return n;
+  return a;
 }
 function Ha(e) {
   return e.kind === "resource" ? "resources" : e.kind === "control" ? null : e.name === "BuiltIn" ? "builtin" : e.isExamples ? "exampleLibs" : "importedLibs";
 }
-function lr(e, n) {
+function rr(e, a) {
   return e.filter((r) => {
     const c = Ha(r);
-    return c === null ? !0 : n[c];
+    return c === null ? !0 : a[c];
   });
 }
-function rr(e, n) {
+function ir(e, a) {
   return e.reduce((r, c) => {
     const g = Ha(c);
-    return g !== null && !n[g] ? r + 1 : r;
+    return g !== null && !a[g] ? r + 1 : r;
   }, 0);
 }
-function ir(e, n, r) {
+function ur(e, a, r) {
   const c = [...e];
-  return n === "alpha" ? c.sort((g, a) => g.name.localeCompare(a.name, void 0, { sensitivity: "base" })) : n === "importedFirst" ? c.sort((g, a) => {
-    const _ = g.isExamples ? 1 : 0, y = a.isExamples ? 1 : 0;
-    return _ !== y ? _ - y : (r.get(a.name) ?? 0) - (r.get(g.name) ?? 0);
-  }) : c.sort((g, a) => (r.get(a.name) ?? 0) - (r.get(g.name) ?? 0)), c;
+  return a === "alpha" ? c.sort((g, s) => g.name.localeCompare(s.name, void 0, { sensitivity: "base" })) : a === "importedFirst" ? c.sort((g, s) => {
+    const _ = g.isExamples ? 1 : 0, b = s.isExamples ? 1 : 0;
+    return _ !== b ? _ - b : (r.get(s.name) ?? 0) - (r.get(g.name) ?? 0);
+  }) : c.sort((g, s) => (r.get(s.name) ?? 0) - (r.get(g.name) ?? 0)), c;
 }
-function ma(e, n, r) {
+function ma(e, a, r) {
   const c = (e || "").trim();
   if (!c) return "";
-  if (n !== "html") return c;
+  if (a !== "html") return c;
   const g = c.replace(/<br\s*\/?>/gi, `
 `).replace(/<\/(p|div|li|h[1-6]|tr|pre|blockquote)\s*>/gi, `
 `);
@@ -1431,30 +1431,30 @@ function ma(e, n, r) {
 
 `).trim();
 }
-const ur = /^[A-Za-z_\u4e00-\u9fa5][\w\u4e00-\u9fa5]*$/;
-function cr(e) {
-  const n = [];
+const cr = /^[A-Za-z_\u4e00-\u9fa5][\w\u4e00-\u9fa5]*$/;
+function dr(e) {
+  const a = [];
   for (const r of e || []) {
     const c = (r || "").trim();
     if (c && !c.includes("=")) {
       if (c.startsWith("**")) {
-        n.push(`&{${c.slice(2).replace(/_$/, "")}}`);
+        a.push(`&{${c.slice(2).replace(/_$/, "")}}`);
         continue;
       }
       if (c.startsWith("*")) {
-        n.push(`@{${c.slice(1).replace(/_$/, "")}}`);
+        a.push(`@{${c.slice(1).replace(/_$/, "")}}`);
         continue;
       }
       if (c.startsWith("${") || c.startsWith("@{") || c.startsWith("&{") || c.startsWith("%{")) {
-        n.push(c);
+        a.push(c);
         continue;
       }
-      ur.test(c) && n.push(`\${${c.replace(/_$/, "")}}`);
+      cr.test(c) && a.push(`\${${c.replace(/_$/, "")}}`);
     }
   }
-  return n;
+  return a;
 }
-const dr = {
+const pr = {
   "should be equal": ["actual", "expected", "msg=None", "values=True", "formatter=str"],
   "should contain": ["container", "item", "msg=None", "values=True"],
   "should not be empty": ["item", "msg=None"],
@@ -1472,58 +1472,58 @@ const dr = {
   "click element": ["locator"],
   "input text": ["locator", "text"]
 };
-function pr(e, n) {
-  const r = n(e);
-  return r && r.length > 0 ? r : dr[e.toLowerCase()] ?? [];
+function fr(e, a) {
+  const r = a(e);
+  return r && r.length > 0 ? r : pr[e.toLowerCase()] ?? [];
 }
-const fr = { class: "keyword-palette" }, mr = { class: "palette-header" }, gr = { class: "palette-actions" }, vr = { class: "palette-menu-wrap" }, hr = ["title"], yr = {
+const mr = { class: "keyword-palette" }, gr = { class: "palette-header" }, vr = { class: "palette-actions" }, hr = { class: "palette-menu-wrap" }, yr = ["title"], br = {
   key: 0,
   class: "palette-menu",
   "data-testid": "palette-sort-menu"
-}, br = ["onClick"], wr = { class: "palette-menu-check" }, _r = { class: "palette-menu-wrap" }, kr = ["title"], Cr = {
+}, wr = ["onClick"], _r = { class: "palette-menu-check" }, kr = { class: "palette-menu-wrap" }, Cr = ["title"], $r = {
   key: 0,
   class: "palette-menu palette-menu--wide",
   "data-testid": "palette-filter-menu"
-}, $r = ["checked", "onChange"], Tr = ["placeholder"], Er = {
+}, Tr = ["checked", "onChange"], Er = ["placeholder"], Sr = {
   key: 0,
   class: "palette-offline",
   "data-testid": "palette-offline"
-}, Sr = {
+}, Lr = {
   key: 1,
   class: "palette-hiding-hint",
   "data-testid": "palette-hiding-hint"
-}, Lr = {
+}, Vr = {
   key: 2,
   class: "palette-add-bar"
-}, Vr = { class: "palette-add-info" }, Ar = ["title"], Nr = ["title"], Rr = {
+}, Ar = { class: "palette-add-info" }, Nr = ["title"], Rr = ["title"], Fr = {
   key: 1,
   class: "palette-args-preview"
-}, Fr = {
+}, Pr = {
   key: 2,
   class: "palette-add-doc",
   "data-testid": "palette-add-doc"
-}, Pr = {
+}, Dr = {
   key: 0,
   class: "palette-add-doc-muted"
-}, Dr = ["title"], Mr = {
+}, Mr = ["title"], xr = {
   key: 2,
   class: "palette-add-doc-muted"
-}, xr = { class: "palette-categories" }, Ur = {
+}, Ur = { class: "palette-categories" }, Br = {
   class: "palette-section-label",
   "data-testid": "palette-resources-label"
-}, Br = ["title"], Kr = ["onClick"], Hr = { class: "collapse-icon" }, Or = { class: "category-file-glyph" }, Ir = { class: "category-file" }, Wr = ["title"], jr = {
+}, Kr = ["title"], Hr = ["onClick"], Or = { class: "collapse-icon" }, Ir = { class: "category-file-glyph" }, Wr = { class: "category-file" }, jr = ["title"], qr = {
   key: 0,
   class: "category-file-path"
-}, qr = ["title"], zr = { class: "category-count" }, Gr = ["title", "onDragstart", "onClick", "onDblclick"], Yr = { class: "palette-item-content" }, Xr = { class: "palette-item-name" }, Zr = {
+}, zr = ["title"], Gr = { class: "category-count" }, Yr = ["title", "onDragstart", "onClick", "onDblclick"], Xr = { class: "palette-item-content" }, Zr = { class: "palette-item-name" }, Qr = {
   key: 0,
   class: "palette-item-argcount"
-}, Qr = ["onClick"], Jr = { class: "collapse-icon" }, ei = { class: "category-name" }, ti = ["title"], oi = { class: "category-count" }, ni = ["title", "onDragstart", "onClick", "onDblclick"], ai = { class: "palette-item-content" }, si = { class: "palette-item-name" }, li = {
+}, Jr = ["onClick"], ei = { class: "collapse-icon" }, ti = { class: "category-name" }, oi = ["title"], ni = { class: "category-count" }, ai = ["title", "onDragstart", "onClick", "onDblclick"], si = { class: "palette-item-content" }, li = { class: "palette-item-name" }, ri = {
   key: 0,
   class: "palette-item-argcount"
-}, ri = ["title"], ii = ["title", "onDragstart", "onClick", "onDblclick"], ui = { class: "palette-item-name" }, ci = {
+}, ii = ["title"], ui = ["title", "onDragstart", "onClick", "onDblclick"], ci = { class: "palette-item-name" }, di = {
   key: 1,
   class: "palette-empty"
-}, di = /* @__PURE__ */ je({
+}, pi = /* @__PURE__ */ qe({
   __name: "KeywordPalette",
   props: {
     scopeId: {},
@@ -1534,128 +1534,128 @@ const fr = { class: "keyword-palette" }, mr = { class: "palette-header" }, gr = 
     fileStepCount: {}
   },
   emits: ["add-node"],
-  setup(e, { emit: n }) {
-    const r = e, { t: c } = mt(), g = zo(), a = n;
-    function _(F) {
-      return F.kind === "control" || F.kind === "resource" || F.name === "BuiltIn" || !r.importedLibraries ? !0 : r.importedLibraries.has(F.name.toLowerCase());
+  setup(e, { emit: a }) {
+    const r = e, { t: c } = ft(), g = Yo(), s = a;
+    function _(A) {
+      return A.kind === "control" || A.kind === "resource" || A.name === "BuiltIn" || !r.importedLibraries ? !0 : r.importedLibraries.has(A.name.toLowerCase());
     }
-    const y = N(/* @__PURE__ */ new Map()), k = N([]), A = N(!1), V = N(!1), E = N(/* @__PURE__ */ new Map());
+    const b = N(/* @__PURE__ */ new Map()), k = N([]), V = N(!1), L = N(!1), T = N(/* @__PURE__ */ new Map());
     function B() {
-      const F = /* @__PURE__ */ new Map(), w = /* @__PURE__ */ new Map();
-      for (const P of g.keywords) {
-        const G = P.library || "Unknown";
-        w.has(G) || w.set(G, []), w.get(G).push({ name: P.name, library: P.library, doc: P.doc, args: P.args || [] }), P.args && P.args.length > 0 && F.set(P.name, P.args);
+      const A = /* @__PURE__ */ new Map(), w = /* @__PURE__ */ new Map();
+      for (const M of g.keywords) {
+        const q = M.library || "Unknown";
+        w.has(q) || w.set(q, []), w.get(q).push({ name: M.name, library: M.library, doc: M.doc, args: M.args || [] }), M.args && M.args.length > 0 && A.set(M.name, M.args);
       }
-      y.value = w, E.value = F;
+      b.value = w, T.value = A;
     }
     async function I() {
       if (r.scopeId) {
-        A.value = !0, V.value = !1;
+        V.value = !0, L.value = !1;
         try {
           if (g.keywordsLoaded && g.keywords.length > 0)
             B();
           else {
-            const w = await Oo("*", r.scopeId), P = /* @__PURE__ */ new Map(), G = /* @__PURE__ */ new Map();
-            for (const ge of w.results) {
-              const Ve = ge.library || "Unknown";
-              G.has(Ve) || G.set(Ve, []), G.get(Ve).push(ge), ge.args && ge.args.length > 0 && P.set(ge.name, ge.args);
+            const w = await Wo("*", r.scopeId), M = /* @__PURE__ */ new Map(), q = /* @__PURE__ */ new Map();
+            for (const me of w.results) {
+              const Te = me.library || "Unknown";
+              q.has(Te) || q.set(Te, []), q.get(Te).push(me), me.args && me.args.length > 0 && M.set(me.name, me.args);
             }
-            y.value = G, E.value = P;
+            b.value = q, T.value = M;
           }
-          const F = await kl(r.scopeId).catch(() => []);
-          k.value = F, g.setProjectKeywords(F);
-          for (const w of F)
-            w.arguments && w.arguments.length > 0 && E.value.set(w.name, w.arguments);
+          const A = await Cl(r.scopeId).catch(() => []);
+          k.value = A, g.setProjectKeywords(A);
+          for (const w of A)
+            w.arguments && w.arguments.length > 0 && T.value.set(w.name, w.arguments);
         } catch {
-          V.value = !0, y.value = /* @__PURE__ */ new Map(), k.value = [], E.value = /* @__PURE__ */ new Map();
+          L.value = !0, b.value = /* @__PURE__ */ new Map(), k.value = [], T.value = /* @__PURE__ */ new Map();
         } finally {
-          A.value = !1;
+          V.value = !1;
         }
       }
     }
-    qo(() => I()), Le(() => r.scopeId, () => I()), Le(() => g.keywordsLoaded, (F) => {
-      F && g.keywords.length > 0 && B();
+    Go(() => I()), Se(() => r.scopeId, () => I()), Se(() => g.keywordsLoaded, (A) => {
+      A && g.keywords.length > 0 && B();
     });
-    const j = N(""), ue = N(/* @__PURE__ */ new Set()), M = N(null);
-    function J(F) {
-      ue.value.has(F) ? ue.value.delete(F) : ue.value.add(F);
+    const W = N(""), re = N(/* @__PURE__ */ new Set()), x = N(null);
+    function Z(A) {
+      re.value.has(A) ? re.value.delete(A) : re.value.add(A);
     }
-    function ae(F) {
-      return j.value ? !0 : ue.value.has(F);
+    function Q(A) {
+      return W.value ? !0 : re.value.has(A);
     }
-    function z() {
-      for (const F of ht.value)
-        ue.value.add(F.name);
+    function G() {
+      for (const A of vt.value)
+        re.value.add(A.name);
     }
-    function D() {
-      ue.value.clear();
+    function R() {
+      re.value.clear();
     }
-    function R(F) {
-      return pr(F, (w) => E.value.get(w) || []);
+    function P(A) {
+      return fr(A, (w) => T.value.get(w) || []);
     }
-    const H = O(() => {
-      const F = /* @__PURE__ */ new Map();
-      for (const w of k.value) F.set(w.name, w.file_path);
-      return F;
+    const K = O(() => {
+      const A = /* @__PURE__ */ new Map();
+      for (const w of k.value) A.set(w.name, w.file_path);
+      return A;
     });
-    function Y(F, w) {
-      if (F.kind === "resource") {
-        const P = H.value.get(w);
-        return P && P !== r.filePath ? Gl(r.filePath || "", P) : void 0;
+    function j(A, w) {
+      if (A.kind === "resource") {
+        const M = K.value.get(w);
+        return M && M !== r.filePath ? Yl(r.filePath || "", M) : void 0;
       }
-      if (F.kind !== "control" && F.name !== "BuiltIn")
-        return F.name;
+      if (A.kind !== "control" && A.name !== "BuiltIn")
+        return A.name;
     }
-    const { getKeywordInfo: U, fetchKeywordInfo: Z } = Tn(), ce = N(/* @__PURE__ */ new Map()), ke = N(!1);
-    let ee = 0;
-    function W(F) {
-      return Va.sanitize(F, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+    const { getKeywordInfo: D, fetchKeywordInfo: se } = En(), oe = N(/* @__PURE__ */ new Map()), be = N(!1);
+    let J = 0;
+    function H(A) {
+      return Va.sanitize(A, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
     }
-    function oe(F) {
-      return g.projectKeywords.some((w) => w.name.toLowerCase() === F);
+    function ue(A) {
+      return g.projectKeywords.some((w) => w.name.toLowerCase() === A);
     }
-    const fe = O(() => {
-      const F = M.value;
-      return !F || F.type ? null : U(F.name);
-    }), be = O(() => {
-      var F;
-      return ((F = fe.value) == null ? void 0 : F.library) ?? "";
-    }), Fe = O(() => {
-      const F = M.value;
-      if (!F || F.type) return "";
-      const w = fe.value;
-      if (w != null && w.doc && w.doc.trim()) return ma(w.doc, w.docFormat, W);
-      const P = ce.value.get(F.name.toLowerCase());
-      return P ? ma(P.doc, P.docFormat, W) : "";
+    const ce = O(() => {
+      const A = x.value;
+      return !A || A.type ? null : D(A.name);
+    }), ge = O(() => {
+      var A;
+      return ((A = ce.value) == null ? void 0 : A.library) ?? "";
+    }), Le = O(() => {
+      const A = x.value;
+      if (!A || A.type) return "";
+      const w = ce.value;
+      if (w != null && w.doc && w.doc.trim()) return ma(w.doc, w.docFormat, H);
+      const M = oe.value.get(A.name.toLowerCase());
+      return M ? ma(M.doc, M.docFormat, H) : "";
     });
-    Le(M, async (F) => {
-      const w = ++ee;
-      if (ke.value = !1, !F || F.type) return;
-      const P = F.name.toLowerCase();
-      if (ce.value.has(P) || oe(P)) return;
-      const G = U(F.name);
-      if (!(G != null && G.doc && G.doc.trim())) {
-        ke.value = !0;
+    Se(x, async (A) => {
+      const w = ++J;
+      if (be.value = !1, !A || A.type) return;
+      const M = A.name.toLowerCase();
+      if (oe.value.has(M) || ue(M)) return;
+      const q = D(A.name);
+      if (!(q != null && q.doc && q.doc.trim())) {
+        be.value = !0;
         try {
-          const ge = await Z(F.name, r.scopeId);
-          if (w !== ee) return;
-          ge && ge.display.toLowerCase() === P && (ce.value.set(P, { doc: ge.doc, docFormat: ge.docFormat }), ce.value = new Map(ce.value));
+          const me = await se(A.name, r.scopeId);
+          if (w !== J) return;
+          me && me.display.toLowerCase() === M && (oe.value.set(M, { doc: me.doc, docFormat: me.docFormat }), oe.value = new Map(oe.value));
         } finally {
-          w === ee && (ke.value = !1);
+          w === J && (be.value = !1);
         }
       }
     });
-    function Pe(F, w, P) {
-      M.value = { name: F, type: w, library: P };
+    function $e(A, w, M) {
+      x.value = { name: A, type: w, library: M };
     }
-    function He(F) {
+    function Be(A) {
       var w;
-      return ((w = M.value) == null ? void 0 : w.name) === F;
+      return ((w = x.value) == null ? void 0 : w.name) === A;
     }
-    function ie() {
-      M.value && (M.value.type ? Nt(M.value.type) : At(M.value.name, M.value.library), M.value = null);
+    function Ge() {
+      x.value && (x.value.type ? Bt(x.value.type) : St(x.value.name, x.value.library), x.value = null);
     }
-    const Ie = [
+    const ie = [
       {
         name: "BuiltIn",
         keywords: [
@@ -1809,7 +1809,7 @@ const fr = { class: "keyword-palette" }, mr = { class: "palette-header" }, gr = 
           "Check If Exists In Database"
         ]
       }
-    ], tt = {
+    ], Qe = {
       name: "Control",
       kind: "control",
       items: [
@@ -1827,7 +1827,7 @@ const fr = { class: "keyword-palette" }, mr = { class: "palette-header" }, gr = 
         { label: "CONTINUE", type: "continue" },
         { label: "Comment", type: "comment" }
       ]
-    }, gt = [
+    }, mt = [
       "BuiltIn",
       "Collections",
       "String",
@@ -1841,105 +1841,105 @@ const fr = { class: "keyword-palette" }, mr = { class: "palette-header" }, gr = 
       "DatabaseLibrary"
     ], ut = O(() => {
       if (k.value.length === 0) return [];
-      const F = /* @__PURE__ */ new Map();
-      for (const P of k.value) {
-        const G = F.get(P.file_path) ?? [];
-        G.push(P.name), F.set(P.file_path, G);
+      const A = /* @__PURE__ */ new Map();
+      for (const M of k.value) {
+        const q = A.get(M.file_path) ?? [];
+        q.push(M.name), A.set(M.file_path, q);
       }
       const w = [];
-      for (const [P, G] of F) {
-        const ge = P.lastIndexOf("/"), Ve = ge >= 0 ? P.slice(ge + 1) : P, nt = ge >= 0 ? P.slice(0, ge) : "";
+      for (const [M, q] of A) {
+        const me = M.lastIndexOf("/"), Te = me >= 0 ? M.slice(me + 1) : M, et = me >= 0 ? M.slice(0, me) : "";
         w.push({
-          name: Ve,
-          keywords: G,
+          name: Te,
+          keywords: q,
           kind: "resource",
-          relPath: nt,
-          isResourceFile: Ve.toLowerCase().endsWith(".resource"),
-          isCurrentFile: P === r.filePath
+          relPath: et,
+          isResourceFile: Te.toLowerCase().endsWith(".resource"),
+          isCurrentFile: M === r.filePath
         });
       }
-      return w.sort((P, G) => {
-        const ge = Number(G.isCurrentFile) - Number(P.isCurrentFile);
-        return ge !== 0 ? ge : P.name.localeCompare(G.name, void 0, { sensitivity: "base" });
+      return w.sort((M, q) => {
+        const me = Number(q.isCurrentFile) - Number(M.isCurrentFile);
+        return me !== 0 ? me : M.name.localeCompare(q.name, void 0, { sensitivity: "base" });
       }), w;
-    }), Ze = O(() => {
-      var G, ge;
-      const F = [], w = /* @__PURE__ */ new Set(), P = sr(k.value.map((Ve) => Ve.file_path));
-      for (const [Ve, nt] of y.value)
-        P.has(Ve.toLowerCase()) || (F.push({
-          name: Ve,
-          keywords: nt.map((Ht) => Ht.name),
+    }), Je = O(() => {
+      var q, me;
+      const A = [], w = /* @__PURE__ */ new Set(), M = lr(k.value.map((Te) => Te.file_path));
+      for (const [Te, et] of b.value)
+        M.has(Te.toLowerCase()) || (A.push({
+          name: Te,
+          keywords: et.map((Kt) => Kt.name),
           kind: "library",
-          imported: ((G = r.importedLibraries) == null ? void 0 : G.has(Ve.toLowerCase())) ?? !1
-        }), w.add(Ve));
-      for (const Ve of gt) {
-        if (w.has(Ve)) continue;
-        const nt = Ie.find((Ht) => Ht.name === Ve);
-        nt && F.push({
-          name: nt.name,
-          keywords: nt.keywords,
+          imported: ((q = r.importedLibraries) == null ? void 0 : q.has(Te.toLowerCase())) ?? !1
+        }), w.add(Te));
+      for (const Te of mt) {
+        if (w.has(Te)) continue;
+        const et = ie.find((Kt) => Kt.name === Te);
+        et && A.push({
+          name: et.name,
+          keywords: et.keywords,
           kind: "library",
-          isExamples: Ve !== "BuiltIn",
-          imported: ((ge = r.importedLibraries) == null ? void 0 : ge.has(Ve.toLowerCase())) ?? Ve === "BuiltIn"
+          isExamples: Te !== "BuiltIn",
+          imported: ((me = r.importedLibraries) == null ? void 0 : me.has(Te.toLowerCase())) ?? Te === "BuiltIn"
         });
       }
-      return F;
-    }), vt = O(() => y.value.size > 0), ze = N(
-      ar(localStorage.getItem(fa)) ?? "mostUsed"
-    ), Q = N(!1);
-    function ot(F) {
-      ze.value = F, localStorage.setItem(fa, F), Q.value = !1;
+      return A;
+    }), gt = O(() => b.value.size > 0), Ye = N(
+      sr(localStorage.getItem(fa)) ?? "mostUsed"
+    ), Ke = N(!1);
+    function ee(A) {
+      Ye.value = A, localStorage.setItem(fa, A), Ke.value = !1;
     }
-    const pe = N(
-      nr(localStorage.getItem(Wn))
-    ), se = N(!1), me = O(
-      () => pe.value ?? or({
-        hasEnvData: vt.value,
+    const de = N(
+      ar(localStorage.getItem(jn))
+    ), ne = N(!1), fe = O(
+      () => de.value ?? nr({
+        hasEnvData: gt.value,
         file: { importCount: r.fileImportCount ?? 0, stepCount: r.fileStepCount ?? 0 }
       })
     );
-    function Se(F) {
-      const w = { ...me.value, [F]: !me.value[F] };
-      pe.value = w, localStorage.setItem(Wn, JSON.stringify(w));
+    function Ae(A) {
+      const w = { ...fe.value, [A]: !fe.value[A] };
+      de.value = w, localStorage.setItem(jn, JSON.stringify(w));
     }
-    function Be() {
-      const F = { resources: !0, importedLibs: !0, exampleLibs: !0, builtin: !0 };
-      pe.value = F, localStorage.setItem(Wn, JSON.stringify(F));
+    function De() {
+      const A = { resources: !0, importedLibs: !0, exampleLibs: !0, builtin: !0 };
+      de.value = A, localStorage.setItem(jn, JSON.stringify(A));
     }
-    const ht = O(() => {
-      const F = r.usageCounts ?? /* @__PURE__ */ new Map(), w = ir(Ze.value, ze.value, F);
-      return [...ze.value === "alpha" ? [...ut.value].sort((G, ge) => G.name.localeCompare(ge.name, void 0, { sensitivity: "base" })) : ut.value, ...w, tt];
-    }), Bt = O(
-      () => lr(ht.value, me.value)
-    ), Vt = O(
-      () => rr(ht.value, me.value)
+    const vt = O(() => {
+      const A = r.usageCounts ?? /* @__PURE__ */ new Map(), w = ur(Je.value, Ye.value, A);
+      return [...Ye.value === "alpha" ? [...ut.value].sort((q, me) => q.name.localeCompare(me.name, void 0, { sensitivity: "base" })) : ut.value, ...w, Qe];
+    }), Zt = O(
+      () => rr(vt.value, fe.value)
+    ), Tt = O(
+      () => ir(vt.value, fe.value)
     );
-    function yt() {
-      ue.value.clear();
+    function nt() {
+      re.value.clear();
     }
-    Le(() => r.filePath, (F, w) => {
-      !F || F === w || yt();
-    }), Le(() => g.keywordsLoaded, (F, w) => {
-      F && w === !1 && yt();
+    Se(() => r.filePath, (A, w) => {
+      !A || A === w || nt();
+    }), Se(() => g.keywordsLoaded, (A, w) => {
+      A && w === !1 && nt();
     });
-    const to = O(() => {
-      const F = j.value.toLowerCase();
-      return F ? Bt.value.map((w) => {
+    const Qt = O(() => {
+      const A = W.value.toLowerCase();
+      return A ? Zt.value.map((w) => {
         if ("keywords" in w) {
-          const G = w.keywords.filter((ge) => ge.toLowerCase().includes(F));
-          return G.length ? { ...w, keywords: G } : null;
+          const q = w.keywords.filter((me) => me.toLowerCase().includes(A));
+          return q.length ? { ...w, keywords: q } : null;
         }
-        const P = w.items.filter((G) => G.label.toLowerCase().includes(F));
-        return P.length ? { ...w, items: P } : null;
-      }).filter((w) => w !== null) : Bt.value;
-    }), bt = O(
-      () => to.value.filter((F) => F.kind === "resource")
-    ), oo = O(
-      () => to.value.filter((F) => F.kind !== "resource")
+        const M = w.items.filter((q) => q.label.toLowerCase().includes(A));
+        return M.length ? { ...w, items: M } : null;
+      }).filter((w) => w !== null) : Zt.value;
+    }), Et = O(
+      () => Qt.value.filter((A) => A.kind === "resource")
+    ), Ut = O(
+      () => Qt.value.filter((A) => A.kind !== "resource")
     );
-    function Kt(F = "keyword") {
+    function Jt(A = "keyword") {
       return {
-        type: F,
+        type: A,
         keyword: "",
         args: [],
         returnVars: [],
@@ -1953,368 +1953,368 @@ const fr = { class: "keyword-palette" }, mr = { class: "palette-header" }, gr = 
         comment: ""
       };
     }
-    function At(F, w) {
-      const P = Kt("keyword");
-      P.keyword = F, P.args = cr(R(F)), a("add-node", P, w);
+    function St(A, w) {
+      const M = Jt("keyword");
+      M.keyword = A, M.args = dr(P(A)), s("add-node", M, w);
     }
-    function Nt(F) {
-      const w = Kt(F);
-      F === "if" && (w.condition = "${condition}"), F === "for" && (w.loopVar = "${item}", w.loopFlavor = "IN", w.loopValues = ["@{list}"]), F === "while" && (w.condition = "${condition}"), a("add-node", w);
+    function Bt(A) {
+      const w = Jt(A);
+      A === "if" && (w.condition = "${condition}"), A === "for" && (w.loopVar = "${item}", w.loopFlavor = "IN", w.loopValues = ["@{list}"]), A === "while" && (w.condition = "${condition}"), s("add-node", w);
     }
-    function wt(F, w, P) {
-      var G, ge;
-      (G = F.dataTransfer) == null || G.setData("application/rf-keyword", w), P && ((ge = F.dataTransfer) == null || ge.setData("application/rf-library", P)), F.dataTransfer.effectAllowed = "copy";
+    function ht(A, w, M) {
+      var q, me;
+      (q = A.dataTransfer) == null || q.setData("application/rf-keyword", w), M && ((me = A.dataTransfer) == null || me.setData("application/rf-library", M)), A.dataTransfer.effectAllowed = "copy";
     }
-    function _t(F, w) {
-      var P;
-      (P = F.dataTransfer) == null || P.setData("application/rf-control", w), F.dataTransfer.effectAllowed = "copy";
+    function Lt(A, w) {
+      var M;
+      (M = A.dataTransfer) == null || M.setData("application/rf-control", w), A.dataTransfer.effectAllowed = "copy";
     }
-    return (F, w) => (i(), u("div", fr, [
-      t("div", mr, [
-        t("h4", null, m(p(c)("flowEditor.palette") || "Keywords"), 1),
-        t("div", gr, [
-          t("div", vr, [
-            t("button", {
+    return (A, w) => (i(), u("div", mr, [
+      o("div", gr, [
+        o("h4", null, m(p(c)("flowEditor.palette") || "Keywords"), 1),
+        o("div", vr, [
+          o("div", hr, [
+            o("button", {
               class: "palette-action-btn",
               title: p(c)("flowEditor.sort.title"),
               "data-testid": "palette-sort-btn",
-              onClick: w[0] || (w[0] = (P) => {
-                Q.value = !Q.value, se.value = !1;
+              onClick: w[0] || (w[0] = (M) => {
+                Ke.value = !Ke.value, ne.value = !1;
               })
-            }, "⇅", 8, hr),
-            Q.value ? (i(), u("div", yr, [
-              (i(), u(x, null, X(["mostUsed", "alpha", "importedFirst"], (P) => t("button", {
-                key: P,
-                class: ne(["palette-menu-item", { "palette-menu-item--active": ze.value === P }]),
-                onClick: (G) => ot(P)
+            }, "⇅", 8, yr),
+            Ke.value ? (i(), u("div", br, [
+              (i(), u(U, null, Y(["mostUsed", "alpha", "importedFirst"], (M) => o("button", {
+                key: M,
+                class: te(["palette-menu-item", { "palette-menu-item--active": Ye.value === M }]),
+                onClick: (q) => ee(M)
               }, [
-                t("span", wr, m(ze.value === P ? "✓" : ""), 1),
-                we(" " + m(p(c)(`flowEditor.sort.${P}`)), 1)
-              ], 10, br)), 64))
-            ])) : T("", !0)
+                o("span", _r, m(Ye.value === M ? "✓" : ""), 1),
+                we(" " + m(p(c)(`flowEditor.sort.${M}`)), 1)
+              ], 10, wr)), 64))
+            ])) : $("", !0)
           ]),
-          t("div", _r, [
-            t("button", {
-              class: ne(["palette-action-btn", { "palette-action-btn--on": Vt.value > 0 }]),
+          o("div", kr, [
+            o("button", {
+              class: te(["palette-action-btn", { "palette-action-btn--on": Tt.value > 0 }]),
               title: p(c)("flowEditor.filter.title"),
               "data-testid": "palette-filter-btn",
-              onClick: w[1] || (w[1] = (P) => {
-                se.value = !se.value, Q.value = !1;
+              onClick: w[1] || (w[1] = (M) => {
+                ne.value = !ne.value, Ke.value = !1;
               })
-            }, "▼", 10, kr),
-            se.value ? (i(), u("div", Cr, [
-              (i(), u(x, null, X(["resources", "importedLibs", "exampleLibs", "builtin"], (P) => t("label", {
-                key: P,
+            }, "▼", 10, Cr),
+            ne.value ? (i(), u("div", $r, [
+              (i(), u(U, null, Y(["resources", "importedLibs", "exampleLibs", "builtin"], (M) => o("label", {
+                key: M,
                 class: "palette-menu-item palette-menu-item--check"
               }, [
-                t("input", {
+                o("input", {
                   type: "checkbox",
-                  checked: me.value[P],
-                  onChange: (G) => Se(P)
-                }, null, 40, $r),
-                we(" " + m(p(c)(`flowEditor.filter.${P}`)), 1)
+                  checked: fe.value[M],
+                  onChange: (q) => Ae(M)
+                }, null, 40, Tr),
+                we(" " + m(p(c)(`flowEditor.filter.${M}`)), 1)
               ])), 64))
-            ])) : T("", !0)
+            ])) : $("", !0)
           ]),
-          t("button", {
+          o("button", {
             class: "palette-action-btn",
-            onClick: z,
+            onClick: G,
             title: "Expand all"
           }, "⊞"),
-          t("button", {
+          o("button", {
             class: "palette-action-btn",
-            onClick: D,
+            onClick: R,
             title: "Collapse all"
           }, "⊟")
         ])
       ]),
-      q(t("input", {
-        "onUpdate:modelValue": w[2] || (w[2] = (P) => j.value = P),
+      z(o("input", {
+        "onUpdate:modelValue": w[2] || (w[2] = (M) => W.value = M),
         class: "palette-search",
         placeholder: p(c)("flowEditor.searchKeywords") || "Search keywords..."
-      }, null, 8, Tr), [
-        [le, j.value]
+      }, null, 8, Er), [
+        [ae, W.value]
       ]),
-      V.value ? (i(), u("div", Er, [...w[3] || (w[3] = [
-        t("span", { class: "palette-offline-title" }, "暂无数据", -1),
-        t("span", { class: "palette-offline-hint" }, "平台关键词接口不可用，已回退内置示例", -1)
-      ])])) : T("", !0),
-      Vt.value > 0 && !j.value ? (i(), u("div", Sr, [
-        t("span", null, m(p(c)("flowEditor.filter.hidingCategories", { count: Vt.value })), 1),
-        t("button", {
+      L.value ? (i(), u("div", Sr, [...w[3] || (w[3] = [
+        o("span", { class: "palette-offline-title" }, "暂无数据", -1),
+        o("span", { class: "palette-offline-hint" }, "平台关键词接口不可用，已回退内置示例", -1)
+      ])])) : $("", !0),
+      Tt.value > 0 && !W.value ? (i(), u("div", Lr, [
+        o("span", null, m(p(c)("flowEditor.filter.hidingCategories", { count: Tt.value })), 1),
+        o("button", {
           class: "palette-hiding-clear",
-          onClick: Be
+          onClick: De
         }, m(p(c)("flowEditor.filter.clear")), 1)
-      ])) : T("", !0),
-      M.value ? (i(), u("div", Lr, [
-        t("div", Vr, [
-          t("span", {
+      ])) : $("", !0),
+      x.value ? (i(), u("div", Vr, [
+        o("div", Ar, [
+          o("span", {
             class: "palette-add-label",
-            title: M.value.name
-          }, m(M.value.name), 9, Ar),
-          be.value ? (i(), u("span", {
+            title: x.value.name
+          }, m(x.value.name), 9, Nr),
+          ge.value ? (i(), u("span", {
             key: 0,
             class: "palette-add-source",
-            title: be.value
-          }, m(be.value), 9, Nr)) : T("", !0),
-          !M.value.type && R(M.value.name).length ? (i(), u("div", Rr, [
-            (i(!0), u(x, null, X(R(M.value.name), (P, G) => (i(), u("span", {
-              key: G,
+            title: ge.value
+          }, m(ge.value), 9, Rr)) : $("", !0),
+          !x.value.type && P(x.value.name).length ? (i(), u("div", Fr, [
+            (i(!0), u(U, null, Y(P(x.value.name), (M, q) => (i(), u("span", {
+              key: q,
               class: "palette-arg-tag"
-            }, m(P), 1))), 128))
-          ])) : T("", !0),
-          M.value.type ? T("", !0) : (i(), u("div", Fr, [
-            ke.value ? (i(), u("span", Pr, m(p(c)("flowEditor.docModal.loading")), 1)) : Fe.value ? (i(), u("p", {
+            }, m(M), 1))), 128))
+          ])) : $("", !0),
+          x.value.type ? $("", !0) : (i(), u("div", Pr, [
+            be.value ? (i(), u("span", Dr, m(p(c)("flowEditor.docModal.loading")), 1)) : Le.value ? (i(), u("p", {
               key: 1,
               class: "palette-add-doc-text",
               "data-testid": "palette-add-doc-text",
-              title: Fe.value
-            }, m(Fe.value), 9, Dr)) : (i(), u("span", Mr, m(p(c)("flowEditor.docModal.noDoc")), 1))
+              title: Le.value
+            }, m(Le.value), 9, Mr)) : (i(), u("span", xr, m(p(c)("flowEditor.docModal.noDoc")), 1))
           ]))
         ]),
-        t("button", {
+        o("button", {
           class: "palette-add-btn",
-          onClick: ie
+          onClick: Ge
         }, "+")
-      ])) : T("", !0),
-      t("div", xr, [
-        bt.value.length ? (i(), u(x, { key: 0 }, [
-          t("div", Ur, [
-            w[4] || (w[4] = t("span", { class: "palette-section-glyph" }, "📄", -1)),
-            t("span", null, m(p(c)("flowEditor.resourcesSectionLabel")), 1),
-            t("span", {
+      ])) : $("", !0),
+      o("div", Ur, [
+        Et.value.length ? (i(), u(U, { key: 0 }, [
+          o("div", Br, [
+            w[4] || (w[4] = o("span", { class: "palette-section-glyph" }, "📄", -1)),
+            o("span", null, m(p(c)("flowEditor.resourcesSectionLabel")), 1),
+            o("span", {
               class: "palette-section-info",
               title: p(c)("flowEditor.resourcesSectionHint")
-            }, "ⓘ", 8, Br)
+            }, "ⓘ", 8, Kr)
           ]),
-          (i(!0), u(x, null, X(bt.value, (P) => (i(), u("div", {
-            key: P.name + (P.relPath || ""),
-            class: ne(["palette-category palette-category--resource", { "palette-category--current": P.isCurrentFile }])
+          (i(!0), u(U, null, Y(Et.value, (M) => (i(), u("div", {
+            key: M.name + (M.relPath || ""),
+            class: te(["palette-category palette-category--resource", { "palette-category--current": M.isCurrentFile }])
           }, [
-            t("div", {
+            o("div", {
               class: "category-header",
-              onClick: (G) => J(P.name)
+              onClick: (q) => Z(M.name)
             }, [
-              t("span", Hr, m(ae(P.name) ? "▼" : "▶"), 1),
-              t("span", Or, m(P.isResourceFile ? "📄" : "🤖"), 1),
-              t("span", Ir, [
-                t("span", {
+              o("span", Or, m(Q(M.name) ? "▼" : "▶"), 1),
+              o("span", Ir, m(M.isResourceFile ? "📄" : "🤖"), 1),
+              o("span", Wr, [
+                o("span", {
                   class: "category-file-name",
-                  title: (P.relPath ? P.relPath + "/" : "") + P.name
-                }, m(P.name), 9, Wr),
-                P.relPath ? (i(), u("span", jr, m(P.relPath) + "/", 1)) : T("", !0)
+                  title: (M.relPath ? M.relPath + "/" : "") + M.name
+                }, m(M.name), 9, jr),
+                M.relPath ? (i(), u("span", qr, m(M.relPath) + "/", 1)) : $("", !0)
               ]),
-              P.isCurrentFile ? (i(), u("span", {
+              M.isCurrentFile ? (i(), u("span", {
                 key: 0,
                 class: "category-current-badge",
                 title: p(c)("flowEditor.currentFileCategoryHint")
-              }, m(p(c)("flowEditor.currentFileCategoryBadge")), 9, qr)) : T("", !0),
-              t("span", zr, m(P.keywords.length), 1)
-            ], 8, Kr),
-            ae(P.name) ? (i(!0), u(x, { key: 0 }, X(P.keywords, (G) => (i(), u("div", {
-              key: G,
-              class: ne(["palette-item palette-item-keyword", { selected: He(G) }]),
-              title: G,
+              }, m(p(c)("flowEditor.currentFileCategoryBadge")), 9, zr)) : $("", !0),
+              o("span", Gr, m(M.keywords.length), 1)
+            ], 8, Hr),
+            Q(M.name) ? (i(!0), u(U, { key: 0 }, Y(M.keywords, (q) => (i(), u("div", {
+              key: q,
+              class: te(["palette-item palette-item-keyword", { selected: Be(q) }]),
+              title: q,
               draggable: "true",
-              onDragstart: (ge) => wt(ge, G, Y(P, G)),
-              onClick: (ge) => Pe(G, void 0, Y(P, G)),
-              onDblclick: (ge) => At(G, Y(P, G))
+              onDragstart: (me) => ht(me, q, j(M, q)),
+              onClick: (me) => $e(q, void 0, j(M, q)),
+              onDblclick: (me) => St(q, j(M, q))
             }, [
-              w[5] || (w[5] = t("span", { class: "palette-icon" }, "⚙", -1)),
-              t("div", Yr, [
-                t("span", Xr, m(G), 1),
-                R(G).length ? (i(), u("span", Zr, "(" + m(R(G).length) + ")", 1)) : T("", !0)
+              w[5] || (w[5] = o("span", { class: "palette-icon" }, "⚙", -1)),
+              o("div", Xr, [
+                o("span", Zr, m(q), 1),
+                P(q).length ? (i(), u("span", Qr, "(" + m(P(q).length) + ")", 1)) : $("", !0)
               ])
-            ], 42, Gr))), 128)) : T("", !0)
+            ], 42, Yr))), 128)) : $("", !0)
           ], 2))), 128)),
-          w[6] || (w[6] = t("div", { class: "palette-section-divider" }, null, -1))
-        ], 64)) : T("", !0),
-        (i(!0), u(x, null, X(oo.value, (P) => (i(), u("div", {
-          key: P.name,
+          w[6] || (w[6] = o("div", { class: "palette-section-divider" }, null, -1))
+        ], 64)) : $("", !0),
+        (i(!0), u(U, null, Y(Ut.value, (M) => (i(), u("div", {
+          key: M.name,
           class: "palette-category"
         }, [
-          t("div", {
+          o("div", {
             class: "category-header",
-            onClick: (G) => J(P.name)
+            onClick: (q) => Z(M.name)
           }, [
-            t("span", Jr, m(ae(P.name) ? "▼" : "▶"), 1),
-            t("span", ei, m(P.name), 1),
-            "isExamples" in P && P.isExamples ? (i(), u("span", {
+            o("span", ei, m(Q(M.name) ? "▼" : "▶"), 1),
+            o("span", ti, m(M.name), 1),
+            "isExamples" in M && M.isExamples ? (i(), u("span", {
               key: 0,
               class: "category-examples-badge",
               title: p(c)("flowEditor.examplesCategoryHint")
-            }, m(p(c)("flowEditor.examplesCategoryBadge")), 9, ti)) : T("", !0),
-            t("span", oi, m("keywords" in P ? P.keywords.length : P.items.length), 1)
-          ], 8, Qr),
-          ae(P.name) ? (i(), u(x, { key: 0 }, [
-            "keywords" in P ? (i(!0), u(x, { key: 0 }, X(P.keywords, (G) => (i(), u("div", {
-              key: G,
-              class: ne([
+            }, m(p(c)("flowEditor.examplesCategoryBadge")), 9, oi)) : $("", !0),
+            o("span", ni, m("keywords" in M ? M.keywords.length : M.items.length), 1)
+          ], 8, Jr),
+          Q(M.name) ? (i(), u(U, { key: 0 }, [
+            "keywords" in M ? (i(!0), u(U, { key: 0 }, Y(M.keywords, (q) => (i(), u("div", {
+              key: q,
+              class: te([
                 "palette-item",
                 "palette-item-keyword",
                 {
-                  selected: He(G),
-                  "palette-item--not-imported": !_(P)
+                  selected: Be(q),
+                  "palette-item--not-imported": !_(M)
                 }
               ]),
-              title: _(P) ? G : p(c)("flowEditor.keywordNotImportedHint", { library: P.name }),
+              title: _(M) ? q : p(c)("flowEditor.keywordNotImportedHint", { library: M.name }),
               draggable: "true",
-              onDragstart: (ge) => wt(ge, G, Y(P, G)),
-              onClick: (ge) => Pe(G, void 0, Y(P, G)),
-              onDblclick: (ge) => At(G, Y(P, G))
+              onDragstart: (me) => ht(me, q, j(M, q)),
+              onClick: (me) => $e(q, void 0, j(M, q)),
+              onDblclick: (me) => St(q, j(M, q))
             }, [
-              w[7] || (w[7] = t("span", { class: "palette-icon" }, "⚙", -1)),
-              t("div", ai, [
-                t("span", si, m(G), 1),
-                R(G).length ? (i(), u("span", li, "(" + m(R(G).length) + ")", 1)) : T("", !0),
-                _(P) ? T("", !0) : (i(), u("span", {
+              w[7] || (w[7] = o("span", { class: "palette-icon" }, "⚙", -1)),
+              o("div", si, [
+                o("span", li, m(q), 1),
+                P(q).length ? (i(), u("span", ri, "(" + m(P(q).length) + ")", 1)) : $("", !0),
+                _(M) ? $("", !0) : (i(), u("span", {
                   key: 1,
                   class: "palette-item-import-badge",
                   title: p(c)("flowEditor.keywordNotImportedBadgeTitle")
-                }, "+ lib", 8, ri))
+                }, "+ lib", 8, ii))
               ])
-            ], 42, ni))), 128)) : T("", !0),
-            "items" in P ? (i(!0), u(x, { key: 1 }, X(P.items, (G) => (i(), u("div", {
-              key: G.label,
-              class: ne(["palette-item", "palette-item-control", { selected: He(G.label) }]),
-              title: G.label,
+            ], 42, ai))), 128)) : $("", !0),
+            "items" in M ? (i(!0), u(U, { key: 1 }, Y(M.items, (q) => (i(), u("div", {
+              key: q.label,
+              class: te(["palette-item", "palette-item-control", { selected: Be(q.label) }]),
+              title: q.label,
               draggable: "true",
-              onDragstart: (ge) => _t(ge, G.type),
-              onClick: (ge) => Pe(G.label, G.type),
-              onDblclick: (ge) => Nt(G.type)
+              onDragstart: (me) => Lt(me, q.type),
+              onClick: (me) => $e(q.label, q.type),
+              onDblclick: (me) => Bt(q.type)
             }, [
-              w[8] || (w[8] = t("span", { class: "palette-icon" }, "◆", -1)),
-              t("span", ui, m(G.label), 1)
-            ], 42, ii))), 128)) : T("", !0)
-          ], 64)) : T("", !0)
+              w[8] || (w[8] = o("span", { class: "palette-icon" }, "◆", -1)),
+              o("span", ci, m(q.label), 1)
+            ], 42, ui))), 128)) : $("", !0)
+          ], 64)) : $("", !0)
         ]))), 128)),
-        to.value.length ? T("", !0) : (i(), u("div", ci, m(p(c)("flowEditor.noResults") || "No matching keywords."), 1))
+        Qt.value.length ? $("", !0) : (i(), u("div", di, m(p(c)("flowEditor.noResults") || "No matching keywords."), 1))
       ])
     ]));
   }
-}), pi = /* @__PURE__ */ qe(di, [["__scopeId", "data-v-504d2430"]]), fi = { class: "kw-autocomplete" }, mi = ["value", "placeholder"], gi = ["aria-selected", "onMouseenter", "onMousedown"], vi = { class: "kw-autocomplete-name" }, hi = { class: "kw-autocomplete-lib" }, yi = /* @__PURE__ */ je({
+}), fi = /* @__PURE__ */ ze(pi, [["__scopeId", "data-v-504d2430"]]), mi = { class: "kw-autocomplete" }, gi = ["value", "placeholder"], vi = ["aria-selected", "onMouseenter", "onMousedown"], hi = { class: "kw-autocomplete-name" }, yi = { class: "kw-autocomplete-lib" }, bi = /* @__PURE__ */ qe({
   __name: "KeywordAutocompleteInput",
   props: {
     value: {},
     placeholder: {}
   },
   emits: ["update:value", "select"],
-  setup(e, { emit: n }) {
-    const r = e, c = n, { t: g } = mt(), { argsByName: a } = Tn(), _ = zo(), y = N(r.value);
-    Le(() => r.value, (U) => {
-      y.value = U;
+  setup(e, { emit: a }) {
+    const r = e, c = a, { t: g } = ft(), { argsByName: s } = En(), _ = Yo(), b = N(r.value);
+    Se(() => r.value, (D) => {
+      b.value = D;
     });
-    const k = N(null), A = N(null), V = N(!1), E = N(-1), B = O(() => {
-      const U = /* @__PURE__ */ new Map();
-      for (const Z of _.keywords)
-        Z.name && U.set(Z.name.toLowerCase(), { display: Z.name, library: Z.library || "" });
-      return U;
+    const k = N(null), V = N(null), L = N(!1), T = N(-1), B = O(() => {
+      const D = /* @__PURE__ */ new Map();
+      for (const se of _.keywords)
+        se.name && D.set(se.name.toLowerCase(), { display: se.name, library: se.library || "" });
+      return D;
     });
-    function I(U) {
-      return U.replace(/\b\w/g, (Z) => Z.toUpperCase());
+    function I(D) {
+      return D.replace(/\b\w/g, (se) => se.toUpperCase());
     }
-    const j = O(() => {
-      const U = y.value.trim().toLowerCase();
-      if (U.length < 2) return [];
-      const Z = Array.from(a.value.keys()), ce = [], ke = [];
-      for (const ee of Z) {
-        if (ee === U) continue;
-        const W = B.value.get(ee), oe = {
-          name: (W == null ? void 0 : W.display) ?? I(ee),
-          library: (W == null ? void 0 : W.library) ?? "BuiltIn"
+    const W = O(() => {
+      const D = b.value.trim().toLowerCase();
+      if (D.length < 2) return [];
+      const se = Array.from(s.value.keys()), oe = [], be = [];
+      for (const J of se) {
+        if (J === D) continue;
+        const H = B.value.get(J), ue = {
+          name: (H == null ? void 0 : H.display) ?? I(J),
+          library: (H == null ? void 0 : H.library) ?? "BuiltIn"
         };
-        ee.startsWith(U) ? ce.push(oe) : ee.includes(U) && ke.push(oe);
+        J.startsWith(D) ? oe.push(ue) : J.includes(D) && be.push(ue);
       }
-      return ce.sort((ee, W) => ee.name.length - W.name.length || ee.name.localeCompare(W.name)), ke.sort((ee, W) => ee.name.localeCompare(W.name)), [...ce.slice(0, 15), ...ke.slice(0, 15)];
+      return oe.sort((J, H) => J.name.length - H.name.length || J.name.localeCompare(H.name)), be.sort((J, H) => J.name.localeCompare(H.name)), [...oe.slice(0, 15), ...be.slice(0, 15)];
     });
-    function ue(U) {
-      const Z = U.target.value;
-      y.value = Z, c("update:value", Z), V.value = !0, E.value = -1;
+    function re(D) {
+      const se = D.target.value;
+      b.value = se, c("update:value", se), L.value = !0, T.value = -1;
     }
-    function M(U) {
-      y.value = U, c("update:value", U), c("select", U), V.value = !1, E.value = -1;
+    function x(D) {
+      b.value = D, c("update:value", D), c("select", D), L.value = !1, T.value = -1;
     }
-    function J(U) {
-      const Z = j.value;
-      if (U.key === "Enter") {
-        U.preventDefault(), V.value && E.value >= 0 && E.value < Z.length ? M(Z[E.value].name) : (c("select", y.value), V.value = !1);
+    function Z(D) {
+      const se = W.value;
+      if (D.key === "Enter") {
+        D.preventDefault(), L.value && T.value >= 0 && T.value < se.length ? x(se[T.value].name) : (c("select", b.value), L.value = !1);
         return;
       }
-      if (U.key === "Escape") {
-        V.value = !1, E.value = -1;
+      if (D.key === "Escape") {
+        L.value = !1, T.value = -1;
         return;
       }
-      if (U.key === "Tab") {
-        V.value = !1, E.value = -1;
+      if (D.key === "Tab") {
+        L.value = !1, T.value = -1;
         return;
       }
-      !V.value || Z.length === 0 || (U.key === "ArrowDown" ? (U.preventDefault(), E.value = Math.min(E.value + 1, Z.length - 1), ae()) : U.key === "ArrowUp" && (U.preventDefault(), E.value = Math.max(E.value - 1, 0), ae()));
+      !L.value || se.length === 0 || (D.key === "ArrowDown" ? (D.preventDefault(), T.value = Math.min(T.value + 1, se.length - 1), Q()) : D.key === "ArrowUp" && (D.preventDefault(), T.value = Math.max(T.value - 1, 0), Q()));
     }
-    function ae() {
-      Xe(() => {
-        var Z, ce;
-        const U = (ce = (Z = A.value) == null ? void 0 : Z.children) == null ? void 0 : ce[E.value];
-        U && typeof U.scrollIntoView == "function" && U.scrollIntoView({ block: "nearest" });
+    function Q() {
+      je(() => {
+        var se, oe;
+        const D = (oe = (se = V.value) == null ? void 0 : se.children) == null ? void 0 : oe[T.value];
+        D && typeof D.scrollIntoView == "function" && D.scrollIntoView({ block: "nearest" });
       });
     }
-    function z() {
-      j.value.length > 0 && (V.value = !0);
+    function G() {
+      W.value.length > 0 && (L.value = !0);
     }
-    function D(U) {
-      const Z = U.target;
-      Z instanceof Element && (Z.closest(".kw-autocomplete") || (V.value = !1));
+    function R(D) {
+      const se = D.target;
+      se instanceof Element && (se.closest(".kw-autocomplete") || (L.value = !1));
     }
-    let R = !1;
-    function H() {
-      R || (document.addEventListener("click", D), R = !0);
+    let P = !1;
+    function K() {
+      P || (document.addEventListener("click", R), P = !0);
     }
-    function Y() {
-      R && (document.removeEventListener("click", D), R = !1);
+    function j() {
+      P && (document.removeEventListener("click", R), P = !1);
     }
-    return Le(V, (U) => {
-      U ? H() : Y();
-    }), $n(Y), (U, Z) => (i(), u("div", fi, [
-      t("input", {
+    return Se(L, (D) => {
+      D ? K() : j();
+    }), Tn(j), (D, se) => (i(), u("div", mi, [
+      o("input", {
         ref_key: "inputRef",
         ref: k,
-        value: y.value,
+        value: b.value,
         placeholder: e.placeholder ?? p(g)("flowEditor.keyword"),
         class: "flow-input",
         autocomplete: "off",
         "data-testid": "kw-autocomplete-input",
-        onInput: ue,
-        onFocus: z,
-        onKeydown: J
-      }, null, 40, mi),
-      V.value && j.value.length > 0 ? (i(), u("ul", {
+        onInput: re,
+        onFocus: G,
+        onKeydown: Z
+      }, null, 40, gi),
+      L.value && W.value.length > 0 ? (i(), u("ul", {
         key: 0,
         ref_key: "dropdownRef",
-        ref: A,
+        ref: V,
         class: "kw-autocomplete-dropdown",
         role: "listbox",
         "data-testid": "kw-autocomplete-dropdown"
       }, [
-        (i(!0), u(x, null, X(j.value, (ce, ke) => (i(), u("li", {
-          key: `${ce.library}-${ce.name}-${ke}`,
-          class: ne(["kw-autocomplete-item", { "is-highlighted": ke === E.value }]),
+        (i(!0), u(U, null, Y(W.value, (oe, be) => (i(), u("li", {
+          key: `${oe.library}-${oe.name}-${be}`,
+          class: te(["kw-autocomplete-item", { "is-highlighted": be === T.value }]),
           role: "option",
-          "aria-selected": ke === E.value,
-          onMouseenter: (ee) => E.value = ke,
-          onMousedown: (ee) => M(ce.name)
+          "aria-selected": be === T.value,
+          onMouseenter: (J) => T.value = be,
+          onMousedown: (J) => x(oe.name)
         }, [
-          t("span", vi, m(ce.name), 1),
-          t("span", hi, m(ce.library), 1)
-        ], 42, gi))), 128))
-      ], 512)) : T("", !0)
+          o("span", hi, m(oe.name), 1),
+          o("span", yi, m(oe.library), 1)
+        ], 42, vi))), 128))
+      ], 512)) : $("", !0)
     ]));
   }
-}), bi = /* @__PURE__ */ qe(yi, [["__scopeId", "data-v-358af914"]]), wi = {
+}), wi = /* @__PURE__ */ ze(bi, [["__scopeId", "data-v-358af914"]]), _i = {
   key: 0,
   class: "modal-header"
-}, _i = { class: "modal-body" }, ki = {
+}, ki = { class: "modal-body" }, Ci = {
   key: 1,
   class: "modal-footer"
-}, Ci = /* @__PURE__ */ je({
+}, $i = /* @__PURE__ */ qe({
   __name: "BaseModal",
   props: {
     modelValue: { type: Boolean },
@@ -2322,61 +2322,61 @@ const fr = { class: "keyword-palette" }, mr = { class: "palette-header" }, gr = 
     size: {}
   },
   emits: ["update:modelValue"],
-  setup(e, { emit: n }) {
-    const r = n;
+  setup(e, { emit: a }) {
+    const r = a;
     function c() {
       r("update:modelValue", !1);
     }
-    function g(a) {
-      a.key === "Escape" && c();
+    function g(s) {
+      s.key === "Escape" && c();
     }
-    return qo(() => document.addEventListener("keydown", g)), Ho(() => document.removeEventListener("keydown", g)), (a, _) => (i(), Ut(yn, { to: "body" }, [
+    return Go(() => document.addEventListener("keydown", g)), Io(() => document.removeEventListener("keydown", g)), (s, _) => (i(), xt(bn, { to: "body" }, [
       ve(is, { name: "fade" }, {
         default: _e(() => [
           e.modelValue ? (i(), u("div", {
             key: 0,
             class: "modal-backdrop",
-            onClick: re(c, ["self"])
+            onClick: le(c, ["self"])
           }, [
-            t("div", {
-              class: ne(["modal", [`modal-${e.size || "md"}`]])
+            o("div", {
+              class: te(["modal", [`modal-${e.size || "md"}`]])
             }, [
-              e.title ? (i(), u("div", wi, [
-                t("h3", null, m(e.title), 1),
-                t("button", {
+              e.title ? (i(), u("div", _i, [
+                o("h3", null, m(e.title), 1),
+                o("button", {
                   class: "modal-close",
                   onClick: c
                 }, "×")
-              ])) : T("", !0),
-              t("div", _i, [
-                Yn(a.$slots, "default", {}, void 0, !0)
+              ])) : $("", !0),
+              o("div", ki, [
+                Xn(s.$slots, "default", {}, void 0, !0)
               ]),
-              a.$slots.footer ? (i(), u("div", ki, [
-                Yn(a.$slots, "footer", {}, void 0, !0)
-              ])) : T("", !0)
+              s.$slots.footer ? (i(), u("div", Ci, [
+                Xn(s.$slots, "footer", {}, void 0, !0)
+              ])) : $("", !0)
             ], 2)
-          ])) : T("", !0)
+          ])) : $("", !0)
         ]),
         _: 3
       })
     ]));
   }
-}), Io = /* @__PURE__ */ qe(Ci, [["__scopeId", "data-v-c981bfa5"]]), $i = {
+}), jo = /* @__PURE__ */ ze($i, [["__scopeId", "data-v-c981bfa5"]]), Ti = {
   key: 0,
   class: "kw-doc"
-}, Ti = { class: "kw-doc-header" }, Ei = { class: "kw-doc-name" }, Si = { class: "kw-doc-lib" }, Li = {
+}, Ei = { class: "kw-doc-header" }, Si = { class: "kw-doc-name" }, Li = { class: "kw-doc-lib" }, Vi = {
   key: 0,
   class: "kw-doc-args"
-}, Vi = { class: "kw-doc-body" }, Ai = ["innerHTML"], Ni = { key: 1 }, Ri = {
+}, Ai = { class: "kw-doc-body" }, Ni = ["innerHTML"], Ri = { key: 1 }, Fi = {
   key: 2,
   class: "kw-doc-empty"
-}, Fi = {
+}, Pi = {
   key: 3,
   class: "kw-doc-empty"
-}, Pi = {
+}, Di = {
   key: 1,
   class: "kw-doc"
-}, Di = { class: "kw-doc-empty" }, Mi = /* @__PURE__ */ je({
+}, Mi = { class: "kw-doc-empty" }, xi = /* @__PURE__ */ qe({
   __name: "KeywordDocModal",
   props: {
     modelValue: { type: Boolean },
@@ -2385,25 +2385,25 @@ const fr = { class: "keyword-palette" }, mr = { class: "palette-header" }, gr = 
   },
   emits: ["update:modelValue"],
   setup(e) {
-    const n = e, { t: r } = mt(), { getKeywordInfo: c, fetchKeywordInfo: g } = Tn(), a = N(null), _ = N(!1), y = O(() => a.value ?? c(n.keyword));
+    const a = e, { t: r } = ft(), { getKeywordInfo: c, fetchKeywordInfo: g } = En(), s = N(null), _ = N(!1), b = O(() => s.value ?? c(a.keyword));
     async function k() {
-      if (a.value = null, !n.modelValue || !n.keyword) return;
-      const I = c(n.keyword);
+      if (s.value = null, !a.modelValue || !a.keyword) return;
+      const I = c(a.keyword);
       if (!(I != null && I.doc && I.doc.trim().length > 0)) {
         _.value = !0;
         try {
-          const j = await g(n.keyword, n.scopeId);
-          j && (a.value = j);
+          const W = await g(a.keyword, a.scopeId);
+          W && (s.value = W);
         } finally {
           _.value = !1;
         }
       }
     }
-    Le(() => [n.modelValue, n.keyword], k, { immediate: !0 });
-    const A = O(() => y.value ? y.value.args.map(ta) : []), V = O(() => {
+    Se(() => [a.modelValue, a.keyword], k, { immediate: !0 });
+    const V = O(() => b.value ? b.value.args.map(oa) : []), L = O(() => {
       var I;
-      return ((I = y.value) == null ? void 0 : I.docFormat) === "html";
-    }), E = O(() => !y.value || !V.value ? "" : Va.sanitize(y.value.doc, {
+      return ((I = b.value) == null ? void 0 : I.docFormat) === "html";
+    }), T = O(() => !b.value || !L.value ? "" : Va.sanitize(b.value.doc, {
       ALLOWED_TAGS: [
         "p",
         "br",
@@ -2438,53 +2438,53 @@ const fr = { class: "keyword-palette" }, mr = { class: "palette-header" }, gr = 
       ALLOW_DATA_ATTR: !1
     }));
     function B(I) {
-      let j = I.name;
-      return I.kind === "varargs" && (j = "*" + j), I.kind === "kwargs" && (j = "**" + j), I.type && (j += `: ${I.type}`), I.defaultValue !== null && (j += ` = ${I.defaultValue}`), j;
+      let W = I.name;
+      return I.kind === "varargs" && (W = "*" + W), I.kind === "kwargs" && (W = "**" + W), I.type && (W += `: ${I.type}`), I.defaultValue !== null && (W += ` = ${I.defaultValue}`), W;
     }
-    return (I, j) => (i(), Ut(Io, {
+    return (I, W) => (i(), xt(jo, {
       "model-value": e.modelValue,
       title: p(r)("flowEditor.docModal.title"),
       size: "lg",
-      "onUpdate:modelValue": j[0] || (j[0] = (ue) => I.$emit("update:modelValue", ue))
+      "onUpdate:modelValue": W[0] || (W[0] = (re) => I.$emit("update:modelValue", re))
     }, {
       default: _e(() => [
-        y.value ? (i(), u("div", $i, [
-          t("div", Ti, [
-            t("span", Ei, m(y.value.display), 1),
-            t("span", Si, m(y.value.library), 1)
+        b.value ? (i(), u("div", Ti, [
+          o("div", Ei, [
+            o("span", Si, m(b.value.display), 1),
+            o("span", Li, m(b.value.library), 1)
           ]),
-          A.value.length > 0 ? (i(), u("div", Li, [
-            t("h4", null, m(p(r)("flowEditor.docModal.argsHeader")), 1),
-            t("ul", null, [
-              (i(!0), u(x, null, X(A.value, (ue, M) => (i(), u("li", {
-                key: M,
+          V.value.length > 0 ? (i(), u("div", Vi, [
+            o("h4", null, m(p(r)("flowEditor.docModal.argsHeader")), 1),
+            o("ul", null, [
+              (i(!0), u(U, null, Y(V.value, (re, x) => (i(), u("li", {
+                key: x,
                 class: "kw-doc-arg"
               }, [
-                t("code", null, m(B(ue)), 1)
+                o("code", null, m(B(re)), 1)
               ]))), 128))
             ])
-          ])) : T("", !0),
-          t("div", Vi, [
-            V.value && y.value.doc.trim().length > 0 ? (i(), u("div", {
+          ])) : $("", !0),
+          o("div", Ai, [
+            L.value && b.value.doc.trim().length > 0 ? (i(), u("div", {
               key: 0,
               class: "kw-doc-html",
-              innerHTML: E.value
-            }, null, 8, Ai)) : y.value.doc.trim().length > 0 ? (i(), u("pre", Ni, m(y.value.doc), 1)) : _.value ? (i(), u("p", Ri, m(p(r)("flowEditor.docModal.loading")), 1)) : (i(), u("p", Fi, m(p(r)("flowEditor.docModal.noDoc")), 1))
+              innerHTML: T.value
+            }, null, 8, Ni)) : b.value.doc.trim().length > 0 ? (i(), u("pre", Ri, m(b.value.doc), 1)) : _.value ? (i(), u("p", Fi, m(p(r)("flowEditor.docModal.loading")), 1)) : (i(), u("p", Pi, m(p(r)("flowEditor.docModal.noDoc")), 1))
           ])
-        ])) : (i(), u("div", Pi, [
-          t("p", Di, m(p(r)("flowEditor.docModal.noDoc")), 1)
+        ])) : (i(), u("div", Di, [
+          o("p", Mi, m(p(r)("flowEditor.docModal.noDoc")), 1)
         ]))
       ]),
       _: 1
     }, 8, ["model-value", "title"]));
   }
-}), xi = /* @__PURE__ */ qe(Mi, [["__scopeId", "data-v-737ea011"]]), Ui = /* @__PURE__ */ new Set(["text", "css", "role", "aria"]);
-function Bi(e) {
+}), Ui = /* @__PURE__ */ ze(xi, [["__scopeId", "data-v-737ea011"]]), Bi = /* @__PURE__ */ new Set(["text", "css", "role", "aria"]);
+function Ki(e) {
   return e.includes(">> nth=") || e.includes(":nth-match(") || e.includes(":nth-of-type(") || e.includes(">>>") || e.includes(">>");
 }
 function Oa(e) {
-  let n;
-  return e.strategy === "xpath" ? n = `xpath=${e.value}` : e.strategy === "text" ? n = e.value.startsWith("text=") ? e.value : `text=${e.value}` : n = e.value, !e.verified_unique && Ui.has(e.strategy) && !Bi(n) && !(e.strategy === "css" && e.value.includes("#")) && (n = `${n} >> nth=0`), n;
+  let a;
+  return e.strategy === "xpath" ? a = `xpath=${e.value}` : e.strategy === "text" ? a = e.value.startsWith("text=") ? e.value : `text=${e.value}` : a = e.value, !e.verified_unique && Bi.has(e.strategy) && !Ki(a) && !(e.strategy === "css" && e.value.includes("#")) && (a = `${a} >> nth=0`), a;
 }
 function Ia(e) {
   try {
@@ -2494,24 +2494,24 @@ function Ia(e) {
     return null;
   }
 }
-function Ki(e) {
+function Hi(e) {
   if (!e.frame_chain || e.frame_chain.length === 0) return null;
-  const n = [];
+  const a = [];
   for (const r of e.frame_chain)
     if (r.selector_candidates && r.selector_candidates.length > 0)
-      n.push(r.selector_candidates[0].value);
+      a.push(r.selector_candidates[0].value);
     else {
       const c = r.url ? Ia(r.url) : null;
       if (c === null)
         return null;
-      n.push(c);
+      a.push(c);
     }
-  return n.join(" >>> ");
+  return a.join(" >>> ");
 }
-function ko(e, n) {
-  if (n.effective_override != null && n.effective_override.trim() !== "")
-    return n.effective_override;
-  const r = Oa(n), c = Ki(e);
+function _o(e, a) {
+  if (a.effective_override != null && a.effective_override.trim() !== "")
+    return a.effective_override;
+  const r = Oa(a), c = Hi(e);
   if (c !== null)
     return `${c} >>> ${r}`;
   if (e.frame_url) {
@@ -2521,29 +2521,29 @@ function ko(e, n) {
   }
   return r;
 }
-const Hi = ["title"], Oi = ["title"], Ii = ["aria-expanded", "aria-label"], Wi = {
+const Oi = ["title"], Ii = ["title"], Wi = ["aria-expanded", "aria-label"], ji = {
   key: 1,
   class: "selector-picker__menu",
   role: "listbox"
-}, ji = ["aria-selected", "onClick"], qi = { class: "selector-picker__strategy" }, zi = ["title"], Gi = { class: "selector-picker__score" }, Yi = ["title"], Xi = ["title", "aria-label", "onClick"], Zi = ["title"], Qi = ["value"], Ji = ["placeholder", "onKeydown"], eu = ["title"], tu = ["title"], ou = { class: "selector-picker__effective-row" }, nu = { class: "selector-picker__effective-label" }, au = ["placeholder", "title", "onKeydown"], su = ["title"], lu = ["title"], ru = {
+}, qi = ["aria-selected", "onClick"], zi = { class: "selector-picker__strategy" }, Gi = ["title"], Yi = { class: "selector-picker__score" }, Xi = ["title"], Zi = ["title", "aria-label", "onClick"], Qi = ["title"], Ji = ["value"], eu = ["placeholder", "onKeydown"], tu = ["title"], ou = ["title"], nu = { class: "selector-picker__effective-row" }, au = { class: "selector-picker__effective-label" }, su = ["placeholder", "title", "onKeydown"], lu = ["title"], ru = ["title"], iu = {
   class: "selector-picker__add-row",
   role: "presentation"
-}, iu = ["title"], uu = ["value"], cu = ["placeholder", "onKeydown"], du = ["title"], pu = ["title"], fu = { class: "selector-picker__effective-row" }, mu = { class: "selector-picker__effective-label" }, gu = ["placeholder", "title", "onKeydown"], vu = ["title"], hu = ["title"], yu = /* @__PURE__ */ je({
+}, uu = ["title"], cu = ["value"], du = ["placeholder", "onKeydown"], pu = ["title"], fu = ["title"], mu = { class: "selector-picker__effective-row" }, gu = { class: "selector-picker__effective-label" }, vu = ["placeholder", "title", "onKeydown"], hu = ["title"], yu = ["title"], bu = /* @__PURE__ */ qe({
   __name: "SelectorPicker",
   props: {
     command: {},
     compact: { type: Boolean }
   },
   emits: ["update:activeIndex", "update:candidate", "add:candidate"],
-  setup(e, { emit: n }) {
-    function r(pe, se, me) {
-      return ko(pe, {
-        strategy: me,
-        value: se,
+  setup(e, { emit: a }) {
+    function r(de, ne, fe) {
+      return _o(de, {
+        strategy: fe,
+        value: ne,
         verified_unique: !1
       });
     }
-    const c = e, g = n, { t: a } = mt(), _ = N(!1), y = [
+    const c = e, g = a, { t: s } = ft(), _ = N(!1), b = [
       "css",
       "xpath",
       "text",
@@ -2552,367 +2552,367 @@ const Hi = ["title"], Oi = ["title"], Ii = ["aria-expanded", "aria-label"], Wi =
       "automation_id",
       "uia_name",
       "uia_class_name"
-    ], k = O(() => c.command.selector_candidates.length === 0 ? null : c.command.selector_candidates[c.command.active_candidate_index] ?? null), A = /* @__PURE__ */ new Set(["pw_locator"]), V = O(
-      () => c.command.selector_candidates.map((pe, se) => ({ candidate: pe, originalIndex: se })).filter(({ candidate: pe }) => !A.has(pe.strategy))
-    ), E = O(() => V.value.length > 1), B = O(() => V.value.length >= 1);
-    function I(pe) {
-      g("update:activeIndex", pe), _.value = !1;
+    ], k = O(() => c.command.selector_candidates.length === 0 ? null : c.command.selector_candidates[c.command.active_candidate_index] ?? null), V = /* @__PURE__ */ new Set(["pw_locator"]), L = O(
+      () => c.command.selector_candidates.map((de, ne) => ({ candidate: de, originalIndex: ne })).filter(({ candidate: de }) => !V.has(de.strategy))
+    ), T = O(() => L.value.length > 1), B = O(() => L.value.length >= 1);
+    function I(de) {
+      g("update:activeIndex", de), _.value = !1;
     }
-    function j(pe) {
-      return ko(c.command, pe);
+    function W(de) {
+      return _o(c.command, de);
     }
-    function ue(pe) {
-      return `recorder.selector.strategy.${pe}`;
+    function re(de) {
+      return `recorder.selector.strategy.${de}`;
     }
-    function M(pe) {
-      const se = pe.target;
-      se && se instanceof Element && se.closest(".selector-picker") || (_.value = !1, be());
+    function x(de) {
+      const ne = de.target;
+      ne && ne instanceof Element && ne.closest(".selector-picker") || (_.value = !1, ge());
     }
-    function J() {
-      document.addEventListener("click", M);
+    function Z() {
+      document.addEventListener("click", x);
     }
-    function ae() {
-      document.removeEventListener("click", M);
+    function Q() {
+      document.removeEventListener("click", x);
     }
-    function z() {
-      _.value = !_.value, _.value ? J() : ae();
+    function G() {
+      _.value = !_.value, _.value ? Z() : Q();
     }
-    $n(ae);
-    const D = N(null), R = N(""), H = N("css"), Y = N(""), U = N(!1), Z = N(null), ce = N(!1), ke = N(""), ee = N("css"), W = N(""), oe = N(!1), fe = N(null);
-    function be() {
-      D.value = null, ce.value = !1;
+    Tn(Q);
+    const R = N(null), P = N(""), K = N("css"), j = N(""), D = N(!1), se = N(null), oe = N(!1), be = N(""), J = N("css"), H = N(""), ue = N(!1), ce = N(null);
+    function ge() {
+      R.value = null, oe.value = !1;
     }
-    function Fe(pe) {
-      const se = c.command.selector_candidates[pe];
-      se && (ce.value = !1, D.value = pe, R.value = se.value, H.value = se.strategy, Y.value = se.effective_override != null && se.effective_override.trim() !== "" ? se.effective_override : ko(c.command, se), U.value = !1, Xe(() => {
-        var me, Se;
-        (Se = (me = Z.value) == null ? void 0 : me.focus) == null || Se.call(me);
+    function Le(de) {
+      const ne = c.command.selector_candidates[de];
+      ne && (oe.value = !1, R.value = de, P.value = ne.value, K.value = ne.strategy, j.value = ne.effective_override != null && ne.effective_override.trim() !== "" ? ne.effective_override : _o(c.command, ne), D.value = !1, je(() => {
+        var fe, Ae;
+        (Ae = (fe = se.value) == null ? void 0 : fe.focus) == null || Ae.call(fe);
       }));
     }
-    function Pe() {
-      if (D.value === null) return;
-      const pe = R.value.trim();
-      if (!pe) {
-        D.value = null;
+    function $e() {
+      if (R.value === null) return;
+      const de = P.value.trim();
+      if (!de) {
+        R.value = null;
         return;
       }
-      const se = Y.value.trim(), me = r(c.command, pe, H.value), Se = se === "" || se === me ? "" : se;
+      const ne = j.value.trim(), fe = r(c.command, de, K.value), Ae = ne === "" || ne === fe ? "" : ne;
       g("update:candidate", {
-        index: D.value,
-        value: pe,
-        strategy: H.value,
-        effective: Se
-      }), D.value = null;
+        index: R.value,
+        value: de,
+        strategy: K.value,
+        effective: Ae
+      }), R.value = null;
     }
-    function He() {
-      D.value = null;
+    function Be() {
+      R.value = null;
     }
-    function ie() {
-      D.value = null, ce.value = !0, ke.value = "", ee.value = "css", W.value = "", oe.value = !1, Xe(() => {
-        var pe, se;
-        (se = (pe = fe.value) == null ? void 0 : pe.focus) == null || se.call(pe);
+    function Ge() {
+      R.value = null, oe.value = !0, be.value = "", J.value = "css", H.value = "", ue.value = !1, je(() => {
+        var de, ne;
+        (ne = (de = ce.value) == null ? void 0 : de.focus) == null || ne.call(de);
       });
     }
-    function Ie() {
-      const pe = ke.value.trim();
-      if (!pe) {
-        ce.value = !1;
+    function ie() {
+      const de = be.value.trim();
+      if (!de) {
+        oe.value = !1;
         return;
       }
-      const se = W.value.trim(), me = r(c.command, pe, ee.value), Se = se === "" || se === me ? "" : se;
+      const ne = H.value.trim(), fe = r(c.command, de, J.value), Ae = ne === "" || ne === fe ? "" : ne;
       g("add:candidate", {
-        value: pe,
-        strategy: ee.value,
-        effective: Se
-      }), ce.value = !1;
+        value: de,
+        strategy: J.value,
+        effective: Ae
+      }), oe.value = !1;
     }
-    function tt() {
-      ce.value = !1;
+    function Qe() {
+      oe.value = !1;
     }
-    function gt(pe) {
-      const se = pe.trim();
-      return se.startsWith("//") || se.startsWith("..") || se.startsWith("xpath=") ? "xpath" : se.startsWith("text=") ? "text" : /^\[(data-test-id|data-testid|data-qa|data-test)=/i.test(se) ? "testid" : /^\[role=/.test(se) || se.startsWith("aria/") || /^role=/.test(se) ? "aria" : "css";
+    function mt(de) {
+      const ne = de.trim();
+      return ne.startsWith("//") || ne.startsWith("..") || ne.startsWith("xpath=") ? "xpath" : ne.startsWith("text=") ? "text" : /^\[(data-test-id|data-testid|data-qa|data-test)=/i.test(ne) ? "testid" : /^\[role=/.test(ne) || ne.startsWith("aria/") || /^role=/.test(ne) ? "aria" : "css";
     }
-    Le(ke, (pe) => {
-      ee.value = gt(pe);
-    }), Le([R, H], ([pe, se]) => {
-      D.value !== null && (U.value || (Y.value = r(c.command, pe, se)));
-    }), Le([ke, ee], ([pe, se]) => {
-      ce.value && (oe.value || (W.value = r(c.command, pe, se)));
+    Se(be, (de) => {
+      J.value = mt(de);
+    }), Se([P, K], ([de, ne]) => {
+      R.value !== null && (D.value || (j.value = r(c.command, de, ne)));
+    }), Se([be, J], ([de, ne]) => {
+      oe.value && (ue.value || (H.value = r(c.command, de, ne)));
     });
     function ut() {
-      U.value = !0;
+      D.value = !0;
     }
-    function Ze() {
-      oe.value = !0;
+    function Je() {
+      ue.value = !0;
     }
-    function vt() {
-      Y.value = r(
+    function gt() {
+      j.value = r(
         c.command,
-        R.value.trim(),
-        H.value
-      ), U.value = !1;
+        P.value.trim(),
+        K.value
+      ), D.value = !1;
     }
-    function ze() {
-      W.value = r(
+    function Ye() {
+      H.value = r(
         c.command,
-        ke.value.trim(),
-        ee.value
-      ), oe.value = !1;
+        be.value.trim(),
+        J.value
+      ), ue.value = !1;
     }
-    const Q = O(() => {
-      if (D.value === null) return !1;
-      const pe = R.value.trim();
-      if (!pe) return !1;
-      const se = r(c.command, pe, H.value), me = Y.value.trim();
-      return me !== "" && me !== se;
-    }), ot = O(() => {
-      if (!ce.value) return !1;
-      const pe = ke.value.trim();
-      if (!pe) return !1;
-      const se = r(c.command, pe, ee.value), me = W.value.trim();
-      return me !== "" && me !== se;
+    const Ke = O(() => {
+      if (R.value === null) return !1;
+      const de = P.value.trim();
+      if (!de) return !1;
+      const ne = r(c.command, de, K.value), fe = j.value.trim();
+      return fe !== "" && fe !== ne;
+    }), ee = O(() => {
+      if (!oe.value) return !1;
+      const de = be.value.trim();
+      if (!de) return !1;
+      const ne = r(c.command, de, J.value), fe = H.value.trim();
+      return fe !== "" && fe !== ne;
     });
-    return (pe, se) => k.value ? (i(), u("span", {
+    return (de, ne) => k.value ? (i(), u("span", {
       key: 0,
-      class: ne(["selector-picker", { "selector-picker--compact": e.compact }])
+      class: te(["selector-picker", { "selector-picker--compact": e.compact }])
     }, [
-      t("span", {
-        class: ne(["selector-picker__dot", `selector-picker__dot--${p(vn)(k.value.quality_score)}`]),
-        title: p(a)(ue(k.value.strategy)) + ` · ${k.value.quality_score}/100`,
+      o("span", {
+        class: te(["selector-picker__dot", `selector-picker__dot--${p(hn)(k.value.quality_score)}`]),
+        title: p(s)(re(k.value.strategy)) + ` · ${k.value.quality_score}/100`,
         "aria-hidden": "true"
-      }, null, 10, Hi),
-      t("code", {
+      }, null, 10, Oi),
+      o("code", {
         class: "selector-picker__value",
         title: k.value.value
-      }, m(j(k.value)), 9, Oi),
+      }, m(W(k.value)), 9, Ii),
       B.value ? (i(), u("button", {
         key: 0,
         type: "button",
         class: "selector-picker__toggle",
         "aria-expanded": _.value,
-        "aria-label": E.value ? p(a)("recorder.selector.swapAriaLabel") : p(a)("recorder.selector.editOrAddAriaLabel"),
-        onClick: re(z, ["stop"])
-      }, " ▾ ", 8, Ii)) : T("", !0),
-      _.value ? (i(), u("ul", Wi, [
-        (i(!0), u(x, null, X(V.value, ({ candidate: me, originalIndex: Se }) => (i(), u("li", {
-          key: `${me.strategy}-${me.value}-${Se}`,
+        "aria-label": T.value ? p(s)("recorder.selector.swapAriaLabel") : p(s)("recorder.selector.editOrAddAriaLabel"),
+        onClick: le(G, ["stop"])
+      }, " ▾ ", 8, Wi)) : $("", !0),
+      _.value ? (i(), u("ul", ji, [
+        (i(!0), u(U, null, Y(L.value, ({ candidate: fe, originalIndex: Ae }) => (i(), u("li", {
+          key: `${fe.strategy}-${fe.value}-${Ae}`,
           role: "option",
-          "aria-selected": Se === e.command.active_candidate_index,
-          class: ne(["selector-picker__item", { "is-active": Se === e.command.active_candidate_index }]),
-          onClick: (Be) => D.value !== Se && I(Se)
+          "aria-selected": Ae === e.command.active_candidate_index,
+          class: te(["selector-picker__item", { "is-active": Ae === e.command.active_candidate_index }]),
+          onClick: (De) => R.value !== Ae && I(Ae)
         }, [
-          D.value !== Se ? (i(), u(x, { key: 0 }, [
-            t("span", {
-              class: ne(["selector-picker__dot", `selector-picker__dot--${p(vn)(me.quality_score)}`]),
+          R.value !== Ae ? (i(), u(U, { key: 0 }, [
+            o("span", {
+              class: te(["selector-picker__dot", `selector-picker__dot--${p(hn)(fe.quality_score)}`]),
               "aria-hidden": "true"
             }, null, 2),
-            t("span", qi, m(p(a)(ue(me.strategy))), 1),
-            t("code", {
+            o("span", zi, m(p(s)(re(fe.strategy))), 1),
+            o("code", {
               class: "selector-picker__value",
-              title: me.value
-            }, m(j(me)), 9, zi),
-            t("span", Gi, m(me.quality_score), 1),
-            me.verified_unique ? (i(), u("span", {
+              title: fe.value
+            }, m(W(fe)), 9, Gi),
+            o("span", Yi, m(fe.quality_score), 1),
+            fe.verified_unique ? (i(), u("span", {
               key: 0,
               class: "selector-picker__unique",
               "aria-hidden": "true",
-              title: p(a)("recorder.selector.verifiedUniqueTitle")
-            }, "✓", 8, Yi)) : T("", !0),
-            t("button", {
+              title: p(s)("recorder.selector.verifiedUniqueTitle")
+            }, "✓", 8, Xi)) : $("", !0),
+            o("button", {
               type: "button",
               class: "selector-picker__edit",
-              title: p(a)("recorder.selector.editTitle"),
-              "aria-label": p(a)("recorder.selector.editTitle"),
-              onClick: re((Be) => Fe(Se), ["stop"])
-            }, "✏", 8, Xi)
-          ], 64)) : (i(), u(x, { key: 1 }, [
-            t("span", {
-              class: ne(["selector-picker__dot", `selector-picker__dot--${p(vn)(me.quality_score)}`]),
+              title: p(s)("recorder.selector.editTitle"),
+              "aria-label": p(s)("recorder.selector.editTitle"),
+              onClick: le((De) => Le(Ae), ["stop"])
+            }, "✏", 8, Zi)
+          ], 64)) : (i(), u(U, { key: 1 }, [
+            o("span", {
+              class: te(["selector-picker__dot", `selector-picker__dot--${p(hn)(fe.quality_score)}`]),
               "aria-hidden": "true"
             }, null, 2),
-            q(t("select", {
-              "onUpdate:modelValue": se[0] || (se[0] = (Be) => H.value = Be),
+            z(o("select", {
+              "onUpdate:modelValue": ne[0] || (ne[0] = (De) => K.value = De),
               class: "selector-picker__strategy-select",
-              title: p(a)("recorder.selector.strategyLabel")
+              title: p(s)("recorder.selector.strategyLabel")
             }, [
-              (i(), u(x, null, X(y, (Be) => t("option", {
-                key: Be,
-                value: Be
-              }, m(p(a)(ue(Be))), 9, Qi)), 64))
-            ], 8, Zi), [
-              [it, H.value]
+              (i(), u(U, null, Y(b, (De) => o("option", {
+                key: De,
+                value: De
+              }, m(p(s)(re(De))), 9, Ji)), 64))
+            ], 8, Qi), [
+              [it, K.value]
             ]),
-            q(t("input", {
+            z(o("input", {
               ref_for: !0,
               ref_key: "editInputRef",
-              ref: Z,
-              "onUpdate:modelValue": se[1] || (se[1] = (Be) => R.value = Be),
+              ref: se,
+              "onUpdate:modelValue": ne[1] || (ne[1] = (De) => P.value = De),
               class: "selector-picker__edit-input",
-              placeholder: p(a)("recorder.selector.valuePlaceholder"),
+              placeholder: p(s)("recorder.selector.valuePlaceholder"),
               onKeydown: [
-                Ye(re(Pe, ["prevent"]), ["enter"]),
-                Ye(re(He, ["prevent"]), ["escape"])
+                Ze(le($e, ["prevent"]), ["enter"]),
+                Ze(le(Be, ["prevent"]), ["escape"])
               ]
-            }, null, 40, Ji), [
-              [le, R.value]
+            }, null, 40, eu), [
+              [ae, P.value]
             ]),
-            t("button", {
+            o("button", {
               type: "button",
               class: "selector-picker__edit-action selector-picker__edit-action--save",
-              title: p(a)("editor.common.save"),
-              onClick: re(Pe, ["stop"])
-            }, "✓", 8, eu),
-            t("button", {
+              title: p(s)("editor.common.save"),
+              onClick: le($e, ["stop"])
+            }, "✓", 8, tu),
+            o("button", {
               type: "button",
               class: "selector-picker__edit-action selector-picker__edit-action--cancel",
-              title: p(a)("editor.common.cancel"),
-              onClick: re(He, ["stop"])
-            }, "×", 8, tu),
-            t("div", ou, [
-              t("label", nu, m(p(a)("recorder.selector.effectiveLabel")), 1),
-              q(t("input", {
-                "onUpdate:modelValue": se[2] || (se[2] = (Be) => Y.value = Be),
-                class: ne(["selector-picker__effective-input", { "is-override": Q.value }]),
-                placeholder: p(a)("recorder.selector.effectivePlaceholder"),
-                title: p(a)("recorder.selector.effectiveTitle"),
+              title: p(s)("editor.common.cancel"),
+              onClick: le(Be, ["stop"])
+            }, "×", 8, ou),
+            o("div", nu, [
+              o("label", au, m(p(s)("recorder.selector.effectiveLabel")), 1),
+              z(o("input", {
+                "onUpdate:modelValue": ne[2] || (ne[2] = (De) => j.value = De),
+                class: te(["selector-picker__effective-input", { "is-override": Ke.value }]),
+                placeholder: p(s)("recorder.selector.effectivePlaceholder"),
+                title: p(s)("recorder.selector.effectiveTitle"),
                 "data-testid": "selector-picker-effective-edit",
                 onInput: ut,
                 onKeydown: [
-                  Ye(re(Pe, ["prevent"]), ["enter"]),
-                  Ye(re(He, ["prevent"]), ["escape"])
+                  Ze(le($e, ["prevent"]), ["enter"]),
+                  Ze(le(Be, ["prevent"]), ["escape"])
                 ]
-              }, null, 42, au), [
-                [le, Y.value]
+              }, null, 42, su), [
+                [ae, j.value]
               ]),
-              Q.value ? (i(), u("button", {
+              Ke.value ? (i(), u("button", {
                 key: 0,
                 type: "button",
                 class: "selector-picker__effective-reset",
-                title: p(a)("recorder.selector.effectiveResetTitle"),
+                title: p(s)("recorder.selector.effectiveResetTitle"),
                 "data-testid": "selector-picker-effective-reset-edit",
-                onClick: re(vt, ["stop"])
-              }, "↺", 8, su)) : T("", !0),
-              Q.value ? (i(), u("span", {
+                onClick: le(gt, ["stop"])
+              }, "↺", 8, lu)) : $("", !0),
+              Ke.value ? (i(), u("span", {
                 key: 1,
                 class: "selector-picker__effective-badge",
-                title: p(a)("recorder.selector.effectiveOverrideTitle")
-              }, m(p(a)("recorder.selector.effectiveOverrideBadge")), 9, lu)) : T("", !0)
+                title: p(s)("recorder.selector.effectiveOverrideTitle")
+              }, m(p(s)("recorder.selector.effectiveOverrideBadge")), 9, ru)) : $("", !0)
             ])
           ], 64))
-        ], 10, ji))), 128)),
-        t("li", ru, [
-          ce.value ? (i(), u(x, { key: 1 }, [
-            se[6] || (se[6] = t("span", {
+        ], 10, qi))), 128)),
+        o("li", iu, [
+          oe.value ? (i(), u(U, { key: 1 }, [
+            ne[6] || (ne[6] = o("span", {
               class: "selector-picker__dot selector-picker__dot--neutral",
               "aria-hidden": "true"
             }, null, -1)),
-            q(t("select", {
-              "onUpdate:modelValue": se[3] || (se[3] = (me) => ee.value = me),
+            z(o("select", {
+              "onUpdate:modelValue": ne[3] || (ne[3] = (fe) => J.value = fe),
               class: "selector-picker__strategy-select",
-              title: p(a)("recorder.selector.strategyLabel")
+              title: p(s)("recorder.selector.strategyLabel")
             }, [
-              (i(), u(x, null, X(y, (me) => t("option", {
-                key: me,
-                value: me
-              }, m(p(a)(ue(me))), 9, uu)), 64))
-            ], 8, iu), [
-              [it, ee.value]
+              (i(), u(U, null, Y(b, (fe) => o("option", {
+                key: fe,
+                value: fe
+              }, m(p(s)(re(fe))), 9, cu)), 64))
+            ], 8, uu), [
+              [it, J.value]
             ]),
-            q(t("input", {
+            z(o("input", {
               ref_key: "addInputRef",
-              ref: fe,
-              "onUpdate:modelValue": se[4] || (se[4] = (me) => ke.value = me),
+              ref: ce,
+              "onUpdate:modelValue": ne[4] || (ne[4] = (fe) => be.value = fe),
               class: "selector-picker__edit-input",
-              placeholder: p(a)("recorder.selector.valuePlaceholder"),
+              placeholder: p(s)("recorder.selector.valuePlaceholder"),
               onKeydown: [
-                Ye(re(Ie, ["prevent"]), ["enter"]),
-                Ye(re(tt, ["prevent"]), ["escape"])
+                Ze(le(ie, ["prevent"]), ["enter"]),
+                Ze(le(Qe, ["prevent"]), ["escape"])
               ]
-            }, null, 40, cu), [
-              [le, ke.value]
+            }, null, 40, du), [
+              [ae, be.value]
             ]),
-            t("button", {
+            o("button", {
               type: "button",
               class: "selector-picker__edit-action selector-picker__edit-action--save",
               "data-testid": "selector-picker-add-save",
-              title: p(a)("editor.common.save"),
-              onClick: re(Ie, ["stop"])
-            }, "✓", 8, du),
-            t("button", {
+              title: p(s)("editor.common.save"),
+              onClick: le(ie, ["stop"])
+            }, "✓", 8, pu),
+            o("button", {
               type: "button",
               class: "selector-picker__edit-action selector-picker__edit-action--cancel",
-              title: p(a)("editor.common.cancel"),
-              onClick: re(tt, ["stop"])
-            }, "×", 8, pu),
-            t("div", fu, [
-              t("label", mu, m(p(a)("recorder.selector.effectiveLabel")), 1),
-              q(t("input", {
-                "onUpdate:modelValue": se[5] || (se[5] = (me) => W.value = me),
-                class: ne(["selector-picker__effective-input", { "is-override": ot.value }]),
-                placeholder: p(a)("recorder.selector.effectivePlaceholder"),
-                title: p(a)("recorder.selector.effectiveTitle"),
+              title: p(s)("editor.common.cancel"),
+              onClick: le(Qe, ["stop"])
+            }, "×", 8, fu),
+            o("div", mu, [
+              o("label", gu, m(p(s)("recorder.selector.effectiveLabel")), 1),
+              z(o("input", {
+                "onUpdate:modelValue": ne[5] || (ne[5] = (fe) => H.value = fe),
+                class: te(["selector-picker__effective-input", { "is-override": ee.value }]),
+                placeholder: p(s)("recorder.selector.effectivePlaceholder"),
+                title: p(s)("recorder.selector.effectiveTitle"),
                 "data-testid": "selector-picker-effective-add",
-                onInput: Ze,
+                onInput: Je,
                 onKeydown: [
-                  Ye(re(Ie, ["prevent"]), ["enter"]),
-                  Ye(re(tt, ["prevent"]), ["escape"])
+                  Ze(le(ie, ["prevent"]), ["enter"]),
+                  Ze(le(Qe, ["prevent"]), ["escape"])
                 ]
-              }, null, 42, gu), [
-                [le, W.value]
+              }, null, 42, vu), [
+                [ae, H.value]
               ]),
-              ot.value ? (i(), u("button", {
+              ee.value ? (i(), u("button", {
                 key: 0,
                 type: "button",
                 class: "selector-picker__effective-reset",
-                title: p(a)("recorder.selector.effectiveResetTitle"),
+                title: p(s)("recorder.selector.effectiveResetTitle"),
                 "data-testid": "selector-picker-effective-reset-add",
-                onClick: re(ze, ["stop"])
-              }, "↺", 8, vu)) : T("", !0),
-              ot.value ? (i(), u("span", {
+                onClick: le(Ye, ["stop"])
+              }, "↺", 8, hu)) : $("", !0),
+              ee.value ? (i(), u("span", {
                 key: 1,
                 class: "selector-picker__effective-badge",
-                title: p(a)("recorder.selector.effectiveOverrideTitle")
-              }, m(p(a)("recorder.selector.effectiveOverrideBadge")), 9, hu)) : T("", !0)
+                title: p(s)("recorder.selector.effectiveOverrideTitle")
+              }, m(p(s)("recorder.selector.effectiveOverrideBadge")), 9, yu)) : $("", !0)
             ])
           ], 64)) : (i(), u("button", {
             key: 0,
             type: "button",
             class: "selector-picker__add-btn",
             "data-testid": "selector-picker-add",
-            onClick: re(ie, ["stop"])
-          }, "+ " + m(p(a)("recorder.selector.addCustom")), 1))
+            onClick: le(Ge, ["stop"])
+          }, "+ " + m(p(s)("recorder.selector.addCustom")), 1))
         ])
-      ])) : T("", !0)
-    ], 2)) : T("", !0);
+      ])) : $("", !0)
+    ], 2)) : $("", !0);
   }
-}), bu = /* @__PURE__ */ qe(yu, [["__scopeId", "data-v-00ec4dc3"]]);
+}), wu = /* @__PURE__ */ ze(bu, [["__scopeId", "data-v-00ec4dc3"]]);
 async function Wa(e) {
   return ye().startDebugSession(e);
 }
-async function wu(e) {
+async function _u(e) {
   return Wa(e);
 }
-async function ga(e, n) {
-  return ye().postDebugControl(e, n);
-}
-async function _u(e) {
-  return ye().getDebugState(e);
+async function ga(e, a) {
+  return ye().postDebugControl(e, a);
 }
 async function ku(e) {
+  return ye().getDebugState(e);
+}
+async function Cu(e) {
   return ye().installDebugPrerequisites(e);
 }
-function jn(e) {
+function qn(e) {
   if (e && typeof e == "object" && "response" in e) {
-    const n = e.response;
-    if (n && typeof n == "object" && "status" in n) {
-      const r = n.status;
+    const a = e.response;
+    if (a && typeof a == "object" && "status" in a) {
+      const r = a.status;
       if (typeof r == "number") return r;
     }
   }
   return null;
 }
-function Co(e, n) {
+function ko(e, a) {
   if (e && typeof e == "object" && "response" in e) {
     const r = e.response;
     if (r && typeof r == "object" && "data" in r) {
@@ -2928,99 +2928,99 @@ function Co(e, n) {
         return c;
     }
   }
-  return n;
+  return a;
 }
-const Cu = { file: null, line: null, keyword: null }, qn = {
+const $u = { file: null, line: null, keyword: null }, zn = {
   session_id: "",
   paused: !1,
   terminated: !1,
-  paused_at: Cu,
+  paused_at: $u,
   scopes: [],
   call_stack: [],
   output_lines: []
-}, ja = $o("debug", () => {
-  const e = N(null), n = N(null), r = N(null), c = N(null), g = N({ ...qn }), a = N([]), _ = N(!1), y = N(null), k = N(null), A = N(!1), V = N(null);
-  let E = null;
-  const B = O(() => e.value !== null && !g.value.terminated), I = O(() => g.value.paused), j = O(() => g.value.paused_at), ue = O(() => g.value.scopes), M = O(() => g.value.call_stack);
-  async function J(W) {
-    _.value = !0, y.value = null;
+}, ja = Co("debug", () => {
+  const e = N(null), a = N(null), r = N(null), c = N(null), g = N({ ...zn }), s = N([]), _ = N(!1), b = N(null), k = N(null), V = N(!1), L = N(null);
+  let T = null;
+  const B = O(() => e.value !== null && !g.value.terminated), I = O(() => g.value.paused), W = O(() => g.value.paused_at), re = O(() => g.value.scopes), x = O(() => g.value.call_stack);
+  async function Z(H) {
+    _.value = !0, b.value = null;
     try {
       try {
-        const oe = await Wa({ run_id: W });
-        return D(oe), oe;
-      } catch (oe) {
-        if (jn(oe) === 424)
-          return Z(oe, { kind: "run", runId: W }), null;
-        throw oe;
+        const ue = await Wa({ run_id: H });
+        return R(ue), ue;
+      } catch (ue) {
+        if (qn(ue) === 424)
+          return se(ue, { kind: "run", runId: H }), null;
+        throw ue;
       }
     } finally {
       _.value = !1;
     }
   }
-  async function ae(W) {
-    var oe, fe;
-    _.value = !0, y.value = null;
+  async function Q(H) {
+    var ue, ce;
+    _.value = !0, b.value = null;
     try {
       try {
-        const be = await wu(W);
-        return D(be), { resp: be, resumed: !1 };
-      } catch (be) {
-        if (jn(be) === 424)
-          return Z(be, { kind: "step", payload: W }), null;
-        if (jn(be) === 409) {
-          const Fe = (fe = (oe = be == null ? void 0 : be.response) == null ? void 0 : oe.data) == null ? void 0 : fe.detail;
-          if (Fe && typeof Fe == "object") {
-            const Pe = Fe, He = {
-              session_id: String(Pe.session_id ?? ""),
-              robot_file: String(Pe.robot_file ?? W.file),
-              breakpoint_line: Number(Pe.breakpoint_line ?? W.line),
-              test_name: Pe.test_name ?? null
+        const ge = await _u(H);
+        return R(ge), { resp: ge, resumed: !1 };
+      } catch (ge) {
+        if (qn(ge) === 424)
+          return se(ge, { kind: "step", payload: H }), null;
+        if (qn(ge) === 409) {
+          const Le = (ce = (ue = ge == null ? void 0 : ge.response) == null ? void 0 : ue.data) == null ? void 0 : ce.detail;
+          if (Le && typeof Le == "object") {
+            const $e = Le, Be = {
+              session_id: String($e.session_id ?? ""),
+              robot_file: String($e.robot_file ?? H.file),
+              breakpoint_line: Number($e.breakpoint_line ?? H.line),
+              test_name: $e.test_name ?? null
             };
-            if (He.session_id)
-              return D(He), { resp: He, resumed: !0 };
+            if (Be.session_id)
+              return R(Be), { resp: Be, resumed: !0 };
           }
         }
-        throw be;
+        throw ge;
       }
     } finally {
       _.value = !1;
     }
   }
-  function z(W, oe) {
-    return !e.value || g.value.terminated ? "idle" : n.value === W && r.value === oe ? "same" : "different";
+  function G(H, ue) {
+    return !e.value || g.value.terminated ? "idle" : a.value === H && r.value === ue ? "same" : "different";
   }
-  function D(W) {
-    e.value = W.session_id, n.value = W.robot_file, r.value = W.breakpoint_line, c.value = W.test_name, g.value = { ...qn, session_id: W.session_id }, a.value = [];
+  function R(H) {
+    e.value = H.session_id, a.value = H.robot_file, r.value = H.breakpoint_line, c.value = H.test_name, g.value = { ...zn, session_id: H.session_id }, s.value = [];
   }
-  async function R() {
-    e.value && (g.value = await _u(e.value));
+  async function P() {
+    e.value && (g.value = await ku(e.value));
   }
-  async function H(W) {
-    e.value && await ga(e.value, W);
+  async function K(H) {
+    e.value && await ga(e.value, H);
   }
-  async function Y() {
+  async function j() {
     if (!e.value) return;
-    const W = e.value;
+    const H = e.value;
     try {
-      await ga(W, "disconnect");
+      await ga(H, "disconnect");
     } finally {
-      U();
+      D();
     }
   }
-  function U() {
-    e.value = null, n.value = null, r.value = null, c.value = null, g.value = { ...qn }, a.value = [], y.value = null, k.value = null, A.value = !1, V.value = null, E = null;
+  function D() {
+    e.value = null, a.value = null, r.value = null, c.value = null, g.value = { ...zn }, s.value = [], b.value = null, k.value = null, V.value = !1, L.value = null, T = null;
   }
-  function Z(W, oe) {
-    var be, Fe;
-    E = oe;
-    const fe = (Fe = (be = W == null ? void 0 : W.response) == null ? void 0 : be.data) == null ? void 0 : Fe.detail;
-    if (fe && typeof fe == "object") {
-      const Pe = fe;
+  function se(H, ue) {
+    var ge, Le;
+    T = ue;
+    const ce = (Le = (ge = H == null ? void 0 : H.response) == null ? void 0 : ge.data) == null ? void 0 : Le.detail;
+    if (ce && typeof ce == "object") {
+      const $e = ce;
       k.value = {
-        scopeId: Number(Pe.scope_id ?? 0),
-        envId: Number(Pe.env_id ?? 0),
-        packageName: String(Pe.package ?? "robotcode"),
-        message: String(Pe.message ?? "")
+        scopeId: Number($e.scope_id ?? 0),
+        envId: Number($e.env_id ?? 0),
+        packageName: String($e.package ?? "robotcode"),
+        message: String($e.message ?? "")
       };
     } else
       k.value = {
@@ -3029,36 +3029,36 @@ const Cu = { file: null, line: null, keyword: null }, qn = {
         packageName: "robotcode",
         message: ""
       };
-    V.value = null;
+    L.value = null;
   }
-  async function ce() {
-    if (!k.value || !E) return !1;
-    A.value = !0, V.value = null;
+  async function oe() {
+    if (!k.value || !T) return !1;
+    V.value = !0, L.value = null;
     try {
-      await ku(k.value.scopeId);
-    } catch (oe) {
-      return V.value = Co(oe, "Install failed"), A.value = !1, !1;
+      await Cu(k.value.scopeId);
+    } catch (ue) {
+      return L.value = ko(ue, "Install failed"), V.value = !1, !1;
     }
-    const W = E;
-    k.value = null, E = null, A.value = !1;
+    const H = T;
+    k.value = null, T = null, V.value = !1;
     try {
-      return W.kind === "run" ? await J(W.runId) !== null : await ae(W.payload) !== null;
-    } catch (oe) {
-      return y.value = Co(oe, "Retry failed"), !1;
+      return H.kind === "run" ? await Z(H.runId) !== null : await Q(H.payload) !== null;
+    } catch (ue) {
+      return b.value = ko(ue, "Retry failed"), !1;
     }
   }
-  function ke() {
-    k.value = null, E = null, A.value = !1, V.value = null;
+  function be() {
+    k.value = null, T = null, V.value = !1, L.value = null;
   }
-  function ee(W) {
-    if (e.value && W.topic === `debug:session:${e.value}`)
-      switch (W.kind) {
+  function J(H) {
+    if (e.value && H.topic === `debug:session:${e.value}`)
+      switch (H.kind) {
         case "state":
-          g.value = W.body;
+          g.value = H.body;
           break;
         case "output": {
-          const oe = String(W.body.output ?? "").replace(/\n+$/, "");
-          oe && a.value.push(oe), a.value.length > 300 && (a.value = a.value.slice(-300));
+          const ue = String(H.body.output ?? "").replace(/\n+$/, "");
+          ue && s.value.push(ue), s.value.length > 300 && (s.value = s.value.slice(-300));
           break;
         }
         case "terminated":
@@ -3068,158 +3068,158 @@ const Cu = { file: null, line: null, keyword: null }, qn = {
   }
   return {
     sessionId: e,
-    robotFile: n,
+    robotFile: a,
     breakpointLine: r,
     testName: c,
     state: g,
-    outputLog: a,
+    outputLog: s,
     loading: _,
-    lastError: y,
+    lastError: b,
     isActive: B,
     paused: I,
-    pausedAt: j,
-    scopes: ue,
-    callStack: M,
+    pausedAt: W,
+    scopes: re,
+    callStack: x,
     prereqMissing: k,
-    installing: A,
-    installError: V,
-    startFromRun: J,
-    startFromStep: ae,
-    classifyStepClick: z,
-    refreshState: R,
-    control: H,
-    stop: Y,
-    reset: U,
-    handleWsEvent: ee,
-    installPrereqAndRetry: ce,
-    cancelPrereq: ke
+    installing: V,
+    installError: L,
+    startFromRun: Z,
+    startFromStep: Q,
+    classifyStepClick: G,
+    refreshState: P,
+    control: K,
+    stop: j,
+    reset: D,
+    handleWsEvent: J,
+    installPrereqAndRetry: oe,
+    cancelPrereq: be
   };
-}), $u = {
+}), Tu = {
   class: "debug-panel",
   "data-testid": "debug-panel"
-}, Tu = { class: "debug-panel__header" }, Eu = { class: "debug-panel__title" }, Su = { class: "debug-panel__paused-at" }, Lu = {
+}, Eu = { class: "debug-panel__header" }, Su = { class: "debug-panel__title" }, Lu = { class: "debug-panel__paused-at" }, Vu = {
   key: 0,
   class: "debug-panel__badge debug-panel__badge--terminated"
-}, Vu = {
+}, Au = {
   key: 1,
   class: "debug-panel__badge debug-panel__badge--paused"
-}, Au = { class: "debug-panel__toolbar" }, Nu = {
+}, Nu = { class: "debug-panel__toolbar" }, Ru = {
   key: 0,
   class: "debug-panel__error"
-}, Ru = {
+}, Fu = {
   key: 1,
   class: "debug-panel__line-callout",
   "data-testid": "debug-line-callout"
-}, Fu = {
+}, Pu = {
   class: "debug-panel__line-number",
   "data-testid": "debug-line-number"
-}, Pu = { class: "debug-panel__line-label" }, Du = { class: "debug-panel__line-value" }, Mu = { class: "debug-panel__line-meta" }, xu = ["title"], Uu = {
+}, Du = { class: "debug-panel__line-label" }, Mu = { class: "debug-panel__line-value" }, xu = { class: "debug-panel__line-meta" }, Uu = ["title"], Bu = {
   key: 1,
   class: "debug-panel__line-keyword"
-}, Bu = { class: "debug-panel__body" }, Ku = { class: "debug-panel__stack" }, Hu = {
+}, Ku = { class: "debug-panel__body" }, Hu = { class: "debug-panel__stack" }, Ou = {
   key: 0,
   class: "debug-panel__stack-list"
-}, Ou = ["title"], Iu = ["title"], Wu = { key: 0 }, ju = {
+}, Iu = ["title"], Wu = ["title"], ju = { key: 0 }, qu = {
   key: 1,
   class: "debug-panel__empty"
-}, qu = { class: "debug-panel__scopes" }, zu = {
+}, zu = { class: "debug-panel__scopes" }, Gu = {
   key: 0,
   class: "debug-panel__empty"
-}, Gu = ["aria-expanded", "onClick"], Yu = { class: "debug-panel__scope-chevron" }, Xu = { class: "debug-panel__scope-name" }, Zu = { class: "debug-panel__scope-count" }, Qu = {
+}, Yu = ["aria-expanded", "onClick"], Xu = { class: "debug-panel__scope-chevron" }, Zu = { class: "debug-panel__scope-name" }, Qu = { class: "debug-panel__scope-count" }, Ju = {
   key: 0,
   class: "debug-panel__scope-vars"
-}, Ju = {
+}, ec = {
   key: 0,
   class: "debug-panel__empty"
-}, ec = { class: "debug-panel__var-name" }, tc = {
+}, tc = { class: "debug-panel__var-name" }, oc = {
   key: 0,
   class: "debug-panel__var-type"
-}, oc = { class: "debug-panel__var-value" }, nc = { class: "debug-panel__output" }, ac = {
+}, nc = { class: "debug-panel__var-value" }, ac = { class: "debug-panel__output" }, sc = {
   key: 0,
   class: "debug-panel__empty"
-}, sc = {
+}, lc = {
   key: 1,
   class: "debug-panel__output-log"
-}, lc = /* @__PURE__ */ je({
+}, rc = /* @__PURE__ */ qe({
   __name: "DebugPanel",
   props: {
     runId: {}
   },
   emits: ["closed"],
-  setup(e, { emit: n }) {
-    const r = e, c = n, { t: g } = mt(), a = ja(), _ = N(null);
-    qo(async () => {
-      if (r.runId !== void 0 && !a.isActive)
+  setup(e, { emit: a }) {
+    const r = e, c = a, { t: g } = ft(), s = ja(), _ = N(null);
+    Go(async () => {
+      if (r.runId !== void 0 && !s.isActive)
         try {
-          await a.startFromRun(r.runId);
-        } catch (z) {
-          _.value = Co(z, g("debug.error.startFailed"));
+          await s.startFromRun(r.runId);
+        } catch (G) {
+          _.value = ko(G, g("debug.error.startFailed"));
         }
-    }), Ho(() => {
+    }), Io(() => {
     });
-    const y = O(() => {
-      const z = a.pausedAt;
-      if (!z.file && !z.keyword) return g("debug.panel.notPaused");
-      const D = z.line !== null ? `${z.file ?? ""}:${z.line}` : z.file ?? "";
-      return z.keyword ? `${z.keyword}  —  ${D}` : D;
+    const b = O(() => {
+      const G = s.pausedAt;
+      if (!G.file && !G.keyword) return g("debug.panel.notPaused");
+      const R = G.line !== null ? `${G.file ?? ""}:${G.line}` : G.file ?? "";
+      return G.keyword ? `${G.keyword}  —  ${R}` : R;
     });
-    function k(z) {
-      if (!z) return "";
-      const D = Math.max(z.lastIndexOf("/"), z.lastIndexOf("\\"));
-      return D >= 0 ? z.slice(D + 1) : z;
+    function k(G) {
+      if (!G) return "";
+      const R = Math.max(G.lastIndexOf("/"), G.lastIndexOf("\\"));
+      return R >= 0 ? G.slice(R + 1) : G;
     }
-    const A = O(() => k(a.pausedAt.file));
-    async function V() {
-      await ue(() => a.control("continue"));
+    const V = O(() => k(s.pausedAt.file));
+    async function L() {
+      await re(() => s.control("continue"));
     }
-    async function E() {
-      await ue(() => a.control("next"));
+    async function T() {
+      await re(() => s.control("next"));
     }
     async function B() {
-      await ue(() => a.control("stepIn"));
+      await re(() => s.control("stepIn"));
     }
     async function I() {
-      await ue(() => a.control("stepOut"));
+      await re(() => s.control("stepOut"));
     }
-    async function j() {
+    async function W() {
       try {
-        await a.stop();
+        await s.stop();
       } catch {
       } finally {
         c("closed");
       }
     }
-    async function ue(z) {
+    async function re(G) {
       _.value = null;
       try {
-        await z();
-      } catch (D) {
-        _.value = Co(D, g("debug.error.commandFailed"));
+        await G();
+      } catch (R) {
+        _.value = ko(R, g("debug.error.commandFailed"));
       }
     }
-    const M = N(/* @__PURE__ */ new Set(["Local"]));
-    function J(z) {
-      M.value.has(z) ? M.value.delete(z) : M.value.add(z), M.value = new Set(M.value);
+    const x = N(/* @__PURE__ */ new Set(["Local"]));
+    function Z(G) {
+      x.value.has(G) ? x.value.delete(G) : x.value.add(G), x.value = new Set(x.value);
     }
-    function ae(z, D = 200) {
-      return z.length <= D ? z : z.slice(0, D) + "…";
+    function Q(G, R = 200) {
+      return G.length <= R ? G : G.slice(0, R) + "…";
     }
-    return (z, D) => (i(), u("div", $u, [
-      t("header", Tu, [
-        t("div", Eu, [
-          D[0] || (D[0] = t("span", {
+    return (G, R) => (i(), u("div", Tu, [
+      o("header", Eu, [
+        o("div", Su, [
+          R[0] || (R[0] = o("span", {
             class: "debug-panel__icon",
             "aria-hidden": "true"
           }, "🐞", -1)),
-          t("span", Su, m(y.value), 1),
-          p(a).state.terminated ? (i(), u("span", Lu, m(p(g)("debug.panel.terminated")), 1)) : p(a).paused ? (i(), u("span", Vu, m(p(g)("debug.panel.paused")), 1)) : T("", !0)
+          o("span", Lu, m(b.value), 1),
+          p(s).state.terminated ? (i(), u("span", Vu, m(p(g)("debug.panel.terminated")), 1)) : p(s).paused ? (i(), u("span", Au, m(p(g)("debug.panel.paused")), 1)) : $("", !0)
         ]),
-        t("div", Au, [
+        o("div", Nu, [
           ve(Oe, {
             size: "sm",
             variant: "primary",
-            disabled: !p(a).paused || p(a).state.terminated,
-            onClick: V
+            disabled: !p(s).paused || p(s).state.terminated,
+            onClick: L
           }, {
             default: _e(() => [
               we("▶ " + m(p(g)("debug.panel.toolbar.continue")), 1)
@@ -3229,8 +3229,8 @@ const Cu = { file: null, line: null, keyword: null }, qn = {
           ve(Oe, {
             size: "sm",
             variant: "ghost",
-            disabled: !p(a).paused || p(a).state.terminated,
-            onClick: E
+            disabled: !p(s).paused || p(s).state.terminated,
+            onClick: T
           }, {
             default: _e(() => [
               we("⤼ " + m(p(g)("debug.panel.toolbar.stepOver")), 1)
@@ -3240,7 +3240,7 @@ const Cu = { file: null, line: null, keyword: null }, qn = {
           ve(Oe, {
             size: "sm",
             variant: "ghost",
-            disabled: !p(a).paused || p(a).state.terminated,
+            disabled: !p(s).paused || p(s).state.terminated,
             onClick: B
           }, {
             default: _e(() => [
@@ -3251,7 +3251,7 @@ const Cu = { file: null, line: null, keyword: null }, qn = {
           ve(Oe, {
             size: "sm",
             variant: "ghost",
-            disabled: !p(a).paused || p(a).state.terminated,
+            disabled: !p(s).paused || p(s).state.terminated,
             onClick: I
           }, {
             default: _e(() => [
@@ -3262,7 +3262,7 @@ const Cu = { file: null, line: null, keyword: null }, qn = {
           ve(Oe, {
             size: "sm",
             variant: "danger",
-            onClick: j
+            onClick: W
           }, {
             default: _e(() => [
               we(" ✕ " + m(p(g)("debug.panel.toolbar.stop")), 1)
@@ -3271,89 +3271,89 @@ const Cu = { file: null, line: null, keyword: null }, qn = {
           })
         ])
       ]),
-      _.value ? (i(), u("div", Nu, m(_.value), 1)) : T("", !0),
-      p(a).paused && p(a).pausedAt.line !== null ? (i(), u("div", Ru, [
-        t("div", Fu, [
-          t("span", Pu, m(p(g)("debug.panel.lineLabel")), 1),
-          t("span", Du, m(p(a).pausedAt.line), 1)
+      _.value ? (i(), u("div", Ru, m(_.value), 1)) : $("", !0),
+      p(s).paused && p(s).pausedAt.line !== null ? (i(), u("div", Fu, [
+        o("div", Pu, [
+          o("span", Du, m(p(g)("debug.panel.lineLabel")), 1),
+          o("span", Mu, m(p(s).pausedAt.line), 1)
         ]),
-        t("div", Mu, [
-          A.value ? (i(), u("span", {
+        o("div", xu, [
+          V.value ? (i(), u("span", {
             key: 0,
             class: "debug-panel__line-file",
-            title: p(a).pausedAt.file ?? ""
-          }, m(A.value), 9, xu)) : T("", !0),
-          p(a).pausedAt.keyword ? (i(), u("span", Uu, m(p(a).pausedAt.keyword), 1)) : T("", !0)
+            title: p(s).pausedAt.file ?? ""
+          }, m(V.value), 9, Uu)) : $("", !0),
+          p(s).pausedAt.keyword ? (i(), u("span", Bu, m(p(s).pausedAt.keyword), 1)) : $("", !0)
         ])
-      ])) : T("", !0),
-      t("div", Bu, [
-        t("aside", Ku, [
-          t("h3", null, m(p(g)("debug.panel.callStack")), 1),
-          p(a).callStack.length ? (i(), u("ul", Hu, [
-            (i(!0), u(x, null, X(p(a).callStack, (R, H) => (i(), u("li", {
-              key: H,
-              class: ne({ "debug-panel__stack-item": !0, "is-top": H === 0 })
+      ])) : $("", !0),
+      o("div", Ku, [
+        o("aside", Hu, [
+          o("h3", null, m(p(g)("debug.panel.callStack")), 1),
+          p(s).callStack.length ? (i(), u("ul", Ou, [
+            (i(!0), u(U, null, Y(p(s).callStack, (P, K) => (i(), u("li", {
+              key: K,
+              class: te({ "debug-panel__stack-item": !0, "is-top": K === 0 })
             }, [
-              t("span", {
+              o("span", {
                 class: "debug-panel__stack-name",
-                title: R.name
-              }, m(R.name), 9, Ou),
-              R.file ? (i(), u("span", {
+                title: P.name
+              }, m(P.name), 9, Iu),
+              P.file ? (i(), u("span", {
                 key: 0,
                 class: "debug-panel__stack-file",
-                title: R.file + (R.line ? ":" + R.line : "")
+                title: P.file + (P.line ? ":" + P.line : "")
               }, [
-                we(m(k(R.file)), 1),
-                R.line ? (i(), u("span", Wu, ":" + m(R.line), 1)) : T("", !0)
-              ], 8, Iu)) : T("", !0)
+                we(m(k(P.file)), 1),
+                P.line ? (i(), u("span", ju, ":" + m(P.line), 1)) : $("", !0)
+              ], 8, Wu)) : $("", !0)
             ], 2))), 128))
-          ])) : (i(), u("p", ju, m(p(g)("debug.panel.callStackEmpty")), 1))
+          ])) : (i(), u("p", qu, m(p(g)("debug.panel.callStackEmpty")), 1))
         ]),
-        t("section", qu, [
-          t("h3", null, m(p(g)("debug.panel.scopes")), 1),
-          p(a).scopes.length ? T("", !0) : (i(), u("div", zu, m(p(g)("debug.panel.scopesEmpty")), 1)),
-          (i(!0), u(x, null, X(p(a).scopes, (R) => (i(), u("div", {
-            key: R.name,
+        o("section", zu, [
+          o("h3", null, m(p(g)("debug.panel.scopes")), 1),
+          p(s).scopes.length ? $("", !0) : (i(), u("div", Gu, m(p(g)("debug.panel.scopesEmpty")), 1)),
+          (i(!0), u(U, null, Y(p(s).scopes, (P) => (i(), u("div", {
+            key: P.name,
             class: "debug-panel__scope"
           }, [
-            t("button", {
+            o("button", {
               class: "debug-panel__scope-header",
-              "aria-expanded": M.value.has(R.name),
-              onClick: (H) => J(R.name)
+              "aria-expanded": x.value.has(P.name),
+              onClick: (K) => Z(P.name)
             }, [
-              t("span", Yu, m(M.value.has(R.name) ? "▾" : "▸"), 1),
-              t("span", Xu, m(R.name), 1),
-              t("span", Zu, m(R.variables.length), 1)
-            ], 8, Gu),
-            M.value.has(R.name) ? (i(), u("div", Qu, [
-              R.variables.length ? T("", !0) : (i(), u("div", Ju, m(p(g)("debug.panel.scopeEmpty")), 1)),
-              (i(!0), u(x, null, X(R.variables, (H) => (i(), u("div", {
-                key: H.name,
+              o("span", Xu, m(x.value.has(P.name) ? "▾" : "▸"), 1),
+              o("span", Zu, m(P.name), 1),
+              o("span", Qu, m(P.variables.length), 1)
+            ], 8, Yu),
+            x.value.has(P.name) ? (i(), u("div", Ju, [
+              P.variables.length ? $("", !0) : (i(), u("div", ec, m(p(g)("debug.panel.scopeEmpty")), 1)),
+              (i(!0), u(U, null, Y(P.variables, (K) => (i(), u("div", {
+                key: K.name,
                 class: "debug-panel__var"
               }, [
-                t("span", ec, m(H.name), 1),
-                H.type ? (i(), u("span", tc, "(" + m(H.type) + ")", 1)) : T("", !0),
-                t("span", oc, m(ae(H.value)), 1)
+                o("span", tc, m(K.name), 1),
+                K.type ? (i(), u("span", oc, "(" + m(K.type) + ")", 1)) : $("", !0),
+                o("span", nc, m(Q(K.value)), 1)
               ]))), 128))
-            ])) : T("", !0)
+            ])) : $("", !0)
           ]))), 128))
         ])
       ]),
-      t("footer", nc, [
-        t("h3", null, m(p(g)("debug.panel.output")), 1),
-        p(a).outputLog.length === 0 ? (i(), u("div", ac, m(p(g)("debug.panel.outputEmpty")), 1)) : (i(), u("pre", sc, m(p(a).outputLog.join(`
+      o("footer", ac, [
+        o("h3", null, m(p(g)("debug.panel.output")), 1),
+        p(s).outputLog.length === 0 ? (i(), u("div", sc, m(p(g)("debug.panel.outputEmpty")), 1)) : (i(), u("pre", lc, m(p(s).outputLog.join(`
 `)), 1))
       ])
     ]));
   }
-}), rc = /* @__PURE__ */ qe(lc, [["__scopeId", "data-v-77a3a274"]]), ic = { class: "prereq-body" }, uc = {
+}), ic = /* @__PURE__ */ ze(rc, [["__scopeId", "data-v-77a3a274"]]), uc = { class: "prereq-body" }, cc = {
   key: 0,
   class: "prereq-error",
   role: "alert"
-}, cc = {
+}, dc = {
   key: 1,
   class: "prereq-status"
-}, dc = /* @__PURE__ */ je({
+}, pc = /* @__PURE__ */ qe({
   __name: "DebugPrereqDialog",
   props: {
     open: { type: Boolean },
@@ -3362,26 +3362,26 @@ const Cu = { file: null, line: null, keyword: null }, qn = {
     installError: {}
   },
   emits: ["install", "cancel"],
-  setup(e, { emit: n }) {
-    const r = e, c = n, { t: g } = mt();
-    function a() {
+  setup(e, { emit: a }) {
+    const r = e, c = a, { t: g } = ft();
+    function s() {
       c("install");
     }
     function _() {
       c("cancel");
     }
-    return (y, k) => (i(), u(x, null, [
-      r.open ? (i(), Ut(yn, {
+    return (b, k) => (i(), u(U, null, [
+      r.open ? (i(), xt(bn, {
         key: 0,
         to: "body"
       }, [
-        k[0] || (k[0] = t("span", {
+        k[0] || (k[0] = o("span", {
           "data-testid": "debug-prereq-dialog",
           style: { display: "none" },
           "aria-hidden": "true"
         }, null, -1))
-      ])) : T("", !0),
-      ve(Io, {
+      ])) : $("", !0),
+      ve(jo, {
         "model-value": r.open,
         title: p(g)("debug.prereq.title"),
         size: "md"
@@ -3403,7 +3403,7 @@ const Cu = { file: null, line: null, keyword: null }, qn = {
             loading: r.installing,
             disabled: r.installing,
             "data-testid": "debug-prereq-install-btn",
-            onClick: a
+            onClick: s
           }, {
             default: _e(() => [
               we(m(r.installing ? p(g)("debug.prereq.installing", { package: r.packageName }) : p(g)("debug.prereq.install")), 1)
@@ -3412,136 +3412,136 @@ const Cu = { file: null, line: null, keyword: null }, qn = {
           }, 8, ["loading", "disabled"])
         ]),
         default: _e(() => [
-          t("p", ic, m(p(g)("debug.prereq.body", { package: r.packageName })), 1),
-          r.installError ? (i(), u("p", uc, m(r.installError), 1)) : r.installing ? (i(), u("p", cc, m(p(g)("debug.prereq.installing", { package: r.packageName })), 1)) : T("", !0)
+          o("p", uc, m(p(g)("debug.prereq.body", { package: r.packageName })), 1),
+          r.installError ? (i(), u("p", cc, m(r.installError), 1)) : r.installing ? (i(), u("p", dc, m(p(g)("debug.prereq.installing", { package: r.packageName })), 1)) : $("", !0)
         ]),
         _: 1
       }, 8, ["model-value", "title"])
     ], 64));
   }
-}), pc = /* @__PURE__ */ qe(dc, [["__scopeId", "data-v-82fc15e8"]]), fc = (e) => ye().login(e.email, e.password), mc = () => ye().getMe(), gc = (e) => ye().patchFirstLoginComplete(e);
-async function vc() {
+}), fc = /* @__PURE__ */ ze(pc, [["__scopeId", "data-v-82fc15e8"]]), mc = (e) => ye().login(e.email, e.password), gc = () => ye().getMe(), vc = (e) => ye().patchFirstLoginComplete(e);
+async function hc() {
   const e = await ye().getFeatures();
   return { flags: e.flags ?? {}, locked: e.locked ?? {} };
 }
-const Xn = N({}), Zn = N({}), hn = N(!1);
-let mn = null;
+const Zn = N({}), Qn = N({}), yn = N(!1);
+let gn = null;
 async function va() {
   try {
-    const e = await vc();
-    Xn.value = e.flags, Zn.value = e.locked, hn.value = !0;
+    const e = await hc();
+    Zn.value = e.flags, Qn.value = e.locked, yn.value = !0;
   } catch {
   }
 }
 function ha() {
-  !hn.value && !mn && (mn = va().finally(() => {
-    mn = null;
+  !yn.value && !gn && (gn = va().finally(() => {
+    gn = null;
   }));
   function e(c) {
-    return Xn.value[c] !== !1;
+    return Zn.value[c] !== !1;
   }
-  function n(c) {
-    return Zn.value[c] === !0;
+  function a(c) {
+    return Qn.value[c] === !0;
   }
   function r() {
-    hn.value = !1, Xn.value = {}, Zn.value = {}, mn = null;
+    yn.value = !1, Zn.value = {}, Qn.value = {}, gn = null;
   }
-  return { isEnabled: e, isLocked: n, refresh: va, reset: r, loaded: hn };
+  return { isEnabled: e, isLocked: a, refresh: va, reset: r, loaded: yn };
 }
-const hc = $o("auth", () => {
-  const e = N(null), n = N(localStorage.getItem("access_token")), r = O(() => !!n.value), c = O(() => e.value), g = O(() => {
-    var V;
-    return ((V = e.value) == null ? void 0 : V.role) ?? "viewer";
+const yc = Co("auth", () => {
+  const e = N(null), a = N(localStorage.getItem("access_token")), r = O(() => !!a.value), c = O(() => e.value), g = O(() => {
+    var L;
+    return ((L = e.value) == null ? void 0 : L.role) ?? "viewer";
   });
-  function a(V) {
-    const E = { viewer: 0, runner: 1, editor: 2, admin: 3 };
-    return (E[g.value] ?? -1) >= (E[V] ?? 999);
+  function s(L) {
+    const T = { viewer: 0, runner: 1, editor: 2, admin: 3 };
+    return (T[g.value] ?? -1) >= (T[L] ?? 999);
   }
-  async function _(V, E) {
-    const B = await fc({ email: V, password: E });
-    n.value = B.access_token, localStorage.setItem("access_token", B.access_token), localStorage.setItem("refresh_token", B.refresh_token), await y(), ha().refresh();
+  async function _(L, T) {
+    const B = await mc({ email: L, password: T });
+    a.value = B.access_token, localStorage.setItem("access_token", B.access_token), localStorage.setItem("refresh_token", B.refresh_token), await b(), ha().refresh();
   }
-  async function y() {
-    if (n.value)
+  async function b() {
+    if (a.value)
       try {
-        e.value = await mc();
+        e.value = await gc();
       } catch {
         k();
       }
   }
   function k() {
-    e.value = null, n.value = null, localStorage.removeItem("access_token"), localStorage.removeItem("refresh_token"), ha().reset();
+    e.value = null, a.value = null, localStorage.removeItem("access_token"), localStorage.removeItem("refresh_token"), ha().reset();
   }
-  async function A() {
-    const V = await gc(!0);
-    e.value = V;
+  async function V() {
+    const L = await vc(!0);
+    e.value = L;
   }
   return {
     user: e,
-    token: n,
+    token: a,
     isAuthenticated: r,
     currentUser: c,
     userRole: g,
-    hasMinRole: a,
+    hasMinRole: s,
     login: _,
     logout: k,
-    fetchCurrentUser: y,
-    markFirstLoginComplete: A
+    fetchCurrentUser: b,
+    markFirstLoginComplete: V
   };
-}), zn = 768, yc = $o("ui", () => {
-  const e = N(window.innerWidth >= zn), n = N(window.innerWidth), r = N([]);
+}), Gn = 768, bc = Co("ui", () => {
+  const e = N(window.innerWidth >= Gn), a = N(window.innerWidth), r = N([]);
   let c = 0;
-  const g = O(() => n.value < zn), a = N(localStorage.getItem("notifications_enabled") === "true"), _ = N(
+  const g = O(() => a.value < Gn), s = N(localStorage.getItem("notifications_enabled") === "true"), _ = N(
     typeof Notification < "u" ? Notification.permission : "denied"
   );
-  async function y() {
+  async function b() {
     if (typeof Notification > "u") return !1;
-    const z = await Notification.requestPermission();
-    return _.value = z, z === "granted";
+    const G = await Notification.requestPermission();
+    return _.value = G, G === "granted";
   }
   async function k() {
-    if (a.value) {
-      a.value = !1, localStorage.setItem("notifications_enabled", "false");
+    if (s.value) {
+      s.value = !1, localStorage.setItem("notifications_enabled", "false");
       return;
     }
-    _.value !== "granted" && !await y() || (a.value = !0, localStorage.setItem("notifications_enabled", "true"));
+    _.value !== "granted" && !await b() || (s.value = !0, localStorage.setItem("notifications_enabled", "true"));
   }
-  function A(z, D, R) {
-    a.value && (typeof Notification > "u" || Notification.permission !== "granted" || document.hasFocus() || new Notification(z, { body: D, tag: R, icon: "/favicon.ico" }));
+  function V(G, R, P) {
+    s.value && (typeof Notification > "u" || Notification.permission !== "granted" || document.hasFocus() || new Notification(G, { body: R, tag: P, icon: "/favicon.ico" }));
   }
-  function V() {
-    n.value = window.innerWidth, n.value < zn && (e.value = !1);
+  function L() {
+    a.value = window.innerWidth, a.value < Gn && (e.value = !1);
   }
-  window.addEventListener("resize", V);
-  function E() {
+  window.addEventListener("resize", L);
+  function T() {
     e.value = !e.value;
   }
   function B() {
     g.value && (e.value = !1);
   }
-  function I(z, D, R = "info", H = 5e3) {
-    const Y = ++c;
-    r.value.push({ id: Y, title: z, message: D, type: R, timeout: H }), H > 0 && setTimeout(() => j(Y), H);
+  function I(G, R, P = "info", K = 5e3) {
+    const j = ++c;
+    r.value.push({ id: j, title: G, message: R, type: P, timeout: K }), K > 0 && setTimeout(() => W(j), K);
   }
-  function j(z) {
-    r.value = r.value.filter((D) => D.id !== z);
+  function W(G) {
+    r.value = r.value.filter((R) => R.id !== G);
   }
-  function ue(z, D = "") {
-    I(z, D, "success");
+  function re(G, R = "") {
+    I(G, R, "success");
   }
-  function M(z, D = "") {
-    I(z, D, "error", 8e3);
+  function x(G, R = "") {
+    I(G, R, "error", 8e3);
   }
-  function J(z, D = "") {
-    I(z, D, "info");
+  function Z(G, R = "") {
+    I(G, R, "info");
   }
-  function ae(z, D = "") {
-    I(z, D, "warning");
+  function Q(G, R = "") {
+    I(G, R, "warning");
   }
-  return { sidebarOpen: e, isMobile: g, windowWidth: n, toasts: r, notificationsEnabled: a, notificationPermission: _, toggleSidebar: E, closeSidebarOnMobile: B, addToast: I, removeToast: j, success: ue, error: M, info: J, warning: ae, toggleNotifications: k, sendBrowserNotification: A };
+  return { sidebarOpen: e, isMobile: g, windowWidth: a, toasts: r, notificationsEnabled: s, notificationPermission: _, toggleSidebar: T, closeSidebarOnMobile: B, addToast: I, removeToast: W, success: re, error: x, info: Z, warning: Q, toggleNotifications: k, sendBrowserNotification: V };
 });
-function Qn() {
-  const e = yc();
+function Jn() {
+  const e = bc();
   return {
     success: e.success,
     error: e.error,
@@ -3549,7 +3549,7 @@ function Qn() {
     warning: e.warning
   };
 }
-const bc = /* @__PURE__ */ new Set([
+const wc = /* @__PURE__ */ new Set([
   "keyword",
   "assignment",
   "var",
@@ -3567,65 +3567,65 @@ const bc = /* @__PURE__ */ new Set([
   "return",
   "comment"
 ]);
-function wc(e) {
-  return bc.has(e);
+function _c(e) {
+  return wc.has(e);
 }
-const _c = /* @__PURE__ */ new Set(["keyword", "assignment"]);
-function kn(e) {
-  return _c.has(e.type);
+const kc = /* @__PURE__ */ new Set(["keyword", "assignment"]);
+function Cn(e) {
+  return kc.has(e.type);
 }
-function kc(e, n) {
-  if (n < 0 || n >= e.length || !kn(e[n])) return -1;
+function Cc(e, a) {
+  if (a < 0 || a >= e.length || !Cn(e[a])) return -1;
   let r = 0;
-  for (let c = 0; c < n; c++)
-    kn(e[c]) && r++;
+  for (let c = 0; c < a; c++)
+    Cn(e[c]) && r++;
   return r;
 }
-function Cc(e, n, r) {
-  if (!n || r < 0 || r >= e.length) return null;
+function $c(e, a, r) {
+  if (!a || r < 0 || r >= e.length) return null;
   const c = e[r];
-  if (!kn(c)) return null;
+  if (!Cn(c)) return null;
   if (c.rbs_id)
-    return n.commands.find((_) => _.id === c.rbs_id) ?? null;
-  if (e.some((_) => kn(_) && !!_.rbs_id)) return null;
-  const a = kc(e, r);
-  return a < 0 ? null : n.commands[a] ?? null;
+    return a.commands.find((_) => _.id === c.rbs_id) ?? null;
+  if (e.some((_) => Cn(_) && !!_.rbs_id)) return null;
+  const s = Cc(e, r);
+  return s < 0 ? null : a.commands[s] ?? null;
 }
-function $c(e, n) {
-  if (!n || !e.keyword) return null;
-  const r = n.get(e.keyword.toLowerCase());
-  return r ? r.map(ta).filter(
+function Tc(e, a) {
+  if (!a || !e.keyword) return null;
+  const r = a.get(e.keyword.toLowerCase());
+  return r ? r.map(oa).filter(
     (c) => c.kind !== "positional-only-sep" && c.kind !== "named-only-sep" && c.kind !== "optional-sep"
   ) : null;
 }
-function Tc(e, n, r) {
-  const c = n.selector_candidates[r];
+function Ec(e, a, r) {
+  const c = a.selector_candidates[r];
   if (!c) return !1;
-  const g = ko(n, c);
-  return e.args.length === 0 ? e.args.push(g) : e.args[0] = g, n.active_candidate_index = r, !0;
+  const g = _o(a, c);
+  return e.args.length === 0 ? e.args.push(g) : e.args[0] = g, a.active_candidate_index = r, !0;
 }
-function ya(e, n) {
-  return ko(e, n);
+function ya(e, a) {
+  return _o(e, a);
 }
-const Ec = /\s*>>\s*nth=\d+\s*$/;
-function Sc(e) {
-  let n = e;
-  const r = n.lastIndexOf(" >>> ");
-  return r >= 0 && (n = n.slice(r + 5)), n.replace(Ec, "").trim();
+const Sc = /\s*>>\s*nth=\d+\s*$/;
+function Lc(e) {
+  let a = e;
+  const r = a.lastIndexOf(" >>> ");
+  return r >= 0 && (a = a.slice(r + 5)), a.replace(Sc, "").trim();
 }
-function ba(e, n) {
-  if (n.selector_candidates.length === 0) return !1;
+function ba(e, a) {
+  if (a.selector_candidates.length === 0) return !1;
   const r = e.args[0] ?? "";
-  if (r === "" || n.selector_candidates.some((g) => g.value === r) || n.selector_candidates.some(
-    (g) => ko(n, g) === r
+  if (r === "" || a.selector_candidates.some((g) => g.value === r) || a.selector_candidates.some(
+    (g) => _o(a, g) === r
   )) return !1;
-  const c = Sc(r);
-  return c === r ? !0 : !n.selector_candidates.some(
+  const c = Lc(r);
+  return c === r ? !0 : !a.selector_candidates.some(
     (g) => g.value === c || Oa(g) === c
   );
 }
-const Jn = 50, Lc = 60, ro = 0, wa = 30, _a = 12, Vc = 16;
-function Ac(e) {
+const ea = 50, Vc = 60, co = 0, wa = 30, _a = 12, Ac = 16;
+function Nc(e) {
   return {
     ...e,
     args: [...e.args],
@@ -3637,78 +3637,78 @@ function Ac(e) {
     _lineNumber: e._lineNumber
   };
 }
-const na = 32, Nc = 44;
-function Ko(e) {
-  const n = Xa(e.type);
-  if (n === "start" || n === "end") return na;
-  let r = Nc;
-  return (n === "keyword" || n === "assignment") && (e.args.length > 0 && (r += 4 + e.args.length * 22), e.returnVars.length > 0 && (r += 20)), n === "control" && (e.condition && (r += 20), (e.type === "for" || e.type === "while") && e.loopVar && e.loopValues.length > 0 && (r += 20), e.exceptPattern && (r += 20)), r;
+const aa = 32, Rc = 44;
+function Oo(e) {
+  const a = Xa(e.type);
+  if (a === "start" || a === "end") return aa;
+  let r = Rc;
+  return (a === "keyword" || a === "assignment") && (e.args.length > 0 && (r += 4 + e.args.length * 22), e.returnVars.length > 0 && (r += 20)), a === "control" && (e.condition && (r += 20), (e.type === "for" || e.type === "while") && e.loopVar && e.loopValues.length > 0 && (r += 20), e.exceptPattern && (r += 20)), r;
 }
 const qa = /* @__PURE__ */ new Set(["if", "for", "while", "try"]);
-function Rc(e, n) {
-  let r = 1, c = n + 1;
+function Fc(e, a) {
+  let r = 1, c = a + 1;
   for (; c < e.length && r > 0; )
     qa.has(e[c].type) && r++, e[c].type === "end" && r--, c++;
   return c - 1;
 }
-const Fc = {
+const Pc = {
   if: { border: "#E8A838", bg: "rgba(232, 168, 56, 0.06)" },
   for: { border: "#7B61FF", bg: "rgba(123, 97, 255, 0.06)" },
   while: { border: "#7B61FF", bg: "rgba(123, 97, 255, 0.06)" },
   try: { border: "#38B2AC", bg: "rgba(56, 178, 172, 0.06)" }
 };
-function Pc(e, n, r) {
-  za(e, n, r, 0, e.length, 0);
+function Dc(e, a, r) {
+  za(e, a, r, 0, e.length, 0);
 }
-function za(e, n, r, c, g, a) {
+function za(e, a, r, c, g, s) {
   let _ = c;
   for (; _ < g; )
     if (qa.has(e[_].type)) {
-      const y = Rc(e, _), k = [];
-      for (let A = _; A < y; A++) {
-        if (e[A].type === "end") continue;
-        const V = n.find((E) => E.id === `${r}-step-${A}`);
-        V && k.push(V);
+      const b = Fc(e, _), k = [];
+      for (let V = _; V < b; V++) {
+        if (e[V].type === "end") continue;
+        const L = a.find((T) => T.id === `${r}-step-${V}`);
+        L && k.push(L);
       }
       if (k.length > 0) {
-        const A = Math.min(...k.map((ue) => ue.position.y)), V = Math.max(...k.map((ue) => ue.position.y)), E = k[k.length - 1].data, B = Ko(E.step), I = Fc[e[_].type] || { border: "#888", bg: "rgba(0,0,0,0.03)" }, j = a * 14;
-        n.push({
+        const V = Math.min(...k.map((re) => re.position.y)), L = Math.max(...k.map((re) => re.position.y)), T = k[k.length - 1].data, B = Oo(T.step), I = Pc[e[_].type] || { border: "#888", bg: "rgba(0,0,0,0.03)" }, W = s * 14;
+        a.push({
           id: `${r}-frame-${_}`,
           type: "control-frame",
-          position: { x: ro - wa + j, y: A - _a },
+          position: { x: co - wa + W, y: V - _a },
           data: { stepType: e[_].type, borderColor: I.border, bgColor: I.bg },
           style: {
-            width: `${320 + (wa - j) * 2}px`,
-            height: `${V - A + B + _a + Vc}px`
+            width: `${320 + (wa - W) * 2}px`,
+            height: `${L - V + B + _a + Ac}px`
           },
-          zIndex: -1 - a,
+          zIndex: -1 - s,
           selectable: !1,
           draggable: !1
         });
       }
-      za(e, n, r, _ + 1, y, a + 1), _ = y + 1;
+      za(e, a, r, _ + 1, b, s + 1), _ = b + 1;
     } else
       _++;
 }
-function Ga(e, n, r, c, g, a = null, _ = null) {
-  const y = [], k = [];
-  y.push({
+function Ga(e, a, r, c, g, s = null, _ = null) {
+  const b = [], k = [];
+  b.push({
     id: `${r}-start`,
     type: "start",
-    position: { x: ro, y: 0 },
-    data: { label: n || void 0 }
+    position: { x: co, y: 0 },
+    data: { label: a || void 0 }
   });
-  let A = `${r}-start`, V = na + Jn;
+  let V = `${r}-start`, L = aa + ea;
   for (let B = 0; B < e.length; B++) {
     const I = e[B];
     if (I.type === "end") continue;
-    const j = `${r}-step-${B}`, ue = Xa(I.type), M = Wc(I), J = Ko(I);
-    y.push({
-      id: j,
-      type: ue,
-      position: { x: ro, y: V },
+    const W = `${r}-step-${B}`, re = Xa(I.type), x = jc(I), Z = Oo(I);
+    b.push({
+      id: W,
+      type: re,
+      position: { x: co, y: L },
       data: {
-        label: M,
+        label: x,
         stepType: I.type,
         // Deep-clone the step's arrays so v-model edits inside the
         // detail panel don't mutate the form's arrays directly. The
@@ -3718,12 +3718,12 @@ function Ga(e, n, r, c, g, a = null, _ = null) {
         // reset `selectedNode` and tore down the panel mid-edit.
         // `updateStepFromNode` replaces the form's arrays on blur via
         // `Object.assign`, so the round-trip still lands.
-        step: Ac(I),
+        step: Nc(I),
         section: c,
         sectionIndex: g,
         stepIndex: B,
-        recording: Cc(e, a, B),
-        argSpecs: $c(I, _),
+        recording: $c(e, s, B),
+        argSpecs: Tc(I, _),
         bdd: I.type === "keyword" || I.type === "assignment" ? Aa(I.keyword) : null,
         envRefs: Fa([
           ...I.args,
@@ -3732,42 +3732,42 @@ function Ga(e, n, r, c, g, a = null, _ = null) {
         ])
       }
     });
-    const ae = jc(I, B > 0 ? e[B - 1] : void 0);
+    const Q = qc(I, B > 0 ? e[B - 1] : void 0);
     k.push({
-      id: `${r}-e-${A}-${j}`,
-      source: A,
-      target: j,
+      id: `${r}-e-${V}-${W}`,
+      source: V,
+      target: W,
       animated: I.type === "if" || I.type === "for" || I.type === "try",
-      label: ae
-    }), A = j, V += J + Jn;
+      label: Q
+    }), V = W, L += Z + ea;
   }
-  const E = `${r}-end`;
-  return y.push({
-    id: E,
+  const T = `${r}-end`;
+  return b.push({
+    id: T,
     type: "end",
-    position: { x: ro, y: V },
+    position: { x: co, y: L },
     data: {}
   }), k.push({
-    id: `${r}-e-${A}-${E}`,
-    source: A,
-    target: E
-  }), Pc(e, y, r), { nodes: y, edges: k };
+    id: `${r}-e-${V}-${T}`,
+    source: V,
+    target: T
+  }), Dc(e, b, r), { nodes: b, edges: k };
 }
-const Dc = [
+const Mc = [
   "documentation",
   "tags",
   "setup",
   "teardown",
   "template",
   "timeout"
-], Mc = [
+], xc = [
   "documentation",
   "arguments",
   "tags",
   "setup",
   "teardown",
   "timeout"
-], xc = {
+], Uc = {
   documentation: "[Documentation]",
   tags: "[Tags]",
   arguments: "[Arguments]",
@@ -3776,8 +3776,8 @@ const Dc = [
   template: "[Template]",
   timeout: "[Timeout]"
 };
-function Uc(e, n) {
-  switch (n) {
+function Bc(e, a) {
+  switch (a) {
     case "documentation":
       return e.documentation;
     case "tags":
@@ -3794,8 +3794,8 @@ function Uc(e, n) {
       return e.timeout;
   }
 }
-function Bc(e, n) {
-  switch (n) {
+function Kc(e, a) {
+  switch (a) {
     case "tags":
       return e.tags.length > 0;
     case "arguments":
@@ -3806,56 +3806,56 @@ function Bc(e, n) {
     case "setup":
     case "teardown":
     case "timeout":
-      return e[n] !== "";
+      return e[a] !== "";
   }
 }
-function Kc(e, n, r = null, c = null) {
-  const g = Ga(e.steps, e.name, `tc${n}`, "testcase", n, r, c);
-  if (Ya(g.nodes, g.edges, `tc${n}`, e, "testcase", n, Dc), e.templateRows && e.templateRows.length > 0) {
-    const a = `tc${n}`, _ = g.nodes.find((V) => V.id === `${a}-start`), y = `${a}-template-table`;
+function Hc(e, a, r = null, c = null) {
+  const g = Ga(e.steps, e.name, `tc${a}`, "testcase", a, r, c);
+  if (Ya(g.nodes, g.edges, `tc${a}`, e, "testcase", a, Mc), e.templateRows && e.templateRows.length > 0) {
+    const s = `tc${a}`, _ = g.nodes.find((L) => L.id === `${s}-start`), b = `${s}-template-table`;
     g.nodes.push({
-      id: y,
+      id: b,
       type: "template-table",
-      position: { x: ro, y: ((_ == null ? void 0 : _.position.y) ?? 0) + na + Jn },
+      position: { x: co, y: ((_ == null ? void 0 : _.position.y) ?? 0) + aa + ea },
       data: {
         templateKeyword: e.template,
         templateRows: e.templateRows,
         section: "testcase",
-        sectionIndex: n
+        sectionIndex: a
       }
     });
-    const k = `${a}-end`, A = g.edges.findIndex((V) => V.source === `${a}-start` && V.target === k);
-    A >= 0 && g.edges.splice(A, 1), g.edges.push({ id: `${a}-e-start-table`, source: `${a}-start`, target: y }), g.edges.push({ id: `${a}-e-table-end`, source: y, target: k });
+    const k = `${s}-end`, V = g.edges.findIndex((L) => L.source === `${s}-start` && L.target === k);
+    V >= 0 && g.edges.splice(V, 1), g.edges.push({ id: `${s}-e-start-table`, source: `${s}-start`, target: b }), g.edges.push({ id: `${s}-e-table-end`, source: b, target: k });
   }
   return g;
 }
-function Hc(e, n, r = null, c = null) {
-  const g = Ga(e.steps, e.name, `kw${n}`, "keyword", n, r, c);
-  return Ya(g.nodes, g.edges, `kw${n}`, e, "keyword", n, Mc), g;
+function Oc(e, a, r = null, c = null) {
+  const g = Ga(e.steps, e.name, `kw${a}`, "keyword", a, r, c);
+  return Ya(g.nodes, g.edges, `kw${a}`, e, "keyword", a, xc), g;
 }
-function Ya(e, n, r, c, g, a, _) {
-  const y = e.find((V) => V.id === `${r}-start`);
-  if (!y) return;
+function Ya(e, a, r, c, g, s, _) {
+  const b = e.find((L) => L.id === `${r}-start`);
+  if (!b) return;
   let k = 0;
-  const A = 96;
-  for (const V of _) {
-    if (!Bc(c, V)) continue;
-    const E = Uc(c, V), B = `${r}-${V}`;
+  const V = 96;
+  for (const L of _) {
+    if (!Kc(c, L)) continue;
+    const T = Bc(c, L), B = `${r}-${L}`;
     e.push({
       id: B,
       type: "setting-meta",
-      position: { x: ro - 280, y: y.position.y + k * A },
+      position: { x: co - 280, y: b.position.y + k * V },
       data: {
-        kind: V,
-        label: xc[V],
-        text: E,
+        kind: L,
+        label: Uc[L],
+        text: T,
         section: g,
-        sectionIndex: a
+        sectionIndex: s
       },
       selectable: !0,
       draggable: !1
-    }), n.push({
-      id: `${r}-${V}-edge`,
+    }), a.push({
+      id: `${r}-${L}-edge`,
       source: B,
       target: `${r}-start`,
       // Connect side note's RIGHT handle → Start's LEFT handle so the
@@ -3869,32 +3869,32 @@ function Ya(e, n, r, c, g, a, _) {
     }), k++;
   }
 }
-function Oc(e, n = null, r = null) {
+function Ic(e, a = null, r = null) {
   const c = [], g = [];
-  for (let a = 0; a < e.testCases.length; a++) {
-    const _ = a === 0 ? n : null, { nodes: y, edges: k } = Kc(e.testCases[a], a, _, r), A = a * 500;
-    for (const V of y)
-      V.position.x += A, c.push(V);
+  for (let s = 0; s < e.testCases.length; s++) {
+    const _ = s === 0 ? a : null, { nodes: b, edges: k } = Hc(e.testCases[s], s, _, r), V = s * 500;
+    for (const L of b)
+      L.position.x += V, c.push(L);
     g.push(...k);
   }
   return { nodes: c, edges: g };
 }
-function Ic(e, n = null) {
+function Wc(e, a = null) {
   const r = [], c = [];
   for (let g = 0; g < e.keywords.length; g++) {
-    const { nodes: a, edges: _ } = Hc(e.keywords[g], g, null, n), y = g * 500;
-    for (const k of a)
-      k.position.x += y, r.push(k);
+    const { nodes: s, edges: _ } = Oc(e.keywords[g], g, null, a), b = g * 500;
+    for (const k of s)
+      k.position.x += b, r.push(k);
     c.push(..._);
   }
   return { nodes: r, edges: c };
 }
-function et(e, n) {
-  var g, a;
-  const r = n.section === "testcase" ? (g = e.testCases[n.sectionIndex]) == null ? void 0 : g.steps : (a = e.keywords[n.sectionIndex]) == null ? void 0 : a.steps;
+function ot(e, a) {
+  var g, s;
+  const r = a.section === "testcase" ? (g = e.testCases[a.sectionIndex]) == null ? void 0 : g.steps : (s = e.keywords[a.sectionIndex]) == null ? void 0 : s.steps;
   if (!r) return;
-  const c = r[n.stepIndex];
-  c && Object.assign(c, n.step);
+  const c = r[a.stepIndex];
+  c && Object.assign(c, a.step);
 }
 function Xa(e) {
   switch (e) {
@@ -3920,7 +3920,7 @@ function Xa(e) {
       return "keyword";
   }
 }
-function Wc(e) {
+function jc(e) {
   switch (e.type) {
     case "keyword":
       return e.keyword || "Keyword";
@@ -3956,48 +3956,48 @@ function Wc(e) {
       return e.keyword || e.type;
   }
 }
-function jc(e, n) {
+function qc(e, a) {
   if (e.type === "else" || e.type === "else_if") return "false";
-  if ((n == null ? void 0 : n.type) === "if" || (n == null ? void 0 : n.type) === "else_if") return "true";
+  if ((a == null ? void 0 : a.type) === "if" || (a == null ? void 0 : a.type) === "else_if") return "true";
 }
 function ka(e) {
   return e ? e.split(`
 `).length : 0;
 }
-function Gn(e) {
+function Yn(e) {
   return e !== void 0 && e !== "";
 }
-function qc(e, n, r, c) {
-  if (n || r < 0 || r >= e.testCases.length) return null;
+function zc(e, a, r, c) {
+  if (a || r < 0 || r >= e.testCases.length) return null;
   const g = e.testCases[r];
   if (c < 0 || c >= g.steps.length) return null;
-  let a = 0, _;
-  for (const y of e.preambleLines)
-    a += 1, _ = y;
+  let s = 0, _;
+  for (const b of e.preambleLines)
+    s += 1, _ = b;
   if (e.settings.length > 0) {
-    a > 0 && Gn(_) && (a += 1, _ = ""), a += 1, _ = "*** Settings ***";
-    for (const y of e.settings) {
-      if (y.key === "#") {
-        a += 1, _ = y.value;
+    s > 0 && Yn(_) && (s += 1, _ = ""), s += 1, _ = "*** Settings ***";
+    for (const b of e.settings) {
+      if (b.key === "#") {
+        s += 1, _ = b.value;
         continue;
       }
-      const k = y.value && y.value.includes(`
-`) ? ka(y.value) : 1;
-      a += k, _ = "set";
+      const k = b.value && b.value.includes(`
+`) ? ka(b.value) : 1;
+      s += k, _ = "set";
     }
   }
   if (e.variables.length > 0) {
-    a > 0 && Gn(_) && (a += 1, _ = ""), a += 1, _ = "*** Variables ***";
-    for (const y of e.variables)
-      a += 1, _ = y.name === "#" ? y.value : y.name;
+    s > 0 && Yn(_) && (s += 1, _ = ""), s += 1, _ = "*** Variables ***";
+    for (const b of e.variables)
+      s += 1, _ = b.name === "#" ? b.value : b.name;
   }
   if (e.testCases.length > 0) {
-    a > 0 && Gn(_) && (a += 1, _ = ""), a += 1, _ = "*** Test Cases ***";
-    for (let y = 0; y < e.testCases.length; y++) {
-      const k = e.testCases[y];
-      if (a += 1, k.documentation && (a += ka(k.documentation)), k.tags.length > 0 && (a += 1), k.setup && (a += 1), k.teardown && (a += 1), k.timeout && (a += 1), k.template && (a += 1), y === r)
-        return a + c + 1;
-      a += k.steps.length, a += 1, _ = "";
+    s > 0 && Yn(_) && (s += 1, _ = ""), s += 1, _ = "*** Test Cases ***";
+    for (let b = 0; b < e.testCases.length; b++) {
+      const k = e.testCases[b];
+      if (s += 1, k.documentation && (s += ka(k.documentation)), k.tags.length > 0 && (s += 1), k.setup && (s += 1), k.teardown && (s += 1), k.timeout && (s += 1), k.template && (s += 1), b === r)
+        return s + c + 1;
+      s += k.steps.length, s += 1, _ = "";
     }
   }
   return null;
@@ -4016,97 +4016,97 @@ const Za = Object.freeze({
   "Get Text": "Heal Get Text",
   "Get Element Count": "Heal Get Element Count",
   "Drag And Drop": "Heal Drag And Drop"
-}), zc = Object.freeze(
+}), Gc = Object.freeze(
   Object.fromEntries(
-    Object.entries(Za).map(([e, n]) => [n, e])
+    Object.entries(Za).map(([e, a]) => [a, e])
   )
 );
-function Wo(e) {
-  const n = e.trim();
-  return Za[n] ?? null;
+function qo(e) {
+  const a = e.trim();
+  return Za[a] ?? null;
 }
-function aa(e) {
-  const n = e.trim();
-  return zc[n] ?? null;
+function sa(e) {
+  const a = e.trim();
+  return Gc[a] ?? null;
 }
-function jo(e) {
-  return aa(e) !== null;
-}
-function Gc(e) {
-  return e.findIndex(
-    (n) => n.key === "Library" && n.value === "RoboScopeHeal" && n.args.length === 0
-  );
+function zo(e) {
+  return sa(e) !== null;
 }
 function Yc(e) {
-  return e.some((n) => n.key === "Library" && n.value === "RoboScopeHeal");
+  return e.findIndex(
+    (a) => a.key === "Library" && a.value === "RoboScopeHeal" && a.args.length === 0
+  );
+}
+function Xc(e) {
+  return e.some((a) => a.key === "Library" && a.value === "RoboScopeHeal");
 }
 function Qa(e) {
-  if (Yc(e)) return e;
-  const n = { key: "Library", value: "RoboScopeHeal", args: [] };
-  return [...e, n];
+  if (Xc(e)) return e;
+  const a = { key: "Library", value: "RoboScopeHeal", args: [] };
+  return [...e, a];
 }
-function Ja(e, n) {
-  if (n) return e;
-  const r = Gc(e);
+function Ja(e, a) {
+  if (a) return e;
+  const r = Yc(e);
   return r === -1 ? e : [...e.slice(0, r), ...e.slice(r + 1)];
 }
 function es(e) {
-  let n = 0;
+  let a = 0;
   for (const r of e.testCases)
-    for (const c of r.steps) jo(c.keyword) && (n += 1);
+    for (const c of r.steps) zo(c.keyword) && (a += 1);
   for (const r of e.keywords)
-    for (const c of r.steps) jo(c.keyword) && (n += 1);
-  return n;
+    for (const c of r.steps) zo(c.keyword) && (a += 1);
+  return a;
 }
 function ts(e) {
-  return e.settings.some((n) => {
-    if (n.key !== "Library") return !1;
-    const r = n.value.trim();
+  return e.settings.some((a) => {
+    if (a.key !== "Library") return !1;
+    const r = a.value.trim();
     return /^(?:Browser|robotframework[-_]browser(?:[-_]batteries)?)$/i.test(r);
   });
 }
 function os(e) {
   return e.settings.some(
-    (n) => n.key === "Library" && n.value.trim() === "RoboScopeHeal"
+    (a) => a.key === "Library" && a.value.trim() === "RoboScopeHeal"
   );
 }
-function Xc(e) {
-  let n = 0;
+function Zc(e) {
+  let a = 0;
   for (const r of e.testCases)
-    for (const c of r.steps) Wo(c.keyword) !== null && (n += 1);
+    for (const c of r.steps) qo(c.keyword) !== null && (a += 1);
   for (const r of e.keywords)
-    for (const c of r.steps) Wo(c.keyword) !== null && (n += 1);
-  return n;
+    for (const c of r.steps) qo(c.keyword) !== null && (a += 1);
+  return a;
 }
-function Ca(e, n) {
-  if (n === "enable") {
-    const r = Wo(e.keyword);
+function Ca(e, a) {
+  if (a === "enable") {
+    const r = qo(e.keyword);
     if (r !== null) return { ...e, keyword: r };
   } else {
-    const r = aa(e.keyword);
+    const r = sa(e.keyword);
     if (r !== null) return { ...e, keyword: r };
   }
   return e;
 }
-function Zc(e, n) {
+function Qc(e, a) {
   let r = 0;
-  const c = e.testCases.map((y) => {
+  const c = e.testCases.map((b) => {
     let k = !1;
-    const A = y.steps.map((V) => {
-      const E = Ca(V, n);
-      return E !== V && (k = !0, r += 1), E;
+    const V = b.steps.map((L) => {
+      const T = Ca(L, a);
+      return T !== L && (k = !0, r += 1), T;
     });
-    return k ? { ...y, steps: A } : y;
-  }), g = e.keywords.map((y) => {
+    return k ? { ...b, steps: V } : b;
+  }), g = e.keywords.map((b) => {
     let k = !1;
-    const A = y.steps.map((V) => {
-      const E = Ca(V, n);
-      return E !== V && (k = !0, r += 1), E;
+    const V = b.steps.map((L) => {
+      const T = Ca(L, a);
+      return T !== L && (k = !0, r += 1), T;
     });
-    return k ? { ...y, steps: A } : y;
-  }), a = c.some((y) => y.steps.some((k) => jo(k.keyword))) || g.some((y) => y.steps.some((k) => jo(k.keyword)));
+    return k ? { ...b, steps: V } : b;
+  }), s = c.some((b) => b.steps.some((k) => zo(k.keyword))) || g.some((b) => b.steps.some((k) => zo(k.keyword)));
   let _ = e.settings;
-  return n === "enable" && a ? _ = Qa(_) : n === "disable" && (_ = Ja(_, a)), {
+  return a === "enable" && s ? _ = Qa(_) : a === "disable" && (_ = Ja(_, s)), {
     form: {
       ...e,
       settings: _,
@@ -4116,152 +4116,152 @@ function Zc(e, n) {
     changedKeywords: r
   };
 }
-const Qc = { class: "flow-editor" }, Jc = { class: "flow-section-bar" }, ed = { class: "flow-section-tabs" }, td = { class: "flow-item-tabs" }, od = ["onClick"], nd = ["title"], ad = ["onClick"], sd = ["title"], ld = ["title"], rd = { "aria-hidden": "true" }, id = ["title"], ud = { "aria-hidden": "true" }, cd = ["title"], dd = { "aria-hidden": "true" }, pd = {
+const Jc = { class: "flow-editor" }, ed = { class: "flow-section-bar" }, td = { class: "flow-section-tabs" }, od = { class: "flow-item-tabs" }, nd = ["onClick"], ad = ["title"], sd = ["onClick"], ld = ["title"], rd = ["title"], id = { "aria-hidden": "true" }, ud = ["title"], cd = { "aria-hidden": "true" }, dd = ["title"], pd = { "aria-hidden": "true" }, fd = {
   key: 0,
   class: "flow-libraries"
-}, fd = {
+}, md = {
   key: 0,
   class: "flow-libraries__empty"
-}, md = {
+}, gd = {
   key: 1,
   class: "flow-libraries__group",
   "data-testid": "flow-resources-group"
-}, gd = { class: "flow-libraries__group-label" }, vd = { class: "flow-libraries__chips" }, hd = ["title"], yd = ["title", "onClick"], bd = {
+}, vd = { class: "flow-libraries__group-label" }, hd = { class: "flow-libraries__chips" }, yd = ["title"], bd = ["title", "onClick"], wd = {
   key: 2,
   class: "flow-libraries__group",
   "data-testid": "flow-libraries-group"
-}, wd = { class: "flow-libraries__group-label" }, _d = { class: "flow-libraries__chips" }, kd = ["title"], Cd = ["title", "onClick"], $d = { class: "flow-libraries__input-row" }, Td = ["placeholder", "onKeydown"], Ed = ["disabled"], Sd = {
+}, _d = { class: "flow-libraries__group-label" }, kd = { class: "flow-libraries__chips" }, Cd = ["title"], $d = ["title", "onClick"], Td = { class: "flow-libraries__input-row" }, Ed = ["placeholder", "onKeydown"], Sd = ["disabled"], Ld = {
   key: 3,
   class: "flow-libraries__suggestions"
-}, Ld = ["onClick"], Vd = {
+}, Vd = ["onClick"], Ad = {
   key: 1,
   class: "flow-libraries",
   "data-testid": "flow-variables-panel"
-}, Ad = { class: "flow-vars__rows" }, Nd = {
+}, Nd = { class: "flow-vars__rows" }, Rd = {
   key: 0,
   class: "flow-libraries__empty"
-}, Rd = ["value", "onChange"], Fd = ["value", "onChange"], Pd = ["title", "onClick"], Dd = { class: "flow-libraries__input-row" }, Md = ["placeholder", "onKeydown"], xd = ["placeholder", "onKeydown"], Ud = ["disabled"], Bd = {
+}, Fd = ["value", "onChange"], Pd = ["value", "onChange"], Dd = ["title", "onClick"], Md = { class: "flow-libraries__input-row" }, xd = ["placeholder", "onKeydown"], Ud = ["placeholder", "onKeydown"], Bd = ["disabled"], Kd = {
   key: 0,
   class: "flow-vars__envrefs",
   "data-testid": "flow-env-vars"
-}, Kd = ["title"], Hd = ["data-state", "title"], Od = { class: "flow-libraries__chip-name" }, Id = {
+}, Hd = ["title"], Od = ["data-state", "title"], Id = { class: "flow-libraries__chip-name" }, Wd = {
   key: 2,
   class: "flow-libraries",
   "data-testid": "flow-suite-settings-panel"
-}, Wd = { class: "flow-vars__rows" }, jd = {
+}, jd = { class: "flow-vars__rows" }, qd = {
   key: 0,
   class: "flow-libraries__empty"
-}, qd = { class: "flow-vars__name flow-vars__name--readonly" }, zd = ["value", "onChange"], Gd = ["title", "onClick"], Yd = {
+}, zd = { class: "flow-vars__name flow-vars__name--readonly" }, Gd = ["value", "onChange"], Yd = ["title", "onClick"], Xd = {
   key: 0,
   class: "flow-libraries__suggestions"
-}, Xd = ["onClick"], Zd = {
+}, Zd = ["onClick"], Qd = {
   key: 3,
   class: "flow-empty"
-}, Qd = { class: "flow-empty__actions" }, Jd = {
+}, Jd = { class: "flow-empty__actions" }, ep = {
   key: 4,
   class: "flow-canvas-wrapper"
-}, ep = { class: "flow-node-doc-meta__body" }, tp = { class: "flow-node-doc-meta__label" }, op = {
+}, tp = { class: "flow-node-doc-meta__body" }, op = { class: "flow-node-doc-meta__label" }, np = {
   key: 0,
   class: "flow-node-doc-meta__text"
-}, np = {
+}, ap = {
   key: 1,
   class: "flow-node-doc-meta__text flow-node-doc-meta__text--empty"
-}, ap = ["onDragstart"], sp = {
+}, sp = ["onDragstart"], lp = {
   class: "flow-node-template",
   "data-testid": "flow-template-table"
-}, lp = { class: "flow-node-template__head" }, rp = { class: "flow-node-template__kw" }, ip = { class: "flow-node-template__table" }, up = ["value", "onChange"], cp = ["title", "onClick"], dp = { class: "flow-node-template__actions" }, pp = ["onClick"], fp = ["onClick"], mp = ["onDragstart"], gp = ["onDragstart"], vp = {
+}, rp = { class: "flow-node-template__head" }, ip = { class: "flow-node-template__kw" }, up = { class: "flow-node-template__table" }, cp = ["value", "onChange"], dp = ["title", "onClick"], pp = { class: "flow-node-template__actions" }, fp = ["onClick"], mp = ["onClick"], gp = ["onDragstart"], vp = ["onDragstart"], hp = {
   key: 0,
   class: "flow-node-return-values"
-}, hp = {
+}, yp = {
   key: 1,
   class: "flow-node-return-empty"
-}, yp = ["title"], bp = { class: "flow-detail-header" }, wp = { class: "flow-detail-row flow-settings-add-row" }, _p = ["title", "data-testid", "onClick"], kp = {
+}, bp = ["title"], wp = { class: "flow-detail-header" }, _p = { class: "flow-detail-row flow-settings-add-row" }, kp = ["title", "data-testid", "onClick"], Cp = {
   key: 0,
   class: "flow-detail-hint"
-}, Cp = ["title"], $p = { class: "flow-detail-header" }, Tp = { class: "flow-detail-actions" }, Ep = ["title"], Sp = { class: "flow-detail-row" }, Lp = ["placeholder"], Vp = ["placeholder"], Ap = { class: "flow-detail-hint" }, Np = ["title"], Rp = { class: "flow-detail-header" }, Fp = { class: "flow-detail-actions" }, Pp = ["title"], Dp = {
+}, $p = ["title"], Tp = { class: "flow-detail-header" }, Ep = { class: "flow-detail-actions" }, Sp = ["title"], Lp = { class: "flow-detail-row" }, Vp = ["placeholder"], Ap = ["placeholder"], Np = { class: "flow-detail-hint" }, Rp = ["title"], Fp = { class: "flow-detail-header" }, Pp = { class: "flow-detail-actions" }, Dp = ["title"], Mp = {
   key: 0,
   class: "flow-debug-action-row"
-}, Mp = ["title"], xp = {
+}, xp = ["title"], Up = {
   key: 0,
   class: "flow-debug-action-error",
   role: "alert"
-}, Up = {
+}, Bp = {
   key: 1,
   class: "flow-detail-row"
-}, Bp = {
+}, Kp = {
   key: 2,
   class: "flow-detail-row flow-detail-row--heal"
-}, Kp = ["for"], Hp = { class: "flow-heal-toggle" }, Op = ["id", "checked"], Ip = { class: "flow-heal-toggle__hint" }, Wp = {
+}, Hp = ["for"], Op = { class: "flow-heal-toggle" }, Ip = ["id", "checked"], Wp = { class: "flow-heal-toggle__hint" }, jp = {
   key: 3,
   class: "flow-detail-row"
-}, jp = ["title"], qp = ["title"], zp = { class: "flow-arg-type-icon" }, Gp = { class: "flow-arg-type-label" }, Yp = {
+}, qp = ["title"], zp = ["title"], Gp = { class: "flow-arg-type-icon" }, Yp = { class: "flow-arg-type-label" }, Xp = {
   key: 0,
   class: "flow-arg-type-opt"
-}, Xp = {
+}, Zp = {
   key: 1,
   class: "flow-selector-picker-wrap"
-}, Zp = {
+}, Qp = {
   key: 0,
   class: "flow-selector-custom-hint"
-}, Qp = ["checked", "onChange", "data-testid"], Jp = ["onUpdate:modelValue", "data-testid"], ef = ["value"], tf = {
+}, Jp = ["checked", "onChange", "data-testid"], ef = ["onUpdate:modelValue", "data-testid"], tf = ["value"], of = {
   value: "",
   disabled: "",
   hidden: ""
-}, of = ["value"], nf = ["onUpdate:modelValue", "step", "placeholder"], af = ["onUpdate:modelValue", "placeholder", "title"], sf = ["onUpdate:modelValue", "placeholder"], lf = ["title", "data-testid", "onClick"], rf = ["onClick"], uf = {
+}, nf = ["value"], af = ["onUpdate:modelValue", "step", "placeholder"], sf = ["onUpdate:modelValue", "placeholder", "title"], lf = ["onUpdate:modelValue", "placeholder"], rf = ["title", "data-testid", "onClick"], uf = ["onClick"], cf = {
   key: 0,
   class: "flow-add-arg-caret"
-}, cf = {
+}, df = {
   key: 0,
   class: "flow-add-arg-empty"
-}, df = ["data-testid", "onClick"], pf = { class: "flow-add-arg-option-name" }, ff = {
+}, pf = ["data-testid", "onClick"], ff = { class: "flow-add-arg-option-name" }, mf = {
   key: 0,
   class: "flow-add-arg-option-default"
-}, mf = {
+}, gf = {
   key: 1,
   class: "flow-add-arg-option-named"
-}, gf = {
+}, vf = {
   class: "flow-add-arg-custom",
   "data-testid": "add-arg-custom"
-}, vf = { class: "flow-add-arg-custom-label" }, hf = { class: "flow-add-arg-custom-row" }, yf = ["placeholder", "onKeydown"], bf = ["disabled"], wf = {
+}, hf = { class: "flow-add-arg-custom-label" }, yf = { class: "flow-add-arg-custom-row" }, bf = ["placeholder", "onKeydown"], wf = ["disabled"], _f = {
   key: 4,
   class: "flow-detail-row"
-}, _f = ["onUpdate:modelValue"], kf = ["onClick"], Cf = {
+}, kf = ["onUpdate:modelValue"], Cf = ["onClick"], $f = {
   key: 5,
   class: "flow-detail-row"
-}, $f = ["onUpdate:modelValue", "placeholder", "data-testid"], Tf = ["onClick"], Ef = {
+}, Tf = ["onUpdate:modelValue", "placeholder", "data-testid"], Ef = ["onClick"], Sf = {
   key: 6,
   class: "flow-detail-row"
-}, Sf = {
+}, Lf = {
   key: 7,
   class: "flow-detail-row"
-}, Lf = {
+}, Vf = {
   key: 8,
   class: "flow-detail-row"
-}, Vf = {
+}, Af = {
   key: 9,
   class: "flow-detail-row"
-}, Af = ["onUpdate:modelValue"], Nf = ["onClick"], Rf = {
+}, Nf = ["onUpdate:modelValue"], Rf = ["onClick"], Ff = {
   key: 10,
   class: "flow-detail-row"
-}, Ff = {
+}, Pf = {
   key: 11,
   class: "flow-detail-row"
-}, Pf = {
+}, Df = {
   key: 12,
   class: "flow-detail-row"
-}, Df = {
+}, Mf = {
   key: 13,
   class: "flow-detail-row"
-}, Mf = {
+}, xf = {
   key: 14,
   class: "flow-detail-row"
-}, xf = { key: 0 }, Uf = {
+}, Uf = { key: 0 }, Bf = {
   key: 0,
   class: "flow-debug-overlay",
   "data-testid": "flow-debug-overlay",
   role: "dialog",
   "aria-modal": "true"
-}, Bf = { class: "flow-debug-overlay__inner" }, Kf = 240, Hf = 720, Of = /* @__PURE__ */ je({
+}, Kf = { class: "flow-debug-overlay__inner" }, Hf = 240, Of = 720, If = /* @__PURE__ */ qe({
   __name: "FlowEditor",
   props: {
     form: {},
@@ -4269,29 +4269,29 @@ const Qc = { class: "flow-editor" }, Jc = { class: "flow-section-bar" }, ed = { 
     dirty: { type: Boolean }
   },
   emits: ["update:step", "update:sidecar", "add-test-case", "add-keyword", "libraries-changed"],
-  setup(e, { emit: n }) {
-    const r = e, c = Da(), g = n, { t: a } = mt(), _ = Qn(), y = N([]), k = N([]), { fitView: A, project: V } = fs(), E = N("testcases"), B = N(0), I = O(
-      () => r.form.testCases.map((o, s) => o.name || `Test Case ${s + 1}`)
-    ), j = O(
-      () => r.form.keywords.map((o, s) => o.name || `Keyword ${s + 1}`)
-    ), ue = O(() => r.form.testCases.length > 0), M = O(() => r.form.keywords.length > 0);
-    O(() => ue.value || M.value);
-    const J = O(() => E.value === "testcases" && !ue.value ? "testcases" : E.value === "keywords" && !M.value ? "keywords" : null), ae = N(!1), z = N(""), D = O(() => {
-      const o = [];
-      return r.form.settings.forEach((s, $) => {
-        const K = s.key.toLowerCase();
-        K === "library" ? o.push({ idx: $, kind: "library", value: s.value }) : K === "resource" && o.push({ idx: $, kind: "resource", value: s.value });
-      }), o;
-    }), R = O(
-      () => D.value.filter((o) => o.kind === "resource")
-    ), H = O(
-      () => D.value.filter((o) => o.kind === "library")
-    ), Y = O(() => {
-      const o = /* @__PURE__ */ new Set(["builtin"]);
-      for (const s of D.value)
-        s.kind === "library" && o.add(s.value.toLowerCase());
-      return o;
-    }), U = [
+  setup(e, { emit: a }) {
+    const r = e, c = Da(), g = a, { t: s } = ft(), _ = Jn(), b = N([]), k = N([]), { fitView: V, project: L } = fs(), T = N("testcases"), B = N(0), I = O(
+      () => r.form.testCases.map((t, n) => t.name || `Test Case ${n + 1}`)
+    ), W = O(
+      () => r.form.keywords.map((t, n) => t.name || `Keyword ${n + 1}`)
+    ), re = O(() => r.form.testCases.length > 0), x = O(() => r.form.keywords.length > 0);
+    O(() => re.value || x.value);
+    const Z = O(() => T.value === "testcases" && !re.value ? "testcases" : T.value === "keywords" && !x.value ? "keywords" : null), Q = N(!1), G = N(""), R = O(() => {
+      const t = [];
+      return r.form.settings.forEach((n, v) => {
+        const F = n.key.toLowerCase();
+        F === "library" ? t.push({ idx: v, kind: "library", value: n.value }) : F === "resource" && t.push({ idx: v, kind: "resource", value: n.value });
+      }), t;
+    }), P = O(
+      () => R.value.filter((t) => t.kind === "resource")
+    ), K = O(
+      () => R.value.filter((t) => t.kind === "library")
+    ), j = O(() => {
+      const t = /* @__PURE__ */ new Set(["builtin"]);
+      for (const n of R.value)
+        n.kind === "library" && t.add(n.value.toLowerCase());
+      return t;
+    }), D = [
       "BuiltIn",
       "Collections",
       "String",
@@ -4318,12 +4318,12 @@ const Qc = { class: "flow-editor" }, Jc = { class: "flow-section-bar" }, ed = { 
       "ArchiveLibrary",
       "CryptoLibrary",
       "RESTinstance"
-    ], Z = O(() => {
-      const o = z.value.trim().toLowerCase(), s = new Set(
-        D.value.filter(($) => $.kind === "library").map(($) => $.value.toLowerCase())
+    ], se = O(() => {
+      const t = G.value.trim().toLowerCase(), n = new Set(
+        R.value.filter((v) => v.kind === "library").map((v) => v.value.toLowerCase())
       );
-      return U.filter(($) => s.has($.toLowerCase()) ? !1 : o ? $.toLowerCase().includes(o) : !0).slice(0, 8);
-    }), ce = /* @__PURE__ */ new Set([
+      return D.filter((v) => n.has(v.toLowerCase()) ? !1 : t ? v.toLowerCase().includes(t) : !0).slice(0, 8);
+    }), oe = /* @__PURE__ */ new Set([
       "collections",
       "string",
       "datetime",
@@ -4335,109 +4335,109 @@ const Qc = { class: "flow-editor" }, Jc = { class: "flow-section-bar" }, ed = { 
       "telnet",
       "remote"
     ]);
-    function ke(o) {
-      const s = o.trim();
-      if (!s) return !1;
-      const $ = Xl(s), K = $ ? "Resource" : "Library";
+    function be(t) {
+      const n = t.trim();
+      if (!n) return !1;
+      const v = Zl(n), F = v ? "Resource" : "Library";
       if (r.form.settings.find(
-        (L) => L.key.toLowerCase() === K.toLowerCase() && L.value.trim().toLowerCase() === s.toLowerCase()
+        (S) => S.key.toLowerCase() === F.toLowerCase() && S.value.trim().toLowerCase() === n.toLowerCase()
       )) return !1;
-      r.form.settings.push({ key: K, value: s, args: [] }), z.value = "";
-      const C = $ || ce.has(s.toLowerCase());
-      return g("libraries-changed", C ? void 0 : s), $ ? "resource" : "library";
+      r.form.settings.push({ key: F, value: n, args: [] }), G.value = "";
+      const C = v || oe.has(n.toLowerCase());
+      return g("libraries-changed", C ? void 0 : n), v ? "resource" : "library";
     }
-    function ee(o, s) {
+    function J(t, n) {
       _.success(
-        a(o === "resource" ? "flowEditor.importAdded.resourceTitle" : "flowEditor.importAdded.libraryTitle"),
-        a("flowEditor.importAdded.message", { name: s })
+        s(t === "resource" ? "flowEditor.importAdded.resourceTitle" : "flowEditor.importAdded.libraryTitle"),
+        s("flowEditor.importAdded.message", { name: n })
       );
     }
-    function W() {
-      ke(z.value);
+    function H() {
+      be(G.value);
     }
-    function oe(o) {
-      o < 0 || o >= r.form.settings.length || (r.form.settings.splice(o, 1), g("libraries-changed"));
+    function ue(t) {
+      t < 0 || t >= r.form.settings.length || (r.form.settings.splice(t, 1), g("libraries-changed"));
     }
-    const fe = N(!1), be = N(""), Fe = N(""), Pe = O(() => {
-      const o = [];
-      return r.form.variables.forEach((s, $) => {
-        s.name !== "#" && o.push({ idx: $, name: s.name, value: s.value });
-      }), o;
+    const ce = N(!1), ge = N(""), Le = N(""), $e = O(() => {
+      const t = [];
+      return r.form.variables.forEach((n, v) => {
+        n.name !== "#" && t.push({ idx: v, name: n.name, value: n.value });
+      }), t;
     });
-    function He(o) {
-      const s = o.trim();
-      return !s || /^[$@&]\{.*\}$/.test(s) ? s : `\${${s}}`;
+    function Be(t) {
+      const n = t.trim();
+      return !n || /^[$@&]\{.*\}$/.test(n) ? n : `\${${n}}`;
+    }
+    function Ge() {
+      at = !0;
     }
     function ie() {
-      xe = !0;
-    }
-    function Ie() {
-      const o = He(be.value);
-      if (!o) return;
+      const t = Be(ge.value);
+      if (!t) return;
       r.form.variables.some(
-        ($) => $.name.toLowerCase() === o.toLowerCase()
-      ) || (ie(), r.form.variables.push({ name: o, value: Fe.value.trim() })), be.value = "", Fe.value = "";
+        (v) => v.name.toLowerCase() === t.toLowerCase()
+      ) || (Ge(), r.form.variables.push({ name: t, value: Le.value.trim() })), ge.value = "", Le.value = "";
     }
-    function tt(o, s) {
-      if (o < 0 || o >= r.form.variables.length) return;
-      const $ = He(s);
-      $ && (ie(), r.form.variables[o].name = $);
+    function Qe(t, n) {
+      if (t < 0 || t >= r.form.variables.length) return;
+      const v = Be(n);
+      v && (Ge(), r.form.variables[t].name = v);
     }
-    function gt(o, s) {
-      o < 0 || o >= r.form.variables.length || (ie(), r.form.variables[o].value = s);
+    function mt(t, n) {
+      t < 0 || t >= r.form.variables.length || (Ge(), r.form.variables[t].value = n);
     }
-    function ut(o) {
-      o < 0 || o >= r.form.variables.length || (ie(), r.form.variables.splice(o, 1));
+    function ut(t) {
+      t < 0 || t >= r.form.variables.length || (Ge(), r.form.variables.splice(t, 1));
     }
-    function Ze(o) {
-      const s = r.form.testCases[o];
-      return s ? (s.templateRows || (s.templateRows = []), s.templateRows) : [];
+    function Je(t) {
+      const n = r.form.testCases[t];
+      return n ? (n.templateRows || (n.templateRows = []), n.templateRows) : [];
     }
-    function vt(o, s, $, K) {
-      const te = Ze(o);
-      if (!(s < 0 || s >= te.length)) {
-        for (ie(); te[s].length <= $; ) te[s].push("");
-        te[s][$] = K;
+    function gt(t, n, v, F) {
+      const X = Je(t);
+      if (!(n < 0 || n >= X.length)) {
+        for (Ge(); X[n].length <= v; ) X[n].push("");
+        X[n][v] = F;
       }
     }
-    function ze(o) {
-      const s = Ze(o), $ = s.length ? Math.max(...s.map((K) => K.length)) : 1;
-      s.push(Array.from({ length: $ }, () => "")), Ne(`tc${o}-template-table`);
+    function Ye(t) {
+      const n = Je(t), v = n.length ? Math.max(...n.map((F) => F.length)) : 1;
+      n.push(Array.from({ length: v }, () => "")), Ne(`tc${t}-template-table`);
     }
-    function Q(o, s) {
-      const $ = Ze(o);
-      s >= 0 && s < $.length && $.splice(s, 1), Ne(`tc${o}-template-table`);
+    function Ke(t, n) {
+      const v = Je(t);
+      n >= 0 && n < v.length && v.splice(n, 1), Ne(`tc${t}-template-table`);
     }
-    function ot(o) {
-      for (const s of Ze(o)) s.push("");
-      Ne(`tc${o}-template-table`);
+    function ee(t) {
+      for (const n of Je(t)) n.push("");
+      Ne(`tc${t}-template-table`);
     }
-    const pe = O(() => {
-      const o = E.value === "testcases" ? r.form.testCases[B.value] : r.form.keywords[B.value];
-      if (!o) return [];
-      const s = [];
-      for (const $ of o.steps)
-        s.push(...$.args, $.condition, ...$.loopValues);
-      return Fa(s);
-    }), se = zo(), me = oa(), Se = O(() => c.scopeId == null ? null : se.resolveEnvironmentId(c.scopeId)), Be = O(() => {
-      var o;
-      return ((o = me.environments.find((s) => s.id === Se.value)) == null ? void 0 : o.name) ?? "";
-    }), ht = O(() => {
-      const o = Se.value === null ? void 0 : me.variables[Se.value];
-      return o ? new Set(o.map((s) => s.key)) : null;
+    const de = O(() => {
+      const t = T.value === "testcases" ? r.form.testCases[B.value] : r.form.keywords[B.value];
+      if (!t) return [];
+      const n = [];
+      for (const v of t.steps)
+        n.push(...v.args, v.condition, ...v.loopValues);
+      return Fa(n);
+    }), ne = Yo(), fe = na(), Ae = O(() => c.scopeId == null ? null : ne.resolveEnvironmentId(c.scopeId)), De = O(() => {
+      var t;
+      return ((t = fe.environments.find((n) => n.id === Ae.value)) == null ? void 0 : t.name) ?? "";
+    }), vt = O(() => {
+      const t = Ae.value === null ? void 0 : fe.variables[Ae.value];
+      return t ? new Set(t.map((n) => n.key)) : null;
     });
-    Le([() => c.scopeId, Se], ([, o]) => {
-      o !== null && me.fetchVariables(o).catch(() => {
+    Se([() => c.scopeId, Ae], ([, t]) => {
+      t !== null && fe.fetchVariables(t).catch(() => {
       });
-    }, { immediate: !0 }), us("envVarKeys", ht);
-    const Bt = O(() => Pa(pe.value, ht.value));
-    function Vt(o, s) {
-      const $ = Be.value;
-      if (s === "defined") return a("flowEditor.envVarDefined", { env: $ });
-      if (s === "default") return a("flowEditor.envVarDefaultUsed", { env: $ });
-      if (s === "missing") return a("flowEditor.envVarMissing", { env: $, name: o });
+    }, { immediate: !0 }), us("envVarKeys", vt);
+    const Zt = O(() => Pa(de.value, vt.value));
+    function Tt(t, n) {
+      const v = De.value;
+      if (n === "defined") return s("flowEditor.envVarDefined", { env: v });
+      if (n === "default") return s("flowEditor.envVarDefaultUsed", { env: v });
+      if (n === "missing") return s("flowEditor.envVarMissing", { env: v, name: t });
     }
-    const yt = N(!1), to = [
+    const nt = N(!1), Qt = [
       "Documentation",
       "Metadata",
       "Suite Setup",
@@ -4447,53 +4447,53 @@ const Qc = { class: "flow-editor" }, Jc = { class: "flow-section-bar" }, ed = { 
       "Force Tags",
       "Default Tags",
       "Test Timeout"
-    ], bt = O(() => {
-      const o = [];
-      return r.form.settings.forEach((s, $) => {
-        const K = s.key.toLowerCase();
-        K === "library" || K === "resource" || K === "variables" || K === "#" || o.push({ idx: $, key: s.key, value: s.value });
-      }), o;
-    }), oo = O(() => {
-      const o = new Set(
-        r.form.settings.map((s) => s.key.toLowerCase())
+    ], Et = O(() => {
+      const t = [];
+      return r.form.settings.forEach((n, v) => {
+        const F = n.key.toLowerCase();
+        F === "library" || F === "resource" || F === "variables" || F === "#" || t.push({ idx: v, key: n.key, value: n.value });
+      }), t;
+    }), Ut = O(() => {
+      const t = new Set(
+        r.form.settings.map((n) => n.key.toLowerCase())
       );
-      return to.filter((s) => !o.has(s.toLowerCase()));
+      return Qt.filter((n) => !t.has(n.toLowerCase()));
     });
-    function Kt(o) {
-      r.form.settings.some((s) => s.key.toLowerCase() === o.toLowerCase()) || (ie(), r.form.settings.push({ key: o, value: "", args: [] }));
+    function Jt(t) {
+      r.form.settings.some((n) => n.key.toLowerCase() === t.toLowerCase()) || (Ge(), r.form.settings.push({ key: t, value: "", args: [] }));
     }
-    function At(o, s) {
-      o < 0 || o >= r.form.settings.length || (ie(), r.form.settings[o].value = s);
+    function St(t, n) {
+      t < 0 || t >= r.form.settings.length || (Ge(), r.form.settings[t].value = n);
     }
-    function Nt(o) {
-      o < 0 || o >= r.form.settings.length || (ie(), r.form.settings.splice(o, 1));
+    function Bt(t) {
+      t < 0 || t >= r.form.settings.length || (Ge(), r.form.settings.splice(t, 1));
     }
-    async function wt() {
-      g("add-test-case"), await Xe(), r.form.testCases.length > 0 && (E.value = "testcases", B.value = r.form.testCases.length - 1);
+    async function ht() {
+      g("add-test-case"), await je(), r.form.testCases.length > 0 && (T.value = "testcases", B.value = r.form.testCases.length - 1);
     }
-    async function _t() {
-      g("add-keyword"), await Xe(), r.form.keywords.length > 0 && (E.value = "keywords", B.value = r.form.keywords.length - 1);
+    async function Lt() {
+      g("add-keyword"), await je(), r.form.keywords.length > 0 && (T.value = "keywords", B.value = r.form.keywords.length - 1);
     }
-    const F = N(null), w = O(() => !F.value || F.value.type === "setting-meta" || F.value.type === "start" || F.value.type === "template-table" ? null : F.value.data), P = O(
+    const A = N(null), w = O(() => !A.value || A.value.type === "setting-meta" || A.value.type === "start" || A.value.type === "template-table" ? null : A.value.data), M = O(
       () => {
-        var o;
-        return ((o = F.value) == null ? void 0 : o.type) === "start";
+        var t;
+        return ((t = A.value) == null ? void 0 : t.type) === "start";
       }
-    ), G = [
+    ), q = [
       "documentation",
       "tags",
       "setup",
       "teardown",
       "template",
       "timeout"
-    ], ge = [
+    ], me = [
       "documentation",
       "arguments",
       "tags",
       "setup",
       "teardown",
       "timeout"
-    ], Ve = {
+    ], Te = {
       documentation: "[Documentation]",
       tags: "[Tags]",
       arguments: "[Arguments]",
@@ -4502,432 +4502,432 @@ const Qc = { class: "flow-editor" }, Jc = { class: "flow-section-bar" }, ed = { 
       template: "[Template]",
       timeout: "[Timeout]"
     };
-    function nt() {
-      return E.value === "testcases" ? r.form.testCases[B.value] : r.form.keywords[B.value];
+    function et() {
+      return T.value === "testcases" ? r.form.testCases[B.value] : r.form.keywords[B.value];
     }
-    function Ht(o) {
-      const s = nt();
-      return s ? o === "tags" ? s.tags.length === 0 : o === "arguments" ? "arguments" in s ? s.arguments.length === 0 : !1 : o === "template" ? "template" in s ? !s.template : !1 : !s[o] : !1;
+    function Kt(t) {
+      const n = et();
+      return n ? t === "tags" ? n.tags.length === 0 : t === "arguments" ? "arguments" in n ? n.arguments.length === 0 : !1 : t === "template" ? "template" in n ? !n.template : !1 : !n[t] : !1;
     }
-    const Go = O(
-      () => E.value === "testcases" ? G : ge
-    ), Ae = O(() => {
-      if (!F.value || F.value.type !== "setting-meta") return null;
-      const o = F.value.data;
-      return { kind: o.kind, section: o.section, sectionIndex: o.sectionIndex };
+    const Xo = O(
+      () => T.value === "testcases" ? q : me
+    ), Fe = O(() => {
+      if (!A.value || A.value.type !== "setting-meta") return null;
+      const t = A.value.data;
+      return { kind: t.kind, section: t.section, sectionIndex: t.sectionIndex };
     });
-    function io() {
-      if (!Ae.value) return;
-      const { section: o, sectionIndex: s } = Ae.value;
-      return o === "testcase" ? r.form.testCases[s] : r.form.keywords[s];
+    function Ht() {
+      if (!Fe.value) return;
+      const { section: t, sectionIndex: n } = Fe.value;
+      return t === "testcase" ? r.form.testCases[n] : r.form.keywords[n];
     }
-    const Ge = N("");
-    function To() {
-      const o = io();
-      if (!o || !Ae.value) return "";
-      const s = Ae.value.kind;
-      return s === "tags" ? o.tags.join(", ") : s === "arguments" ? "arguments" in o ? o.arguments.join(", ") : "" : s === "template" ? "template" in o ? o.template : "" : o[s];
+    const Vt = N("");
+    function At() {
+      const t = Ht();
+      if (!t || !Fe.value) return "";
+      const n = Fe.value.kind;
+      return n === "tags" ? t.tags.join(", ") : n === "arguments" ? "arguments" in t ? t.arguments.join(", ") : "" : n === "template" ? "template" in t ? t.template : "" : t[n];
     }
-    Le(
-      () => Ae.value && [
-        Ae.value.section,
-        Ae.value.sectionIndex,
-        Ae.value.kind
+    Se(
+      () => Fe.value && [
+        Fe.value.section,
+        Fe.value.sectionIndex,
+        Fe.value.kind
       ].join("|"),
-      (o) => {
-        o && (Ge.value = To());
+      (t) => {
+        t && (Vt.value = At());
       },
       { immediate: !0 }
     );
-    function Yo() {
-      const o = io();
-      if (!o || !Ae.value) return;
-      const s = Ge.value, $ = Ae.value.kind;
-      $ === "tags" ? o.tags = uo(s) : $ === "arguments" && "arguments" in o ? o.arguments = uo(s) : $ === "template" && "template" in o ? o.template = s : ($ === "documentation" || $ === "setup" || $ === "teardown" || $ === "timeout") && (o[$] = s), Ne();
+    function po() {
+      const t = Ht();
+      if (!t || !Fe.value) return;
+      const n = Vt.value, v = Fe.value.kind;
+      v === "tags" ? t.tags = Zo(n) : v === "arguments" && "arguments" in t ? t.arguments = Zo(n) : v === "template" && "template" in t ? t.template = n : (v === "documentation" || v === "setup" || v === "teardown" || v === "timeout") && (t[v] = n), Ne();
     }
-    function uo(o) {
-      return o.split(/,\s*|\n+/).map((s) => s.trim()).filter((s) => s.length > 0);
+    function Zo(t) {
+      return t.split(/,\s*|\n+/).map((n) => n.trim()).filter((n) => n.length > 0);
     }
-    function En() {
-      if (!Ae.value) return;
-      const o = io();
-      if (!o) return;
-      const s = Ae.value.kind;
-      s === "tags" ? o.tags = [] : s === "arguments" && "arguments" in o ? o.arguments = [] : s === "template" && "template" in o ? o.template = "" : (s === "documentation" || s === "setup" || s === "teardown" || s === "timeout") && (o[s] = ""), F.value = null, Ne();
+    function $o() {
+      if (!Fe.value) return;
+      const t = Ht();
+      if (!t) return;
+      const n = Fe.value.kind;
+      n === "tags" ? t.tags = [] : n === "arguments" && "arguments" in t ? t.arguments = [] : n === "template" && "template" in t ? t.template = "" : (n === "documentation" || n === "setup" || n === "teardown" || n === "timeout") && (t[n] = ""), A.value = null, Ne();
     }
-    function Sn(o) {
-      const s = nt();
-      s && (o === "tags" ? s.tags = [""] : o === "arguments" && "arguments" in s ? s.arguments = [""] : o === "template" && "template" in s ? s.template = " " : (o === "documentation" || o === "setup" || o === "teardown" || o === "timeout") && (s[o] = " "), Ne(), Xe(() => {
-        const $ = E.value === "testcases" ? `tc${B.value}` : `kw${B.value}`, K = y.value.find((te) => te.id === `${$}-${o}`);
-        K && (F.value = K);
+    function Sn(t) {
+      const n = et();
+      n && (t === "tags" ? n.tags = [""] : t === "arguments" && "arguments" in n ? n.arguments = [""] : t === "template" && "template" in n ? n.template = " " : (t === "documentation" || t === "setup" || t === "teardown" || t === "timeout") && (n[t] = " "), Ne(), je(() => {
+        const v = T.value === "testcases" ? `tc${B.value}` : `kw${B.value}`, F = b.value.find((X) => X.id === `${v}-${t}`);
+        F && (A.value = F);
       }));
     }
-    const ct = N(300), Rt = N(!1);
-    function Ft(o) {
-      o.preventDefault(), Rt.value = !0;
-      const s = o.clientX, $ = ct.value;
-      function K(C) {
-        const L = s - C.clientX, he = Math.min(Hf, Math.max(Kf, $ + L));
-        ct.value = he;
+    const eo = N(300), ct = N(!1);
+    function to(t) {
+      t.preventDefault(), ct.value = !0;
+      const n = t.clientX, v = eo.value;
+      function F(C) {
+        const S = n - C.clientX, he = Math.min(Of, Math.max(Hf, v + S));
+        eo.value = he;
       }
-      function te() {
-        Rt.value = !1, window.removeEventListener("pointermove", K), window.removeEventListener("pointerup", te), window.removeEventListener("pointercancel", te);
+      function X() {
+        ct.value = !1, window.removeEventListener("pointermove", F), window.removeEventListener("pointerup", X), window.removeEventListener("pointercancel", X);
       }
-      window.addEventListener("pointermove", K), window.addEventListener("pointerup", te), window.addEventListener("pointercancel", te);
+      window.addEventListener("pointermove", F), window.addEventListener("pointerup", X), window.addEventListener("pointercancel", X);
     }
-    const { argsByName: co, getKeywordInfo: Xo, getParsedArgs: Ot } = Tn();
-    function It(o) {
-      if (o.type !== "keyword" && o.type !== "assignment" || o.args.length > 0) return;
-      const s = Ot(o.keyword);
-      if (s)
-        for (const $ of s)
-          if ($.kind === "positional") o.args.push("");
+    const { argsByName: Ot, getKeywordInfo: To, getParsedArgs: Qo } = En();
+    function Nt(t) {
+      if (t.type !== "keyword" && t.type !== "assignment" || t.args.length > 0) return;
+      const n = Qo(t.keyword);
+      if (n)
+        for (const v of n)
+          if (v.kind === "positional") t.args.push("");
           else break;
     }
-    const Ln = O(() => {
-      const o = /* @__PURE__ */ new Map(), s = ($) => {
-        for (const K of $) {
-          if (K.type !== "keyword" && K.type !== "assignment" || !K.keyword) continue;
-          const te = Xo(K.keyword), C = te == null ? void 0 : te.library;
-          C && o.set(C, (o.get(C) ?? 0) + 1);
+    const oo = O(() => {
+      const t = /* @__PURE__ */ new Map(), n = (v) => {
+        for (const F of v) {
+          if (F.type !== "keyword" && F.type !== "assignment" || !F.keyword) continue;
+          const X = To(F.keyword), C = X == null ? void 0 : X.library;
+          C && t.set(C, (t.get(C) ?? 0) + 1);
         }
       };
-      for (const $ of r.form.testCases) s($.steps);
-      for (const $ of r.form.keywords) s($.steps);
-      return o;
-    }), Vn = O(() => D.value.length), An = O(() => {
-      let o = 0;
-      for (const s of r.form.testCases) o += s.steps.length;
-      for (const s of r.form.keywords) o += s.steps.length;
-      return o;
+      for (const v of r.form.testCases) n(v.steps);
+      for (const v of r.form.keywords) n(v.steps);
+      return t;
+    }), Ln = O(() => R.value.length), Vn = O(() => {
+      let t = 0;
+      for (const n of r.form.testCases) t += n.steps.length;
+      for (const n of r.form.keywords) t += n.steps.length;
+      return t;
     });
-    function kt() {
-      const o = r.sidecar ?? null, s = co.value;
-      if (E.value === "testcases") {
-        const $ = Oc(r.form, o, s);
-        y.value = $.nodes, k.value = $.edges;
+    function yt() {
+      const t = r.sidecar ?? null, n = Ot.value;
+      if (T.value === "testcases") {
+        const v = Ic(r.form, t, n);
+        b.value = v.nodes, k.value = v.edges;
       } else {
-        const $ = Ic(r.form, s);
-        y.value = $.nodes, k.value = $.edges;
+        const v = Wc(r.form, n);
+        b.value = v.nodes, k.value = v.edges;
       }
     }
     const Eo = O(() => {
-      const o = E.value === "testcases" ? `tc${B.value}-` : `kw${B.value}-`;
-      return y.value.filter((s) => s.id.startsWith(o));
-    }), Pt = O(() => {
-      const o = Eo.value;
-      if (Zt.value === null) return o;
-      const s = Hn(Zt.value), $ = {
+      const t = T.value === "testcases" ? `tc${B.value}-` : `kw${B.value}-`;
+      return b.value.filter((n) => n.id.startsWith(t));
+    }), An = O(() => {
+      const t = Eo.value;
+      if (zt.value === null) return t;
+      const n = io(zt.value), v = {
         id: "__drop-indicator__",
         type: "drop-indicator",
-        position: { x: ro - 50, y: s - 2 },
+        position: { x: co - 50, y: n - 2 },
         data: {},
         draggable: !1,
         selectable: !1
       };
-      return [...o, $];
-    }), po = O(() => {
-      const o = E.value === "testcases" ? `tc${B.value}-` : `kw${B.value}-`;
-      return k.value.filter((s) => s.id.startsWith(o));
+      return [...t, v];
+    }), Rt = O(() => {
+      const t = T.value === "testcases" ? `tc${B.value}-` : `kw${B.value}-`;
+      return k.value.filter((n) => n.id.startsWith(t));
     });
-    let xe = !1;
-    Le([() => r.form, E], () => {
-      const o = xe;
-      xe = !1, o || (B.value = 0, F.value = null), kt(), o || Xe(() => {
-        A({ padding: 0.3 }), setTimeout(() => A({ padding: 0.3 }), 100);
+    let at = !1;
+    Se([() => r.form, T], () => {
+      const t = at;
+      at = !1, t || (B.value = 0, A.value = null), yt(), t || je(() => {
+        V({ padding: 0.3 }), setTimeout(() => V({ padding: 0.3 }), 100);
       });
-    }, { deep: !0 }), Le(() => r.sidecar, () => {
-      kt();
-    }), Le(co, () => {
-      kt();
-    }), Le(B, () => {
-      F.value = null, Xe(() => {
-        A({ padding: 0.3 }), setTimeout(() => A({ padding: 0.3 }), 100);
+    }, { deep: !0 }), Se(() => r.sidecar, () => {
+      yt();
+    }), Se(Ot, () => {
+      yt();
+    }), Se(B, () => {
+      A.value = null, je(() => {
+        V({ padding: 0.3 }), setTimeout(() => V({ padding: 0.3 }), 100);
       });
     });
-    function So(o) {
-      if (o.key !== "Backspace" && o.key !== "Delete" || !F.value || !w.value) return;
-      const s = o.target;
-      if (s) {
-        const $ = s.tagName;
-        if ($ === "INPUT" || $ === "TEXTAREA" || $ === "SELECT" || s.isContentEditable) return;
+    function Ie(t) {
+      if (t.key !== "Backspace" && t.key !== "Delete" || !A.value || !w.value) return;
+      const n = t.target;
+      if (n) {
+        const v = n.tagName;
+        if (v === "INPUT" || v === "TEXTAREA" || v === "SELECT" || n.isContentEditable) return;
       }
-      o.preventDefault(), Po();
+      t.preventDefault(), cn();
     }
-    qo(() => {
-      !ue.value && M.value && (E.value = "keywords"), kt(), setTimeout(() => A({ padding: 0.3 }), 200), setTimeout(() => A({ padding: 0.3 }), 500), window.addEventListener("keydown", So);
-    }), Ho(() => {
-      window.removeEventListener("keydown", So);
+    Go(() => {
+      !re.value && x.value && (T.value = "keywords"), yt(), setTimeout(() => V({ padding: 0.3 }), 200), setTimeout(() => V({ padding: 0.3 }), 500), window.addEventListener("keydown", Ie);
+    }), Io(() => {
+      window.removeEventListener("keydown", Ie);
     });
-    function Lo(o) {
-      if (o.node.type === "end") {
-        F.value = null;
+    function Jo(t) {
+      if (t.node.type === "end") {
+        A.value = null;
         return;
       }
-      F.value = o.node;
+      A.value = t.node;
     }
-    function Nn() {
-      F.value = null;
+    function So() {
+      A.value = null;
     }
-    function Ne(o) {
-      var $;
-      const s = o ?? (($ = F.value) == null ? void 0 : $.id);
-      xe = !0, kt(), s && Xe(() => {
-        const K = y.value.find((te) => te.id === s);
-        F.value = K || null;
+    function Ne(t) {
+      var v;
+      const n = t ?? ((v = A.value) == null ? void 0 : v.id);
+      at = !0, yt(), n && je(() => {
+        const F = b.value.find((X) => X.id === n);
+        A.value = F || null;
       });
     }
-    function Vo(o) {
-      return `${E.value === "testcases" ? `tc${B.value}` : `kw${B.value}`}-step-${o}`;
+    function Lo(t) {
+      return `${T.value === "testcases" ? `tc${B.value}` : `kw${B.value}`}-step-${t}`;
     }
-    function Ue() {
-      w.value && (et(r.form, w.value), Ne(), g("update:step", w.value));
+    function Me() {
+      w.value && (ot(r.form, w.value), Ne(), g("update:step", w.value));
     }
-    function Zo(o) {
+    function Nn(t) {
       if (!w.value) return;
-      const s = w.value.recording;
-      if (!s) return;
-      const $ = s.selector_candidates[o];
-      $ && (ba(w.value.step, s) && !window.confirm(
-        a("flowEditor.selector.replaceCustomConfirm", {
+      const n = w.value.recording;
+      if (!n) return;
+      const v = n.selector_candidates[t];
+      v && (ba(w.value.step, n) && !window.confirm(
+        s("flowEditor.selector.replaceCustomConfirm", {
           current: w.value.step.args[0] ?? "",
-          next: $.value
+          next: v.value
         })
-      ) || Tc(w.value.step, s, o) && (et(r.form, w.value), Ne(), g("update:step", w.value), r.sidecar && g("update:sidecar", r.sidecar)));
+      ) || Ec(w.value.step, n, t) && (ot(r.form, w.value), Ne(), g("update:step", w.value), r.sidecar && g("update:sidecar", r.sidecar)));
     }
-    function Rn(o) {
+    function en(t) {
       if (!w.value) return;
-      const s = w.value.recording;
-      if (!s) return;
-      const $ = s.selector_candidates[o.index];
-      if ($) {
-        if ($.value = o.value, $.strategy = o.strategy, $.quality_score = 50, $.verified_unique = !1, o.effective !== void 0 && ($.effective_override = o.effective === "" ? null : o.effective), o.index === s.active_candidate_index) {
-          const K = ya(s, $);
-          w.value.step.args.length === 0 ? w.value.step.args.push(K) : w.value.step.args[0] = K, et(r.form, w.value);
+      const n = w.value.recording;
+      if (!n) return;
+      const v = n.selector_candidates[t.index];
+      if (v) {
+        if (v.value = t.value, v.strategy = t.strategy, v.quality_score = 50, v.verified_unique = !1, t.effective !== void 0 && (v.effective_override = t.effective === "" ? null : t.effective), t.index === n.active_candidate_index) {
+          const F = ya(n, v);
+          w.value.step.args.length === 0 ? w.value.step.args.push(F) : w.value.step.args[0] = F, ot(r.form, w.value);
         }
         Ne(), g("update:step", w.value), r.sidecar && g("update:sidecar", r.sidecar);
       }
     }
-    function Fn(o) {
+    function Rn(t) {
       if (!w.value) return;
-      const s = w.value.recording;
-      if (!s) return;
-      const $ = {
-        strategy: o.strategy,
-        value: o.value,
+      const n = w.value.recording;
+      if (!n) return;
+      const v = {
+        strategy: t.strategy,
+        value: t.value,
         quality_score: 50,
         verified_unique: !1,
-        effective_override: o.effective !== void 0 && o.effective !== "" ? o.effective : null
+        effective_override: t.effective !== void 0 && t.effective !== "" ? t.effective : null
       };
-      s.selector_candidates.push($);
-      const K = s.selector_candidates.length - 1;
-      s.active_candidate_index = K;
-      const te = ya(s, $);
-      w.value.step.args.length === 0 ? w.value.step.args.push(te) : w.value.step.args[0] = te, et(r.form, w.value), Ne(), g("update:step", w.value), r.sidecar && g("update:sidecar", r.sidecar);
+      n.selector_candidates.push(v);
+      const F = n.selector_candidates.length - 1;
+      n.active_candidate_index = F;
+      const X = ya(n, v);
+      w.value.step.args.length === 0 ? w.value.step.args.push(X) : w.value.step.args[0] = X, ot(r.form, w.value), Ne(), g("update:step", w.value), r.sidecar && g("update:sidecar", r.sidecar);
     }
-    const Ao = O(() => {
-      var s;
-      const o = (s = w.value) == null ? void 0 : s.recording;
-      return !!o && o.selector_candidates.length > 0;
-    }), Pn = O(() => {
-      const o = w.value;
-      return o != null && o.recording ? ba(o.step, o.recording) : !1;
+    const tn = O(() => {
+      var n;
+      const t = (n = w.value) == null ? void 0 : n.recording;
+      return !!t && t.selector_candidates.length > 0;
+    }), on = O(() => {
+      const t = w.value;
+      return t != null && t.recording ? ba(t.step, t.recording) : !1;
     });
-    function fo(o) {
-      var te;
-      const s = w.value;
-      if (!s) return null;
-      const $ = s.step.args[o] ?? "", K = /^([A-Za-z_][\w]*)\s*=/.exec($);
-      if (K && s.argSpecs) {
-        const C = s.argSpecs.find((L) => L.name === K[1]);
+    function fo(t) {
+      var X;
+      const n = w.value;
+      if (!n) return null;
+      const v = n.step.args[t] ?? "", F = /^([A-Za-z_][\w]*)\s*=/.exec(v);
+      if (F && n.argSpecs) {
+        const C = n.argSpecs.find((S) => S.name === F[1]);
         if (C) return { spec: C, viaName: !0 };
       }
-      return (te = s.argSpecs) != null && te[o] ? { spec: s.argSpecs[o], viaName: !1 } : null;
+      return (X = n.argSpecs) != null && X[t] ? { spec: n.argSpecs[t], viaName: !1 } : null;
     }
-    function Dn(o) {
-      var $;
-      const s = fo(o);
-      return s != null && s.viaName ? s.spec.name : Na((($ = w.value) == null ? void 0 : $.argSpecs) ?? null, o, a);
+    function Fn(t) {
+      var v;
+      const n = fo(t);
+      return n != null && n.viaName ? n.spec.name : Na(((v = w.value) == null ? void 0 : v.argSpecs) ?? null, t, s);
     }
-    function Qo(o) {
-      w.value && (w.value.step.keyword = o);
+    function Pn(t) {
+      w.value && (w.value.step.keyword = t);
     }
-    const no = O(() => {
-      const o = w.value;
-      if (!o || o.stepType !== "keyword" && o.stepType !== "assignment") return "hidden";
-      const s = (o.step.keyword ?? "").trim(), $ = jo(s), K = Wo(s) !== null;
-      return !$ && !K || !ts(r.form) && !os(r.form) ? "hidden" : $ ? "on" : "off";
+    const Vo = O(() => {
+      const t = w.value;
+      if (!t || t.stepType !== "keyword" && t.stepType !== "assignment") return "hidden";
+      const n = (t.step.keyword ?? "").trim(), v = zo(n), F = qo(n) !== null;
+      return !v && !F || !ts(r.form) && !os(r.form) ? "hidden" : v ? "on" : "off";
     });
-    function Ct(o) {
-      const s = w.value;
-      if (!s) return;
-      const $ = s.step.keyword.trim(), K = o ? Wo($) : aa($);
-      if (K === null) return;
-      s.step.keyword = K, Ue();
-      const te = es(r.form) > 0, C = o ? Qa(r.form.settings) : Ja(r.form.settings, te);
+    function mo(t) {
+      const n = w.value;
+      if (!n) return;
+      const v = n.step.keyword.trim(), F = t ? qo(v) : sa(v);
+      if (F === null) return;
+      n.step.keyword = F, Me();
+      const X = es(r.form) > 0, C = t ? Qa(r.form.settings) : Ja(r.form.settings, X);
       C !== r.form.settings && r.form.settings.splice(0, r.form.settings.length, ...C);
     }
-    const mo = N(!1), go = O(() => {
-      var o;
-      return ((o = w.value) == null ? void 0 : o.step.keyword) ?? "";
-    }), dt = O(() => {
-      const o = w.value;
-      return !o || o.stepType !== "keyword" && o.stepType !== "assignment" ? !1 : (o.step.keyword ?? "").trim().length > 0;
+    const st = N(!1), nn = O(() => {
+      var t;
+      return ((t = w.value) == null ? void 0 : t.step.keyword) ?? "";
+    }), no = O(() => {
+      const t = w.value;
+      return !t || t.stepType !== "keyword" && t.stepType !== "assignment" ? !1 : (t.step.keyword ?? "").trim().length > 0;
     });
-    function $t() {
-      dt.value && (mo.value = !0);
+    function bt() {
+      no.value && (st.value = !0);
     }
-    function Qe(o) {
-      const s = fo(o);
-      return (s == null ? void 0 : s.spec.defaultValue) != null && s.spec.defaultValue !== "" ? s.spec.defaultValue : a("flowEditor.argLabels.fallback", { n: o + 1 });
+    function tt(t) {
+      const n = fo(t);
+      return (n == null ? void 0 : n.spec.defaultValue) != null && n.spec.defaultValue !== "" ? n.spec.defaultValue : s("flowEditor.argLabels.fallback", { n: t + 1 });
     }
-    function at(o) {
-      const s = fo(o);
-      return bn((s == null ? void 0 : s.spec.type) ?? null);
+    function Ue(t) {
+      const n = fo(t);
+      return wn((n == null ? void 0 : n.spec.type) ?? null);
     }
-    function Jo(o) {
-      const s = at(o);
-      if (s.raw)
-        return s.raw + (s.optional ? a("flowEditor.argTypes.optionalSuffix") : "");
+    function an(t) {
+      const n = Ue(t);
+      if (n.raw)
+        return n.raw + (n.optional ? s("flowEditor.argTypes.optionalSuffix") : "");
     }
     const ao = N(/* @__PURE__ */ new Set());
-    function No(o) {
-      var s;
-      return `${((s = F.value) == null ? void 0 : s.id) ?? "?"}#${o}`;
+    function Ao(t) {
+      var n;
+      return `${((n = A.value) == null ? void 0 : n.id) ?? "?"}#${t}`;
     }
-    function vo(o) {
-      return ao.value.has(No(o));
+    function go(t) {
+      return ao.value.has(Ao(t));
     }
-    function en(o) {
-      const s = No(o), $ = new Set(ao.value);
-      $.has(s) ? $.delete(s) : $.add(s), ao.value = $;
+    function sn(t) {
+      const n = Ao(t), v = new Set(ao.value);
+      v.has(n) ? v.delete(n) : v.add(n), ao.value = v;
     }
-    Le(F, () => {
+    Se(A, () => {
       ao.value = /* @__PURE__ */ new Set();
     });
-    function Wt(o) {
+    function Ft(t) {
       var C;
-      if (vo(o)) return "text";
-      const s = at(o).control;
-      if (s === "text") return s;
-      const $ = ((C = w.value) == null ? void 0 : C.step.args[o]) ?? "", K = /^([A-Za-z_][\w]*)\s*=(.*)$/.exec($), te = K ? K[2] : $;
-      return Bs(te) ? "text" : s;
+      if (go(t)) return "text";
+      const n = Ue(t).control;
+      if (n === "text") return n;
+      const v = ((C = w.value) == null ? void 0 : C.step.args[t]) ?? "", F = /^([A-Za-z_][\w]*)\s*=(.*)$/.exec(v), X = F ? F[2] : v;
+      return Ks(X) ? "text" : n;
     }
-    const Ro = /^([A-Za-z_][\w]*)\s*=(.*)$/;
-    function Mn(o, s) {
+    const ln = /^([A-Za-z_][\w]*)\s*=(.*)$/;
+    function rn(t, n) {
       if (!w.value) return;
-      const $ = s.target.checked, K = w.value.step.args[o] ?? "", te = Ro.exec(K);
-      w.value.step.args[o] = te ? `${te[1]}=${ua($)}` : ua($), Ue();
+      const v = n.target.checked, F = w.value.step.args[t] ?? "", X = ln.exec(F);
+      w.value.step.args[t] = X ? `${X[1]}=${ua(v)}` : ua(v), Me();
     }
-    function tn(o) {
-      var C, L;
-      const s = ((C = w.value) == null ? void 0 : C.step.args[o]) ?? "", $ = Ro.exec(s), K = $ ? $[2] : s;
-      if (K) return ia(K);
-      const te = (L = fo(o)) == null ? void 0 : L.spec.defaultValue;
-      return ia(te ?? "");
+    function Dn(t) {
+      var C, S;
+      const n = ((C = w.value) == null ? void 0 : C.step.args[t]) ?? "", v = ln.exec(n), F = v ? v[2] : n;
+      if (F) return ia(F);
+      const X = (S = fo(t)) == null ? void 0 : S.spec.defaultValue;
+      return ia(X ?? "");
     }
-    const st = N(!1), jt = N(""), De = O(() => {
-      const o = w.value;
-      if (!(o != null && o.argSpecs)) return [];
-      const s = o.step.args, $ = new Set(o.argSpecs.map((C) => C.name)), K = /* @__PURE__ */ new Set();
-      for (let C = 0; C < s.length; C++) {
-        const L = s[C], he = /^([A-Za-z_][\w]*)\s*=/.exec(L);
-        if (he && $.has(he[1]))
-          K.add(he[1]);
+    const lt = N(!1), Pt = N(""), No = O(() => {
+      const t = w.value;
+      if (!(t != null && t.argSpecs)) return [];
+      const n = t.step.args, v = new Set(t.argSpecs.map((C) => C.name)), F = /* @__PURE__ */ new Set();
+      for (let C = 0; C < n.length; C++) {
+        const S = n[C], he = /^([A-Za-z_][\w]*)\s*=/.exec(S);
+        if (he && v.has(he[1]))
+          F.add(he[1]);
         else {
-          const Me = o.argSpecs[C];
-          Me && (Me.kind === "positional" || Me.kind === "optional") && K.add(Me.name);
+          const Pe = t.argSpecs[C];
+          Pe && (Pe.kind === "positional" || Pe.kind === "optional") && F.add(Pe.name);
         }
       }
-      const te = [];
-      for (let C = 0; C < o.argSpecs.length; C++) {
-        const L = o.argSpecs[C];
-        L.kind !== "positional" && L.kind !== "optional" || !L.name || K.has(L.name) || te.push({
-          name: L.name,
-          defaultValue: L.defaultValue,
-          isNextPositional: C === s.length
+      const X = [];
+      for (let C = 0; C < t.argSpecs.length; C++) {
+        const S = t.argSpecs[C];
+        S.kind !== "positional" && S.kind !== "optional" || !S.name || F.has(S.name) || X.push({
+          name: S.name,
+          defaultValue: S.defaultValue,
+          isNextPositional: C === n.length
         });
       }
-      return te;
-    }), qt = N(null), pt = N(null), zt = N({
+      return X;
+    }), xe = N(null), It = N(null), dt = N({
       top: "0px",
       left: "0px",
       minWidth: "200px"
     });
-    function on() {
-      var L;
-      const o = qt.value;
-      if (!o) return;
-      const s = o.getBoundingClientRect(), $ = Math.max(s.width, 200), K = Math.max(8, window.innerWidth - $ - 8), te = ((L = pt.value) == null ? void 0 : L.offsetHeight) || 240;
-      let C = s.bottom + 4;
-      if (C + te + 8 > window.innerHeight) {
-        const he = s.top - te - 4;
-        C = he >= 8 ? he : Math.max(8, window.innerHeight - te - 8);
+    function Wt() {
+      var S;
+      const t = xe.value;
+      if (!t) return;
+      const n = t.getBoundingClientRect(), v = Math.max(n.width, 200), F = Math.max(8, window.innerWidth - v - 8), X = ((S = It.value) == null ? void 0 : S.offsetHeight) || 240;
+      let C = n.bottom + 4;
+      if (C + X + 8 > window.innerHeight) {
+        const he = n.top - X - 4;
+        C = he >= 8 ? he : Math.max(8, window.innerHeight - X - 8);
       }
-      zt.value = {
+      dt.value = {
         top: `${C}px`,
-        left: `${Math.min(s.left, K)}px`,
-        minWidth: `${$}px`
+        left: `${Math.min(n.left, F)}px`,
+        minWidth: `${v}px`
       };
     }
-    function Tt() {
-      st.value = !st.value, st.value && Xe(on);
+    function Mn() {
+      lt.value = !lt.value, lt.value && je(Wt);
     }
-    function Gt(o) {
+    function wt(t) {
       if (!w.value) return;
-      let s;
-      o.isNextPositional ? s = "" : o.defaultValue != null && o.defaultValue !== "" ? s = `${o.name}=${o.defaultValue}` : s = `${o.name}=`, w.value.step.args.push(s), et(r.form, w.value), Ne(), st.value = !1;
+      let n;
+      t.isNextPositional ? n = "" : t.defaultValue != null && t.defaultValue !== "" ? n = `${t.name}=${t.defaultValue}` : n = `${t.name}=`, w.value.step.args.push(n), ot(r.form, w.value), Ne(), lt.value = !1;
     }
-    function nn() {
+    function Dt() {
       if (!w.value) return;
-      const o = jt.value.trim();
-      o && (w.value.step.args.push(o), et(r.form, w.value), Ne(), jt.value = "", st.value = !1);
+      const t = Pt.value.trim();
+      t && (w.value.step.args.push(t), ot(r.form, w.value), Ne(), Pt.value = "", lt.value = !1);
     }
-    let Dt = !1;
-    function Yt(o) {
-      const s = o.target;
-      s instanceof Element && (s.closest(".flow-add-arg-wrap, .flow-add-arg-popover") || (st.value = !1));
+    let vo = !1;
+    function so(t) {
+      const n = t.target;
+      n instanceof Element && (n.closest(".flow-add-arg-wrap, .flow-add-arg-popover") || (lt.value = !1));
     }
-    function Mt() {
-      st.value && on();
+    function _t() {
+      lt.value && Wt();
     }
     function ho() {
-      Dt || (document.addEventListener("click", Yt), window.addEventListener("scroll", Mt, !0), window.addEventListener("resize", Mt), Dt = !0);
+      vo || (document.addEventListener("click", so), window.addEventListener("scroll", _t, !0), window.addEventListener("resize", _t), vo = !0);
     }
-    function Te() {
-      Dt && (document.removeEventListener("click", Yt), window.removeEventListener("scroll", Mt, !0), window.removeEventListener("resize", Mt), Dt = !1);
+    function lo() {
+      vo && (document.removeEventListener("click", so), window.removeEventListener("scroll", _t, !0), window.removeEventListener("resize", _t), vo = !1);
     }
-    Le(st, (o) => {
-      o ? ho() : (Te(), jt.value = "");
-    }), Ho(Te);
-    function Xt(o) {
-      w.value && (w.value.step.args.splice(o, 1), et(r.form, w.value), Ne());
+    Se(lt, (t) => {
+      t ? ho() : (lo(), Pt.value = "");
+    }), Io(lo);
+    function Ve(t) {
+      w.value && (w.value.step.args.splice(t, 1), ot(r.form, w.value), Ne());
     }
-    function lt() {
+    function jt() {
       if (!w.value) return;
-      const o = w.value.step;
-      o.returnVars.push("${var}"), o.type === "keyword" && (o.type = "assignment"), et(r.form, w.value), Ne();
+      const t = w.value.step;
+      t.returnVars.push("${var}"), t.type === "keyword" && (t.type = "assignment"), ot(r.form, w.value), Ne();
     }
-    function Fo(o) {
+    function rt(t) {
       if (!w.value) return;
-      const s = w.value.step;
-      s.returnVars.splice(o, 1), s.returnVars.length === 0 && s.type === "assignment" && (s.type = "keyword"), et(r.form, w.value), Ne();
+      const n = w.value.step;
+      n.returnVars.splice(t, 1), n.returnVars.length === 0 && n.type === "assignment" && (n.type = "keyword"), ot(r.form, w.value), Ne();
     }
-    function xn() {
-      w.value && (w.value.step.loopValues.push(""), et(r.form, w.value), Ne());
+    function Ro() {
+      w.value && (w.value.step.loopValues.push(""), ot(r.form, w.value), Ne());
     }
-    function yo(o) {
-      w.value && (w.value.step.loopValues.splice(o, 1), et(r.form, w.value), Ne());
+    function xn(t) {
+      w.value && (w.value.step.loopValues.splice(t, 1), ot(r.form, w.value), Ne());
     }
-    function an() {
-      w.value && (w.value.step.args.push(""), et(r.form, w.value), Ne());
+    function yo() {
+      w.value && (w.value.step.args.push(""), ot(r.form, w.value), Ne());
     }
-    function $e(o) {
-      w.value && (w.value.step.args.splice(o, 1), et(r.form, w.value), Ne());
+    function un(t) {
+      w.value && (w.value.step.args.splice(t, 1), ot(r.form, w.value), Ne());
     }
-    function bo(o) {
+    function ke(t) {
       return {
-        type: o,
+        type: t,
         keyword: "",
         args: [],
         returnVars: [],
@@ -4941,84 +4941,84 @@ const Qc = { class: "flow-editor" }, Jc = { class: "flow-section-bar" }, ed = { 
         comment: ""
       };
     }
-    function sn(o) {
-      return o === "try" ? [bo("except"), bo("end")] : o === "if" || o === "for" || o === "while" ? [bo("end")] : [];
+    function Fo(t) {
+      return t === "try" ? [ke("except"), ke("end")] : t === "if" || t === "for" || t === "while" ? [ke("end")] : [];
     }
-    function Un(o, s) {
-      var te, C;
-      if (s) {
-        const L = ke(s);
-        L && ee(L, s);
+    function Un(t, n) {
+      var X, C;
+      if (n) {
+        const S = be(n);
+        S && J(S, n);
       }
-      It(o);
-      const $ = E.value === "testcases" ? (te = r.form.testCases[B.value]) == null ? void 0 : te.steps : (C = r.form.keywords[B.value]) == null ? void 0 : C.steps;
-      if (!$) return;
-      const K = w.value ? w.value.stepIndex + 1 : $.length;
-      $.splice(K, 0, o, ...sn(o.type)), Ne(Vo(K));
+      Nt(t);
+      const v = T.value === "testcases" ? (X = r.form.testCases[B.value]) == null ? void 0 : X.steps : (C = r.form.keywords[B.value]) == null ? void 0 : C.steps;
+      if (!v) return;
+      const F = w.value ? w.value.stepIndex + 1 : v.length;
+      v.splice(F, 0, t, ...Fo(t.type)), Ne(Lo(F));
     }
-    function rt() {
-      var o, s;
-      return E.value === "testcases" ? ((o = r.form.testCases[B.value]) == null ? void 0 : o.steps) ?? null : ((s = r.form.keywords[B.value]) == null ? void 0 : s.steps) ?? null;
+    function qt() {
+      var t, n;
+      return T.value === "testcases" ? ((t = r.form.testCases[B.value]) == null ? void 0 : t.steps) ?? null : ((n = r.form.keywords[B.value]) == null ? void 0 : n.steps) ?? null;
+    }
+    function ro() {
+      if (!w.value) return;
+      const t = qt();
+      if (!t) return;
+      const n = w.value.stepIndex;
+      if (n <= 0) return;
+      const v = t[n];
+      t[n] = t[n - 1], t[n - 1] = v, w.value.stepIndex = n - 1, Ne(Lo(n - 1)), g("update:step", w.value);
     }
     function Bn() {
       if (!w.value) return;
-      const o = rt();
-      if (!o) return;
-      const s = w.value.stepIndex;
-      if (s <= 0) return;
-      const $ = o[s];
-      o[s] = o[s - 1], o[s - 1] = $, w.value.stepIndex = s - 1, Ne(Vo(s - 1)), g("update:step", w.value);
+      const t = qt();
+      if (!t) return;
+      const n = w.value.stepIndex;
+      if (n >= t.length - 1) return;
+      const v = t[n];
+      t[n] = t[n + 1], t[n + 1] = v, w.value.stepIndex = n + 1, Ne(Lo(n + 1)), g("update:step", w.value);
     }
-    function Kn() {
+    function cn() {
       if (!w.value) return;
-      const o = rt();
-      if (!o) return;
-      const s = w.value.stepIndex;
-      if (s >= o.length - 1) return;
-      const $ = o[s];
-      o[s] = o[s + 1], o[s + 1] = $, w.value.stepIndex = s + 1, Ne(Vo(s + 1)), g("update:step", w.value);
+      const t = qt();
+      t && (t.splice(w.value.stepIndex, 1), A.value = null, at = !0, yt());
     }
-    function Po() {
-      if (!w.value) return;
-      const o = rt();
-      o && (o.splice(w.value.stepIndex, 1), F.value = null, xe = !0, kt());
+    const zt = N(null), Po = N(null);
+    function dn() {
+      return Eo.value.filter((t) => t.type !== "start" && t.type !== "end").sort((t, n) => t.position.y - n.position.y);
     }
-    const Zt = N(null), ln = N(null);
-    function rn() {
-      return Eo.value.filter((o) => o.type !== "start" && o.type !== "end").sort((o, s) => o.position.y - s.position.y);
-    }
-    function Do(o) {
-      const s = rn();
-      if (s.length === 0) return 0;
-      for (let $ = 0; $ < s.length; $++) {
-        const K = s[$].position.y, te = s[$].data, C = K + Ko(te.step) / 2;
-        if (o < C) return $;
+    function Do(t) {
+      const n = dn();
+      if (n.length === 0) return 0;
+      for (let v = 0; v < n.length; v++) {
+        const F = n[v].position.y, X = n[v].data, C = F + Oo(X.step) / 2;
+        if (t < C) return v;
       }
-      return s.length;
+      return n.length;
     }
-    function xt(o) {
-      const s = ln.value;
-      if (!s) return 0;
-      const $ = s.getBoundingClientRect();
-      return V({ x: o.clientX - $.left, y: o.clientY - $.top }).y;
+    function Mo(t) {
+      const n = Po.value;
+      if (!n) return 0;
+      const v = n.getBoundingClientRect();
+      return L({ x: t.clientX - v.left, y: t.clientY - v.top }).y;
     }
-    function Hn(o) {
-      const s = rn();
-      if (s.length === 0) return Lc;
-      if (o <= 0) return s[0].position.y - 25;
-      if (o >= s.length) {
-        const C = s[s.length - 1], L = C.data;
-        return C.position.y + Ko(L.step) + 25;
+    function io(t) {
+      const n = dn();
+      if (n.length === 0) return Vc;
+      if (t <= 0) return n[0].position.y - 25;
+      if (t >= n.length) {
+        const C = n[n.length - 1], S = C.data;
+        return C.position.y + Oo(S.step) + 25;
       }
-      const $ = s[o - 1], K = s[o];
-      return ($.position.y + Ko($.data.step) + K.position.y) / 2;
+      const v = n[t - 1], F = n[t];
+      return (v.position.y + Oo(v.data.step) + F.position.y) / 2;
     }
-    function Mo(o) {
-      var K, te;
-      const s = (K = o.dataTransfer) == null ? void 0 : K.getData("application/rf-keyword"), $ = (te = o.dataTransfer) == null ? void 0 : te.getData("application/rf-control");
-      return s ? {
+    function Kn(t) {
+      var F, X;
+      const n = (F = t.dataTransfer) == null ? void 0 : F.getData("application/rf-keyword"), v = (X = t.dataTransfer) == null ? void 0 : X.getData("application/rf-control");
+      return n ? {
         type: "keyword",
-        keyword: s,
+        keyword: n,
         args: [],
         returnVars: [],
         condition: "",
@@ -5029,96 +5029,96 @@ const Qc = { class: "flow-editor" }, Jc = { class: "flow-section-bar" }, ed = { 
         exceptVar: "",
         varScope: "",
         comment: ""
-      } : $ && wc($) ? {
-        type: $,
+      } : v && _c(v) ? {
+        type: v,
         keyword: "",
         args: [],
         returnVars: [],
-        condition: $ === "if" || $ === "while" ? "${condition}" : "",
-        loopVar: $ === "for" ? "${item}" : "",
-        loopFlavor: $ === "for" ? "IN" : "",
-        loopValues: $ === "for" ? ["@{list}"] : [],
+        condition: v === "if" || v === "while" ? "${condition}" : "",
+        loopVar: v === "for" ? "${item}" : "",
+        loopFlavor: v === "for" ? "IN" : "",
+        loopValues: v === "for" ? ["@{list}"] : [],
         exceptPattern: "",
         exceptVar: "",
         varScope: "",
         comment: ""
       } : null;
     }
-    function un(o, s) {
-      const $ = rt();
-      if (!$) return;
-      let K = 0, te = 0;
-      for (let C = 0; C < $.length; C++) {
-        if ($[C].type === "end") {
-          K++;
+    function xo(t, n) {
+      const v = qt();
+      if (!v) return;
+      let F = 0, X = 0;
+      for (let C = 0; C < v.length; C++) {
+        if (v[C].type === "end") {
+          F++;
           continue;
         }
-        if (te === s) break;
-        te++, K++;
+        if (X === n) break;
+        X++, F++;
       }
-      $.splice(K, 0, o, ...sn(o.type)), xe = !0, kt();
+      v.splice(F, 0, t, ...Fo(t.type)), at = !0, yt();
     }
-    function wo(o) {
-      var L, he;
-      o.preventDefault(), Zt.value = null;
-      const s = (L = o.dataTransfer) == null ? void 0 : L.getData("application/rf-reorder");
-      if (s !== void 0 && s !== "") {
-        const Me = parseInt(s, 10), Ce = xt(o), Et = Do(Ce);
-        On(Me, Et);
+    function Uo(t) {
+      var S, he;
+      t.preventDefault(), zt.value = null;
+      const n = (S = t.dataTransfer) == null ? void 0 : S.getData("application/rf-reorder");
+      if (n !== void 0 && n !== "") {
+        const Pe = parseInt(n, 10), Ce = Mo(t), kt = Do(Ce);
+        uo(Pe, kt);
         return;
       }
-      const $ = Mo(o);
-      if (!$) return;
-      const K = ((he = o.dataTransfer) == null ? void 0 : he.getData("application/rf-library")) || "";
-      if (K) {
-        const Me = ke(K);
-        Me && ee(Me, K);
+      const v = Kn(t);
+      if (!v) return;
+      const F = ((he = t.dataTransfer) == null ? void 0 : he.getData("application/rf-library")) || "";
+      if (F) {
+        const Pe = be(F);
+        Pe && J(Pe, F);
       }
-      It($);
-      const te = xt(o), C = Do(te);
-      un($, C);
+      Nt(v);
+      const X = Mo(t), C = Do(X);
+      xo(v, C);
     }
-    function cn(o) {
-      o.preventDefault(), o.dataTransfer.dropEffect = "copy";
-      const s = xt(o);
-      Zt.value = Do(s);
+    function bo(t) {
+      t.preventDefault(), t.dataTransfer.dropEffect = "copy";
+      const n = Mo(t);
+      zt.value = Do(n);
     }
-    function xo() {
-      Zt.value = null;
+    function pn() {
+      zt.value = null;
     }
-    function so(o, s) {
+    function fn(t, n) {
       var C;
-      const $ = s.data, K = rt();
-      if (!K) return;
-      let te = 0;
-      for (let L = 0; L < K.length; L++)
-        if (K[L].type !== "end") {
-          if (L === $.stepIndex) break;
-          te++;
+      const v = n.data, F = qt();
+      if (!F) return;
+      let X = 0;
+      for (let S = 0; S < F.length; S++)
+        if (F[S].type !== "end") {
+          if (S === v.stepIndex) break;
+          X++;
         }
-      (C = o.dataTransfer) == null || C.setData("application/rf-reorder", String(te)), o.dataTransfer.effectAllowed = "move";
+      (C = t.dataTransfer) == null || C.setData("application/rf-reorder", String(X)), t.dataTransfer.effectAllowed = "move";
     }
-    function On(o, s) {
-      const $ = rt();
-      if (!$) return;
-      const K = [];
-      for (let Et = 0; Et < $.length; Et++)
-        $[Et].type !== "end" && K.push(Et);
-      if (o < 0 || o >= K.length) return;
-      const te = K[o];
+    function uo(t, n) {
+      const v = qt();
+      if (!v) return;
+      const F = [];
+      for (let kt = 0; kt < v.length; kt++)
+        v[kt].type !== "end" && F.push(kt);
+      if (t < 0 || t >= F.length) return;
+      const X = F[t];
       let C;
-      if (s >= K.length ? C = $.length : (s <= o, C = K[s]), te === C || te + 1 === C) return;
-      const L = $[te], Me = ["if", "for", "while", "try"].includes(L.type) && te + 1 < $.length && $[te + 1].type === "end" ? $.splice(te, 2) : $.splice(te, 1);
+      if (n >= F.length ? C = v.length : (n <= t, C = F[n]), X === C || X + 1 === C) return;
+      const S = v[X], Pe = ["if", "for", "while", "try"].includes(S.type) && X + 1 < v.length && v[X + 1].type === "end" ? v.splice(X, 2) : v.splice(X, 1);
       let Ce;
-      C > te ? Ce = C - Me.length : Ce = C, Ce = Math.max(0, Math.min(Ce, $.length)), $.splice(Ce, 0, ...Me), xe = !0, kt();
+      C > X ? Ce = C - Pe.length : Ce = C, Ce = Math.max(0, Math.min(Ce, v.length)), v.splice(Ce, 0, ...Pe), at = !0, yt();
     }
-    function Qt(o, s) {
-      const $ = Eo.value.find((K) => K.id === s);
-      $ && so(o, $);
+    function Gt(t, n) {
+      const v = Eo.value.find((F) => F.id === n);
+      v && fn(t, v);
     }
-    const dn = hc(), Ke = ja(), Jt = O(() => {
-      const o = w.value;
-      return !(!o || o.section !== "testcase" || !dn.hasMinRole("runner") || ![
+    const Hn = yc(), Xe = ja(), Yt = O(() => {
+      const t = w.value;
+      return !(!t || t.section !== "testcase" || !Hn.hasMinRole("runner") || ![
         "keyword",
         "assignment",
         "return",
@@ -5130,448 +5130,448 @@ const Qc = { class: "flow-editor" }, Jc = { class: "flow-section-bar" }, ed = { 
         "try",
         "except",
         "finally"
-      ].includes(o.step.type) || !c.filePath || c.scopeId == null);
-    }), ft = N(!1), Je = N(null), lo = N(null);
-    function In() {
-      var te;
-      const o = w.value;
-      if (!o || o.section !== "testcase" || !c.filePath || c.scopeId == null) return null;
-      const s = r.form.testCases[o.sectionIndex];
-      if (!s) return null;
-      const $ = ((te = c.filePath) == null ? void 0 : te.toLowerCase().endsWith(".resource")) ?? !1, K = qc(r.form, $, o.sectionIndex, o.stepIndex);
-      return K === null || K < 1 ? null : {
+      ].includes(t.step.type) || !c.filePath || c.scopeId == null);
+    }), pt = N(!1), He = N(null), Mt = N(null);
+    function On() {
+      var X;
+      const t = w.value;
+      if (!t || t.section !== "testcase" || !c.filePath || c.scopeId == null) return null;
+      const n = r.form.testCases[t.sectionIndex];
+      if (!n) return null;
+      const v = ((X = c.filePath) == null ? void 0 : X.toLowerCase().endsWith(".resource")) ?? !1, F = zc(r.form, v, t.sectionIndex, t.stepIndex);
+      return F === null || F < 1 ? null : {
         file: c.filePath,
-        testName: s.name,
-        line: K,
+        testName: n.name,
+        line: F,
         scopeId: c.scopeId
       };
     }
-    async function f() {
-      if (lo.value = null, r.dirty) {
-        ft.value = !0;
+    async function In() {
+      if (Mt.value = null, r.dirty) {
+        pt.value = !0;
         return;
       }
-      const o = In();
-      if (!o) {
-        lo.value = a("flowEditor.debug.unresolvedLine");
+      const t = On();
+      if (!t) {
+        Mt.value = s("flowEditor.debug.unresolvedLine");
         return;
       }
-      const s = Ke.classifyStepClick(o.file, o.line);
-      if (s === "same") {
-        S.value = !0;
+      const n = Xe.classifyStepClick(t.file, t.line);
+      if (n === "same") {
+        l.value = !0;
         return;
       }
-      if (s === "different") {
-        Je.value = {
-          fromLine: Ke.breakpointLine ?? 0,
-          toLine: o.line,
-          payload: o
+      if (n === "different") {
+        He.value = {
+          fromLine: Xe.breakpointLine ?? 0,
+          toLine: t.line,
+          payload: t
         };
         return;
       }
-      await h(o);
+      await f(t);
     }
-    async function h(o) {
+    async function f(t) {
       try {
-        await Ke.startFromStep({
-          file: o.file,
-          test_name: o.testName,
-          line: o.line,
-          scope_id: o.scopeId
-        }) !== null && (S.value = !0);
-      } catch (s) {
-        lo.value = Co(s, a("flowEditor.debug.startFailed"));
+        await Xe.startFromStep({
+          file: t.file,
+          test_name: t.testName,
+          line: t.line,
+          scope_id: t.scopeId
+        }) !== null && (l.value = !0);
+      } catch (n) {
+        Mt.value = ko(n, s("flowEditor.debug.startFailed"));
       }
     }
-    async function d() {
-      await Ke.installPrereqAndRetry() && Ke.isActive && (S.value = !0);
+    async function y() {
+      await Xe.installPrereqAndRetry() && Xe.isActive && (l.value = !0);
     }
-    function v() {
-      Ke.cancelPrereq();
+    function d() {
+      Xe.cancelPrereq();
     }
-    async function l() {
-      const o = Je.value;
-      if (o) {
-        Je.value = null;
+    async function h() {
+      const t = He.value;
+      if (t) {
+        He.value = null;
         try {
-          await Ke.stop();
+          await Xe.stop();
         } catch {
         }
-        await h(o.payload);
+        await f(t.payload);
       }
     }
-    const S = N(!1);
-    function b() {
-      S.value = !1;
+    const l = N(!1);
+    function E() {
+      l.value = !1;
     }
-    return (o, s) => {
-      var $, K, te;
-      return i(), u("div", Qc, [
-        t("div", Jc, [
-          t("div", ed, [
-            t("button", {
-              class: ne(["flow-section-tab", { active: E.value === "testcases" }]),
-              onClick: s[0] || (s[0] = (C) => E.value = "testcases")
-            }, m(p(a)("robotEditor.testCasesSection")) + " (" + m(r.form.testCases.length) + ") ", 3),
-            t("button", {
-              class: ne(["flow-section-tab", { active: E.value === "keywords" }]),
-              onClick: s[1] || (s[1] = (C) => E.value = "keywords")
-            }, m(p(a)("robotEditor.keywordsSection")) + " (" + m(r.form.keywords.length) + ") ", 3)
+    return (t, n) => {
+      var v, F, X;
+      return i(), u("div", Jc, [
+        o("div", ed, [
+          o("div", td, [
+            o("button", {
+              class: te(["flow-section-tab", { active: T.value === "testcases" }]),
+              onClick: n[0] || (n[0] = (C) => T.value = "testcases")
+            }, m(p(s)("robotEditor.testCasesSection")) + " (" + m(r.form.testCases.length) + ") ", 3),
+            o("button", {
+              class: te(["flow-section-tab", { active: T.value === "keywords" }]),
+              onClick: n[1] || (n[1] = (C) => T.value = "keywords")
+            }, m(p(s)("robotEditor.keywordsSection")) + " (" + m(r.form.keywords.length) + ") ", 3)
           ]),
-          t("div", td, [
-            E.value === "testcases" ? (i(), u(x, { key: 0 }, [
-              (i(!0), u(x, null, X(I.value, (C, L) => (i(), u("button", {
-                key: "tc" + L,
-                class: ne(["flow-item-tab", { active: B.value === L }]),
-                onClick: (he) => B.value = L
-              }, m(C), 11, od))), 128)),
-              t("button", {
+          o("div", od, [
+            T.value === "testcases" ? (i(), u(U, { key: 0 }, [
+              (i(!0), u(U, null, Y(I.value, (C, S) => (i(), u("button", {
+                key: "tc" + S,
+                class: te(["flow-item-tab", { active: B.value === S }]),
+                onClick: (he) => B.value = S
+              }, m(C), 11, nd))), 128)),
+              o("button", {
                 type: "button",
                 class: "flow-item-tab flow-item-tab--add",
-                title: p(a)("flowEditor.addTestCaseTitle"),
+                title: p(s)("flowEditor.addTestCaseTitle"),
                 "data-testid": "flow-add-test-case",
-                onClick: wt
-              }, "+ " + m(p(a)("flowEditor.addTestCase")), 9, nd)
-            ], 64)) : (i(), u(x, { key: 1 }, [
-              (i(!0), u(x, null, X(j.value, (C, L) => (i(), u("button", {
-                key: "kw" + L,
-                class: ne(["flow-item-tab", { active: B.value === L }]),
-                onClick: (he) => B.value = L
-              }, m(C), 11, ad))), 128)),
-              t("button", {
+                onClick: ht
+              }, "+ " + m(p(s)("flowEditor.addTestCase")), 9, ad)
+            ], 64)) : (i(), u(U, { key: 1 }, [
+              (i(!0), u(U, null, Y(W.value, (C, S) => (i(), u("button", {
+                key: "kw" + S,
+                class: te(["flow-item-tab", { active: B.value === S }]),
+                onClick: (he) => B.value = S
+              }, m(C), 11, sd))), 128)),
+              o("button", {
                 type: "button",
                 class: "flow-item-tab flow-item-tab--add",
-                title: p(a)("flowEditor.addKeywordTitle"),
+                title: p(s)("flowEditor.addKeywordTitle"),
                 "data-testid": "flow-add-keyword",
-                onClick: _t
-              }, "+ " + m(p(a)("flowEditor.addKeyword")), 9, sd)
+                onClick: Lt
+              }, "+ " + m(p(s)("flowEditor.addKeyword")), 9, ld)
             ], 64))
           ]),
-          t("button", {
+          o("button", {
             type: "button",
-            class: ne(["flow-libs-toggle", { active: ae.value }]),
-            title: p(a)("flowEditor.librariesTitle"),
+            class: te(["flow-libs-toggle", { active: Q.value }]),
+            title: p(s)("flowEditor.librariesTitle"),
             "data-testid": "flow-libraries-toggle",
-            onClick: s[2] || (s[2] = (C) => ae.value = !ae.value)
+            onClick: n[2] || (n[2] = (C) => Q.value = !Q.value)
           }, [
-            we(" 📚 " + m(p(a)("flowEditor.libraries")) + " (" + m(D.value.length) + ") ", 1),
-            t("span", rd, m(ae.value ? "▴" : "▾"), 1)
-          ], 10, ld),
-          t("button", {
+            we(" 📚 " + m(p(s)("flowEditor.libraries")) + " (" + m(R.value.length) + ") ", 1),
+            o("span", id, m(Q.value ? "▴" : "▾"), 1)
+          ], 10, rd),
+          o("button", {
             type: "button",
-            class: ne(["flow-libs-toggle", { active: fe.value }]),
-            title: p(a)("flowEditor.variablesTitle"),
+            class: te(["flow-libs-toggle", { active: ce.value }]),
+            title: p(s)("flowEditor.variablesTitle"),
             "data-testid": "flow-variables-toggle",
-            onClick: s[3] || (s[3] = (C) => fe.value = !fe.value)
+            onClick: n[3] || (n[3] = (C) => ce.value = !ce.value)
           }, [
-            we(" 📦 " + m(p(a)("flowEditor.variables")) + " (" + m(Pe.value.length) + ") ", 1),
-            t("span", ud, m(fe.value ? "▴" : "▾"), 1)
-          ], 10, id),
-          t("button", {
+            we(" 📦 " + m(p(s)("flowEditor.variables")) + " (" + m($e.value.length) + ") ", 1),
+            o("span", cd, m(ce.value ? "▴" : "▾"), 1)
+          ], 10, ud),
+          o("button", {
             type: "button",
-            class: ne(["flow-libs-toggle", { active: yt.value }]),
-            title: p(a)("flowEditor.suiteSettingsTitle"),
+            class: te(["flow-libs-toggle", { active: nt.value }]),
+            title: p(s)("flowEditor.suiteSettingsTitle"),
             "data-testid": "flow-suite-settings-toggle",
-            onClick: s[4] || (s[4] = (C) => yt.value = !yt.value)
+            onClick: n[4] || (n[4] = (C) => nt.value = !nt.value)
           }, [
-            we(" ⚙️ " + m(p(a)("flowEditor.suiteSettings")) + " (" + m(bt.value.length) + ") ", 1),
-            t("span", dd, m(yt.value ? "▴" : "▾"), 1)
-          ], 10, cd)
+            we(" ⚙️ " + m(p(s)("flowEditor.suiteSettings")) + " (" + m(Et.value.length) + ") ", 1),
+            o("span", pd, m(nt.value ? "▴" : "▾"), 1)
+          ], 10, dd)
         ]),
-        ae.value ? (i(), u("div", pd, [
-          D.value.length === 0 ? (i(), u("span", fd, m(p(a)("flowEditor.librariesNone")), 1)) : T("", !0),
-          R.value.length ? (i(), u("div", md, [
-            t("div", gd, m(p(a)("flowEditor.resourcePanelLabel")) + " (" + m(R.value.length) + ")", 1),
-            t("div", vd, [
-              (i(!0), u(x, null, X(R.value, (C) => (i(), u("span", {
+        Q.value ? (i(), u("div", fd, [
+          R.value.length === 0 ? (i(), u("span", md, m(p(s)("flowEditor.librariesNone")), 1)) : $("", !0),
+          P.value.length ? (i(), u("div", gd, [
+            o("div", vd, m(p(s)("flowEditor.resourcePanelLabel")) + " (" + m(P.value.length) + ")", 1),
+            o("div", hd, [
+              (i(!0), u(U, null, Y(P.value, (C) => (i(), u("span", {
                 key: C.idx,
                 class: "flow-libraries__chip flow-libraries__chip--resource"
               }, [
-                s[33] || (s[33] = t("span", { class: "flow-libraries__chip-kind" }, "R", -1)),
-                t("span", {
+                n[33] || (n[33] = o("span", { class: "flow-libraries__chip-kind" }, "R", -1)),
+                o("span", {
                   class: "flow-libraries__chip-name",
                   title: C.value
-                }, m(C.value), 9, hd),
-                t("button", {
+                }, m(C.value), 9, yd),
+                o("button", {
                   type: "button",
                   class: "flow-libraries__chip-remove",
-                  title: p(a)("flowEditor.libraryRemoveTitle", { name: C.value }),
-                  onClick: (L) => oe(C.idx),
+                  title: p(s)("flowEditor.libraryRemoveTitle", { name: C.value }),
+                  onClick: (S) => ue(C.idx),
                   "data-testid": "flow-library-remove"
-                }, "×", 8, yd)
+                }, "×", 8, bd)
               ]))), 128))
             ])
-          ])) : T("", !0),
-          H.value.length ? (i(), u("div", bd, [
-            t("div", wd, m(p(a)("flowEditor.librariesPanelLabel")) + " (" + m(H.value.length) + ")", 1),
-            t("div", _d, [
-              (i(!0), u(x, null, X(H.value, (C) => (i(), u("span", {
+          ])) : $("", !0),
+          K.value.length ? (i(), u("div", wd, [
+            o("div", _d, m(p(s)("flowEditor.librariesPanelLabel")) + " (" + m(K.value.length) + ")", 1),
+            o("div", kd, [
+              (i(!0), u(U, null, Y(K.value, (C) => (i(), u("span", {
                 key: C.idx,
                 class: "flow-libraries__chip"
               }, [
-                s[34] || (s[34] = t("span", { class: "flow-libraries__chip-kind" }, "L", -1)),
-                t("span", {
+                n[34] || (n[34] = o("span", { class: "flow-libraries__chip-kind" }, "L", -1)),
+                o("span", {
                   class: "flow-libraries__chip-name",
                   title: C.value
-                }, m(C.value), 9, kd),
-                t("button", {
+                }, m(C.value), 9, Cd),
+                o("button", {
                   type: "button",
                   class: "flow-libraries__chip-remove",
-                  title: p(a)("flowEditor.libraryRemoveTitle", { name: C.value }),
-                  onClick: (L) => oe(C.idx),
+                  title: p(s)("flowEditor.libraryRemoveTitle", { name: C.value }),
+                  onClick: (S) => ue(C.idx),
                   "data-testid": "flow-library-remove"
-                }, "×", 8, Cd)
+                }, "×", 8, $d)
               ]))), 128))
             ])
-          ])) : T("", !0),
-          t("div", $d, [
-            q(t("input", {
-              "onUpdate:modelValue": s[5] || (s[5] = (C) => z.value = C),
+          ])) : $("", !0),
+          o("div", Td, [
+            z(o("input", {
+              "onUpdate:modelValue": n[5] || (n[5] = (C) => G.value = C),
               type: "text",
               class: "flow-libraries__input",
-              placeholder: p(a)("flowEditor.libraryInputPlaceholder"),
+              placeholder: p(s)("flowEditor.libraryInputPlaceholder"),
               autocomplete: "off",
               spellcheck: "false",
               "data-testid": "flow-library-input",
-              onKeydown: Ye(re(W, ["prevent"]), ["enter"])
-            }, null, 40, Td), [
-              [le, z.value]
+              onKeydown: Ze(le(H, ["prevent"]), ["enter"])
+            }, null, 40, Ed), [
+              [ae, G.value]
             ]),
-            t("button", {
+            o("button", {
               type: "button",
               class: "flow-libraries__add",
-              disabled: !z.value.trim(),
+              disabled: !G.value.trim(),
               "data-testid": "flow-library-add",
-              onClick: W
-            }, "+ " + m(p(a)("flowEditor.libraryAdd")), 9, Ed)
+              onClick: H
+            }, "+ " + m(p(s)("flowEditor.libraryAdd")), 9, Sd)
           ]),
-          Z.value.length ? (i(), u("div", Sd, [
-            (i(!0), u(x, null, X(Z.value, (C) => (i(), u("button", {
+          se.value.length ? (i(), u("div", Ld, [
+            (i(!0), u(U, null, Y(se.value, (C) => (i(), u("button", {
               key: C,
               type: "button",
               class: "flow-libraries__suggestion",
-              onClick: (L) => ke(C)
-            }, m(C), 9, Ld))), 128))
-          ])) : T("", !0)
-        ])) : T("", !0),
-        fe.value ? (i(), u("div", Vd, [
-          t("div", Ad, [
-            Pe.value.length === 0 ? (i(), u("span", Nd, m(p(a)("flowEditor.variablesNone")), 1)) : T("", !0),
-            (i(!0), u(x, null, X(Pe.value, (C) => (i(), u("div", {
+              onClick: (S) => be(C)
+            }, m(C), 9, Vd))), 128))
+          ])) : $("", !0)
+        ])) : $("", !0),
+        ce.value ? (i(), u("div", Ad, [
+          o("div", Nd, [
+            $e.value.length === 0 ? (i(), u("span", Rd, m(p(s)("flowEditor.variablesNone")), 1)) : $("", !0),
+            (i(!0), u(U, null, Y($e.value, (C) => (i(), u("div", {
               key: C.idx,
               class: "flow-vars__row"
             }, [
-              t("input", {
+              o("input", {
                 class: "flow-vars__name",
                 value: C.name,
                 spellcheck: "false",
                 autocomplete: "off",
                 "data-testid": "flow-variable-name",
-                onChange: (L) => tt(C.idx, L.target.value)
-              }, null, 40, Rd),
-              t("input", {
+                onChange: (S) => Qe(C.idx, S.target.value)
+              }, null, 40, Fd),
+              o("input", {
                 class: "flow-vars__value",
                 value: C.value,
                 spellcheck: "false",
                 autocomplete: "off",
                 "data-testid": "flow-variable-value",
-                onChange: (L) => gt(C.idx, L.target.value)
-              }, null, 40, Fd),
-              t("button", {
+                onChange: (S) => mt(C.idx, S.target.value)
+              }, null, 40, Pd),
+              o("button", {
                 type: "button",
                 class: "flow-libraries__chip-remove",
-                title: p(a)("flowEditor.variableRemoveTitle", { name: C.name }),
+                title: p(s)("flowEditor.variableRemoveTitle", { name: C.name }),
                 "data-testid": "flow-variable-remove",
-                onClick: (L) => ut(C.idx)
-              }, "×", 8, Pd)
+                onClick: (S) => ut(C.idx)
+              }, "×", 8, Dd)
             ]))), 128))
           ]),
-          t("div", Dd, [
-            q(t("input", {
-              "onUpdate:modelValue": s[6] || (s[6] = (C) => be.value = C),
+          o("div", Md, [
+            z(o("input", {
+              "onUpdate:modelValue": n[6] || (n[6] = (C) => ge.value = C),
               type: "text",
               class: "flow-vars__name",
-              placeholder: p(a)("flowEditor.variableNamePlaceholder"),
+              placeholder: p(s)("flowEditor.variableNamePlaceholder"),
               autocomplete: "off",
               spellcheck: "false",
               "data-testid": "flow-variable-new-name",
-              onKeydown: Ye(re(Ie, ["prevent"]), ["enter"])
-            }, null, 40, Md), [
-              [le, be.value]
+              onKeydown: Ze(le(ie, ["prevent"]), ["enter"])
+            }, null, 40, xd), [
+              [ae, ge.value]
             ]),
-            q(t("input", {
-              "onUpdate:modelValue": s[7] || (s[7] = (C) => Fe.value = C),
+            z(o("input", {
+              "onUpdate:modelValue": n[7] || (n[7] = (C) => Le.value = C),
               type: "text",
               class: "flow-vars__value",
-              placeholder: p(a)("flowEditor.variableValuePlaceholder"),
+              placeholder: p(s)("flowEditor.variableValuePlaceholder"),
               autocomplete: "off",
               spellcheck: "false",
               "data-testid": "flow-variable-new-value",
-              onKeydown: Ye(re(Ie, ["prevent"]), ["enter"])
-            }, null, 40, xd), [
-              [le, Fe.value]
+              onKeydown: Ze(le(ie, ["prevent"]), ["enter"])
+            }, null, 40, Ud), [
+              [ae, Le.value]
             ]),
-            t("button", {
+            o("button", {
               type: "button",
               class: "flow-libraries__add",
-              disabled: !be.value.trim(),
+              disabled: !ge.value.trim(),
               "data-testid": "flow-variable-add",
-              onClick: Ie
-            }, "+ " + m(p(a)("flowEditor.variableAdd")), 9, Ud)
+              onClick: ie
+            }, "+ " + m(p(s)("flowEditor.variableAdd")), 9, Bd)
           ]),
-          pe.value.length ? (i(), u("div", Bd, [
-            t("span", {
+          de.value.length ? (i(), u("div", Kd, [
+            o("span", {
               class: "flow-vars__envrefs-title",
-              title: ht.value ? p(a)("flowEditor.envVarCheckedAgainst", { env: Be.value }) : void 0
-            }, m(p(a)("flowEditor.envVarsUsed")), 9, Kd),
-            (i(!0), u(x, null, X(Bt.value, ({ ref: C, state: L }) => (i(), u("span", {
+              title: vt.value ? p(s)("flowEditor.envVarCheckedAgainst", { env: De.value }) : void 0
+            }, m(p(s)("flowEditor.envVarsUsed")), 9, Hd),
+            (i(!0), u(U, null, Y(Zt.value, ({ ref: C, state: S }) => (i(), u("span", {
               key: C.name,
-              class: ne(["flow-libraries__chip", { "flow-vars__envref--missing": L === "missing" }]),
-              "data-state": L,
-              title: Vt(C.name, L),
+              class: te(["flow-libraries__chip", { "flow-vars__envref--missing": S === "missing" }]),
+              "data-state": S,
+              title: Tt(C.name, S),
               "data-testid": "flow-env-var"
             }, [
-              t("span", Od, "%" + m("{") + m(C.name) + m(C.default !== null ? "=" + C.default : "") + m("}"), 1)
-            ], 10, Hd))), 128))
-          ])) : T("", !0)
-        ])) : T("", !0),
-        yt.value ? (i(), u("div", Id, [
-          t("div", Wd, [
-            bt.value.length === 0 ? (i(), u("span", jd, m(p(a)("flowEditor.suiteSettingsNone")), 1)) : T("", !0),
-            (i(!0), u(x, null, X(bt.value, (C) => (i(), u("div", {
+              o("span", Id, "%" + m("{") + m(C.name) + m(C.default !== null ? "=" + C.default : "") + m("}"), 1)
+            ], 10, Od))), 128))
+          ])) : $("", !0)
+        ])) : $("", !0),
+        nt.value ? (i(), u("div", Wd, [
+          o("div", jd, [
+            Et.value.length === 0 ? (i(), u("span", qd, m(p(s)("flowEditor.suiteSettingsNone")), 1)) : $("", !0),
+            (i(!0), u(U, null, Y(Et.value, (C) => (i(), u("div", {
               key: C.idx,
               class: "flow-vars__row"
             }, [
-              t("span", qd, m(C.key), 1),
-              t("input", {
+              o("span", zd, m(C.key), 1),
+              o("input", {
                 class: "flow-vars__value",
                 value: C.value,
                 spellcheck: "false",
                 autocomplete: "off",
                 "data-testid": "flow-suite-setting-value",
-                onChange: (L) => At(C.idx, L.target.value)
-              }, null, 40, zd),
-              t("button", {
+                onChange: (S) => St(C.idx, S.target.value)
+              }, null, 40, Gd),
+              o("button", {
                 type: "button",
                 class: "flow-libraries__chip-remove",
-                title: p(a)("flowEditor.suiteSettingRemoveTitle", { name: C.key }),
+                title: p(s)("flowEditor.suiteSettingRemoveTitle", { name: C.key }),
                 "data-testid": "flow-suite-setting-remove",
-                onClick: (L) => Nt(C.idx)
-              }, "×", 8, Gd)
+                onClick: (S) => Bt(C.idx)
+              }, "×", 8, Yd)
             ]))), 128))
           ]),
-          oo.value.length ? (i(), u("div", Yd, [
-            (i(!0), u(x, null, X(oo.value, (C) => (i(), u("button", {
+          Ut.value.length ? (i(), u("div", Xd, [
+            (i(!0), u(U, null, Y(Ut.value, (C) => (i(), u("button", {
               key: C,
               type: "button",
               class: "flow-libraries__suggestion",
               "data-testid": "flow-suite-setting-add",
-              onClick: (L) => Kt(C)
-            }, "+ " + m(C), 9, Xd))), 128))
-          ])) : T("", !0)
-        ])) : T("", !0),
-        J.value ? (i(), u("div", Zd, [
-          t("p", null, m(J.value === "testcases" ? p(a)("flowEditor.noTestCasesYet") : p(a)("flowEditor.noKeywordsYet")), 1),
-          t("div", Qd, [
-            J.value === "testcases" ? (i(), u("button", {
+              onClick: (S) => Jt(C)
+            }, "+ " + m(C), 9, Zd))), 128))
+          ])) : $("", !0)
+        ])) : $("", !0),
+        Z.value ? (i(), u("div", Qd, [
+          o("p", null, m(Z.value === "testcases" ? p(s)("flowEditor.noTestCasesYet") : p(s)("flowEditor.noKeywordsYet")), 1),
+          o("div", Jd, [
+            Z.value === "testcases" ? (i(), u("button", {
               key: 0,
               type: "button",
               class: "flow-empty__cta",
               "data-testid": "flow-empty-add-test-case",
-              onClick: wt
-            }, "+ " + m(p(a)("flowEditor.addTestCase")), 1)) : T("", !0),
-            J.value === "keywords" ? (i(), u("button", {
+              onClick: ht
+            }, "+ " + m(p(s)("flowEditor.addTestCase")), 1)) : $("", !0),
+            Z.value === "keywords" ? (i(), u("button", {
               key: 1,
               type: "button",
               class: "flow-empty__cta",
               "data-testid": "flow-empty-add-keyword",
-              onClick: _t
-            }, "+ " + m(p(a)("flowEditor.addKeyword")), 1)) : T("", !0)
+              onClick: Lt
+            }, "+ " + m(p(s)("flowEditor.addKeyword")), 1)) : $("", !0)
           ])
-        ])) : (i(), u("div", Jd, [
-          ve(pi, {
+        ])) : (i(), u("div", ep, [
+          ve(fi, {
             "scope-id": p(c).scopeId ?? void 0,
             "file-path": p(c).filePath,
-            "imported-libraries": Y.value,
-            "usage-counts": Ln.value,
-            "file-import-count": Vn.value,
-            "file-step-count": An.value,
+            "imported-libraries": j.value,
+            "usage-counts": oo.value,
+            "file-import-count": Ln.value,
+            "file-step-count": Vn.value,
             onAddNode: Un
           }, null, 8, ["scope-id", "file-path", "imported-libraries", "usage-counts", "file-import-count", "file-step-count"]),
-          t("div", {
+          o("div", {
             ref_key: "canvasRef",
-            ref: ln,
+            ref: Po,
             class: "flow-canvas"
           }, [
             ve(p(ms), {
-              onDrop: wo,
-              onDragover: cn,
-              onDragleave: xo,
-              nodes: Pt.value,
-              edges: po.value,
+              onDrop: Uo,
+              onDragover: bo,
+              onDragleave: pn,
+              nodes: An.value,
+              edges: Rt.value,
               "default-viewport": { zoom: 0.9, x: 0, y: 0 },
               "min-zoom": 0.2,
               "max-zoom": 2,
               "nodes-draggable": !1,
               "fit-view-on-init": "",
-              onNodeClick: Lo,
-              onPaneClick: Nn
+              onNodeClick: Jo,
+              onPaneClick: So
             }, {
               "node-keyword": _e((C) => {
-                var L;
+                var S;
                 return [
-                  ve(da, Uo(C, {
+                  ve(da, Bo(C, {
                     "reorder-enabled": !0,
-                    selected: ((L = F.value) == null ? void 0 : L.id) === C.id,
-                    onReorderDragStart: (he) => Qt(he, C.id)
+                    selected: ((S = A.value) == null ? void 0 : S.id) === C.id,
+                    onReorderDragStart: (he) => Gt(he, C.id)
                   }), null, 16, ["selected", "onReorderDragStart"])
                 ];
               }),
               "node-assignment": _e((C) => {
-                var L;
+                var S;
                 return [
-                  ve(da, Uo(C, {
+                  ve(da, Bo(C, {
                     "reorder-enabled": !0,
-                    selected: ((L = F.value) == null ? void 0 : L.id) === C.id,
-                    onReorderDragStart: (he) => Qt(he, C.id)
+                    selected: ((S = A.value) == null ? void 0 : S.id) === C.id,
+                    onReorderDragStart: (he) => Gt(he, C.id)
                   }), null, 16, ["selected", "onReorderDragStart"])
                 ];
               }),
               "node-control": _e((C) => {
-                var L;
+                var S;
                 return [
-                  ve(ul, Uo(C, {
+                  ve(cl, Bo(C, {
                     "reorder-enabled": !0,
-                    selected: ((L = F.value) == null ? void 0 : L.id) === C.id,
-                    onReorderDragStart: (he) => Qt(he, C.id)
+                    selected: ((S = A.value) == null ? void 0 : S.id) === C.id,
+                    onReorderDragStart: (he) => Gt(he, C.id)
                   }), null, 16, ["selected", "onReorderDragStart"])
                 ];
               }),
               "node-control-frame": _e((C) => [
-                ve(dl, cs(ds(C)), null, 16)
+                ve(pl, cs(ds(C)), null, 16)
               ]),
               "node-start": _e((C) => [
-                ve(pa, Uo(C, { type: "start" }), null, 16)
+                ve(pa, Bo(C, { type: "start" }), null, 16)
               ]),
               "node-end": _e((C) => [
-                ve(pa, Uo(C, { type: "end" }), null, 16)
+                ve(pa, Bo(C, { type: "end" }), null, 16)
               ]),
               "node-setting-meta": _e((C) => {
-                var L;
+                var S;
                 return [
-                  t("div", {
-                    class: ne(["flow-node-doc-meta", [
+                  o("div", {
+                    class: te(["flow-node-doc-meta", [
                       `flow-node-doc-meta--${C.data.kind}`,
-                      { "flow-node--selected": ((L = F.value) == null ? void 0 : L.id) === C.id }
+                      { "flow-node--selected": ((S = A.value) == null ? void 0 : S.id) === C.id }
                     ]])
                   }, [
-                    t("div", ep, [
-                      t("span", tp, m(C.data.label), 1),
-                      C.data.text && C.data.text.trim() ? (i(), u("p", op, m(C.data.text), 1)) : (i(), u("p", np, m(p(a)("flowEditor.settingMeta.emptyHint")), 1))
+                    o("div", tp, [
+                      o("span", op, m(C.data.label), 1),
+                      C.data.text && C.data.text.trim() ? (i(), u("p", np, m(C.data.text), 1)) : (i(), u("p", ap, m(p(s)("flowEditor.settingMeta.emptyHint")), 1))
                     ]),
-                    ve(p(St), {
+                    ve(p(Ct), {
                       type: "source",
-                      position: p(Lt).Right,
+                      position: p($t).Right,
                       id: "right",
                       style: { opacity: "0", "pointer-events": "none" }
                     }, null, 8, ["position"])
@@ -5579,127 +5579,127 @@ const Qc = { class: "flow-editor" }, Jc = { class: "flow-section-bar" }, ed = { 
                 ];
               }),
               "node-comment": _e((C) => {
-                var L;
+                var S;
                 return [
-                  t("div", {
-                    class: ne(["flow-node-comment", { "flow-node--selected": ((L = F.value) == null ? void 0 : L.id) === C.id }])
+                  o("div", {
+                    class: te(["flow-node-comment", { "flow-node--selected": ((S = A.value) == null ? void 0 : S.id) === C.id }])
                   }, [
-                    t("div", {
+                    o("div", {
                       class: "flow-drag-handle",
                       draggable: "true",
-                      onMousedown: s[8] || (s[8] = re(() => {
+                      onMousedown: n[8] || (n[8] = le(() => {
                       }, ["stop"])),
-                      onDragstart: re((he) => Qt(he, C.id), ["stop"])
-                    }, "☰", 40, ap),
-                    t("span", null, m(C.data.label), 1)
+                      onDragstart: le((he) => Gt(he, C.id), ["stop"])
+                    }, "☰", 40, sp),
+                    o("span", null, m(C.data.label), 1)
                   ], 2)
                 ];
               }),
               "node-template-table": _e((C) => [
-                t("div", sp, [
-                  ve(p(St), {
+                o("div", lp, [
+                  ve(p(Ct), {
                     type: "target",
-                    position: p(Lt).Top
+                    position: p($t).Top
                   }, null, 8, ["position"]),
-                  t("div", lp, [
-                    s[35] || (s[35] = t("span", { class: "flow-node-template__badge" }, "[Template]", -1)),
-                    t("span", rp, m(C.data.templateKeyword || "—"), 1)
+                  o("div", rp, [
+                    n[35] || (n[35] = o("span", { class: "flow-node-template__badge" }, "[Template]", -1)),
+                    o("span", ip, m(C.data.templateKeyword || "—"), 1)
                   ]),
-                  t("table", ip, [
-                    t("tbody", null, [
-                      (i(!0), u(x, null, X(C.data.templateRows, (L, he) => (i(), u("tr", { key: he }, [
-                        (i(!0), u(x, null, X(L, (Me, Ce) => (i(), u("td", { key: Ce }, [
-                          t("input", {
+                  o("table", up, [
+                    o("tbody", null, [
+                      (i(!0), u(U, null, Y(C.data.templateRows, (S, he) => (i(), u("tr", { key: he }, [
+                        (i(!0), u(U, null, Y(S, (Pe, Ce) => (i(), u("td", { key: Ce }, [
+                          o("input", {
                             class: "flow-node-template__cell",
-                            value: Me,
+                            value: Pe,
                             spellcheck: "false",
                             "data-testid": "flow-template-cell",
-                            onMousedown: s[9] || (s[9] = re(() => {
+                            onMousedown: n[9] || (n[9] = le(() => {
                             }, ["stop"])),
-                            onChange: (Et) => vt(C.data.sectionIndex, he, Ce, Et.target.value)
-                          }, null, 40, up)
+                            onChange: (kt) => gt(C.data.sectionIndex, he, Ce, kt.target.value)
+                          }, null, 40, cp)
                         ]))), 128)),
-                        t("td", null, [
-                          t("button", {
+                        o("td", null, [
+                          o("button", {
                             type: "button",
                             class: "flow-node-template__rm",
                             "data-testid": "flow-template-remove-row",
-                            title: p(a)("flowEditor.templateRemoveRow"),
-                            onMousedown: s[10] || (s[10] = re(() => {
+                            title: p(s)("flowEditor.templateRemoveRow"),
+                            onMousedown: n[10] || (n[10] = le(() => {
                             }, ["stop"])),
-                            onClick: re((Me) => Q(C.data.sectionIndex, he), ["stop"])
-                          }, "×", 40, cp)
+                            onClick: le((Pe) => Ke(C.data.sectionIndex, he), ["stop"])
+                          }, "×", 40, dp)
                         ])
                       ]))), 128))
                     ])
                   ]),
-                  t("div", dp, [
-                    t("button", {
+                  o("div", pp, [
+                    o("button", {
                       type: "button",
                       "data-testid": "flow-template-add-row",
-                      onMousedown: s[11] || (s[11] = re(() => {
+                      onMousedown: n[11] || (n[11] = le(() => {
                       }, ["stop"])),
-                      onClick: re((L) => ze(C.data.sectionIndex), ["stop"])
-                    }, "+ " + m(p(a)("flowEditor.templateAddRow")), 41, pp),
-                    t("button", {
+                      onClick: le((S) => Ye(C.data.sectionIndex), ["stop"])
+                    }, "+ " + m(p(s)("flowEditor.templateAddRow")), 41, fp),
+                    o("button", {
                       type: "button",
                       "data-testid": "flow-template-add-col",
-                      onMousedown: s[12] || (s[12] = re(() => {
+                      onMousedown: n[12] || (n[12] = le(() => {
                       }, ["stop"])),
-                      onClick: re((L) => ot(C.data.sectionIndex), ["stop"])
-                    }, "+ " + m(p(a)("flowEditor.templateAddColumn")), 41, fp)
+                      onClick: le((S) => ee(C.data.sectionIndex), ["stop"])
+                    }, "+ " + m(p(s)("flowEditor.templateAddColumn")), 41, mp)
                   ]),
-                  ve(p(St), {
+                  ve(p(Ct), {
                     type: "source",
-                    position: p(Lt).Bottom
+                    position: p($t).Bottom
                   }, null, 8, ["position"])
                 ])
               ]),
               "node-flow-control": _e((C) => {
-                var L;
+                var S;
                 return [
-                  t("div", {
-                    class: ne(["flow-node-flowctrl", { "flow-node--selected": ((L = F.value) == null ? void 0 : L.id) === C.id }])
+                  o("div", {
+                    class: te(["flow-node-flowctrl", { "flow-node--selected": ((S = A.value) == null ? void 0 : S.id) === C.id }])
                   }, [
-                    t("div", {
+                    o("div", {
                       class: "flow-drag-handle",
                       draggable: "true",
-                      onMousedown: s[13] || (s[13] = re(() => {
+                      onMousedown: n[13] || (n[13] = le(() => {
                       }, ["stop"])),
-                      onDragstart: re((he) => Qt(he, C.id), ["stop"])
-                    }, "☰", 40, mp),
-                    t("span", null, m(C.data.label), 1)
+                      onDragstart: le((he) => Gt(he, C.id), ["stop"])
+                    }, "☰", 40, gp),
+                    o("span", null, m(C.data.label), 1)
                   ], 2)
                 ];
               }),
               "node-return": _e((C) => {
-                var L, he, Me;
+                var S, he, Pe;
                 return [
-                  t("div", {
-                    class: ne(["flow-node-return-block", { "flow-node--selected": ((L = F.value) == null ? void 0 : L.id) === C.id }])
+                  o("div", {
+                    class: te(["flow-node-return-block", { "flow-node--selected": ((S = A.value) == null ? void 0 : S.id) === C.id }])
                   }, [
-                    t("div", {
+                    o("div", {
                       class: "flow-drag-handle",
                       draggable: "true",
-                      onMousedown: s[14] || (s[14] = re(() => {
+                      onMousedown: n[14] || (n[14] = le(() => {
                       }, ["stop"])),
-                      onDragstart: re((Ce) => Qt(Ce, C.id), ["stop"])
-                    }, "☰", 40, gp),
-                    s[36] || (s[36] = t("span", { class: "flow-node-return-label" }, "↵ RETURN", -1)),
-                    (Me = (he = C.data.step) == null ? void 0 : he.args) != null && Me.length ? (i(), u("div", vp, [
-                      (i(!0), u(x, null, X(C.data.step.args, (Ce, Et) => (i(), u("span", {
-                        key: Et,
+                      onDragstart: le((Ce) => Gt(Ce, C.id), ["stop"])
+                    }, "☰", 40, vp),
+                    n[36] || (n[36] = o("span", { class: "flow-node-return-label" }, "↵ RETURN", -1)),
+                    (Pe = (he = C.data.step) == null ? void 0 : he.args) != null && Pe.length ? (i(), u("div", hp, [
+                      (i(!0), u(U, null, Y(C.data.step.args, (Ce, kt) => (i(), u("span", {
+                        key: kt,
                         class: "flow-node-return-value"
                       }, m(Ce), 1))), 128))
-                    ])) : (i(), u("span", hp, m(p(a)("flowEditor.returnNoValue")), 1))
+                    ])) : (i(), u("span", yp, m(p(s)("flowEditor.returnNoValue")), 1))
                   ], 2)
                 ];
               }),
-              "node-drop-indicator": _e(() => [...s[37] || (s[37] = [
-                t("div", { class: "flow-drop-indicator" }, [
-                  t("div", { class: "flow-drop-dot" }),
-                  t("div", { class: "flow-drop-line" }),
-                  t("div", { class: "flow-drop-dot" })
+              "node-drop-indicator": _e(() => [...n[37] || (n[37] = [
+                o("div", { class: "flow-drop-indicator" }, [
+                  o("div", { class: "flow-drop-dot" }),
+                  o("div", { class: "flow-drop-line" }),
+                  o("div", { class: "flow-drop-dot" })
                 ], -1)
               ])]),
               default: _e(() => [
@@ -5710,601 +5710,601 @@ const Qc = { class: "flow-editor" }, Jc = { class: "flow-section-bar" }, ed = { 
               _: 1
             }, 8, ["nodes", "edges"])
           ], 512),
-          P.value ? (i(), u("div", {
+          M.value ? (i(), u("div", {
             key: 0,
-            class: ne(["flow-detail-panel", { "flow-detail-panel--resizing": Rt.value }]),
-            style: Ee({ width: ct.value + "px" })
+            class: te(["flow-detail-panel", { "flow-detail-panel--resizing": ct.value }]),
+            style: Ee({ width: eo.value + "px" })
           }, [
-            t("div", {
+            o("div", {
               class: "flow-detail-resizer",
               role: "separator",
               "aria-orientation": "vertical",
-              title: p(a)("flowEditor.resizePanelHint"),
-              onPointerdown: Ft
-            }, null, 40, yp),
-            t("div", bp, [
-              t("h4", null, m(E.value === "testcases" ? p(a)("flowEditor.testCaseSettings") : p(a)("flowEditor.keywordSettings")), 1)
+              title: p(s)("flowEditor.resizePanelHint"),
+              onPointerdown: to
+            }, null, 40, bp),
+            o("div", wp, [
+              o("h4", null, m(T.value === "testcases" ? p(s)("flowEditor.testCaseSettings") : p(s)("flowEditor.keywordSettings")), 1)
             ]),
-            t("div", wp, [
-              (i(!0), u(x, null, X(Go.value, (C) => (i(), u(x, { key: C }, [
-                Ht(C) ? (i(), u("button", {
+            o("div", _p, [
+              (i(!0), u(U, null, Y(Xo.value, (C) => (i(), u(U, { key: C }, [
+                Kt(C) ? (i(), u("button", {
                   key: 0,
                   type: "button",
                   class: "flow-btn-add",
-                  title: p(a)(`flowEditor.settingMeta.${C}.addTitle`),
+                  title: p(s)(`flowEditor.settingMeta.${C}.addTitle`),
                   "data-testid": `flow-add-${C}`,
-                  onClick: (L) => Sn(C)
-                }, "+ " + m(Ve[C]), 9, _p)) : T("", !0)
+                  onClick: (S) => Sn(C)
+                }, "+ " + m(Te[C]), 9, kp)) : $("", !0)
               ], 64))), 128)),
-              Go.value.every((C) => !Ht(C)) ? (i(), u("p", kp, m(p(a)("flowEditor.settingMeta.allPresent")), 1)) : T("", !0)
+              Xo.value.every((C) => !Kt(C)) ? (i(), u("p", Cp, m(p(s)("flowEditor.settingMeta.allPresent")), 1)) : $("", !0)
             ])
-          ], 6)) : Ae.value ? (i(), u("div", {
+          ], 6)) : Fe.value ? (i(), u("div", {
             key: 1,
-            class: ne(["flow-detail-panel", { "flow-detail-panel--resizing": Rt.value }]),
-            style: Ee({ width: ct.value + "px" })
+            class: te(["flow-detail-panel", { "flow-detail-panel--resizing": ct.value }]),
+            style: Ee({ width: eo.value + "px" })
           }, [
-            t("div", {
+            o("div", {
               class: "flow-detail-resizer",
               role: "separator",
               "aria-orientation": "vertical",
-              title: p(a)("flowEditor.resizePanelHint"),
-              onPointerdown: Ft
-            }, null, 40, Cp),
-            t("div", $p, [
-              t("h4", null, m(Ve[Ae.value.kind]), 1),
-              t("div", Tp, [
-                t("button", {
+              title: p(s)("flowEditor.resizePanelHint"),
+              onPointerdown: to
+            }, null, 40, $p),
+            o("div", Tp, [
+              o("h4", null, m(Te[Fe.value.kind]), 1),
+              o("div", Ep, [
+                o("button", {
                   class: "flow-action-btn flow-action-delete",
-                  onClick: En,
-                  title: p(a)(`flowEditor.settingMeta.${Ae.value.kind}.removeTitle`)
-                }, "×", 8, Ep)
+                  onClick: $o,
+                  title: p(s)(`flowEditor.settingMeta.${Fe.value.kind}.removeTitle`)
+                }, "×", 8, Sp)
               ])
             ]),
-            t("div", Sp, [
-              t("label", null, m(p(a)(`flowEditor.settingMeta.${Ae.value.kind}.label`)), 1),
-              Ae.value.kind === "documentation" ? q((i(), u("textarea", {
+            o("div", Lp, [
+              o("label", null, m(p(s)(`flowEditor.settingMeta.${Fe.value.kind}.label`)), 1),
+              Fe.value.kind === "documentation" ? z((i(), u("textarea", {
                 key: 0,
-                "onUpdate:modelValue": s[15] || (s[15] = (C) => Ge.value = C),
+                "onUpdate:modelValue": n[15] || (n[15] = (C) => Vt.value = C),
                 class: "flow-input flow-textarea",
                 rows: "8",
-                placeholder: p(a)("flowEditor.settingMeta.documentation.placeholder"),
-                onBlur: Yo
-              }, null, 40, Lp)), [
-                [le, Ge.value]
-              ]) : q((i(), u("input", {
+                placeholder: p(s)("flowEditor.settingMeta.documentation.placeholder"),
+                onBlur: po
+              }, null, 40, Vp)), [
+                [ae, Vt.value]
+              ]) : z((i(), u("input", {
                 key: 1,
-                "onUpdate:modelValue": s[16] || (s[16] = (C) => Ge.value = C),
+                "onUpdate:modelValue": n[16] || (n[16] = (C) => Vt.value = C),
                 type: "text",
                 class: "flow-input",
-                placeholder: p(a)(`flowEditor.settingMeta.${Ae.value.kind}.placeholder`),
-                onBlur: Yo
-              }, null, 40, Vp)), [
-                [le, Ge.value]
+                placeholder: p(s)(`flowEditor.settingMeta.${Fe.value.kind}.placeholder`),
+                onBlur: po
+              }, null, 40, Ap)), [
+                [ae, Vt.value]
               ])
             ]),
-            t("p", Ap, m(p(a)(`flowEditor.settingMeta.${Ae.value.kind}.hint`)), 1)
+            o("p", Np, m(p(s)(`flowEditor.settingMeta.${Fe.value.kind}.hint`)), 1)
           ], 6)) : w.value ? (i(), u("div", {
             key: 2,
-            class: ne(["flow-detail-panel", { "flow-detail-panel--resizing": Rt.value }]),
-            style: Ee({ width: ct.value + "px" }),
-            onDrop: re(wo, ["stop"]),
-            onDragover: re(cn, ["stop", "prevent"]),
-            onDragleave: re(xo, ["stop"])
+            class: te(["flow-detail-panel", { "flow-detail-panel--resizing": ct.value }]),
+            style: Ee({ width: eo.value + "px" }),
+            onDrop: le(Uo, ["stop"]),
+            onDragover: le(bo, ["stop", "prevent"]),
+            onDragleave: le(pn, ["stop"])
           }, [
-            t("div", {
+            o("div", {
               class: "flow-detail-resizer",
               role: "separator",
               "aria-orientation": "vertical",
-              title: p(a)("flowEditor.resizePanelHint"),
-              onPointerdown: Ft
-            }, null, 40, Np),
-            t("div", Rp, [
-              t("h4", null, m(w.value.stepType.toUpperCase().replace("_", " ")), 1),
-              t("div", Fp, [
-                t("button", {
+              title: p(s)("flowEditor.resizePanelHint"),
+              onPointerdown: to
+            }, null, 40, Rp),
+            o("div", Fp, [
+              o("h4", null, m(w.value.stepType.toUpperCase().replace("_", " ")), 1),
+              o("div", Pp, [
+                o("button", {
                   class: "flow-action-btn",
-                  onClick: Bn,
+                  onClick: ro,
                   title: "Move up"
                 }, "↑"),
-                t("button", {
+                o("button", {
                   class: "flow-action-btn",
-                  onClick: Kn,
+                  onClick: Bn,
                   title: "Move down"
                 }, "↓"),
-                dt.value ? (i(), u("button", {
+                no.value ? (i(), u("button", {
                   key: 0,
                   class: "flow-action-btn flow-action-info",
-                  title: p(a)("flowEditor.docModal.button"),
+                  title: p(s)("flowEditor.docModal.button"),
                   "data-testid": "kw-doc-info-btn",
-                  onClick: $t
-                }, "ⓘ", 8, Pp)) : T("", !0),
-                t("button", {
+                  onClick: bt
+                }, "ⓘ", 8, Dp)) : $("", !0),
+                o("button", {
                   class: "flow-action-btn flow-action-delete",
-                  onClick: Po,
+                  onClick: cn,
                   title: "Delete"
                 }, "×")
               ])
             ]),
-            Jt.value ? (i(), u("div", Dp, [
-              t("button", {
+            Yt.value ? (i(), u("div", Mp, [
+              o("button", {
                 class: "flow-debug-step-btn",
-                title: p(a)("flowEditor.debug.btnTitle"),
+                title: p(s)("flowEditor.debug.btnTitle"),
                 "data-testid": "flow-debug-step-btn",
-                onClick: f
+                onClick: In
               }, [
-                s[38] || (s[38] = t("span", { "aria-hidden": "true" }, "▶", -1)),
-                we(" " + m(p(a)("flowEditor.debug.btnLabel")), 1)
-              ], 8, Mp),
-              lo.value ? (i(), u("p", xp, m(lo.value), 1)) : T("", !0)
-            ])) : T("", !0),
-            ["keyword", "assignment"].includes(w.value.stepType) ? (i(), u("div", Up, [
-              t("label", null, m(p(a)("flowEditor.keyword")), 1),
-              ve(bi, {
+                n[38] || (n[38] = o("span", { "aria-hidden": "true" }, "▶", -1)),
+                we(" " + m(p(s)("flowEditor.debug.btnLabel")), 1)
+              ], 8, xp),
+              Mt.value ? (i(), u("p", Up, m(Mt.value), 1)) : $("", !0)
+            ])) : $("", !0),
+            ["keyword", "assignment"].includes(w.value.stepType) ? (i(), u("div", Bp, [
+              o("label", null, m(p(s)("flowEditor.keyword")), 1),
+              ve(wi, {
                 value: w.value.step.keyword,
-                "onUpdate:value": Qo,
-                onSelect: Ue
+                "onUpdate:value": Pn,
+                onSelect: Me
               }, null, 8, ["value"])
-            ])) : T("", !0),
-            no.value !== "hidden" ? (i(), u("div", Bp, [
-              t("label", {
-                for: "heal-toggle-" + (($ = F.value) == null ? void 0 : $.id)
-              }, m(p(a)("flowEditor.heal.toggleLabel")), 9, Kp),
-              t("div", Hp, [
-                t("input", {
-                  id: "heal-toggle-" + ((K = F.value) == null ? void 0 : K.id),
+            ])) : $("", !0),
+            Vo.value !== "hidden" ? (i(), u("div", Kp, [
+              o("label", {
+                for: "heal-toggle-" + ((v = A.value) == null ? void 0 : v.id)
+              }, m(p(s)("flowEditor.heal.toggleLabel")), 9, Hp),
+              o("div", Op, [
+                o("input", {
+                  id: "heal-toggle-" + ((F = A.value) == null ? void 0 : F.id),
                   type: "checkbox",
-                  checked: no.value === "on",
+                  checked: Vo.value === "on",
                   "data-testid": "flow-step-heal-toggle",
-                  onChange: s[17] || (s[17] = (C) => Ct(C.target.checked))
-                }, null, 40, Op),
-                t("span", Ip, m(p(a)("flowEditor.heal.toggleHint")), 1)
+                  onChange: n[17] || (n[17] = (C) => mo(C.target.checked))
+                }, null, 40, Ip),
+                o("span", Wp, m(p(s)("flowEditor.heal.toggleHint")), 1)
               ])
-            ])) : T("", !0),
-            ["keyword", "assignment"].includes(w.value.stepType) ? (i(), u("div", Wp, [
-              t("label", null, m(p(a)("flowEditor.arguments")), 1),
-              (i(!0), u(x, null, X(w.value.step.args, (C, L) => {
-                var he, Me;
+            ])) : $("", !0),
+            ["keyword", "assignment"].includes(w.value.stepType) ? (i(), u("div", jp, [
+              o("label", null, m(p(s)("flowEditor.arguments")), 1),
+              (i(!0), u(U, null, Y(w.value.step.args, (C, S) => {
+                var he, Pe;
                 return i(), u("div", {
-                  key: L,
+                  key: S,
                   class: "flow-arg-row"
                 }, [
-                  t("span", {
+                  o("span", {
                     class: "flow-arg-name-inline",
-                    title: ((Me = (he = w.value.argSpecs) == null ? void 0 : he[L]) == null ? void 0 : Me.type) ?? void 0
-                  }, m(Dn(L)) + ":", 9, jp),
-                  !(L === 0 && Ao.value && w.value.recording) && at(L).labelKey !== "flowEditor.argTypes.unknown" ? (i(), u("span", {
+                    title: ((Pe = (he = w.value.argSpecs) == null ? void 0 : he[S]) == null ? void 0 : Pe.type) ?? void 0
+                  }, m(Fn(S)) + ":", 9, qp),
+                  !(S === 0 && tn.value && w.value.recording) && Ue(S).labelKey !== "flowEditor.argTypes.unknown" ? (i(), u("span", {
                     key: 0,
                     class: "flow-arg-type-chip",
-                    title: Jo(L),
+                    title: an(S),
                     "data-testid": "arg-type-chip"
                   }, [
-                    t("span", zp, m(at(L).icon), 1),
-                    t("span", Gp, m(p(a)(at(L).labelKey)), 1),
-                    at(L).optional ? (i(), u("span", Yp, "?")) : T("", !0)
-                  ], 8, qp)) : T("", !0),
-                  L === 0 && Ao.value && w.value.recording ? (i(), u("div", Xp, [
-                    ve(bu, {
+                    o("span", Gp, m(Ue(S).icon), 1),
+                    o("span", Yp, m(p(s)(Ue(S).labelKey)), 1),
+                    Ue(S).optional ? (i(), u("span", Xp, "?")) : $("", !0)
+                  ], 8, zp)) : $("", !0),
+                  S === 0 && tn.value && w.value.recording ? (i(), u("div", Zp, [
+                    ve(wu, {
                       command: w.value.recording,
-                      "onUpdate:activeIndex": Zo,
-                      "onUpdate:candidate": Rn,
-                      "onAdd:candidate": Fn
+                      "onUpdate:activeIndex": Nn,
+                      "onUpdate:candidate": en,
+                      "onAdd:candidate": Rn
                     }, null, 8, ["command"]),
-                    Pn.value ? (i(), u("span", Zp, m(p(a)("flowEditor.selector.customValueHint")), 1)) : T("", !0)
-                  ])) : (i(), u(x, { key: 2 }, [
-                    Wt(L) === "checkbox" ? (i(), u("input", {
+                    on.value ? (i(), u("span", Qp, m(p(s)("flowEditor.selector.customValueHint")), 1)) : $("", !0)
+                  ])) : (i(), u(U, { key: 2 }, [
+                    Ft(S) === "checkbox" ? (i(), u("input", {
                       key: 0,
                       type: "checkbox",
                       class: "flow-input-checkbox",
-                      checked: tn(L),
-                      onChange: (Ce) => Mn(L, Ce),
-                      "data-testid": `arg-bool-${L}`
-                    }, null, 40, Qp)) : Wt(L) === "select" ? q((i(), u("select", {
+                      checked: Dn(S),
+                      onChange: (Ce) => rn(S, Ce),
+                      "data-testid": `arg-bool-${S}`
+                    }, null, 40, Jp)) : Ft(S) === "select" ? z((i(), u("select", {
                       key: 1,
-                      "onUpdate:modelValue": (Ce) => w.value.step.args[L] = Ce,
+                      "onUpdate:modelValue": (Ce) => w.value.step.args[S] = Ce,
                       class: "flow-input flow-input-sm",
-                      "data-testid": `arg-select-${L}`,
-                      onChange: Ue
+                      "data-testid": `arg-select-${S}`,
+                      onChange: Me
                     }, [
-                      w.value.step.args[L] && !(at(L).choices ?? []).includes(w.value.step.args[L]) ? (i(), u("option", {
+                      w.value.step.args[S] && !(Ue(S).choices ?? []).includes(w.value.step.args[S]) ? (i(), u("option", {
                         key: 0,
-                        value: w.value.step.args[L]
-                      }, m(w.value.step.args[L]) + " (" + m(p(a)("flowEditor.argTypes.customValue")) + ")", 9, ef)) : T("", !0),
-                      t("option", tf, m(Qe(L)), 1),
-                      (i(!0), u(x, null, X(at(L).choices ?? [], (Ce) => (i(), u("option", {
+                        value: w.value.step.args[S]
+                      }, m(w.value.step.args[S]) + " (" + m(p(s)("flowEditor.argTypes.customValue")) + ")", 9, tf)) : $("", !0),
+                      o("option", of, m(tt(S)), 1),
+                      (i(!0), u(U, null, Y(Ue(S).choices ?? [], (Ce) => (i(), u("option", {
                         key: Ce,
                         value: Ce
-                      }, m(Ce), 9, of))), 128))
-                    ], 40, Jp)), [
-                      [it, w.value.step.args[L]]
-                    ]) : Wt(L) === "integer" || Wt(L) === "number" ? q((i(), u("input", {
+                      }, m(Ce), 9, nf))), 128))
+                    ], 40, ef)), [
+                      [it, w.value.step.args[S]]
+                    ]) : Ft(S) === "integer" || Ft(S) === "number" ? z((i(), u("input", {
                       key: 2,
-                      "onUpdate:modelValue": (Ce) => w.value.step.args[L] = Ce,
+                      "onUpdate:modelValue": (Ce) => w.value.step.args[S] = Ce,
                       type: "number",
-                      step: Wt(L) === "integer" ? "1" : "any",
+                      step: Ft(S) === "integer" ? "1" : "any",
                       inputmode: "decimal",
                       class: "flow-input flow-input-sm",
-                      placeholder: Qe(L),
-                      onChange: Ue
-                    }, null, 40, nf)), [
-                      [le, w.value.step.args[L]]
-                    ]) : Wt(L) === "duration" ? q((i(), u("input", {
-                      key: 3,
-                      "onUpdate:modelValue": (Ce) => w.value.step.args[L] = Ce,
-                      class: "flow-input flow-input-sm",
-                      placeholder: Qe(L) || p(a)("flowEditor.argTypes.durationHint"),
-                      title: p(a)("flowEditor.argTypes.durationHint"),
-                      onChange: Ue
+                      placeholder: tt(S),
+                      onChange: Me
                     }, null, 40, af)), [
-                      [le, w.value.step.args[L]]
-                    ]) : q((i(), u("input", {
-                      key: 4,
-                      "onUpdate:modelValue": (Ce) => w.value.step.args[L] = Ce,
+                      [ae, w.value.step.args[S]]
+                    ]) : Ft(S) === "duration" ? z((i(), u("input", {
+                      key: 3,
+                      "onUpdate:modelValue": (Ce) => w.value.step.args[S] = Ce,
                       class: "flow-input flow-input-sm",
-                      placeholder: Qe(L),
-                      onChange: Ue
+                      placeholder: tt(S) || p(s)("flowEditor.argTypes.durationHint"),
+                      title: p(s)("flowEditor.argTypes.durationHint"),
+                      onChange: Me
                     }, null, 40, sf)), [
-                      [le, w.value.step.args[L]]
+                      [ae, w.value.step.args[S]]
+                    ]) : z((i(), u("input", {
+                      key: 4,
+                      "onUpdate:modelValue": (Ce) => w.value.step.args[S] = Ce,
+                      class: "flow-input flow-input-sm",
+                      placeholder: tt(S),
+                      onChange: Me
+                    }, null, 40, lf)), [
+                      [ae, w.value.step.args[S]]
                     ]),
-                    at(L).control !== "text" ? (i(), u("button", {
+                    Ue(S).control !== "text" ? (i(), u("button", {
                       key: 5,
                       type: "button",
                       class: "flow-input-toggle",
-                      title: vo(L) ? p(a)("flowEditor.argTypes.toggleBackToTyped") : p(a)("flowEditor.argTypes.toggleToText"),
-                      "data-testid": `arg-text-toggle-${L}`,
-                      onClick: (Ce) => en(L)
-                    }, m(vo(L) ? "⌨" : "{}"), 9, lf)) : T("", !0)
+                      title: go(S) ? p(s)("flowEditor.argTypes.toggleBackToTyped") : p(s)("flowEditor.argTypes.toggleToText"),
+                      "data-testid": `arg-text-toggle-${S}`,
+                      onClick: (Ce) => sn(S)
+                    }, m(go(S) ? "⌨" : "{}"), 9, rf)) : $("", !0)
                   ], 64)),
-                  t("button", {
+                  o("button", {
                     class: "flow-btn-remove",
-                    onClick: (Ce) => Xt(L)
-                  }, "×", 8, rf)
+                    onClick: (Ce) => Ve(S)
+                  }, "×", 8, uf)
                 ]);
               }), 128)),
-              t("div", {
+              o("div", {
                 ref_key: "addArgTriggerRef",
-                ref: qt,
+                ref: xe,
                 class: "flow-add-arg-wrap"
               }, [
-                t("button", {
+                o("button", {
                   class: "flow-btn-add",
                   type: "button",
-                  onClick: Tt
+                  onClick: Mn
                 }, [
-                  we(" + " + m(p(a)("flowEditor.addArg")) + " ", 1),
-                  De.value.length > 0 ? (i(), u("span", uf, "▾")) : T("", !0)
+                  we(" + " + m(p(s)("flowEditor.addArg")) + " ", 1),
+                  No.value.length > 0 ? (i(), u("span", cf, "▾")) : $("", !0)
                 ]),
-                (i(), Ut(yn, { to: "body" }, [
-                  st.value ? (i(), u("div", {
+                (i(), xt(bn, { to: "body" }, [
+                  lt.value ? (i(), u("div", {
                     key: 0,
                     ref_key: "addArgPopoverRef",
-                    ref: pt,
+                    ref: It,
                     class: "flow-add-arg-popover",
                     role: "listbox",
                     "data-testid": "add-arg-popover",
-                    style: Ee(zt.value)
+                    style: Ee(dt.value)
                   }, [
-                    De.value.length === 0 ? (i(), u("div", cf, m(p(a)("flowEditor.addArgPicker.noUnused")), 1)) : T("", !0),
-                    (i(!0), u(x, null, X(De.value, (C) => (i(), u("button", {
+                    No.value.length === 0 ? (i(), u("div", df, m(p(s)("flowEditor.addArgPicker.noUnused")), 1)) : $("", !0),
+                    (i(!0), u(U, null, Y(No.value, (C) => (i(), u("button", {
                       key: C.name,
                       type: "button",
                       class: "flow-add-arg-option",
                       "data-testid": `add-arg-option-${C.name}`,
-                      onClick: (L) => Gt(C)
+                      onClick: (S) => wt(C)
                     }, [
-                      t("span", pf, m(C.name), 1),
-                      C.defaultValue !== null ? (i(), u("span", ff, " = " + m(C.defaultValue), 1)) : T("", !0),
-                      C.isNextPositional ? T("", !0) : (i(), u("span", mf, m(p(a)("flowEditor.addArgPicker.namedHint")), 1))
-                    ], 8, df))), 128)),
-                    t("div", gf, [
-                      t("span", vf, m(p(a)("flowEditor.addArgPicker.customLabel")), 1),
-                      t("div", hf, [
-                        q(t("input", {
-                          "onUpdate:modelValue": s[18] || (s[18] = (C) => jt.value = C),
+                      o("span", ff, m(C.name), 1),
+                      C.defaultValue !== null ? (i(), u("span", mf, " = " + m(C.defaultValue), 1)) : $("", !0),
+                      C.isNextPositional ? $("", !0) : (i(), u("span", gf, m(p(s)("flowEditor.addArgPicker.namedHint")), 1))
+                    ], 8, pf))), 128)),
+                    o("div", vf, [
+                      o("span", hf, m(p(s)("flowEditor.addArgPicker.customLabel")), 1),
+                      o("div", yf, [
+                        z(o("input", {
+                          "onUpdate:modelValue": n[18] || (n[18] = (C) => Pt.value = C),
                           type: "text",
                           class: "flow-add-arg-custom-input",
-                          placeholder: p(a)("flowEditor.addArgPicker.customPlaceholder"),
+                          placeholder: p(s)("flowEditor.addArgPicker.customPlaceholder"),
                           autocomplete: "off",
                           spellcheck: "false",
                           "data-testid": "add-arg-custom-input",
                           onKeydown: [
-                            Ye(re(nn, ["prevent"]), ["enter"]),
-                            s[19] || (s[19] = re(() => {
+                            Ze(le(Dt, ["prevent"]), ["enter"]),
+                            n[19] || (n[19] = le(() => {
                             }, ["stop"]))
                           ]
-                        }, null, 40, yf), [
-                          [le, jt.value]
+                        }, null, 40, bf), [
+                          [ae, Pt.value]
                         ]),
-                        t("button", {
+                        o("button", {
                           type: "button",
                           class: "flow-add-arg-custom-add",
-                          disabled: !jt.value.trim(),
+                          disabled: !Pt.value.trim(),
                           "data-testid": "add-arg-custom-add",
-                          onClick: nn
-                        }, m(p(a)("flowEditor.addArgPicker.customAdd")), 9, bf)
+                          onClick: Dt
+                        }, m(p(s)("flowEditor.addArgPicker.customAdd")), 9, wf)
                       ])
                     ])
-                  ], 4)) : T("", !0)
+                  ], 4)) : $("", !0)
                 ]))
               ], 512)
-            ])) : T("", !0),
-            ["keyword", "assignment"].includes(w.value.stepType) ? (i(), u("div", wf, [
-              t("label", null, m(p(a)("flowEditor.returnVars")), 1),
-              (i(!0), u(x, null, X(w.value.step.returnVars, (C, L) => (i(), u("div", {
-                key: L,
+            ])) : $("", !0),
+            ["keyword", "assignment"].includes(w.value.stepType) ? (i(), u("div", _f, [
+              o("label", null, m(p(s)("flowEditor.returnVars")), 1),
+              (i(!0), u(U, null, Y(w.value.step.returnVars, (C, S) => (i(), u("div", {
+                key: S,
                 class: "flow-arg-row"
               }, [
-                q(t("input", {
-                  "onUpdate:modelValue": (he) => w.value.step.returnVars[L] = he,
+                z(o("input", {
+                  "onUpdate:modelValue": (he) => w.value.step.returnVars[S] = he,
                   class: "flow-input flow-input-sm",
-                  onChange: Ue
-                }, null, 40, _f), [
-                  [le, w.value.step.returnVars[L]]
+                  onChange: Me
+                }, null, 40, kf), [
+                  [ae, w.value.step.returnVars[S]]
                 ]),
-                t("button", {
+                o("button", {
                   class: "flow-btn-remove",
-                  onClick: (he) => Fo(L)
-                }, "×", 8, kf)
+                  onClick: (he) => rt(S)
+                }, "×", 8, Cf)
               ]))), 128)),
-              t("button", {
+              o("button", {
                 class: "flow-btn-add",
-                onClick: lt
-              }, "+ " + m(p(a)("flowEditor.addVar")), 1)
-            ])) : T("", !0),
-            w.value.stepType === "return" ? (i(), u("div", Cf, [
-              t("label", null, m(p(a)("flowEditor.returnValues")), 1),
-              (i(!0), u(x, null, X(w.value.step.args, (C, L) => (i(), u("div", {
-                key: L,
+                onClick: jt
+              }, "+ " + m(p(s)("flowEditor.addVar")), 1)
+            ])) : $("", !0),
+            w.value.stepType === "return" ? (i(), u("div", $f, [
+              o("label", null, m(p(s)("flowEditor.returnValues")), 1),
+              (i(!0), u(U, null, Y(w.value.step.args, (C, S) => (i(), u("div", {
+                key: S,
                 class: "flow-arg-row"
               }, [
-                q(t("input", {
-                  "onUpdate:modelValue": (he) => w.value.step.args[L] = he,
+                z(o("input", {
+                  "onUpdate:modelValue": (he) => w.value.step.args[S] = he,
                   class: "flow-input flow-input-sm",
-                  placeholder: p(a)("flowEditor.returnValuePlaceholder"),
-                  "data-testid": `return-value-${L}`,
-                  onChange: Ue
-                }, null, 40, $f), [
-                  [le, w.value.step.args[L]]
+                  placeholder: p(s)("flowEditor.returnValuePlaceholder"),
+                  "data-testid": `return-value-${S}`,
+                  onChange: Me
+                }, null, 40, Tf), [
+                  [ae, w.value.step.args[S]]
                 ]),
-                t("button", {
+                o("button", {
                   class: "flow-btn-remove",
-                  onClick: (he) => $e(L)
-                }, "×", 8, Tf)
+                  onClick: (he) => un(S)
+                }, "×", 8, Ef)
               ]))), 128)),
-              t("button", {
+              o("button", {
                 type: "button",
                 class: "flow-btn-add",
                 "data-testid": "add-return-value",
-                onClick: an
-              }, "+ " + m(p(a)("flowEditor.addValue")), 1)
-            ])) : T("", !0),
-            ["if", "else_if", "while"].includes(w.value.stepType) ? (i(), u("div", Ef, [
-              t("label", null, m(p(a)("flowEditor.condition")), 1),
-              q(t("input", {
-                "onUpdate:modelValue": s[20] || (s[20] = (C) => w.value.step.condition = C),
+                onClick: yo
+              }, "+ " + m(p(s)("flowEditor.addValue")), 1)
+            ])) : $("", !0),
+            ["if", "else_if", "while"].includes(w.value.stepType) ? (i(), u("div", Sf, [
+              o("label", null, m(p(s)("flowEditor.condition")), 1),
+              z(o("input", {
+                "onUpdate:modelValue": n[20] || (n[20] = (C) => w.value.step.condition = C),
                 class: "flow-input",
-                onChange: Ue
+                onChange: Me
               }, null, 544), [
-                [le, w.value.step.condition]
+                [ae, w.value.step.condition]
               ])
-            ])) : T("", !0),
-            w.value.stepType === "for" ? (i(), u("div", Sf, [
-              t("label", null, m(p(a)("flowEditor.loopVar")), 1),
-              q(t("input", {
-                "onUpdate:modelValue": s[21] || (s[21] = (C) => w.value.step.loopVar = C),
-                class: "flow-input",
-                onChange: Ue
-              }, null, 544), [
-                [le, w.value.step.loopVar]
-              ])
-            ])) : T("", !0),
+            ])) : $("", !0),
             w.value.stepType === "for" ? (i(), u("div", Lf, [
-              t("label", null, m(p(a)("flowEditor.loopFlavor")), 1),
-              q(t("select", {
-                "onUpdate:modelValue": s[22] || (s[22] = (C) => w.value.step.loopFlavor = C),
+              o("label", null, m(p(s)("flowEditor.loopVar")), 1),
+              z(o("input", {
+                "onUpdate:modelValue": n[21] || (n[21] = (C) => w.value.step.loopVar = C),
                 class: "flow-input",
-                onChange: Ue
-              }, [...s[39] || (s[39] = [
-                t("option", null, "IN", -1),
-                t("option", null, "IN RANGE", -1),
-                t("option", null, "IN ENUMERATE", -1),
-                t("option", null, "IN ZIP", -1)
+                onChange: Me
+              }, null, 544), [
+                [ae, w.value.step.loopVar]
+              ])
+            ])) : $("", !0),
+            w.value.stepType === "for" ? (i(), u("div", Vf, [
+              o("label", null, m(p(s)("flowEditor.loopFlavor")), 1),
+              z(o("select", {
+                "onUpdate:modelValue": n[22] || (n[22] = (C) => w.value.step.loopFlavor = C),
+                class: "flow-input",
+                onChange: Me
+              }, [...n[39] || (n[39] = [
+                o("option", null, "IN", -1),
+                o("option", null, "IN RANGE", -1),
+                o("option", null, "IN ENUMERATE", -1),
+                o("option", null, "IN ZIP", -1)
               ])], 544), [
                 [it, w.value.step.loopFlavor]
               ])
-            ])) : T("", !0),
-            w.value.stepType === "for" ? (i(), u("div", Vf, [
-              t("label", null, m(p(a)("flowEditor.loopValues")), 1),
-              (i(!0), u(x, null, X(w.value.step.loopValues, (C, L) => (i(), u("div", {
-                key: L,
+            ])) : $("", !0),
+            w.value.stepType === "for" ? (i(), u("div", Af, [
+              o("label", null, m(p(s)("flowEditor.loopValues")), 1),
+              (i(!0), u(U, null, Y(w.value.step.loopValues, (C, S) => (i(), u("div", {
+                key: S,
                 class: "flow-arg-row"
               }, [
-                q(t("input", {
-                  "onUpdate:modelValue": (he) => w.value.step.loopValues[L] = he,
+                z(o("input", {
+                  "onUpdate:modelValue": (he) => w.value.step.loopValues[S] = he,
                   class: "flow-input flow-input-sm",
-                  onChange: Ue
-                }, null, 40, Af), [
-                  [le, w.value.step.loopValues[L]]
+                  onChange: Me
+                }, null, 40, Nf), [
+                  [ae, w.value.step.loopValues[S]]
                 ]),
-                t("button", {
+                o("button", {
                   class: "flow-btn-remove",
-                  onClick: (he) => yo(L)
-                }, "×", 8, Nf)
+                  onClick: (he) => xn(S)
+                }, "×", 8, Rf)
               ]))), 128)),
-              t("button", {
+              o("button", {
                 class: "flow-btn-add",
-                onClick: xn
-              }, "+ " + m(p(a)("flowEditor.addValue")), 1)
-            ])) : T("", !0),
-            w.value.stepType === "except" ? (i(), u("div", Rf, [
-              t("label", null, m(p(a)("flowEditor.exceptPattern")), 1),
-              q(t("input", {
-                "onUpdate:modelValue": s[23] || (s[23] = (C) => w.value.step.exceptPattern = C),
-                class: "flow-input",
-                onChange: Ue
-              }, null, 544), [
-                [le, w.value.step.exceptPattern]
-              ])
-            ])) : T("", !0),
+                onClick: Ro
+              }, "+ " + m(p(s)("flowEditor.addValue")), 1)
+            ])) : $("", !0),
             w.value.stepType === "except" ? (i(), u("div", Ff, [
-              t("label", null, m(p(a)("flowEditor.exceptVar")), 1),
-              q(t("input", {
-                "onUpdate:modelValue": s[24] || (s[24] = (C) => w.value.step.exceptVar = C),
+              o("label", null, m(p(s)("flowEditor.exceptPattern")), 1),
+              z(o("input", {
+                "onUpdate:modelValue": n[23] || (n[23] = (C) => w.value.step.exceptPattern = C),
+                class: "flow-input",
+                onChange: Me
+              }, null, 544), [
+                [ae, w.value.step.exceptPattern]
+              ])
+            ])) : $("", !0),
+            w.value.stepType === "except" ? (i(), u("div", Pf, [
+              o("label", null, m(p(s)("flowEditor.exceptVar")), 1),
+              z(o("input", {
+                "onUpdate:modelValue": n[24] || (n[24] = (C) => w.value.step.exceptVar = C),
                 class: "flow-input",
                 placeholder: "AS ${error}",
-                onChange: Ue
+                onChange: Me
               }, null, 544), [
-                [le, w.value.step.exceptVar]
+                [ae, w.value.step.exceptVar]
               ])
-            ])) : T("", !0),
-            w.value.stepType === "var" ? (i(), u("div", Pf, [
-              t("label", null, m(p(a)("flowEditor.varName")), 1),
-              q(t("input", {
-                "onUpdate:modelValue": s[25] || (s[25] = (C) => w.value.step.keyword = C),
-                class: "flow-input",
-                onChange: Ue
-              }, null, 544), [
-                [le, w.value.step.keyword]
-              ])
-            ])) : T("", !0),
+            ])) : $("", !0),
             w.value.stepType === "var" ? (i(), u("div", Df, [
-              t("label", null, m(p(a)("flowEditor.varScope")), 1),
-              q(t("select", {
-                "onUpdate:modelValue": s[26] || (s[26] = (C) => w.value.step.varScope = C),
+              o("label", null, m(p(s)("flowEditor.varName")), 1),
+              z(o("input", {
+                "onUpdate:modelValue": n[25] || (n[25] = (C) => w.value.step.keyword = C),
                 class: "flow-input",
-                onChange: Ue
-              }, [...s[40] || (s[40] = [
-                t("option", { value: "" }, "default", -1),
-                t("option", null, "LOCAL", -1),
-                t("option", null, "TEST", -1),
-                t("option", null, "TASK", -1),
-                t("option", null, "SUITE", -1),
-                t("option", null, "GLOBAL", -1)
+                onChange: Me
+              }, null, 544), [
+                [ae, w.value.step.keyword]
+              ])
+            ])) : $("", !0),
+            w.value.stepType === "var" ? (i(), u("div", Mf, [
+              o("label", null, m(p(s)("flowEditor.varScope")), 1),
+              z(o("select", {
+                "onUpdate:modelValue": n[26] || (n[26] = (C) => w.value.step.varScope = C),
+                class: "flow-input",
+                onChange: Me
+              }, [...n[40] || (n[40] = [
+                o("option", { value: "" }, "default", -1),
+                o("option", null, "LOCAL", -1),
+                o("option", null, "TEST", -1),
+                o("option", null, "TASK", -1),
+                o("option", null, "SUITE", -1),
+                o("option", null, "GLOBAL", -1)
               ])], 544), [
                 [it, w.value.step.varScope]
               ])
-            ])) : T("", !0),
-            w.value.stepType === "comment" ? (i(), u("div", Mf, [
-              t("label", null, m(p(a)("flowEditor.comment")), 1),
-              q(t("input", {
-                "onUpdate:modelValue": s[27] || (s[27] = (C) => w.value.step.comment = C),
+            ])) : $("", !0),
+            w.value.stepType === "comment" ? (i(), u("div", xf, [
+              o("label", null, m(p(s)("flowEditor.comment")), 1),
+              z(o("input", {
+                "onUpdate:modelValue": n[27] || (n[27] = (C) => w.value.step.comment = C),
                 class: "flow-input",
-                onChange: Ue
+                onChange: Me
               }, null, 544), [
-                [le, w.value.step.comment]
+                [ae, w.value.step.comment]
               ])
-            ])) : T("", !0)
-          ], 38)) : T("", !0)
+            ])) : $("", !0)
+          ], 38)) : $("", !0)
         ])),
-        ve(xi, {
-          modelValue: mo.value,
-          "onUpdate:modelValue": s[28] || (s[28] = (C) => mo.value = C),
-          keyword: go.value,
+        ve(Ui, {
+          modelValue: st.value,
+          "onUpdate:modelValue": n[28] || (n[28] = (C) => st.value = C),
+          keyword: nn.value,
           "scope-id": p(c).scopeId ?? void 0
         }, null, 8, ["modelValue", "keyword", "scope-id"]),
-        ve(Io, {
-          modelValue: ft.value,
-          "onUpdate:modelValue": s[30] || (s[30] = (C) => ft.value = C),
-          title: p(a)("flowEditor.debug.unsavedHintTitle"),
+        ve(jo, {
+          modelValue: pt.value,
+          "onUpdate:modelValue": n[30] || (n[30] = (C) => pt.value = C),
+          title: p(s)("flowEditor.debug.unsavedHintTitle"),
           size: "sm",
           "data-testid": "flow-debug-unsaved-modal"
         }, {
           footer: _e(() => [
             ve(Oe, {
               variant: "ghost",
-              onClick: s[29] || (s[29] = (C) => ft.value = !1)
+              onClick: n[29] || (n[29] = (C) => pt.value = !1)
             }, {
               default: _e(() => [
-                we(m(p(a)("editor.common.close")), 1)
+                we(m(p(s)("editor.common.close")), 1)
               ]),
               _: 1
             })
           ]),
           default: _e(() => [
-            t("p", null, m(p(a)("flowEditor.debug.unsavedHint")), 1)
+            o("p", null, m(p(s)("flowEditor.debug.unsavedHint")), 1)
           ]),
           _: 1
         }, 8, ["modelValue", "title"]),
-        ve(Io, {
-          "model-value": Je.value !== null,
-          title: p(a)("flowEditor.debug.confirmReplaceTitle"),
+        ve(jo, {
+          "model-value": He.value !== null,
+          title: p(s)("flowEditor.debug.confirmReplaceTitle"),
           size: "sm",
           "data-testid": "flow-debug-confirm-modal",
-          "onUpdate:modelValue": s[32] || (s[32] = (C) => {
-            C || (Je.value = null);
+          "onUpdate:modelValue": n[32] || (n[32] = (C) => {
+            C || (He.value = null);
           })
         }, {
           footer: _e(() => [
             ve(Oe, {
               variant: "ghost",
-              onClick: s[31] || (s[31] = (C) => Je.value = null)
+              onClick: n[31] || (n[31] = (C) => He.value = null)
             }, {
               default: _e(() => [
-                we(m(p(a)("editor.common.cancel")), 1)
+                we(m(p(s)("editor.common.cancel")), 1)
               ]),
               _: 1
             }),
             ve(Oe, {
               variant: "primary",
               "data-testid": "flow-debug-confirm-restart-btn",
-              onClick: l
+              onClick: h
             }, {
               default: _e(() => [
-                we(m(p(a)("flowEditor.debug.confirmReplaceConfirm")), 1)
+                we(m(p(s)("flowEditor.debug.confirmReplaceConfirm")), 1)
               ]),
               _: 1
             })
           ]),
           default: _e(() => [
-            Je.value ? (i(), u("p", xf, m(p(a)("flowEditor.debug.confirmReplace", {
-              lineFrom: Je.value.fromLine,
-              lineTo: Je.value.toLine
-            })), 1)) : T("", !0)
+            He.value ? (i(), u("p", Uf, m(p(s)("flowEditor.debug.confirmReplace", {
+              lineFrom: He.value.fromLine,
+              lineTo: He.value.toLine
+            })), 1)) : $("", !0)
           ]),
           _: 1
         }, 8, ["model-value", "title"]),
-        (i(), Ut(yn, { to: "body" }, [
-          S.value ? (i(), u("div", Uf, [
-            t("div", Bf, [
-              ve(rc, { onClosed: b })
+        (i(), xt(bn, { to: "body" }, [
+          l.value ? (i(), u("div", Bf, [
+            o("div", Kf, [
+              ve(ic, { onClosed: E })
             ])
-          ])) : T("", !0)
+          ])) : $("", !0)
         ])),
-        ve(pc, {
-          open: p(Ke).prereqMissing !== null,
-          "package-name": ((te = p(Ke).prereqMissing) == null ? void 0 : te.packageName) ?? "robotcode",
-          installing: p(Ke).installing,
-          "install-error": p(Ke).installError,
-          onInstall: d,
-          onCancel: v
+        ve(fc, {
+          open: p(Xe).prereqMissing !== null,
+          "package-name": ((X = p(Xe).prereqMissing) == null ? void 0 : X.packageName) ?? "robotcode",
+          installing: p(Xe).installing,
+          "install-error": p(Xe).installError,
+          onInstall: y,
+          onCancel: d
         }, null, 8, ["open", "package-name", "installing", "install-error"])
       ]);
     };
   }
-}), If = /* @__PURE__ */ qe(Of, [["__scopeId", "data-v-b19bd9b2"]]), Wf = { class: "read-only-banner__msg" }, jf = ["href"], qf = /* @__PURE__ */ je({
+}), Wf = /* @__PURE__ */ ze(If, [["__scopeId", "data-v-b19bd9b2"]]), jf = { class: "read-only-banner__msg" }, qf = ["href"], zf = /* @__PURE__ */ qe({
   __name: "ReadOnlyBanner",
   props: {
     role: {},
     adminContactEmail: {}
   },
   setup(e) {
-    const n = e, { t: r } = mt(), c = O(() => n.role === "viewer" || n.role === "runner"), g = O(() => n.role === "viewer" ? r("editor.readOnly.viewer") : n.role === "runner" ? r("editor.readOnly.runner") : ""), a = O(
-      () => n.adminContactEmail ? `mailto:${n.adminContactEmail}?subject=${encodeURIComponent("Access request")}` : null
+    const a = e, { t: r } = ft(), c = O(() => a.role === "viewer" || a.role === "runner"), g = O(() => a.role === "viewer" ? r("editor.readOnly.viewer") : a.role === "runner" ? r("editor.readOnly.runner") : ""), s = O(
+      () => a.adminContactEmail ? `mailto:${a.adminContactEmail}?subject=${encodeURIComponent("Access request")}` : null
     );
-    return (_, y) => c.value ? (i(), u("div", {
+    return (_, b) => c.value ? (i(), u("div", {
       key: 0,
-      class: ne(["read-only-banner", `read-only-banner--${e.role}`]),
+      class: te(["read-only-banner", `read-only-banner--${e.role}`]),
       role: "status",
       "aria-live": "polite"
     }, [
-      t("span", Wf, m(g.value), 1),
-      a.value ? (i(), u("a", {
+      o("span", jf, m(g.value), 1),
+      s.value ? (i(), u("a", {
         key: 0,
-        href: a.value,
+        href: s.value,
         class: "read-only-banner__cta"
-      }, m(p(r)("editor.readOnly.contactAdmin")), 9, jf)) : T("", !0)
-    ], 2)) : T("", !0);
+      }, m(p(r)("editor.readOnly.contactAdmin")), 9, qf)) : $("", !0)
+    ], 2)) : $("", !0);
   }
-}), zf = /* @__PURE__ */ qe(qf, [["__scopeId", "data-v-078dbe3d"]]), Gf = /* @__PURE__ */ new Set([
+}), Gf = /* @__PURE__ */ ze(zf, [["__scopeId", "data-v-078dbe3d"]]), Yf = /* @__PURE__ */ new Set([
   // BuiltIn library
   "call method",
   "catenate",
@@ -6635,64 +6635,64 @@ const Qc = { class: "flow-editor" }, Jc = { class: "flow-section-bar" }, ed = { 
   "get selection from user",
   "get value from user",
   "pause execution"
-]), Yf = /^(Library|Resource|Variables|Suite Setup|Suite Teardown|Test Setup|Test Teardown|Test Template|Test Timeout|Force Tags|Default Tags|Metadata|Documentation|Test Tags|Keyword Tags|Name)\b/i, Xf = /^\[(Setup|Tags|Teardown|Documentation|Arguments|Return|Template|Timeout)\]/i, Zf = /^\b(FOR|END|IF|ELSE IF|ELSE|TRY|EXCEPT|FINALLY|WHILE|BREAK|CONTINUE|RETURN|IN|IN RANGE|IN ENUMERATE|IN ZIP)\b/, Qf = /^(Given|When|Then|And|But)(?=\s)/i, Jf = /^\b(True|False|None|TRUE|FALSE|NONE|EMPTY|SPACE|NULL)\b/, em = /^\\[ntr\\$"'{}@%&xu#]/, $a = /^[$@%&]\{/, tm = /^([A-Za-z_][\w]*)=/;
-function om() {
+]), Xf = /^(Library|Resource|Variables|Suite Setup|Suite Teardown|Test Setup|Test Teardown|Test Template|Test Timeout|Force Tags|Default Tags|Metadata|Documentation|Test Tags|Keyword Tags|Name)\b/i, Zf = /^\[(Setup|Tags|Teardown|Documentation|Arguments|Return|Template|Timeout)\]/i, Qf = /^\b(FOR|END|IF|ELSE IF|ELSE|TRY|EXCEPT|FINALLY|WHILE|BREAK|CONTINUE|RETURN|IN|IN RANGE|IN ENUMERATE|IN ZIP)\b/, Jf = /^(Given|When|Then|And|But)(?=\s)/i, em = /^\b(True|False|None|TRUE|FALSE|NONE|EMPTY|SPACE|NULL)\b/, tm = /^\\[ntr\\$"'{}@%&xu#]/, $a = /^[$@%&]\{/, om = /^([A-Za-z_][\w]*)=/;
+function nm() {
   return bs.define({
     startState() {
       return { section: "", lineHasKeyword: !1, varDepth: 0, expectDotAfterNs: !1 };
     },
-    token(e, n) {
-      if (n.varDepth > 0)
-        return e.match(/^\}/) ? (n.varDepth--, "bracket") : e.match($a) ? (n.varDepth++, "bracket") : (e.match(/^[A-Za-z_][\w ]*/) || e.next(), "variableName");
+    token(e, a) {
+      if (a.varDepth > 0)
+        return e.match(/^\}/) ? (a.varDepth--, "bracket") : e.match($a) ? (a.varDepth++, "bracket") : (e.match(/^[A-Za-z_][\w ]*/) || e.next(), "variableName");
       if (e.sol()) {
-        if (n.lineHasKeyword = n.section === "variables", n.expectDotAfterNs = !1, e.match(/^\*{3}\s*(Settings?|Variables?|Test Cases?|Tasks?|Keywords?|Comments?)\s*\*{0,3}/i)) {
+        if (a.lineHasKeyword = a.section === "variables", a.expectDotAfterNs = !1, e.match(/^\*{3}\s*(Settings?|Variables?|Test Cases?|Tasks?|Keywords?|Comments?)\s*\*{0,3}/i)) {
           const r = e.current().toLowerCase();
-          return r.includes("setting") ? n.section = "settings" : r.includes("variable") ? n.section = "variables" : r.includes("test") || r.includes("task") ? n.section = "testcases" : r.includes("keyword") ? n.section = "keywords" : n.section = "comments", "heading";
+          return r.includes("setting") ? a.section = "settings" : r.includes("variable") ? a.section = "variables" : r.includes("test") || r.includes("task") ? a.section = "testcases" : r.includes("keyword") ? a.section = "keywords" : a.section = "comments", "heading";
         }
-        if (n.section === "comments")
+        if (a.section === "comments")
           return e.skipToEnd(), "comment";
         if (e.match(/^\s+\.\.\.(?=\s|$)/))
-          return n.lineHasKeyword = !0, "meta";
-        if ((n.section === "testcases" || n.section === "keywords") && !e.match(/^\s/, !1))
+          return a.lineHasKeyword = !0, "meta";
+        if ((a.section === "testcases" || a.section === "keywords") && !e.match(/^\s/, !1))
           return e.match(/^[^\s][^ ]*( [^ ]+)*/), "definition";
       }
-      if (n.expectDotAfterNs && (n.expectDotAfterNs = !1, e.match(/^\./)))
+      if (a.expectDotAfterNs && (a.expectDotAfterNs = !1, e.match(/^\./)))
         return "punctuation";
       if (e.match(/^#.*/)) return "comment";
       if (e.match(/^  +/)) return "punctuation";
       if (e.match($a))
-        return n.varDepth = 1, "bracket";
+        return a.varDepth = 1, "bracket";
       if (e.match(/^\[/) || e.match(/^\]/)) return "bracket";
-      if (e.match(Xf) || n.section === "settings" && e.match(Yf))
-        return n.lineHasKeyword = !0, "meta";
-      if (e.match(Zf))
-        return n.lineHasKeyword = !0, "keyword";
-      if (!n.lineHasKeyword && e.match(Qf)) return "keyword";
+      if (e.match(Zf) || a.section === "settings" && e.match(Xf))
+        return a.lineHasKeyword = !0, "meta";
+      if (e.match(Qf))
+        return a.lineHasKeyword = !0, "keyword";
+      if (!a.lineHasKeyword && e.match(Jf)) return "keyword";
       if (e.match(/^\.\.\.(?=\s|$)/)) return "meta";
       if (e.match(/^[A-Za-z_]/, !1)) {
-        if (!n.lineHasKeyword) {
+        if (!a.lineHasKeyword) {
           const r = e.string.slice(e.pos), c = r.match(/^([A-Z][\w]*)(?=\.[A-Z])/);
           if (c)
-            return e.pos += c[1].length, n.expectDotAfterNs = !0, "tagName";
+            return e.pos += c[1].length, a.expectDotAfterNs = !0, "tagName";
           const g = r.match(/^[A-Za-z_][\w]*(?: [A-Za-z_][\w]*)*/);
           if (g) {
-            const a = g[0], _ = a.split(" ");
-            for (let y = _.length; y >= 1; y--) {
-              const k = _.slice(0, y).join(" ");
-              if (Gf.has(k.toLowerCase()))
-                return e.pos += k.length, n.lineHasKeyword = !0, "function";
+            const s = g[0], _ = s.split(" ");
+            for (let b = _.length; b >= 1; b--) {
+              const k = _.slice(0, b).join(" ");
+              if (Yf.has(k.toLowerCase()))
+                return e.pos += k.length, a.lineHasKeyword = !0, "function";
             }
-            return e.pos += a.length, n.lineHasKeyword = !0, "function";
+            return e.pos += s.length, a.lineHasKeyword = !0, "function";
           }
           return e.next(), null;
         }
-        return e.match(tm) ? (e.pos -= 1, "attributeName") : e.match(Jf) ? "atom" : (e.match(/^[A-Za-z_][\w]*/), null);
+        return e.match(om) ? (e.pos -= 1, "attributeName") : e.match(em) ? "atom" : (e.match(/^[A-Za-z_][\w]*/), null);
       }
-      return e.match(em) ? "string-2" : e.match(/^==/) || e.match(/^=/) ? "operator" : e.match(/^"(?:[^"\\]|\\.)*"/) || e.match(/^'(?:[^'\\]|\\.)*'/) ? "string" : e.match(/^-?\d+(\.\d+)?\b/) ? "number" : (e.eatSpace() || e.next(), null);
+      return e.match(tm) ? "string-2" : e.match(/^==/) || e.match(/^=/) ? "operator" : e.match(/^"(?:[^"\\]|\\.)*"/) || e.match(/^'(?:[^'\\]|\\.)*'/) ? "string" : e.match(/^-?\d+(\.\d+)?\b/) ? "number" : (e.eatSpace() || e.next(), null);
     }
   });
 }
-const nm = ys.define([
+const am = ys.define([
   // Section headers (*** Settings ***) — strong navy heading.
   { tag: Re.heading, color: "#1A2D50", fontWeight: "700" },
   // Comments — muted grey, italic.
@@ -6730,17 +6730,17 @@ const nm = ys.define([
 function ns(e) {
   return e.replace(/\.robot$/i, ".rbs.json");
 }
-async function am(e, n) {
-  const r = ns(n);
+async function sm(e, a) {
+  const r = ns(a);
   try {
     const c = await xa(e, r), g = JSON.parse(c.content);
-    return Rs(g), Array.isArray(g.commands) ? g : null;
+    return Fs(g), Array.isArray(g.commands) ? g : null;
   } catch {
     return null;
   }
 }
-async function sm(e, n, r) {
-  const c = ns(n), g = JSON.stringify(r, null, 2) + `
+async function lm(e, a, r) {
+  const c = ns(a), g = JSON.stringify(r, null, 2) + `
 `;
   await Ua(e, c, g);
 }
@@ -6761,8 +6761,8 @@ const Ta = [
   "break",
   "continue",
   "return"
-], Ea = ["LOCAL", "TEST", "TASK", "SUITE", "GLOBAL"], ea = ["IN", "IN RANGE", "IN ENUMERATE", "IN ZIP"];
-function Bo(e = "keyword") {
+], Ea = ["LOCAL", "TEST", "TASK", "SUITE", "GLOBAL"], ta = ["IN", "IN RANGE", "IN ENUMERATE", "IN ZIP"];
+function Ho(e = "keyword") {
   return {
     type: e,
     keyword: "",
@@ -6778,19 +6778,19 @@ function Bo(e = "keyword") {
     comment: ""
   };
 }
-function Cn(e) {
+function $n(e) {
   return e.startsWith("\\#") ? e.slice(1) : e;
 }
 function as(e) {
   return e && (e.startsWith("#") ? "\\" + e : e);
 }
-function lm(e) {
+function rm(e) {
   return e && as(e).replace(/ {2,}/g, (r) => "\\ ".repeat(r.length));
 }
 function Sa(e) {
-  return e && Cn(e.replace(/\\ /g, " "));
+  return e && $n(e.replace(/\\ /g, " "));
 }
-const ss = /^# rbs:([a-f0-9]{8,32})$/, de = "    ", rm = /* @__PURE__ */ new Set([
+const ss = /^# rbs:([a-f0-9]{8,32})$/, pe = "    ", im = /* @__PURE__ */ new Set([
   "FOR",
   "END",
   "IF",
@@ -6805,12 +6805,12 @@ const ss = /^# rbs:([a-f0-9]{8,32})$/, de = "    ", rm = /* @__PURE__ */ new Set
   "RETURN",
   "VAR"
 ]);
-function im(e) {
-  const n = e.split(/  +|\t+/)[0];
-  return rm.has(n);
+function um(e) {
+  const a = e.split(/  +|\t+/)[0];
+  return im.has(a);
 }
-function um(e, n) {
-  for (let r = n; r < e.length; r++) {
+function cm(e, a) {
+  for (let r = a; r < e.length; r++) {
     const c = e[r], g = c.trimEnd();
     if (g) {
       if (ls.test(g) || !/^\s/.test(c)) return !1;
@@ -6819,135 +6819,135 @@ function um(e, n) {
   }
   return !1;
 }
-function cm(e) {
+function dm(e) {
   return e.startsWith("#") && !ss.test(e);
 }
-function dm(e) {
-  const n = Bo(), r = e.trim();
-  if (!r) return n;
+function pm(e) {
+  const a = Ho(), r = e.trim();
+  if (!r) return a;
   if (r.startsWith("#"))
-    return n.type = "comment", n.comment = r, n;
-  let c = r.split(/  +|\t+/).filter((E) => E !== "");
-  if (c.length === 0) return n;
-  const g = c[c.length - 1], a = ss.exec(g);
-  if (a && (n.rbs_id = a[1], c.pop(), c.length === 0))
-    return n;
-  const _ = c.findIndex(cm);
-  if (_ >= 0 && (n.trailingComment = c.slice(_).join(" "), c = c.slice(0, _), c.length === 0))
-    return n.type = "comment", n.comment = n.trailingComment, n.trailingComment = void 0, n;
-  const y = c[0];
-  if (y === "FOR") {
-    n.type = "for";
-    let E = -1;
+    return a.type = "comment", a.comment = r, a;
+  let c = r.split(/  +|\t+/).filter((T) => T !== "");
+  if (c.length === 0) return a;
+  const g = c[c.length - 1], s = ss.exec(g);
+  if (s && (a.rbs_id = s[1], c.pop(), c.length === 0))
+    return a;
+  const _ = c.findIndex(dm);
+  if (_ >= 0 && (a.trailingComment = c.slice(_).join(" "), c = c.slice(0, _), c.length === 0))
+    return a.type = "comment", a.comment = a.trailingComment, a.trailingComment = void 0, a;
+  const b = c[0];
+  if (b === "FOR") {
+    a.type = "for";
+    let T = -1;
     for (let B = 1; B < c.length; B++)
-      if (ea.includes(c[B])) {
-        E = B;
+      if (ta.includes(c[B])) {
+        T = B;
         break;
       }
-    if (E > 0) {
-      const B = c.slice(1, E);
-      let I = c[E], j = E + 1;
-      const ue = c[j];
-      I === "IN" && ue && ["ENUMERATE", "RANGE", "ZIP"].includes(ue) && (I = `IN ${ue}`, j += 1), n.loopVars = B, n.loopVar = B[0] || "${item}", n.loopFlavor = I, n.loopValues = c.slice(j);
+    if (T > 0) {
+      const B = c.slice(1, T);
+      let I = c[T], W = T + 1;
+      const re = c[W];
+      I === "IN" && re && ["ENUMERATE", "RANGE", "ZIP"].includes(re) && (I = `IN ${re}`, W += 1), a.loopVars = B, a.loopVar = B[0] || "${item}", a.loopFlavor = I, a.loopValues = c.slice(W);
     } else
-      n.loopVar = c[1] || "${item}", n.loopFlavor = "IN", n.loopValues = c.slice(3);
-    return n;
+      a.loopVar = c[1] || "${item}", a.loopFlavor = "IN", a.loopValues = c.slice(3);
+    return a;
   }
-  if (y === "END")
-    return n.type = "end", n;
-  if (y === "IF")
-    return n.type = "if", n.condition = c.slice(1).join("    "), n;
-  if (y === "ELSE IF")
-    return n.type = "else_if", n.condition = c.slice(1).join("    "), n;
-  if (y === "ELSE")
-    return n.type = "else", n;
-  if (y === "WHILE")
-    return n.type = "while", n.condition = c.slice(1).join("    "), n;
-  if (y === "TRY")
-    return n.type = "try", n;
-  if (y === "EXCEPT") {
-    n.type = "except";
-    const E = c.indexOf("AS");
-    return E >= 1 ? (n.exceptPattern = c.slice(1, E).join("    "), n.exceptVar = c[E + 1] || "") : n.exceptPattern = c.slice(1).join("    "), n;
+  if (b === "END")
+    return a.type = "end", a;
+  if (b === "IF")
+    return a.type = "if", a.condition = c.slice(1).join("    "), a;
+  if (b === "ELSE IF")
+    return a.type = "else_if", a.condition = c.slice(1).join("    "), a;
+  if (b === "ELSE")
+    return a.type = "else", a;
+  if (b === "WHILE")
+    return a.type = "while", a.condition = c.slice(1).join("    "), a;
+  if (b === "TRY")
+    return a.type = "try", a;
+  if (b === "EXCEPT") {
+    a.type = "except";
+    const T = c.indexOf("AS");
+    return T >= 1 ? (a.exceptPattern = c.slice(1, T).join("    "), a.exceptVar = c[T + 1] || "") : a.exceptPattern = c.slice(1).join("    "), a;
   }
-  if (y === "FINALLY")
-    return n.type = "finally", n;
-  if (y === "BREAK")
-    return n.type = "break", n;
-  if (y === "CONTINUE")
-    return n.type = "continue", n;
-  if (y === "RETURN")
-    return n.type = "return", n.args = c.slice(1), n;
-  if (y === "VAR") {
-    n.type = "var", n.returnVars = c[1] ? [c[1]] : ["${var}"];
-    const E = c.slice(2), B = E.findIndex((I) => /^scope=/i.test(I));
-    return B >= 0 ? (n.varScope = E[B].replace(/^scope=/i, ""), n.args = E.slice(0, B)) : n.args = E, n;
+  if (b === "FINALLY")
+    return a.type = "finally", a;
+  if (b === "BREAK")
+    return a.type = "break", a;
+  if (b === "CONTINUE")
+    return a.type = "continue", a;
+  if (b === "RETURN")
+    return a.type = "return", a.args = c.slice(1), a;
+  if (b === "VAR") {
+    a.type = "var", a.returnVars = c[1] ? [c[1]] : ["${var}"];
+    const T = c.slice(2), B = T.findIndex((I) => /^scope=/i.test(I));
+    return B >= 0 ? (a.varScope = T[B].replace(/^scope=/i, ""), a.args = T.slice(0, B)) : a.args = T, a;
   }
-  const k = /^[$@&%]\{[^}]+\}\s*=?$/, A = [];
-  let V = 0;
-  for (let E = 0; E < c.length; E++) {
-    const B = c[E].trim();
+  const k = /^[$@&%]\{[^}]+\}\s*=?$/, V = [];
+  let L = 0;
+  for (let T = 0; T < c.length; T++) {
+    const B = c[T].trim();
     if (k.test(B)) {
       const I = B.replace(/\s*=$/, "");
-      if (A.push(I), B.endsWith("=")) {
-        V = E + 1;
+      if (V.push(I), B.endsWith("=")) {
+        L = T + 1;
         break;
       }
-      if (E + 1 < c.length && c[E + 1].trim() === "=") {
-        V = E + 2;
+      if (T + 1 < c.length && c[T + 1].trim() === "=") {
+        L = T + 2;
         break;
       }
-    } else if (B === "=" && A.length > 0) {
-      V = E + 1;
+    } else if (B === "=" && V.length > 0) {
+      L = T + 1;
       break;
     } else {
-      V = E;
+      L = T;
       break;
     }
   }
-  return A.length > 0 && V < c.length ? (n.type = "assignment", n.returnVars = A, n.keyword = c[V], n.args = c.slice(V + 1).map(Cn), n) : (n.type = "keyword", n.keyword = c[0], n.args = c.slice(1).map(Cn), n);
+  return V.length > 0 && L < c.length ? (a.type = "assignment", a.returnVars = V, a.keyword = c[L], a.args = c.slice(L + 1).map($n), a) : (a.type = "keyword", a.keyword = c[0], a.args = c.slice(1).map($n), a);
 }
-function pm(e) {
-  const n = (g) => {
-    let a = g;
-    return e.rbs_id && (a += `${de}# rbs:${e.rbs_id}`), e.trailingComment && (a += `${de}${e.trailingComment}`), a;
+function fm(e) {
+  const a = (g) => {
+    let s = g;
+    return e.rbs_id && (s += `${pe}# rbs:${e.rbs_id}`), e.trailingComment && (s += `${pe}${e.trailingComment}`), s;
   }, r = e.args.map(as);
   let c;
   switch (e.type) {
     case "keyword":
-      c = [e.keyword, ...r].filter(Boolean).join(de);
+      c = [e.keyword, ...r].filter(Boolean).join(pe);
       break;
     case "assignment": {
       c = [...e.returnVars.map(
-        (a, _) => _ === e.returnVars.length - 1 ? a + "=" : a
-      ), e.keyword, ...r].filter(Boolean).join(de);
+        (s, _) => _ === e.returnVars.length - 1 ? s + "=" : s
+      ), e.keyword, ...r].filter(Boolean).join(pe);
       break;
     }
     case "for": {
-      c = ["FOR", ...e.loopVars && e.loopVars.length > 0 ? e.loopVars : [e.loopVar], e.loopFlavor, ...e.loopValues].filter(Boolean).join(de);
+      c = ["FOR", ...e.loopVars && e.loopVars.length > 0 ? e.loopVars : [e.loopVar], e.loopFlavor, ...e.loopValues].filter(Boolean).join(pe);
       break;
     }
     case "end":
       c = "END";
       break;
     case "if":
-      c = ["IF", e.condition].filter(Boolean).join(de);
+      c = ["IF", e.condition].filter(Boolean).join(pe);
       break;
     case "else_if":
-      c = ["ELSE IF", e.condition].filter(Boolean).join(de);
+      c = ["ELSE IF", e.condition].filter(Boolean).join(pe);
       break;
     case "else":
       c = "ELSE";
       break;
     case "while":
-      c = ["WHILE", e.condition].filter(Boolean).join(de);
+      c = ["WHILE", e.condition].filter(Boolean).join(pe);
       break;
     case "try":
       c = "TRY";
       break;
     case "except": {
       const g = ["EXCEPT"];
-      e.exceptPattern && g.push(e.exceptPattern), e.exceptVar && g.push("AS", e.exceptVar), c = g.join(de);
+      e.exceptPattern && g.push(e.exceptPattern), e.exceptVar && g.push("AS", e.exceptVar), c = g.join(pe);
       break;
     }
     case "finally":
@@ -6960,11 +6960,11 @@ function pm(e) {
       c = "CONTINUE";
       break;
     case "return":
-      c = ["RETURN", ...e.args].filter(Boolean).join(de);
+      c = ["RETURN", ...e.args].filter(Boolean).join(pe);
       break;
     case "var": {
       const g = ["VAR", e.returnVars[0] || "${var}", ...e.args];
-      e.varScope && g.push("scope=" + e.varScope), c = g.filter(Boolean).join(de);
+      e.varScope && g.push("scope=" + e.varScope), c = g.filter(Boolean).join(pe);
       break;
     }
     case "comment":
@@ -6972,19 +6972,19 @@ function pm(e) {
     default:
       return "";
   }
-  return n(c);
-}
-function fm(e) {
-  return /(^|[\\/])__init__\.robot$/i.test(e ?? "");
+  return a(c);
 }
 function mm(e) {
+  return /(^|[\\/])__init__\.robot$/i.test(e ?? "");
+}
+function gm(e) {
   return e.split(`
-`).some((n) => /^﻿?\*+[ ]*(Test Cases?|Tasks?)[ ]*\**/i.test(n.trim()));
+`).some((a) => /^﻿?\*+[ ]*(Test Cases?|Tasks?)[ ]*\**/i.test(a.trim()));
 }
 const ls = /^﻿?\*+[ ]*(Settings?|Variables?|Test Cases?|Tasks?|Keywords?)[ ]*\**/i;
-function gm(e) {
-  var V, E;
-  const n = e.split(`
+function vm(e) {
+  var L, T;
+  const a = e.split(`
 `), r = {
     settings: [],
     variables: [],
@@ -6992,61 +6992,61 @@ function gm(e) {
     keywords: [],
     preambleLines: []
   };
-  let c = "none", g = null, a = null, _ = [], y = !1, k = null;
-  const A = () => {
-    g && a && (a === "testcase" ? r.testCases.push(g) : r.keywords.push(g)), g = null, a = null, k = null;
+  let c = "none", g = null, s = null, _ = [], b = !1, k = null;
+  const V = () => {
+    g && s && (s === "testcase" ? r.testCases.push(g) : r.keywords.push(g)), g = null, s = null, k = null;
   };
-  for (let B = 0; B < n.length; B++) {
-    const I = n[B], j = I.trimEnd(), ue = j.match(ls);
-    if (ue) {
-      A();
-      const M = ue[1].toLowerCase();
-      M.startsWith("setting") ? c = "settings" : M.startsWith("variable") ? c = "variables" : M.startsWith("test") || M.startsWith("task") ? c = "testcases" : M.startsWith("keyword") && (c = "keywords");
+  for (let B = 0; B < a.length; B++) {
+    const I = a[B], W = I.trimEnd(), re = W.match(ls);
+    if (re) {
+      V();
+      const x = re[1].toLowerCase();
+      x.startsWith("setting") ? c = "settings" : x.startsWith("variable") ? c = "variables" : x.startsWith("test") || x.startsWith("task") ? c = "testcases" : x.startsWith("keyword") && (c = "keywords");
       continue;
     }
     if (c === "none") {
-      r.preambleLines.push(j);
+      r.preambleLines.push(W);
       continue;
     }
     if (c === "settings") {
-      if (!j || j.startsWith("#")) {
-        j.startsWith("#") && r.settings.push({ key: "#", value: j, args: [] });
+      if (!W || W.startsWith("#")) {
+        W.startsWith("#") && r.settings.push({ key: "#", value: W, args: [] });
         continue;
       }
-      if (j.startsWith("...")) {
-        const J = j.slice(3).trim(), ae = r.settings[r.settings.length - 1];
-        ae && ae.key !== "#" && (ae.value = ae.value ? `${ae.value}
-${J}` : J);
+      if (W.startsWith("...")) {
+        const Z = W.slice(3).trim(), Q = r.settings[r.settings.length - 1];
+        Q && Q.key !== "#" && (Q.value = Q.value ? `${Q.value}
+${Z}` : Z);
         continue;
       }
-      const M = j.split(/  +|\t+/).filter((J) => J !== "");
-      M.length >= 1 && r.settings.push({ key: M[0], value: M[1] || "", args: M.slice(2) });
+      const x = W.split(/  +|\t+/).filter((Z) => Z !== "");
+      x.length >= 1 && r.settings.push({ key: x[0], value: x[1] || "", args: x.slice(2) });
       continue;
     }
     if (c === "variables") {
-      if (!j || j.startsWith("#")) {
-        j.startsWith("#") && r.variables.push({ name: "#", value: j });
+      if (!W || W.startsWith("#")) {
+        W.startsWith("#") && r.variables.push({ name: "#", value: W });
         continue;
       }
-      if (j.startsWith("...")) {
-        const J = j.slice(3).trim(), ae = r.variables[r.variables.length - 1];
-        ae && ae.name !== "#" && (ae.value = ae.value ? `${ae.value}${de}${J}` : J);
+      if (W.startsWith("...")) {
+        const Z = W.slice(3).trim(), Q = r.variables[r.variables.length - 1];
+        Q && Q.name !== "#" && (Q.value = Q.value ? `${Q.value}${pe}${Z}` : Z);
         continue;
       }
-      const M = j.split(/  +|\t+/).filter((J) => J !== "");
-      M.length >= 1 && r.variables.push({ name: M[0], value: M.slice(1).join(de) });
+      const x = W.split(/  +|\t+/).filter((Z) => Z !== "");
+      x.length >= 1 && r.variables.push({ name: x[0], value: x.slice(1).join(pe) });
       continue;
     }
     if (c === "testcases" || c === "keywords") {
-      if (!j) continue;
-      const M = /^\s/.test(I) || I.startsWith("	");
-      if (!M && j.startsWith("#")) {
-        _.push(j);
+      if (!W) continue;
+      const x = /^\s/.test(I) || I.startsWith("	");
+      if (!x && W.startsWith("#")) {
+        _.push(W);
         continue;
       }
-      if (!M && j) {
-        A(), y = !1, c === "testcases" ? (g = {
-          name: j,
+      if (!x && W) {
+        V(), b = !1, c === "testcases" ? (g = {
+          name: W,
           documentation: "",
           tags: [],
           setup: "",
@@ -7054,8 +7054,8 @@ ${J}` : J);
           timeout: "",
           template: "",
           steps: []
-        }, a = "testcase", y = um(n, B + 1)) : (g = {
-          name: j,
+        }, s = "testcase", b = cm(a, B + 1)) : (g = {
+          name: W,
           documentation: "",
           arguments: [],
           tags: [],
@@ -7064,186 +7064,186 @@ ${J}` : J);
           timeout: "",
           returnValue: "",
           steps: []
-        }, a = "keyword"), _.length && (g.leadingComments = _, _ = []);
+        }, s = "keyword"), _.length && (g.leadingComments = _, _ = []);
         continue;
       }
-      if (g && M) {
-        const J = j.trim(), ae = a === "testcase" ? g : null, z = !!ae && (!!ae.template || y);
-        if (J.startsWith("...")) {
-          const Y = J.slice(3).trim().split(/  +|\t+/).filter((U) => U !== "");
-          if (z && ae.templateRows && ae.templateRows.length > 0 && g.steps.length === 0) {
-            ae.templateRows[ae.templateRows.length - 1].push(...Y.map(Sa));
+      if (g && x) {
+        const Z = W.trim(), Q = s === "testcase" ? g : null, G = !!Q && (!!Q.template || b);
+        if (Z.startsWith("...")) {
+          const j = Z.slice(3).trim().split(/  +|\t+/).filter((D) => D !== "");
+          if (G && Q.templateRows && Q.templateRows.length > 0 && g.steps.length === 0) {
+            Q.templateRows[Q.templateRows.length - 1].push(...j.map(Sa));
             continue;
           }
           if (k) {
-            const U = Y.join("    ");
+            const D = j.join("    ");
             if (k === "documentation") {
-              const Z = Y.join(" ");
+              const se = j.join(" ");
               g.documentation = g.documentation ? g.documentation + `
-` + Z : Z;
+` + se : se;
             } else if (k === "tags")
-              g.tags.push(...Y);
+              g.tags.push(...j);
             else if (k === "arguments")
-              "arguments" in g && g.arguments.push(...Y);
+              "arguments" in g && g.arguments.push(...j);
             else if (k === "return") {
               if ("returnValue" in g) {
-                const Z = g;
-                Z.returnValue = Z.returnValue ? Z.returnValue + de + U : U;
+                const se = g;
+                se.returnValue = se.returnValue ? se.returnValue + pe + D : D;
               }
             } else {
-              const Z = k === "setup" ? "setup" : k === "teardown" ? "teardown" : k === "timeout" ? "timeout" : k === "template" ? "template" : "";
-              if (Z === "template") {
+              const se = k === "setup" ? "setup" : k === "teardown" ? "teardown" : k === "timeout" ? "timeout" : k === "template" ? "template" : "";
+              if (se === "template") {
                 if ("template" in g) {
-                  const ce = g;
-                  ce.template = ce.template ? ce.template + de + U : U;
+                  const oe = g;
+                  oe.template = oe.template ? oe.template + pe + D : D;
                 }
-              } else if (Z) {
-                const ce = g;
-                ce[Z] = ce[Z] ? ce[Z] + de + U : U;
+              } else if (se) {
+                const oe = g;
+                oe[se] = oe[se] ? oe[se] + pe + D : D;
               }
             }
             continue;
           }
           if (g.steps.length > 0) {
-            const U = g.steps[g.steps.length - 1];
-            switch (U.type) {
+            const D = g.steps[g.steps.length - 1];
+            switch (D.type) {
               case "keyword":
               case "assignment":
               case "return":
-                U.args.push(...Y.map(Cn));
+                D.args.push(...j.map($n));
                 break;
               case "for":
-                U.loopValues.push(...Y);
+                D.loopValues.push(...j);
                 break;
               default:
-                U.condition !== void 0 && Y.length && (U.condition += de + Y.join(de));
+                D.condition !== void 0 && j.length && (D.condition += pe + j.join(pe));
             }
           } else g.documentation && (g.documentation += `
-` + Y.join(" "));
+` + j.join(" "));
           continue;
         }
-        const D = J.match(/^\[(Documentation|Tags|Setup|Teardown|Timeout|Template|Arguments|Return)\]\s*(.*)/i);
-        if (D) {
-          const Y = D[1].toLowerCase(), U = ((V = D[2]) == null ? void 0 : V.trim()) || "";
-          switch (Y) {
+        const R = Z.match(/^\[(Documentation|Tags|Setup|Teardown|Timeout|Template|Arguments|Return)\]\s*(.*)/i);
+        if (R) {
+          const j = R[1].toLowerCase(), D = ((L = R[2]) == null ? void 0 : L.trim()) || "";
+          switch (j) {
             case "documentation":
-              g.documentation = U;
+              g.documentation = D;
               break;
             case "tags":
-              g.tags = U ? U.split(/  +|\t+/).map((Z) => Z.trim()).filter(Boolean) : [];
+              g.tags = D ? D.split(/  +|\t+/).map((se) => se.trim()).filter(Boolean) : [];
               break;
             case "setup":
-              g.setup = U;
+              g.setup = D;
               break;
             case "teardown":
-              g.teardown = U;
+              g.teardown = D;
               break;
             case "timeout":
-              g.timeout = U;
+              g.timeout = D;
               break;
             case "template":
-              "template" in g && (g.template = U);
+              "template" in g && (g.template = D);
               break;
             case "arguments":
-              "arguments" in g && (g.arguments = U ? U.split(/  +|\t+/).filter(Boolean) : []);
+              "arguments" in g && (g.arguments = D ? D.split(/  +|\t+/).filter(Boolean) : []);
               break;
             case "return":
-              "returnValue" in g && (g.returnValue = U);
+              "returnValue" in g && (g.returnValue = D);
               break;
           }
-          k = Y;
+          k = j;
           continue;
         }
-        if (z && !im(J)) {
-          const Y = J.split(/  +|\t+/).filter((U) => U !== "").map(Sa);
-          ae.templateRows || (ae.templateRows = []), ae.templateRows.push(Y), k = null;
+        if (G && !um(Z)) {
+          const j = Z.split(/  +|\t+/).filter((D) => D !== "").map(Sa);
+          Q.templateRows || (Q.templateRows = []), Q.templateRows.push(j), k = null;
           continue;
         }
-        const R = dm(J);
-        R._lineNumber = B + 1;
-        const H = (((E = I.match(/^[ \t]+/)) == null ? void 0 : E[0]) ?? "").replace(/\t/g, "    ");
-        R.depth = Math.max(0, Math.floor(H.length / 4) - 1), g.steps.push(R), k = null;
+        const P = pm(Z);
+        P._lineNumber = B + 1;
+        const K = (((T = I.match(/^[ \t]+/)) == null ? void 0 : T[0]) ?? "").replace(/\t/g, "    ");
+        P.depth = Math.max(0, Math.floor(K.length / 4) - 1), g.steps.push(P), k = null;
       }
       continue;
     }
   }
-  return A(), _.length && (r.trailingComments = _), r;
+  return V(), _.length && (r.trailingComments = _), r;
 }
-function La(e, n) {
-  const r = n.split(`
+function La(e, a) {
+  const r = a.split(`
 `), c = [];
-  c.push(de + e + de + r[0]);
+  c.push(pe + e + pe + r[0]);
   for (let g = 1; g < r.length; g++)
-    c.push(de + "..." + de + r[g]);
+    c.push(pe + "..." + pe + r[g]);
   return c;
 }
-function vm(e, n = {}) {
-  const r = n.isResource ?? !1, c = [];
-  for (const y of e.preambleLines) c.push(y);
+function hm(e, a = {}) {
+  const r = a.isResource ?? !1, c = [];
+  for (const b of e.preambleLines) c.push(b);
   if (e.settings.length > 0) {
     c.length > 0 && c[c.length - 1] !== "" && c.push(""), c.push("*** Settings ***");
-    for (const y of e.settings) {
-      if (y.key === "#") {
-        c.push(y.value);
+    for (const b of e.settings) {
+      if (b.key === "#") {
+        c.push(b.value);
         continue;
       }
-      if (y.value && y.value.includes(`
+      if (b.value && b.value.includes(`
 `)) {
-        const A = y.value.split(`
+        const V = b.value.split(`
 `);
-        let V = y.key + de + A[0];
-        for (const E of y.args) V += de + E;
-        c.push(V);
-        for (let E = 1; E < A.length; E++) c.push("..." + de + A[E]);
+        let L = b.key + pe + V[0];
+        for (const T of b.args) L += pe + T;
+        c.push(L);
+        for (let T = 1; T < V.length; T++) c.push("..." + pe + V[T]);
         continue;
       }
-      let k = y.key;
-      y.value && (k += de + y.value);
-      for (const A of y.args) k += de + A;
+      let k = b.key;
+      b.value && (k += pe + b.value);
+      for (const V of b.args) k += pe + V;
       c.push(k);
     }
   }
   if (e.variables.length > 0) {
     c.length > 0 && c[c.length - 1] !== "" && c.push(""), c.push("*** Variables ***");
-    for (const y of e.variables) {
-      if (y.name === "#") {
-        c.push(y.value);
+    for (const b of e.variables) {
+      if (b.name === "#") {
+        c.push(b.value);
         continue;
       }
-      c.push(y.value ? y.name + de + y.value : y.name);
+      c.push(b.value ? b.name + pe + b.value : b.name);
     }
   }
-  const g = (y) => {
-    if (y.leadingComments) for (const k of y.leadingComments) c.push(k);
-  }, a = (y) => {
-    const k = de.repeat((y.depth ?? 0) + 1);
-    c.push(k + pm(y));
+  const g = (b) => {
+    if (b.leadingComments) for (const k of b.leadingComments) c.push(k);
+  }, s = (b) => {
+    const k = pe.repeat((b.depth ?? 0) + 1);
+    c.push(k + fm(b));
   };
   if (!r && e.testCases.length > 0) {
     c.length > 0 && c[c.length - 1] !== "" && c.push(""), c.push("*** Test Cases ***");
-    for (let y = 0; y < e.testCases.length; y++) {
-      const k = e.testCases[y];
+    for (let b = 0; b < e.testCases.length; b++) {
+      const k = e.testCases[b];
       g(k);
-      const A = k.name.trim() || `Test Case ${y + 1}`;
-      if (c.push(A), k.documentation && c.push(...La("[Documentation]", k.documentation)), k.tags.length > 0 && c.push(de + "[Tags]" + de + k.tags.join(de)), k.setup && c.push(de + "[Setup]" + de + k.setup), k.teardown && c.push(de + "[Teardown]" + de + k.teardown), k.timeout && c.push(de + "[Timeout]" + de + k.timeout), k.template && c.push(de + "[Template]" + de + k.template), k.templateRows)
-        for (const V of k.templateRows)
-          c.push(de + V.map(lm).join(de));
-      for (const V of k.steps) a(V);
+      const V = k.name.trim() || `Test Case ${b + 1}`;
+      if (c.push(V), k.documentation && c.push(...La("[Documentation]", k.documentation)), k.tags.length > 0 && c.push(pe + "[Tags]" + pe + k.tags.join(pe)), k.setup && c.push(pe + "[Setup]" + pe + k.setup), k.teardown && c.push(pe + "[Teardown]" + pe + k.teardown), k.timeout && c.push(pe + "[Timeout]" + pe + k.timeout), k.template && c.push(pe + "[Template]" + pe + k.template), k.templateRows)
+        for (const L of k.templateRows)
+          c.push(pe + L.map(rm).join(pe));
+      for (const L of k.steps) s(L);
       c.push("");
     }
   }
   if (e.keywords.length > 0) {
     c.length > 0 && c[c.length - 1] !== "" && c.push(""), c.push("*** Keywords ***");
-    for (let y = 0; y < e.keywords.length; y++) {
-      const k = e.keywords[y];
+    for (let b = 0; b < e.keywords.length; b++) {
+      const k = e.keywords[b];
       g(k);
-      const A = k.name.trim() || `Keyword ${y + 1}`;
-      c.push(A), k.arguments.length && c.push(de + "[Arguments]" + de + k.arguments.join(de)), k.documentation && c.push(...La("[Documentation]", k.documentation)), k.tags.length > 0 && c.push(de + "[Tags]" + de + k.tags.join(de)), k.setup && c.push(de + "[Setup]" + de + k.setup), k.teardown && c.push(de + "[Teardown]" + de + k.teardown), k.timeout && c.push(de + "[Timeout]" + de + k.timeout), k.returnValue && c.push(de + "[Return]" + de + k.returnValue);
-      for (const V of k.steps) a(V);
+      const V = k.name.trim() || `Keyword ${b + 1}`;
+      c.push(V), k.arguments.length && c.push(pe + "[Arguments]" + pe + k.arguments.join(pe)), k.documentation && c.push(...La("[Documentation]", k.documentation)), k.tags.length > 0 && c.push(pe + "[Tags]" + pe + k.tags.join(pe)), k.setup && c.push(pe + "[Setup]" + pe + k.setup), k.teardown && c.push(pe + "[Teardown]" + pe + k.teardown), k.timeout && c.push(pe + "[Timeout]" + pe + k.timeout), k.returnValue && c.push(pe + "[Return]" + pe + k.returnValue);
+      for (const L of k.steps) s(L);
       c.push("");
     }
   }
-  if (e.trailingComments) for (const y of e.trailingComments) c.push(y);
+  if (e.trailingComments) for (const b of e.trailingComments) c.push(b);
   let _ = c.join(`
 `);
   return _ = _.replace(/\n{3,}/g, `
@@ -7252,200 +7252,200 @@ function vm(e, n = {}) {
 `) || (_ += `
 `), _;
 }
-function hm(e) {
-  const n = /* @__PURE__ */ new Set(), r = /\s+# rbs:([a-f0-9]{8,32})\s*$/gm;
+function ym(e) {
+  const a = /* @__PURE__ */ new Set(), r = /\s+# rbs:([a-f0-9]{8,32})\s*$/gm;
   let c;
-  for (; (c = r.exec(e)) !== null; ) n.add(c[1]);
-  return n;
+  for (; (c = r.exec(e)) !== null; ) a.add(c[1]);
+  return a;
 }
-const ym = { class: "spec-tabs" }, bm = { class: "tab-buttons" }, wm = { class: "tab-toolbar" }, _m = { class: "badge badge-robot" }, km = {
+const bm = { class: "spec-tabs" }, wm = { class: "tab-buttons" }, _m = { class: "tab-toolbar" }, km = { class: "badge badge-robot" }, Cm = {
   key: 0,
   class: "badge badge-info"
-}, Cm = {
+}, $m = {
   key: 1,
   class: "badge badge-info"
-}, $m = ["title"], Tm = ["title"], Em = ["title"], Sm = ["title"], Lm = {
+}, Tm = ["title"], Em = ["title"], Sm = ["title"], Lm = ["title"], Vm = {
   key: 1,
   class: "parse-error-banner"
-}, Vm = { class: "editor-section section-settings" }, Am = { class: "collapse-icon" }, Nm = { class: "section-count" }, Rm = { class: "section-body" }, Fm = {
+}, Am = { class: "editor-section section-settings" }, Nm = { class: "collapse-icon" }, Rm = { class: "section-count" }, Fm = { class: "section-body" }, Pm = {
   key: 0,
   class: "empty-hint"
-}, Pm = ["onUpdate:modelValue"], Dm = ["onClick", "title"], Mm = ["onUpdate:modelValue"], xm = ["value"], Um = {
+}, Dm = ["onUpdate:modelValue"], Mm = ["onClick", "title"], xm = ["onUpdate:modelValue"], Um = ["value"], Bm = {
   key: 0,
   class: "keyword-autocomplete-wrapper flex-1"
-}, Bm = ["onUpdate:modelValue", "placeholder", "onFocus", "onKeydown", "onInput"], Km = ["onMousedown"], Hm = { class: "kw-suggestion-name" }, Om = {
+}, Km = ["onUpdate:modelValue", "placeholder", "onFocus", "onKeydown", "onInput"], Hm = ["onMousedown"], Om = { class: "kw-suggestion-name" }, Im = {
   key: 1,
   class: "form-hl-wrap flex-1"
-}, Im = ["innerHTML"], Wm = ["onUpdate:modelValue", "placeholder"], jm = {
+}, Wm = ["innerHTML"], jm = ["onUpdate:modelValue", "placeholder"], qm = {
   key: 2,
   class: "setting-args"
-}, qm = ["onUpdate:modelValue", "placeholder"], zm = ["onClick"], Gm = ["onClick"], Ym = ["onClick", "title"], Xm = { class: "editor-section section-variables" }, Zm = { class: "collapse-icon" }, Qm = { class: "section-count" }, Jm = { class: "section-body" }, eg = {
+}, zm = ["onUpdate:modelValue", "placeholder"], Gm = ["onClick"], Ym = ["onClick"], Xm = ["onClick", "title"], Zm = { class: "editor-section section-variables" }, Qm = { class: "collapse-icon" }, Jm = { class: "section-count" }, eg = { class: "section-body" }, tg = {
   key: 0,
   class: "empty-hint"
-}, tg = ["onUpdate:modelValue"], og = ["onClick", "title"], ng = { class: "form-hl-wrap hl-var-name" }, ag = ["innerHTML"], sg = ["onUpdate:modelValue", "placeholder", "onBlur"], lg = { class: "form-hl-wrap flex-1" }, rg = ["innerHTML"], ig = ["onUpdate:modelValue", "placeholder"], ug = ["onClick", "title"], cg = {
+}, og = ["onUpdate:modelValue"], ng = ["onClick", "title"], ag = { class: "form-hl-wrap hl-var-name" }, sg = ["innerHTML"], lg = ["onUpdate:modelValue", "placeholder", "onBlur"], rg = { class: "form-hl-wrap flex-1" }, ig = ["innerHTML"], ug = ["onUpdate:modelValue", "placeholder"], cg = ["onClick", "title"], dg = {
   key: 0,
   class: "editor-section section-testcases"
-}, dg = { class: "collapse-icon" }, pg = { class: "section-count" }, fg = { class: "section-body" }, mg = {
+}, pg = { class: "collapse-icon" }, fg = { class: "section-count" }, mg = { class: "section-body" }, gg = {
   key: 0,
   class: "empty-hint"
-}, gg = ["onClick"], vg = { class: "collapse-icon" }, hg = { class: "item-title" }, yg = { class: "item-count" }, bg = ["onClick", "title"], wg = { class: "item-body" }, _g = { class: "form-group" }, kg = { class: "form-label" }, Cg = ["onUpdate:modelValue", "placeholder"], $g = { class: "form-group" }, Tg = { class: "form-label" }, Eg = ["onUpdate:modelValue", "placeholder"], Sg = {
+}, vg = ["onClick"], hg = { class: "collapse-icon" }, yg = { class: "item-title" }, bg = { class: "item-count" }, wg = ["onClick", "title"], _g = { class: "item-body" }, kg = { class: "form-group" }, Cg = { class: "form-label" }, $g = ["onUpdate:modelValue", "placeholder"], Tg = { class: "form-group" }, Eg = { class: "form-label" }, Sg = ["onUpdate:modelValue", "placeholder"], Lg = {
   key: 0,
   class: "form-group"
-}, Lg = { class: "form-label" }, Vg = ["onClick"], Ag = { class: "chips-container" }, Ng = ["onClick"], Rg = { class: "chip-input-wrapper" }, Fg = ["value", "onInput", "placeholder", "onKeydown"], Pg = ["onClick"], Dg = { class: "meta-toggles" }, Mg = ["onClick"], xg = ["onClick"], Ug = ["onClick"], Bg = ["onClick"], Kg = ["onClick"], Hg = {
+}, Vg = { class: "form-label" }, Ag = ["onClick"], Ng = { class: "chips-container" }, Rg = ["onClick"], Fg = { class: "chip-input-wrapper" }, Pg = ["value", "onInput", "placeholder", "onKeydown"], Dg = ["onClick"], Mg = { class: "meta-toggles" }, xg = ["onClick"], Ug = ["onClick"], Bg = ["onClick"], Kg = ["onClick"], Hg = ["onClick"], Og = {
   key: 1,
   class: "form-group"
-}, Og = { class: "form-label" }, Ig = ["onClick"], Wg = { class: "setup-teardown-row" }, jg = { class: "keyword-autocomplete-wrapper" }, qg = ["value", "onInput", "placeholder", "onFocus", "onKeydown"], zg = ["onMousedown"], Gg = { class: "kw-suggestion-name" }, Yg = {
+}, Ig = { class: "form-label" }, Wg = ["onClick"], jg = { class: "setup-teardown-row" }, qg = { class: "keyword-autocomplete-wrapper" }, zg = ["value", "onInput", "placeholder", "onFocus", "onKeydown"], Gg = ["onMousedown"], Yg = { class: "kw-suggestion-name" }, Xg = {
   key: 0,
   class: "kw-suggestion-args"
-}, Xg = {
-  key: 0,
-  class: "step-args-group"
 }, Zg = {
   key: 0,
+  class: "step-args-group"
+}, Qg = {
+  key: 0,
   class: "arg-label"
-}, Qg = ["innerHTML"], Jg = ["value", "onInput", "placeholder"], ev = ["onClick"], tv = ["onClick", "title"], ov = {
+}, Jg = ["innerHTML"], ev = ["value", "onInput", "placeholder"], tv = ["onClick"], ov = ["onClick", "title"], nv = {
   key: 2,
   class: "form-group"
-}, nv = { class: "form-label" }, av = ["onClick"], sv = { class: "setup-teardown-row" }, lv = { class: "keyword-autocomplete-wrapper" }, rv = ["value", "onInput", "placeholder", "onFocus", "onKeydown"], iv = ["onMousedown"], uv = { class: "kw-suggestion-name" }, cv = {
+}, av = { class: "form-label" }, sv = ["onClick"], lv = { class: "setup-teardown-row" }, rv = { class: "keyword-autocomplete-wrapper" }, iv = ["value", "onInput", "placeholder", "onFocus", "onKeydown"], uv = ["onMousedown"], cv = { class: "kw-suggestion-name" }, dv = {
   key: 0,
   class: "kw-suggestion-args"
-}, dv = {
-  key: 0,
-  class: "step-args-group"
 }, pv = {
   key: 0,
+  class: "step-args-group"
+}, fv = {
+  key: 0,
   class: "arg-label"
-}, fv = ["innerHTML"], mv = ["value", "onInput", "placeholder"], gv = ["onClick"], vv = ["onClick", "title"], hv = {
+}, mv = ["innerHTML"], gv = ["value", "onInput", "placeholder"], vv = ["onClick"], hv = ["onClick", "title"], yv = {
   key: 3,
   class: "form-row"
-}, yv = {
+}, bv = {
   key: 0,
   class: "form-group flex-1"
-}, bv = { class: "form-label" }, wv = ["onClick"], _v = { class: "form-hl-wrap" }, kv = ["innerHTML"], Cv = ["onUpdate:modelValue", "placeholder"], $v = {
+}, wv = { class: "form-label" }, _v = ["onClick"], kv = { class: "form-hl-wrap" }, Cv = ["innerHTML"], $v = ["onUpdate:modelValue", "placeholder"], Tv = {
   key: 1,
   class: "form-group flex-1"
-}, Tv = { class: "form-label" }, Ev = ["onClick"], Sv = { class: "form-hl-wrap" }, Lv = ["innerHTML"], Vv = ["onUpdate:modelValue", "placeholder"], Av = { class: "form-group" }, Nv = { class: "form-label" }, Rv = { class: "steps-list" }, Fv = { class: "step-number" }, Pv = ["onUpdate:modelValue", "onChange"], Dv = ["value"], Mv = { class: "keyword-autocomplete-wrapper" }, xv = ["onUpdate:modelValue", "placeholder", "onFocus", "onKeydown", "onInput"], Uv = ["onMousedown"], Bv = { class: "kw-suggestion-name" }, Kv = {
+}, Ev = { class: "form-label" }, Sv = ["onClick"], Lv = { class: "form-hl-wrap" }, Vv = ["innerHTML"], Av = ["onUpdate:modelValue", "placeholder"], Nv = { class: "form-group" }, Rv = { class: "form-label" }, Fv = { class: "steps-list" }, Pv = { class: "step-number" }, Dv = ["onUpdate:modelValue", "onChange"], Mv = ["value"], xv = { class: "keyword-autocomplete-wrapper" }, Uv = ["onUpdate:modelValue", "placeholder", "onFocus", "onKeydown", "onInput"], Bv = ["onMousedown"], Kv = { class: "kw-suggestion-name" }, Hv = {
   key: 0,
   class: "kw-suggestion-args"
-}, Hv = {
-  key: 0,
-  class: "step-args-group"
 }, Ov = {
   key: 0,
+  class: "step-args-group"
+}, Iv = {
+  key: 0,
   class: "arg-label"
-}, Iv = ["innerHTML"], Wv = ["onUpdate:modelValue", "placeholder", "onInput", "onKeydown"], jv = {
+}, Wv = ["innerHTML"], jv = ["onUpdate:modelValue", "placeholder", "onInput", "onKeydown"], qv = {
   key: 1,
   class: "arg-ac-dropdown"
-}, qv = ["onMousedown"], zv = ["onClick"], Gv = ["onClick", "title"], Yv = ["onUpdate:modelValue", "onBlur"], Xv = ["onClick"], Zv = ["onClick"], Qv = { class: "keyword-autocomplete-wrapper" }, Jv = ["onUpdate:modelValue", "placeholder", "onFocus", "onKeydown", "onInput"], eh = ["onMousedown"], th = { class: "kw-suggestion-name" }, oh = {
+}, zv = ["onMousedown"], Gv = ["onClick"], Yv = ["onClick", "title"], Xv = ["onUpdate:modelValue", "onBlur"], Zv = ["onClick"], Qv = ["onClick"], Jv = { class: "keyword-autocomplete-wrapper" }, eh = ["onUpdate:modelValue", "placeholder", "onFocus", "onKeydown", "onInput"], th = ["onMousedown"], oh = { class: "kw-suggestion-name" }, nh = {
   key: 0,
   class: "kw-suggestion-args"
-}, nh = {
-  key: 0,
-  class: "step-args-group"
 }, ah = {
   key: 0,
+  class: "step-args-group"
+}, sh = {
+  key: 0,
   class: "arg-label"
-}, sh = ["innerHTML"], lh = ["onUpdate:modelValue", "placeholder", "onInput", "onKeydown"], rh = {
+}, lh = ["innerHTML"], rh = ["onUpdate:modelValue", "placeholder", "onInput", "onKeydown"], ih = {
   key: 1,
   class: "arg-ac-dropdown"
-}, ih = ["onMousedown"], uh = ["onClick"], ch = ["onClick", "title"], dh = { class: "step-var-chip" }, ph = ["onUpdate:modelValue", "onBlur"], fh = ["innerHTML"], mh = ["onUpdate:modelValue", "placeholder"], gh = ["onClick"], vh = ["onClick", "title"], hh = ["onUpdate:modelValue"], yh = ["value"], bh = { class: "form-hl-wrap hl-var-inline" }, wh = ["innerHTML"], _h = ["onUpdate:modelValue"], kh = ["onUpdate:modelValue"], Ch = ["value"], $h = ["onUpdate:modelValue", "placeholder"], Th = ["onClick"], Eh = ["onClick", "title"], Sh = {
+}, uh = ["onMousedown"], ch = ["onClick"], dh = ["onClick", "title"], ph = { class: "step-var-chip" }, fh = ["onUpdate:modelValue", "onBlur"], mh = ["innerHTML"], gh = ["onUpdate:modelValue", "placeholder"], vh = ["onClick"], hh = ["onClick", "title"], yh = ["onUpdate:modelValue"], bh = ["value"], wh = { class: "form-hl-wrap hl-var-inline" }, _h = ["innerHTML"], kh = ["onUpdate:modelValue"], Ch = ["onUpdate:modelValue"], $h = ["value"], Th = ["onUpdate:modelValue", "placeholder"], Eh = ["onClick"], Sh = ["onClick", "title"], Lh = {
   key: 4,
   class: "form-hl-wrap flex-1 hl-condition-wrap"
-}, Lh = ["innerHTML"], Vh = ["onUpdate:modelValue", "placeholder"], Ah = ["onUpdate:modelValue", "placeholder"], Nh = {
+}, Vh = ["innerHTML"], Ah = ["onUpdate:modelValue", "placeholder"], Nh = ["onUpdate:modelValue", "placeholder"], Rh = {
   key: 0,
   class: "step-as-label"
-}, Rh = {
+}, Fh = {
   key: 1,
   class: "form-hl-wrap hl-var-inline"
-}, Fh = ["innerHTML"], Ph = ["onUpdate:modelValue"], Dh = ["onUpdate:modelValue", "placeholder"], Mh = ["onClick"], xh = ["onClick", "title"], Uh = ["onUpdate:modelValue"], Bh = { class: "step-actions" }, Kh = ["onClick", "disabled"], Hh = ["onClick", "disabled"], Oh = ["onClick", "title"], Ih = { class: "add-step-bar" }, Wh = ["onClick"], jh = ["onClick"], qh = ["onClick"], zh = ["onClick"], Gh = ["onClick"], Yh = ["onClick"], Xh = { class: "editor-section section-keywords" }, Zh = { class: "collapse-icon" }, Qh = { class: "section-count" }, Jh = { class: "section-body" }, ey = {
+}, Ph = ["innerHTML"], Dh = ["onUpdate:modelValue"], Mh = ["onUpdate:modelValue", "placeholder"], xh = ["onClick"], Uh = ["onClick", "title"], Bh = ["onUpdate:modelValue"], Kh = { class: "step-actions" }, Hh = ["onClick", "disabled"], Oh = ["onClick", "disabled"], Ih = ["onClick", "title"], Wh = { class: "add-step-bar" }, jh = ["onClick"], qh = ["onClick"], zh = ["onClick"], Gh = ["onClick"], Yh = ["onClick"], Xh = ["onClick"], Zh = { class: "editor-section section-keywords" }, Qh = { class: "collapse-icon" }, Jh = { class: "section-count" }, ey = { class: "section-body" }, ty = {
   key: 0,
   class: "empty-hint"
-}, ty = ["onClick"], oy = { class: "collapse-icon" }, ny = { class: "item-title" }, ay = { class: "item-count" }, sy = ["onClick", "title"], ly = { class: "item-body" }, ry = { class: "form-group" }, iy = { class: "form-label" }, uy = ["onUpdate:modelValue", "placeholder"], cy = { class: "form-group" }, dy = { class: "form-label" }, py = { class: "kw-args-list" }, fy = { class: "kw-arg-sep-label" }, my = { class: "kw-arg-type-badge badge-varargs" }, gy = ["value", "onInput", "onBlur"], vy = { class: "kw-arg-type-badge badge-kwargs" }, hy = ["value", "onInput", "onBlur"], yy = {
+}, oy = ["onClick"], ny = { class: "collapse-icon" }, ay = { class: "item-title" }, sy = { class: "item-count" }, ly = ["onClick", "title"], ry = { class: "item-body" }, iy = { class: "form-group" }, uy = { class: "form-label" }, cy = ["onUpdate:modelValue", "placeholder"], dy = { class: "form-group" }, py = { class: "form-label" }, fy = { class: "kw-args-list" }, my = { class: "kw-arg-sep-label" }, gy = { class: "kw-arg-type-badge badge-varargs" }, vy = ["value", "onInput", "onBlur"], hy = { class: "kw-arg-type-badge badge-kwargs" }, yy = ["value", "onInput", "onBlur"], by = {
   key: 0,
   class: "kw-arg-type-badge badge-named"
-}, by = {
+}, wy = {
   key: 1,
   class: "kw-arg-type-badge badge-optional"
-}, wy = {
+}, _y = {
   key: 2,
   class: "kw-arg-type-badge badge-required"
-}, _y = ["value", "onInput", "onBlur", "placeholder"], ky = { class: "form-hl-wrap kw-default-wrap" }, Cy = ["innerHTML"], $y = ["value", "onInput", "placeholder"], Ty = ["onClick", "title"], Ey = ["onClick"], Sy = { class: "kw-arg-add-buttons" }, Ly = ["onClick"], Vy = ["onClick"], Ay = ["disabled", "onClick"], Ny = ["disabled", "onClick"], Ry = ["onClick"], Fy = { class: "form-group" }, Py = { class: "form-label" }, Dy = ["onUpdate:modelValue", "placeholder"], My = {
+}, ky = ["value", "onInput", "onBlur", "placeholder"], Cy = { class: "form-hl-wrap kw-default-wrap" }, $y = ["innerHTML"], Ty = ["value", "onInput", "placeholder"], Ey = ["onClick", "title"], Sy = ["onClick"], Ly = { class: "kw-arg-add-buttons" }, Vy = ["onClick"], Ay = ["onClick"], Ny = ["disabled", "onClick"], Ry = ["disabled", "onClick"], Fy = ["onClick"], Py = { class: "form-group" }, Dy = { class: "form-label" }, My = ["onUpdate:modelValue", "placeholder"], xy = {
   key: 0,
   class: "form-group"
-}, xy = { class: "form-label" }, Uy = ["onClick"], By = { class: "chips-container" }, Ky = ["onClick"], Hy = { class: "chip-input-wrapper" }, Oy = ["value", "onInput", "placeholder", "onKeydown"], Iy = ["onClick"], Wy = { class: "meta-toggles" }, jy = ["onClick"], qy = ["onClick"], zy = ["onClick"], Gy = ["onClick"], Yy = ["onClick"], Xy = {
+}, Uy = { class: "form-label" }, By = ["onClick"], Ky = { class: "chips-container" }, Hy = ["onClick"], Oy = { class: "chip-input-wrapper" }, Iy = ["value", "onInput", "placeholder", "onKeydown"], Wy = ["onClick"], jy = { class: "meta-toggles" }, qy = ["onClick"], zy = ["onClick"], Gy = ["onClick"], Yy = ["onClick"], Xy = ["onClick"], Zy = {
   key: 1,
   class: "form-group"
-}, Zy = { class: "form-label" }, Qy = ["onClick"], Jy = { class: "setup-teardown-row" }, eb = { class: "keyword-autocomplete-wrapper" }, tb = ["value", "onInput", "placeholder", "onFocus", "onKeydown"], ob = ["onMousedown"], nb = { class: "kw-suggestion-name" }, ab = {
+}, Qy = { class: "form-label" }, Jy = ["onClick"], eb = { class: "setup-teardown-row" }, tb = { class: "keyword-autocomplete-wrapper" }, ob = ["value", "onInput", "placeholder", "onFocus", "onKeydown"], nb = ["onMousedown"], ab = { class: "kw-suggestion-name" }, sb = {
   key: 0,
   class: "kw-suggestion-args"
-}, sb = {
-  key: 0,
-  class: "step-args-group"
 }, lb = {
   key: 0,
+  class: "step-args-group"
+}, rb = {
+  key: 0,
   class: "arg-label"
-}, rb = ["innerHTML"], ib = ["value", "onInput", "placeholder"], ub = ["onClick"], cb = ["onClick", "title"], db = {
+}, ib = ["innerHTML"], ub = ["value", "onInput", "placeholder"], cb = ["onClick"], db = ["onClick", "title"], pb = {
   key: 2,
   class: "form-group"
-}, pb = { class: "form-label" }, fb = ["onClick"], mb = { class: "setup-teardown-row" }, gb = { class: "keyword-autocomplete-wrapper" }, vb = ["value", "onInput", "placeholder", "onFocus", "onKeydown"], hb = ["onMousedown"], yb = { class: "kw-suggestion-name" }, bb = {
+}, fb = { class: "form-label" }, mb = ["onClick"], gb = { class: "setup-teardown-row" }, vb = { class: "keyword-autocomplete-wrapper" }, hb = ["value", "onInput", "placeholder", "onFocus", "onKeydown"], yb = ["onMousedown"], bb = { class: "kw-suggestion-name" }, wb = {
   key: 0,
   class: "kw-suggestion-args"
-}, wb = {
-  key: 0,
-  class: "step-args-group"
 }, _b = {
   key: 0,
+  class: "step-args-group"
+}, kb = {
+  key: 0,
   class: "arg-label"
-}, kb = ["innerHTML"], Cb = ["value", "onInput", "placeholder"], $b = ["onClick"], Tb = ["onClick", "title"], Eb = {
+}, Cb = ["innerHTML"], $b = ["value", "onInput", "placeholder"], Tb = ["onClick"], Eb = ["onClick", "title"], Sb = {
   key: 3,
   class: "form-row"
-}, Sb = {
+}, Lb = {
   key: 0,
   class: "form-group flex-1"
-}, Lb = { class: "form-label" }, Vb = ["onClick"], Ab = { class: "form-hl-wrap" }, Nb = ["innerHTML"], Rb = ["onUpdate:modelValue", "placeholder"], Fb = {
+}, Vb = { class: "form-label" }, Ab = ["onClick"], Nb = { class: "form-hl-wrap" }, Rb = ["innerHTML"], Fb = ["onUpdate:modelValue", "placeholder"], Pb = {
   key: 1,
   class: "form-group flex-1"
-}, Pb = { class: "form-label" }, Db = ["onClick"], Mb = { class: "form-hl-wrap" }, xb = ["innerHTML"], Ub = ["onUpdate:modelValue", "placeholder"], Bb = { class: "form-group" }, Kb = { class: "form-label" }, Hb = { class: "steps-list" }, Ob = { class: "step-number" }, Ib = ["onUpdate:modelValue", "onChange"], Wb = ["value"], jb = { class: "keyword-autocomplete-wrapper" }, qb = ["onUpdate:modelValue", "placeholder", "onFocus", "onKeydown", "onInput"], zb = ["onMousedown"], Gb = { class: "kw-suggestion-name" }, Yb = {
+}, Db = { class: "form-label" }, Mb = ["onClick"], xb = { class: "form-hl-wrap" }, Ub = ["innerHTML"], Bb = ["onUpdate:modelValue", "placeholder"], Kb = { class: "form-group" }, Hb = { class: "form-label" }, Ob = { class: "steps-list" }, Ib = { class: "step-number" }, Wb = ["onUpdate:modelValue", "onChange"], jb = ["value"], qb = { class: "keyword-autocomplete-wrapper" }, zb = ["onUpdate:modelValue", "placeholder", "onFocus", "onKeydown", "onInput"], Gb = ["onMousedown"], Yb = { class: "kw-suggestion-name" }, Xb = {
   key: 0,
   class: "kw-suggestion-args"
-}, Xb = {
-  key: 0,
-  class: "step-args-group"
 }, Zb = {
   key: 0,
+  class: "step-args-group"
+}, Qb = {
+  key: 0,
   class: "arg-label"
-}, Qb = ["innerHTML"], Jb = ["onUpdate:modelValue", "placeholder", "onInput", "onKeydown"], ew = {
+}, Jb = ["innerHTML"], ew = ["onUpdate:modelValue", "placeholder", "onInput", "onKeydown"], tw = {
   key: 1,
   class: "arg-ac-dropdown"
-}, tw = ["onMousedown"], ow = ["onClick"], nw = ["onClick", "title"], aw = ["onUpdate:modelValue", "onBlur"], sw = ["onClick"], lw = ["onClick"], rw = { class: "keyword-autocomplete-wrapper" }, iw = ["onUpdate:modelValue", "placeholder", "onFocus", "onKeydown", "onInput"], uw = ["onMousedown"], cw = { class: "kw-suggestion-name" }, dw = {
+}, ow = ["onMousedown"], nw = ["onClick"], aw = ["onClick", "title"], sw = ["onUpdate:modelValue", "onBlur"], lw = ["onClick"], rw = ["onClick"], iw = { class: "keyword-autocomplete-wrapper" }, uw = ["onUpdate:modelValue", "placeholder", "onFocus", "onKeydown", "onInput"], cw = ["onMousedown"], dw = { class: "kw-suggestion-name" }, pw = {
   key: 0,
   class: "kw-suggestion-args"
-}, pw = {
-  key: 0,
-  class: "step-args-group"
 }, fw = {
   key: 0,
+  class: "step-args-group"
+}, mw = {
+  key: 0,
   class: "arg-label"
-}, mw = ["innerHTML"], gw = ["onUpdate:modelValue", "placeholder", "onInput", "onKeydown"], vw = {
+}, gw = ["innerHTML"], vw = ["onUpdate:modelValue", "placeholder", "onInput", "onKeydown"], hw = {
   key: 1,
   class: "arg-ac-dropdown"
-}, hw = ["onMousedown"], yw = ["onClick"], bw = ["onClick", "title"], ww = { class: "step-var-chip" }, _w = ["onUpdate:modelValue", "onBlur"], kw = ["innerHTML"], Cw = ["onUpdate:modelValue", "placeholder"], $w = ["onClick"], Tw = ["onClick", "title"], Ew = ["onUpdate:modelValue"], Sw = ["value"], Lw = { class: "form-hl-wrap hl-var-inline" }, Vw = ["innerHTML"], Aw = ["onUpdate:modelValue"], Nw = ["onUpdate:modelValue"], Rw = ["value"], Fw = ["onUpdate:modelValue", "placeholder"], Pw = ["onClick"], Dw = ["onClick", "title"], Mw = {
+}, yw = ["onMousedown"], bw = ["onClick"], ww = ["onClick", "title"], _w = { class: "step-var-chip" }, kw = ["onUpdate:modelValue", "onBlur"], Cw = ["innerHTML"], $w = ["onUpdate:modelValue", "placeholder"], Tw = ["onClick"], Ew = ["onClick", "title"], Sw = ["onUpdate:modelValue"], Lw = ["value"], Vw = { class: "form-hl-wrap hl-var-inline" }, Aw = ["innerHTML"], Nw = ["onUpdate:modelValue"], Rw = ["onUpdate:modelValue"], Fw = ["value"], Pw = ["onUpdate:modelValue", "placeholder"], Dw = ["onClick"], Mw = ["onClick", "title"], xw = {
   key: 4,
   class: "form-hl-wrap flex-1 hl-condition-wrap"
-}, xw = ["innerHTML"], Uw = ["onUpdate:modelValue", "placeholder"], Bw = ["onUpdate:modelValue", "placeholder"], Kw = {
+}, Uw = ["innerHTML"], Bw = ["onUpdate:modelValue", "placeholder"], Kw = ["onUpdate:modelValue", "placeholder"], Hw = {
   key: 0,
   class: "step-as-label"
-}, Hw = {
+}, Ow = {
   key: 1,
   class: "form-hl-wrap hl-var-inline"
-}, Ow = ["innerHTML"], Iw = ["onUpdate:modelValue"], Ww = ["onUpdate:modelValue", "placeholder"], jw = ["onClick"], qw = ["onClick", "title"], zw = ["onUpdate:modelValue"], Gw = { class: "step-actions" }, Yw = ["onClick", "disabled"], Xw = ["onClick", "disabled"], Zw = ["onClick", "title"], Qw = { class: "add-step-bar" }, Jw = ["onClick"], e_ = ["onClick"], t_ = ["onClick"], o_ = ["onClick"], n_ = ["onClick"], a_ = ["onClick"], s_ = {
+}, Iw = ["innerHTML"], Ww = ["onUpdate:modelValue"], jw = ["onUpdate:modelValue", "placeholder"], qw = ["onClick"], zw = ["onClick", "title"], Gw = ["onUpdate:modelValue"], Yw = { class: "step-actions" }, Xw = ["onClick", "disabled"], Zw = ["onClick", "disabled"], Qw = ["onClick", "title"], Jw = { class: "add-step-bar" }, e_ = ["onClick"], t_ = ["onClick"], o_ = ["onClick"], n_ = ["onClick"], a_ = ["onClick"], s_ = ["onClick"], l_ = {
   key: 2,
   class: "flow-tab-wrapper"
-}, l_ = { class: "lib-install-intro" }, r_ = { class: "lib-install-pkg-label" }, i_ = ["disabled"], u_ = { class: "lib-install-pkg-hint" }, c_ = {
+}, r_ = { class: "lib-install-intro" }, i_ = { class: "lib-install-pkg-label" }, u_ = ["disabled"], c_ = { class: "lib-install-pkg-hint" }, d_ = {
   key: 0,
   class: "lib-install-error",
   role: "alert"
-}, d_ = /* @__PURE__ */ je({
+}, p_ = /* @__PURE__ */ qe({
   __name: "RobotEditor",
   props: {
     content: {},
@@ -7453,43 +7453,43 @@ const ym = { class: "spec-tabs" }, bm = { class: "tab-buttons" }, wm = { class: 
     height: {}
   },
   emits: ["save", "update:content", "dirty"],
-  setup(e, { expose: n, emit: r }) {
-    const c = e, g = r, { t: a } = mt(), _ = Da(), y = N("code"), k = N(null), A = N(null), V = ps(null), E = N(""), B = N(!1), I = N(!1), j = N(!1), ue = N(!1), M = N(/* @__PURE__ */ new Set()), J = N(/* @__PURE__ */ new Set());
-    function ae() {
-      B.value = !1, I.value = !1, j.value = !1, ue.value = !1, M.value.clear(), J.value.clear();
+  setup(e, { expose: a, emit: r }) {
+    const c = e, g = r, { t: s } = ft(), _ = Da(), b = N("code"), k = N(null), V = N(null), L = ps(null), T = new Es(), B = N(""), I = N(!1), W = N(!1), re = N(!1), x = N(!1), Z = N(/* @__PURE__ */ new Set()), Q = N(/* @__PURE__ */ new Set());
+    function G() {
+      I.value = !1, W.value = !1, re.value = !1, x.value = !1, Z.value.clear(), Q.value.clear();
     }
-    function z() {
-      B.value = !0, I.value = !0, j.value = !0, ue.value = !0;
-      for (let f = 0; f < Q.testCases.length; f++) M.value.add(f);
-      for (let f = 0; f < Q.keywords.length; f++) J.value.add(f);
+    function R() {
+      I.value = !0, W.value = !0, re.value = !0, x.value = !0;
+      for (let f = 0; f < ee.testCases.length; f++) Z.value.add(f);
+      for (let f = 0; f < ee.keywords.length; f++) Q.value.add(f);
     }
-    const D = N(/* @__PURE__ */ new Set());
-    function R(f, h, d, v) {
-      return !!v || D.value.has(`${f}-${h}-${d}`);
+    const P = N(/* @__PURE__ */ new Set());
+    function K(f, y, d, h) {
+      return !!h || P.value.has(`${f}-${y}-${d}`);
     }
-    function H(f, h, d) {
-      const v = `${f}-${h}-${d}`;
-      D.value.has(v) ? D.value.delete(v) : D.value.add(v);
+    function j(f, y, d) {
+      const h = `${f}-${y}-${d}`;
+      P.value.has(h) ? P.value.delete(h) : P.value.add(h);
     }
-    const Y = N(null), U = N(""), Z = N(-1), ce = N(null), ke = N([]), ee = gn(/* @__PURE__ */ new Map());
-    let W = null;
-    const oe = N([]), fe = N(-1), be = N(null), Fe = gn(/* @__PURE__ */ new Map());
-    function Pe(f) {
+    const D = N(null), se = N(""), oe = N(-1), be = N(null), J = N([]), H = vn(/* @__PURE__ */ new Map());
+    let ue = null;
+    const ce = N([]), ge = N(-1), Le = N(null), $e = vn(/* @__PURE__ */ new Map());
+    function Be(f) {
       if (!f.trim()) return { keyword: "", args: [] };
-      const h = f.split(/  +|\t+/).map((d) => d.trim()).filter(Boolean);
-      return { keyword: h[0] || "", args: h.slice(1) };
+      const y = f.split(/  +|\t+/).map((d) => d.trim()).filter(Boolean);
+      return { keyword: y[0] || "", args: y.slice(1) };
     }
-    function He(f, h) {
-      return [f, ...h].filter(Boolean).join("    ");
+    function Ge(f, y) {
+      return [f, ...y].filter(Boolean).join("    ");
     }
-    function ie(f, h, d, v) {
-      const l = `${f}-${h}-${d}`;
-      if (!Fe.has(l)) {
-        const S = Pe(v[d]);
-        Fe.set(l, {
+    function ie(f, y, d, h) {
+      const l = `${f}-${y}-${d}`;
+      if (!$e.has(l)) {
+        const E = Be(h[d]);
+        $e.set(l, {
           type: "keyword",
-          keyword: S.keyword,
-          args: S.args,
+          keyword: E.keyword,
+          args: E.args,
           returnVars: [],
           condition: "",
           loopVar: "",
@@ -7501,130 +7501,132 @@ const ym = { class: "spec-tabs" }, bm = { class: "tab-buttons" }, wm = { class: 
           comment: ""
         });
       }
-      return Fe.get(l);
+      return $e.get(l);
     }
-    function Ie(f, h, d, v) {
-      const l = `${f}-${h}-${d}`, S = Fe.get(l);
-      S && (v[d] = He(S.keyword, S.args));
+    function Qe(f, y, d, h) {
+      const l = `${f}-${y}-${d}`, E = $e.get(l);
+      E && (h[d] = Ge(E.keyword, E.args));
     }
-    function tt(f, h, d, v) {
-      Ie(f, h, d, v);
-      const l = ie(f, h, d, v);
-      zt(l);
+    function mt(f, y, d, h) {
+      Qe(f, y, d, h);
+      const l = ie(f, y, d, h);
+      Wt(l);
     }
-    function gt(f, h, d, v) {
-      const l = ie(f, h, d, v);
-      qt(l);
+    function ut(f, y, d, h) {
+      const l = ie(f, y, d, h);
+      It(l);
     }
-    function ut(f, h, d, v, l) {
-      const S = ie(f, h, d, v);
-      Gt(S, l), Ie(f, h, d, v);
+    function Je(f, y, d, h, l) {
+      const E = ie(f, y, d, h);
+      Dt(E, l), Qe(f, y, d, h);
     }
-    function Ze(f, h, d, v) {
-      ie(f, h, d, v).args.push(""), Ie(f, h, d, v);
+    function gt(f, y, d, h) {
+      ie(f, y, d, h).args.push(""), Qe(f, y, d, h);
     }
-    function vt(f, h, d, v, l) {
-      ie(f, h, d, v).args.splice(l, 1), Ie(f, h, d, v);
+    function Ye(f, y, d, h, l) {
+      ie(f, y, d, h).args.splice(l, 1), Qe(f, y, d, h);
     }
-    function ze(f, h, d, v) {
-      Ie(f, h, d, v);
+    function Ke(f, y, d, h) {
+      Qe(f, y, d, h);
     }
-    const Q = gn({
+    const ee = vn({
       settings: [],
       variables: [],
       testCases: [],
       keywords: [],
       preambleLines: []
-    }), ot = O(() => {
+    }), de = O(() => {
       var f;
       return ((f = _.filePath) == null ? void 0 : f.toLowerCase().endsWith(".resource")) ?? !1;
-    }), pe = O(() => Q.testCases.length), se = O(() => Q.keywords.length), me = O(
-      () => fm(_.filePath) && (Q.testCases.length > 0 || mm(E.value))
+    }), ne = O(() => ee.testCases.length), fe = O(() => ee.keywords.length), Ae = O(
+      () => mm(_.filePath) && (ee.testCases.length > 0 || gm(B.value))
     );
-    function Se(f) {
+    function De(f) {
       try {
-        Fe.clear();
-        const h = gm(f);
-        return Q.settings = h.settings, Q.variables = h.variables, Q.testCases = h.testCases, Q.keywords = h.keywords, Q.preambleLines = h.preambleLines, Q.trailingComments = h.trailingComments, k.value = null, !0;
-      } catch (h) {
-        return k.value = h instanceof Error ? h.message : "Failed to parse Robot Framework file", !1;
+        $e.clear();
+        const y = vm(f);
+        return ee.settings = y.settings, ee.variables = y.variables, ee.testCases = y.testCases, ee.keywords = y.keywords, ee.preambleLines = y.preambleLines, ee.trailingComments = y.trailingComments, k.value = null, !0;
+      } catch (y) {
+        return k.value = y instanceof Error ? y.message : "Failed to parse Robot Framework file", !1;
       }
     }
-    function Be(f, h) {
+    function vt(f, y) {
       for (const d of f)
-        (d.type === "keyword" || d.type === "assignment") && d.keyword.trim() && h.add(d.keyword.trim());
+        (d.type === "keyword" || d.type === "assignment") && d.keyword.trim() && y.add(d.keyword.trim());
     }
-    async function ht() {
-      var v;
+    async function Zt() {
+      var h;
       const f = /* @__PURE__ */ new Set();
-      for (const l of Q.testCases) Be(l.steps, f);
-      for (const l of Q.keywords) Be(l.steps, f);
-      const h = [];
+      for (const l of ee.testCases) vt(l.steps, f);
+      for (const l of ee.keywords) vt(l.steps, f);
+      const y = [];
       for (const l of f) {
-        const S = l.toLowerCase().trim(), b = S.includes(".") ? S.substring(S.indexOf(".") + 1).trim() : S;
-        _o.has(S) || _o.has(b) || Q.keywords.some((o) => o.name.toLowerCase() === S || o.name.toLowerCase() === b) || ee.has(S) || ee.has(b) || h.push(l);
+        const E = l.toLowerCase().trim(), t = E.includes(".") ? E.substring(E.indexOf(".") + 1).trim() : E;
+        wo.has(E) || wo.has(t) || ee.keywords.some((n) => n.name.toLowerCase() === E || n.name.toLowerCase() === t) || H.has(E) || H.has(t) || y.push(l);
       }
-      if (h.length === 0) return;
+      if (y.length === 0) return;
       const d = /* @__PURE__ */ new Set();
-      for (const l of h) {
-        const S = l.toLowerCase().trim();
-        if (!d.has(S)) {
-          d.add(S);
+      for (const l of y) {
+        const E = l.toLowerCase().trim();
+        if (!d.has(E)) {
+          d.add(E);
           try {
-            const b = await Oo(l, _.scopeId ?? void 0);
-            for (const o of b.results)
-              if ((v = o.args) != null && v.length) {
-                const s = o.name.toLowerCase().trim();
-                ee.set(s, o.args), s.includes(".") && ee.set(s.substring(s.indexOf(".") + 1).trim(), o.args);
+            const t = await Wo(l, _.scopeId ?? void 0);
+            for (const n of t.results)
+              if ((h = n.args) != null && h.length) {
+                const v = n.name.toLowerCase().trim();
+                H.set(v, n.args), v.includes(".") && H.set(v.substring(v.indexOf(".") + 1).trim(), n.args);
               }
           } catch {
           }
         }
       }
     }
-    function Bt() {
-      return vm(Q, { isResource: ot.value });
+    function Tt() {
+      return hm(ee, { isResource: de.value });
     }
-    function Vt(f) {
-      if (f !== y.value)
+    function nt(f) {
+      if (f !== b.value)
         if (f === "code")
-          E.value = Bt(), y.value = "code", k.value = null, Xe(() => to());
+          B.value = Tt(), b.value = "code", k.value = null, je(() => Et());
         else {
-          if (y.value === "code") {
-            const h = yt();
-            Se(h), bt();
+          if (b.value === "code") {
+            const y = Qt();
+            De(y), Ut();
           }
-          y.value = f;
+          b.value = f;
         }
     }
-    function yt() {
+    function Qt() {
       var f;
-      return ((f = V.value) == null ? void 0 : f.state.doc.toString()) ?? E.value;
+      return ((f = L.value) == null ? void 0 : f.state.doc.toString()) ?? B.value;
     }
-    function to() {
-      if (bt(), !A.value) return;
-      const f = la.create({
-        doc: E.value,
+    function Et() {
+      if (Ut(), !V.value) return;
+      const f = Wn.create({
+        doc: B.value,
         extensions: [
           // EDT-05 / FR-v0.3-16：只读时 CodeMirror 本身也拒绝键入。
-          la.readOnly.of(!!c.readonly),
-          pn.editable.of(!c.readonly),
+          T.of([
+            Wn.readOnly.of(!!c.readonly),
+            Ko.editable.of(!c.readonly)
+          ]),
           ks(),
           Cs(),
           $s(),
-          Es(),
-          Ts.of([...Ss, ...Ls]),
+          Ss(),
+          Ts.of([...Ls, ...Vs]),
           // 平台品牌高亮样式（EDT-07）；未覆盖的 tag 回落到 CodeMirror 默认配色。
-          sa(nm, { fallback: !0 }),
-          sa(_s, { fallback: !0 }),
-          new ws(om()),
-          pn.updateListener.of((h) => {
-            if (h.docChanged) {
-              const d = h.state.doc.toString();
-              E.value = d, At(d);
+          la(am, { fallback: !0 }),
+          la(_s, { fallback: !0 }),
+          new ws(nm()),
+          Ko.updateListener.of((y) => {
+            if (y.docChanged) {
+              const d = y.state.doc.toString();
+              B.value = d, Bt(d);
             }
           }),
-          pn.theme({
+          Ko.theme({
             "&": { height: "100%", fontSize: "13px" },
             ".cm-content": { fontFamily: "'Fira Code', 'Consolas', 'Monaco', monospace", padding: "8px 0" },
             ".cm-gutters": { background: "#f8f9fa", borderRight: "1px solid #e0e0e0", color: "#999" },
@@ -7633,80 +7635,80 @@ const ym = { class: "spec-tabs" }, bm = { class: "tab-buttons" }, wm = { class: 
           })
         ]
       });
-      V.value = new pn({ state: f, parent: A.value });
+      L.value = new Ko({ state: f, parent: V.value });
     }
-    function bt() {
-      V.value && (V.value.destroy(), V.value = null);
+    function Ut() {
+      L.value && (L.value.destroy(), L.value = null);
     }
-    let oo = "", Kt = "";
-    function At(f) {
-      c.readonly || (g("update:content", f), g("dirty", f !== Kt));
+    let Jt = "", St = "";
+    function Bt(f) {
+      c.readonly || (g("update:content", f), g("dirty", f !== St));
     }
-    function Nt() {
-      const f = Bt();
-      oo = f, At(f);
+    function ht() {
+      const f = Tt();
+      Jt = f, Bt(f);
     }
-    const wt = O(() => y.value === "visual" || y.value === "flow");
-    Le(() => Q.settings, () => {
-      wt.value && Nt();
-    }, { deep: !0 }), Le(() => Q.variables, () => {
-      wt.value && Nt();
-    }, { deep: !0 }), Le(() => Q.testCases, () => {
-      wt.value && Nt();
-    }, { deep: !0 }), Le(() => Q.keywords, () => {
-      wt.value && Nt();
+    const Lt = O(() => b.value === "visual" || b.value === "flow");
+    Se(() => ee.settings, () => {
+      Lt.value && ht();
+    }, { deep: !0 }), Se(() => ee.variables, () => {
+      Lt.value && ht();
+    }, { deep: !0 }), Se(() => ee.testCases, () => {
+      Lt.value && ht();
+    }, { deep: !0 }), Se(() => ee.keywords, () => {
+      Lt.value && ht();
     }, { deep: !0 });
-    const _t = O(() => {
-      const f = es(Q), h = Xc(Q);
-      return f === 0 && h === 0 || !ts(Q) && !os(Q) ? "hidden" : f > 0 ? "on" : "off";
-    }), F = Qn();
-    function w() {
-      const f = _t.value;
+    const A = O(() => {
+      const f = es(ee), y = Zc(ee);
+      return f === 0 && y === 0 || !ts(ee) && !os(ee) ? "hidden" : f > 0 ? "on" : "off";
+    }), w = Jn();
+    function M() {
+      const f = A.value;
       if (f === "hidden") return;
-      const h = f === "on" ? "disable" : "enable", { form: d, changedKeywords: v } = Zc(Q, h);
-      if (Q.settings = d.settings, Q.testCases = d.testCases, Q.keywords = d.keywords, y.value === "code") {
-        const l = Bt();
-        if (E.value = l, V.value) {
-          const S = V.value.state.doc.toString();
-          S !== l && V.value.dispatch({
-            changes: { from: 0, to: S.length, insert: l }
+      const y = f === "on" ? "disable" : "enable", { form: d, changedKeywords: h } = Qc(ee, y);
+      if (ee.settings = d.settings, ee.testCases = d.testCases, ee.keywords = d.keywords, b.value === "code") {
+        const l = Tt();
+        if (B.value = l, L.value) {
+          const E = L.value.state.doc.toString();
+          E !== l && L.value.dispatch({
+            changes: { from: 0, to: E.length, insert: l }
           });
         }
-        At(l);
+        Bt(l);
       }
-      if (v > 0) {
-        const l = h === "enable" ? "robotEditor.heal.toastEnabled" : "robotEditor.heal.toastDisabled";
-        F.success(a(l, { count: v }));
+      if (h > 0) {
+        const l = y === "enable" ? "robotEditor.heal.toastEnabled" : "robotEditor.heal.toastDisabled";
+        w.success(s(l, { count: h }));
       }
     }
-    const P = N(null), G = N(!1), ge = N(null);
-    let Ve = 0;
-    async function nt() {
-      if (P.value = null, G.value = !1, ge.value = null, _.scopeId == null || !_.filePath || !_.filePath.toLowerCase().endsWith(".robot")) return;
-      const f = ++Ve, h = _.filePath, d = _.scopeId, v = await am(d, h);
-      f === Ve && (P.value = v, v && (ge.value = h));
+    const q = N(null), me = N(!1), Te = N(null);
+    let et = 0;
+    async function Kt() {
+      if (q.value = null, me.value = !1, Te.value = null, _.scopeId == null || !_.filePath || !_.filePath.toLowerCase().endsWith(".robot")) return;
+      const f = ++et, y = _.filePath, d = _.scopeId, h = await sm(d, y);
+      f === et && (q.value = h, h && (Te.value = y));
     }
-    function Ht(f) {
-      f === P.value && (G.value = !0);
+    function Xo(f) {
+      f === q.value && (me.value = !0);
     }
-    async function Go(f) {
-      if (!(!P.value || ge.value == null || _.scopeId == null)) {
-        if (f != null && Array.isArray(P.value.commands)) {
-          const h = hm(f), d = P.value.commands.length, v = P.value.commands.filter(
-            (l) => !l.id || h.has(l.id)
+    async function Fe(f) {
+      if (!(!q.value || Te.value == null || _.scopeId == null)) {
+        if (f != null && Array.isArray(q.value.commands)) {
+          const y = ym(f), d = q.value.commands.length, h = q.value.commands.filter(
+            (l) => !l.id || y.has(l.id)
           );
-          v.length !== d && (P.value.commands = v, G.value = !0);
+          h.length !== d && (q.value.commands = h, me.value = !0);
         }
-        G.value && (await sm(_.scopeId, ge.value, P.value), G.value = !1);
+        me.value && (await lm(_.scopeId, Te.value, q.value), me.value = !1);
       }
     }
-    n({ saveSidecarIfDirty: Go }), Le(() => [_.scopeId, _.filePath], nt, { immediate: !0 });
-    const Ae = zo(), io = Ka(), Ge = oa(), To = Qn();
-    function Yo() {
-      _.scopeId != null && Ae.refreshKeywords(_.scopeId).catch(() => {
+    a({ saveSidecarIfDirty: Fe }), Se(() => [_.scopeId, _.filePath], Kt, { immediate: !0 });
+    const Ht = Yo(), Vt = Ka(), At = na(), po = Jn();
+    function Zo() {
+      _.scopeId != null && Ht.refreshKeywords(_.scopeId).catch(() => {
       });
     }
-    const uo = {
+    const $o = {
       // Default to `-batteries` for the install suggestion: it bundles
       // Playwright + Node.js, so the user doesn't need a separate Node
       // install on the env host. The plain `robotframework-browser`
@@ -7730,85 +7732,85 @@ const ym = { class: "spec-tabs" }, bm = { class: "tab-buttons" }, wm = { class: 
       cryptolibrary: ["robotframework-crypto"],
       restinstance: ["RESTinstance"]
     };
-    function En(f) {
-      const h = f.toLowerCase(), d = uo[h];
-      return (d == null ? void 0 : d[0]) ?? `robotframework-${h}`;
+    function Sn(f) {
+      const y = f.toLowerCase(), d = $o[y];
+      return (d == null ? void 0 : d[0]) ?? `robotframework-${y}`;
     }
-    function Sn(f, h) {
-      const d = f.toLowerCase(), v = uo[d];
-      if (!v) return !1;
-      const l = new Set(h.map((S) => S.name.toLowerCase()));
-      return v.some((S) => l.has(S.toLowerCase()));
+    function eo(f, y) {
+      const d = f.toLowerCase(), h = $o[d];
+      if (!h) return !1;
+      const l = new Set(y.map((E) => E.name.toLowerCase()));
+      return h.some((E) => l.has(E.toLowerCase()));
     }
-    const ct = N(!1), Rt = N(""), Ft = N(""), co = N(null), Xo = N(""), Ot = N(!1), It = N(null);
+    const ct = N(!1), to = N(""), Ot = N(""), To = N(null), Qo = N(""), Nt = N(!1), oo = N(null);
     function Ln(f) {
-      var b;
+      var t;
       if (_.scopeId == null) return;
-      const h = io.getRepo(_.scopeId), d = (h == null ? void 0 : h.environment_id) ?? null, v = Ge.environments.find((o) => o.is_default), l = d ?? (v == null ? void 0 : v.id) ?? ((b = Ge.environments[0]) == null ? void 0 : b.id) ?? null;
+      const y = Vt.getRepo(_.scopeId), d = (y == null ? void 0 : y.environment_id) ?? null, h = At.environments.find((n) => n.is_default), l = d ?? (h == null ? void 0 : h.id) ?? ((t = At.environments[0]) == null ? void 0 : t.id) ?? null;
       if (l == null) {
-        To.warning(
-          a("robotEditor.libraryNotInEnvTitle", { library: f }),
-          a("robotEditor.libraryNoEnvAtAllBody", { library: f })
+        po.warning(
+          s("robotEditor.libraryNotInEnvTitle", { library: f }),
+          s("robotEditor.libraryNoEnvAtAllBody", { library: f })
         );
         return;
       }
-      const S = Ge.environments.find((o) => o.id === l);
-      Rt.value = f, Ft.value = En(f), co.value = l, Xo.value = (S == null ? void 0 : S.name) ?? "", It.value = null, ct.value = !0;
+      const E = At.environments.find((n) => n.id === l);
+      to.value = f, Ot.value = Sn(f), To.value = l, Qo.value = (E == null ? void 0 : E.name) ?? "", oo.value = null, ct.value = !0;
     }
     async function Vn() {
-      if (co.value == null) return;
-      const f = Ft.value.trim();
+      if (To.value == null) return;
+      const f = Ot.value.trim();
       if (f) {
-        Ot.value = !0, It.value = null;
+        Nt.value = !0, oo.value = null;
         try {
-          await Ba(co.value, { package_name: f }), Yo(), To.success(
-            a("robotEditor.libraryInstallStartedTitle"),
-            a("robotEditor.libraryInstallStartedBody", { package: f })
+          await Ba(To.value, { package_name: f }), Zo(), po.success(
+            s("robotEditor.libraryInstallStartedTitle"),
+            s("robotEditor.libraryInstallStartedBody", { package: f })
           ), ct.value = !1;
-        } catch (h) {
-          It.value = Co(
-            h,
-            a("robotEditor.libraryInstallFailed")
+        } catch (y) {
+          oo.value = ko(
+            y,
+            s("robotEditor.libraryInstallFailed")
           );
         } finally {
-          Ot.value = !1;
+          Nt.value = !1;
         }
       }
     }
-    function An() {
+    function yt() {
       ct.value = !1;
     }
-    async function kt(f) {
-      var o, s;
+    async function Eo(f) {
+      var n, v;
       if (_.scopeId == null) return;
       try {
-        await Ae.refreshKeywords(_.scopeId);
+        await Ht.refreshKeywords(_.scopeId);
       } catch {
         return;
       }
       if (!f) return;
-      const h = f.toLowerCase();
-      if (Ae.keywords.some(
-        ($) => ($.library || "").toLowerCase() === h
+      const y = f.toLowerCase();
+      if (Ht.keywords.some(
+        (F) => (F.library || "").toLowerCase() === y
       )) return;
-      if (Ge.environments.length === 0)
+      if (At.environments.length === 0)
         try {
-          await Ge.fetchEnvironments();
+          await At.fetchEnvironments();
         } catch {
         }
-      const v = io.getRepo(_.scopeId), l = (v == null ? void 0 : v.environment_id) ?? null, S = Ge.environments.find(($) => $.is_default), b = l ?? (S == null ? void 0 : S.id) ?? ((o = Ge.environments[0]) == null ? void 0 : o.id) ?? null;
-      if (b != null)
+      const h = Vt.getRepo(_.scopeId), l = (h == null ? void 0 : h.environment_id) ?? null, E = At.environments.find((F) => F.is_default), t = l ?? (E == null ? void 0 : E.id) ?? ((n = At.environments[0]) == null ? void 0 : n.id) ?? null;
+      if (t != null)
         try {
-          const $ = await El(b);
-          if (Sn(f, $)) {
-            const K = ((s = uo[h]) == null ? void 0 : s.find(
-              (te) => $.some((C) => C.name.toLowerCase() === te.toLowerCase())
+          const F = await Sl(t);
+          if (eo(f, F)) {
+            const X = ((v = $o[y]) == null ? void 0 : v.find(
+              (C) => F.some((S) => S.name.toLowerCase() === C.toLowerCase())
             )) ?? "?";
-            To.info(
-              a("robotEditor.libraryAlreadyProvidedTitle", { library: f }),
-              a("robotEditor.libraryAlreadyProvidedBody", {
+            po.info(
+              s("robotEditor.libraryAlreadyProvidedTitle", { library: f }),
+              s("robotEditor.libraryAlreadyProvidedBody", {
                 library: f,
-                provider: K
+                provider: X
               })
             );
             return;
@@ -7817,14 +7819,14 @@ const ym = { class: "spec-tabs" }, bm = { class: "tab-buttons" }, wm = { class: 
         }
       Ln(f);
     }
-    Le(
+    Se(
       () => _.filePath,
-      (f, h) => {
-        !f || f === h || _.scopeId != null && Ae.preloadKeywords(_.scopeId).catch(() => {
+      (f, y) => {
+        !f || f === y || _.scopeId != null && Ht.preloadKeywords(_.scopeId).catch(() => {
         });
       }
     );
-    const Eo = [
+    const An = [
       "BuiltIn",
       "Collections",
       "String",
@@ -7851,33 +7853,33 @@ const ym = { class: "spec-tabs" }, bm = { class: "tab-buttons" }, wm = { class: 
       "ArchiveLibrary",
       "CryptoLibrary",
       "RESTinstance"
-    ], Pt = N(null), po = N(""), xe = N(-1), So = N(null), Lo = O(() => {
-      const f = po.value.toLowerCase().trim();
-      return Eo.filter((h) => !f || h.toLowerCase().includes(f)).slice(0, 15);
+    ], Rt = N(null), at = N(""), Ie = N(-1), Jo = N(null), So = O(() => {
+      const f = at.value.toLowerCase().trim();
+      return An.filter((y) => !f || y.toLowerCase().includes(f)).slice(0, 15);
     });
-    function Nn(f) {
-      Pt.value = f, po.value = Q.settings[f].value, xe.value = -1;
-    }
     function Ne(f) {
+      Rt.value = f, at.value = ee.settings[f].value, Ie.value = -1;
+    }
+    function Lo(f) {
       var d;
-      const h = f.relatedTarget;
-      h && ((d = So.value) != null && d.contains(h)) || setTimeout(() => {
-        Pt.value = null;
+      const y = f.relatedTarget;
+      y && ((d = Jo.value) != null && d.contains(y)) || setTimeout(() => {
+        Rt.value = null;
       }, 150);
     }
-    function Vo(f) {
-      po.value = Q.settings[f].value, xe.value = -1, Pt.value = f;
+    function Me(f) {
+      at.value = ee.settings[f].value, Ie.value = -1, Rt.value = f;
     }
-    function Ue(f, h) {
-      const d = Lo.value;
+    function Nn(f, y) {
+      const d = So.value;
       if (f.key === "Enter") {
-        f.preventDefault(), xe.value >= 0 && xe.value < d.length && Zo(h, d[xe.value]);
+        f.preventDefault(), Ie.value >= 0 && Ie.value < d.length && en(y, d[Ie.value]);
         return;
       }
-      d.length && (f.key === "ArrowDown" ? (f.preventDefault(), Pt.value = h, xe.value = Math.min(xe.value + 1, d.length - 1)) : f.key === "ArrowUp" ? (f.preventDefault(), xe.value = Math.max(xe.value - 1, 0)) : f.key === "Escape" && (Pt.value = null, xe.value = -1));
+      d.length && (f.key === "ArrowDown" ? (f.preventDefault(), Rt.value = y, Ie.value = Math.min(Ie.value + 1, d.length - 1)) : f.key === "ArrowUp" ? (f.preventDefault(), Ie.value = Math.max(Ie.value - 1, 0)) : f.key === "Escape" && (Rt.value = null, Ie.value = -1));
     }
-    function Zo(f, h) {
-      Q.settings[f].value = h, Pt.value = null, xe.value = -1, po.value = "";
+    function en(f, y) {
+      ee.settings[f].value = y, Rt.value = null, Ie.value = -1, at.value = "";
     }
     const Rn = [
       "Documentation",
@@ -7894,74 +7896,74 @@ const ym = { class: "spec-tabs" }, bm = { class: "tab-buttons" }, wm = { class: 
       "Default Tags",
       "Metadata"
     ];
-    function Fn() {
-      Q.settings.push({ key: "Library", value: "", args: [] });
+    function tn() {
+      ee.settings.push({ key: "Library", value: "", args: [] });
     }
-    function Ao(f) {
-      Q.settings.splice(f, 1);
+    function on(f) {
+      ee.settings.splice(f, 1);
     }
-    function Pn(f) {
-      Q.settings[f].args.push("");
+    function fo(f) {
+      ee.settings[f].args.push("");
     }
-    function fo(f, h) {
-      Q.settings[f].args.splice(h, 1);
+    function Fn(f, y) {
+      ee.settings[f].args.splice(y, 1);
     }
-    function Dn() {
-      Q.variables.push({ name: "${NEW_VAR}", value: "" });
+    function Pn() {
+      ee.variables.push({ name: "${NEW_VAR}", value: "" });
     }
-    function Qo(f) {
-      Q.variables.splice(f, 1);
+    function Vo(f) {
+      ee.variables.splice(f, 1);
     }
-    function no(f, h = "keyword") {
-      f.push(Bo(h));
+    function mo(f, y = "keyword") {
+      f.push(Ho(y));
     }
-    function Ct(f, h) {
-      const d = Bo(h);
-      f.push(d), f.push(Bo("keyword")), f.push(Bo("end"));
+    function st(f, y) {
+      const d = Ho(y);
+      f.push(d), f.push(Ho("keyword")), f.push(Ho("end"));
     }
-    function mo(f, h) {
-      f.splice(h, 1);
+    function nn(f, y) {
+      f.splice(y, 1);
     }
-    function go(f, h, d) {
-      const v = h + d;
-      if (v < 0 || v >= f.length) return;
-      const l = f[h];
-      f[h] = f[v], f[v] = l;
+    function no(f, y, d) {
+      const h = y + d;
+      if (h < 0 || h >= f.length) return;
+      const l = f[y];
+      f[y] = f[h], f[h] = l;
     }
-    function dt(f) {
+    function bt(f) {
       f.args.push("");
     }
-    function $t(f) {
-      const h = $e(f);
-      if (h.length === 0) return "+";
+    function tt(f) {
+      const y = ke(f);
+      if (y.length === 0) return "+";
       const d = f.args.length;
-      if (d < h.length)
-        return "+ " + h[d];
-      const v = h[h.length - 1];
-      return v != null && v.startsWith("*") && !v.startsWith("**") ? "+ ..." : "+";
+      if (d < y.length)
+        return "+ " + y[d];
+      const h = y[y.length - 1];
+      return h != null && h.startsWith("*") && !h.startsWith("**") ? "+ ..." : "+";
     }
-    function Qe(f, h) {
-      f.args.splice(h, 1);
+    function Ue(f, y) {
+      f.args.splice(y, 1);
     }
-    function at(f) {
+    function an(f) {
       f.returnVars.push("${var}");
     }
-    function Jo(f, h) {
-      f.returnVars.splice(h, 1);
+    function ao(f, y) {
+      f.returnVars.splice(y, 1);
     }
-    function ao(f) {
+    function Ao(f) {
       f.loopValues.push("");
     }
-    function No(f, h) {
-      f.loopValues.splice(h, 1);
+    function go(f, y) {
+      f.loopValues.splice(y, 1);
     }
-    function vo(f) {
+    function sn(f) {
       f.type === "keyword" ? f.returnVars = [] : f.type === "assignment" ? f.returnVars.length === 0 && (f.returnVars = ["${result}"]) : f.type === "for" ? (f.loopVar || (f.loopVar = "${item}"), f.loopFlavor || (f.loopFlavor = "IN")) : f.type === "var" ? (f.returnVars.length === 0 && (f.returnVars = ["${var}"]), f.args.length === 0 && (f.args = [""])) : f.type === "comment" && (f.comment || (f.comment = "# "));
     }
-    function en(f) {
-      return a("robotEditor.stepType." + f);
+    function Ft(f) {
+      return s("robotEditor.stepType." + f);
     }
-    function Wt(f) {
+    function ln(f) {
       switch (f) {
         case "Library":
           return "stype-library";
@@ -7989,7 +7991,7 @@ const ym = { class: "spec-tabs" }, bm = { class: "tab-buttons" }, wm = { class: 
           return "";
       }
     }
-    function Ro(f) {
+    function rn(f) {
       switch (f) {
         case "keyword":
           return "type-keyword";
@@ -8019,198 +8021,198 @@ const ym = { class: "spec-tabs" }, bm = { class: "tab-buttons" }, wm = { class: 
           return "";
       }
     }
-    function Mn(f) {
+    function Dn(f) {
       return ["for", "if", "else_if", "else", "while", "try", "except", "finally"].includes(f);
     }
-    function tn(f) {
+    function lt(f) {
       return f === "end";
     }
-    function st(f, h) {
+    function Pt(f, y) {
       let d = 0;
-      for (let v = 0; v < h; v++)
-        Mn(f[v].type) && d++, tn(f[v].type) && (d = Math.max(0, d - 1));
-      return tn(f[h].type) && (d = Math.max(0, d - 1)), ["else", "else_if", "except", "finally"].includes(f[h].type) && (d = Math.max(0, d - 1)), d;
+      for (let h = 0; h < y; h++)
+        Dn(f[h].type) && d++, lt(f[h].type) && (d = Math.max(0, d - 1));
+      return lt(f[y].type) && (d = Math.max(0, d - 1)), ["else", "else_if", "except", "finally"].includes(f[y].type) && (d = Math.max(0, d - 1)), d;
     }
-    const jt = O(() => {
+    const No = O(() => {
       const f = [];
-      for (const h of _o.keys()) {
-        const d = h.replace(/\b\w/g, (v) => v.toUpperCase());
-        f.push({ name: d, source: "builtin", args: _o.get(h) });
+      for (const y of wo.keys()) {
+        const d = y.replace(/\b\w/g, (h) => h.toUpperCase());
+        f.push({ name: d, source: "builtin", args: wo.get(y) });
       }
       return f;
-    }), De = O(() => {
-      const f = U.value.toLowerCase().trim(), h = /* @__PURE__ */ new Set(), d = [];
-      for (const v of ke.value) {
-        const l = v.name.toLowerCase();
-        if (!h.has(l)) {
-          h.add(l);
-          const S = v.library || "project";
-          if (d.push({ name: v.name, source: S, args: v.args }), S !== "project" && S !== "local" && S !== "builtin" && !S.includes("Library")) {
-            const b = S + "." + v.name, o = b.toLowerCase();
-            h.has(o) || (h.add(o), d.push({ name: b, source: S, args: v.args }));
+    }), xe = O(() => {
+      const f = se.value.toLowerCase().trim(), y = /* @__PURE__ */ new Set(), d = [];
+      for (const h of J.value) {
+        const l = h.name.toLowerCase();
+        if (!y.has(l)) {
+          y.add(l);
+          const E = h.library || "project";
+          if (d.push({ name: h.name, source: E, args: h.args }), E !== "project" && E !== "local" && E !== "builtin" && !E.includes("Library")) {
+            const t = E + "." + h.name, n = t.toLowerCase();
+            y.has(n) || (y.add(n), d.push({ name: t, source: E, args: h.args }));
           }
         }
       }
-      for (const v of Q.keywords) {
-        const l = v.name.toLowerCase();
-        v.name && !h.has(l) && (h.add(l), d.push({ name: v.name, source: "local", args: v.arguments }));
+      for (const h of ee.keywords) {
+        const l = h.name.toLowerCase();
+        h.name && !y.has(l) && (y.add(l), d.push({ name: h.name, source: "local", args: h.arguments }));
       }
-      for (const v of jt.value) {
-        const l = v.name.toLowerCase();
-        h.has(l) || (h.add(l), d.push(v));
+      for (const h of No.value) {
+        const l = h.name.toLowerCase();
+        y.has(l) || (y.add(l), d.push(h));
       }
-      return d.filter((v) => {
+      return d.filter((h) => {
         if (!f) return !0;
-        const l = v.name.toLowerCase(), S = l.includes(".") ? l.substring(l.indexOf(".") + 1) : l;
-        return l.includes(f) || S.includes(f);
+        const l = h.name.toLowerCase(), E = l.includes(".") ? l.substring(l.indexOf(".") + 1) : l;
+        return l.includes(f) || E.includes(f);
       }).slice(0, 15);
     });
-    function qt(f) {
-      Y.value = f, U.value = f.keyword, Z.value = -1;
+    function It(f) {
+      D.value = f, se.value = f.keyword, oe.value = -1;
     }
-    function pt(f) {
+    function dt(f) {
       var d;
-      const h = f.relatedTarget;
-      h && ((d = ce.value) != null && d.contains(h)) || setTimeout(() => {
-        Y.value = null;
+      const y = f.relatedTarget;
+      y && ((d = be.value) != null && d.contains(y)) || setTimeout(() => {
+        D.value = null;
       }, 150);
     }
-    function zt(f) {
-      U.value = f.keyword, Z.value = -1, Y.value = f, on(f.keyword);
+    function Wt(f) {
+      se.value = f.keyword, oe.value = -1, D.value = f, Mn(f.keyword);
     }
-    function on(f) {
-      W && clearTimeout(W);
-      const h = f.trim();
-      if (h.length < 2 && !/[^\x00-\x7F]/.test(h)) {
-        ke.value = [];
+    function Mn(f) {
+      ue && clearTimeout(ue);
+      const y = f.trim();
+      if (y.length < 2 && !/[^\x00-\x7F]/.test(y)) {
+        J.value = [];
         return;
       }
-      W = setTimeout(async () => {
+      ue = setTimeout(async () => {
         var d;
         try {
-          const v = await Oo(f.trim(), _.scopeId ?? void 0);
-          ke.value = v.results.slice(0, 15);
-          for (const l of ke.value)
-            (d = l.args) != null && d.length && ee.set(l.name.toLowerCase().trim(), l.args);
+          const h = await Wo(f.trim(), _.scopeId ?? void 0);
+          J.value = h.results.slice(0, 15);
+          for (const l of J.value)
+            (d = l.args) != null && d.length && H.set(l.name.toLowerCase().trim(), l.args);
         } catch {
-          ke.value = [];
+          J.value = [];
         }
       }, 300);
     }
-    function Tt(f, h) {
-      const d = De.value;
+    function wt(f, y) {
+      const d = xe.value;
       if (f.key === "Enter") {
-        f.preventDefault(), Z.value >= 0 && Z.value < d.length && Gt(h, d[Z.value]);
+        f.preventDefault(), oe.value >= 0 && oe.value < d.length && Dt(y, d[oe.value]);
         return;
       }
-      d.length && (f.key === "ArrowDown" ? (f.preventDefault(), Y.value = h, Z.value = Math.min(Z.value + 1, d.length - 1)) : f.key === "ArrowUp" ? (f.preventDefault(), Z.value = Math.max(Z.value - 1, 0)) : f.key === "Escape" && (Y.value = null, Z.value = -1));
+      d.length && (f.key === "ArrowDown" ? (f.preventDefault(), D.value = y, oe.value = Math.min(oe.value + 1, d.length - 1)) : f.key === "ArrowUp" ? (f.preventDefault(), oe.value = Math.max(oe.value - 1, 0)) : f.key === "Escape" && (D.value = null, oe.value = -1));
     }
-    function Gt(f, h) {
+    function Dt(f, y) {
       var l;
-      if (f.keyword = h.name, (l = h.args) != null && l.length) {
-        const S = h.name.toLowerCase().trim();
-        ee.set(S, h.args), S.includes(".") && ee.set(S.substring(S.indexOf(".") + 1).trim(), h.args);
+      if (f.keyword = y.name, (l = y.args) != null && l.length) {
+        const E = y.name.toLowerCase().trim();
+        H.set(E, y.args), E.includes(".") && H.set(E.substring(E.indexOf(".") + 1).trim(), y.args);
       }
-      Y.value = null, Z.value = -1, U.value = "";
-      const v = $e(f).filter((S) => !S.endsWith("?") && !S.startsWith("*")).length;
-      for (; f.args.length < v; )
+      D.value = null, oe.value = -1, se.value = "";
+      const h = ke(f).filter((E) => !E.endsWith("?") && !E.startsWith("*")).length;
+      for (; f.args.length < h; )
         f.args.push("");
     }
-    function nn() {
+    function vo() {
       const f = [];
-      for (const h of Q.variables) h.name && f.push(h.name);
-      for (const h of Q.keywords)
-        for (const d of h.arguments)
+      for (const y of ee.variables) y.name && f.push(y.name);
+      for (const y of ee.keywords)
+        for (const d of y.arguments)
           d && f.push(d.replace(/=.*$/, ""));
       return f;
     }
-    function Dt(f, h) {
-      if (be.value = h, !f.includes("$")) {
-        oe.value = [];
+    function so(f, y) {
+      if (Le.value = y, !f.includes("$")) {
+        ce.value = [];
         return;
       }
       const d = f.match(/[$@&%]\{([^}]*)$/);
       if (!d) {
-        oe.value = [];
+        ce.value = [];
         return;
       }
-      const v = d[1].toLowerCase(), l = nn();
-      oe.value = l.filter((S) => S.toLowerCase().includes(v)).slice(0, 8), fe.value = -1;
+      const h = d[1].toLowerCase(), l = vo();
+      ce.value = l.filter((E) => E.toLowerCase().includes(h)).slice(0, 8), ge.value = -1;
     }
-    function Yt(f, h, d) {
-      const l = (f.args[h] || "").replace(/[$@&%]\{[^}]*$/, d + "}");
-      f.args[h] = l.includes("}") ? l : d, oe.value = [], be.value = null;
+    function _t(f, y, d) {
+      const l = (f.args[y] || "").replace(/[$@&%]\{[^}]*$/, d + "}");
+      f.args[y] = l.includes("}") ? l : d, ce.value = [], Le.value = null;
     }
-    function Mt(f, h, d) {
-      oe.value.length && (f.key === "ArrowDown" ? (f.preventDefault(), fe.value = Math.min(fe.value + 1, oe.value.length - 1)) : f.key === "ArrowUp" ? (f.preventDefault(), fe.value = Math.max(fe.value - 1, 0)) : f.key === "Enter" && fe.value >= 0 ? (f.preventDefault(), Yt(h, d, oe.value[fe.value])) : f.key === "Escape" && (oe.value = [], be.value = null));
+    function ho(f, y, d) {
+      ce.value.length && (f.key === "ArrowDown" ? (f.preventDefault(), ge.value = Math.min(ge.value + 1, ce.value.length - 1)) : f.key === "ArrowUp" ? (f.preventDefault(), ge.value = Math.max(ge.value - 1, 0)) : f.key === "Enter" && ge.value >= 0 ? (f.preventDefault(), _t(y, d, ce.value[ge.value])) : f.key === "Escape" && (ce.value = [], Le.value = null));
     }
-    function ho() {
+    function lo() {
       setTimeout(() => {
-        oe.value = [], be.value = null;
+        ce.value = [], Le.value = null;
       }, 200);
     }
-    function Te(f) {
+    function Ve(f) {
       return f ? f.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/([$@&])\{([^}]+)\}/g, '<span class="hl-var">$1{$2}</span>').replace(/%\{([^}]+)\}/g, '<span class="hl-env">%{$1}</span>') : "";
     }
-    function Xt(f) {
-      var v;
-      const h = f.target, d = (v = h.parentElement) == null ? void 0 : v.querySelector(".arg-highlight-overlay, .form-hl-overlay");
-      d && (d.scrollLeft = h.scrollLeft);
+    function jt(f) {
+      var h;
+      const y = f.target, d = (h = y.parentElement) == null ? void 0 : h.querySelector(".arg-highlight-overlay, .form-hl-overlay");
+      d && (d.scrollLeft = y.scrollLeft);
     }
-    function lt(f) {
-      const h = Math.max((f || "").length, 6);
-      return Math.min(h, 30) + "ch";
+    function rt(f) {
+      const y = Math.max((f || "").length, 6);
+      return Math.min(y, 30) + "ch";
     }
-    function Fo(f, h) {
-      let d = f.arguments[h];
+    function Ro(f, y) {
+      let d = f.arguments[y];
       if (!d || (d = d.trim(), !d) || d === "@{}" || /^[$@&]\{[^}]*\}(=.*)?$/.test(d)) return;
-      const v = d.startsWith("@{") ? "@{" : d.startsWith("&{") ? "&{" : "${";
-      let l = d.replace(/^[$@&%]\{/, "").replace(/\}(=.*)?$/, ""), S = "";
-      const b = d.match(/\}=(.*)$/);
-      if (b)
-        S = "=" + b[1];
+      const h = d.startsWith("@{") ? "@{" : d.startsWith("&{") ? "&{" : "${";
+      let l = d.replace(/^[$@&%]\{/, "").replace(/\}(=.*)?$/, ""), E = "";
+      const t = d.match(/\}=(.*)$/);
+      if (t)
+        E = "=" + t[1];
       else {
-        const o = l.indexOf("=");
-        o > 0 && (S = l.substring(o), l = l.substring(0, o));
+        const n = l.indexOf("=");
+        n > 0 && (E = l.substring(n), l = l.substring(0, n));
       }
-      l = l.replace(/[$@&%{}]/g, "").trim(), l && (f.arguments[h] = v + l + "}" + S);
+      l = l.replace(/[$@&%{}]/g, "").trim(), l && (f.arguments[y] = h + l + "}" + E);
     }
     function xn(f) {
       if (!f.name || f.name === "#") return;
-      let h = f.name.trim();
-      if (!h || /^[$@&%]\{[^}]+\}$/.test(h)) return;
+      let y = f.name.trim();
+      if (!y || /^[$@&%]\{[^}]+\}$/.test(y)) return;
       let d = "${";
-      h.startsWith("@") ? d = "@{" : h.startsWith("&") ? d = "&{" : h.startsWith("%") && (d = "%{"), h = h.replace(/^[$@&%]\{?/, "").replace(/\}$/, "").replace(/[$@&%{}]/g, "").trim(), h && (f.name = d + h + "}");
+      y.startsWith("@") ? d = "@{" : y.startsWith("&") ? d = "&{" : y.startsWith("%") && (d = "%{"), y = y.replace(/^[$@&%]\{?/, "").replace(/\}$/, "").replace(/[$@&%{}]/g, "").trim(), y && (f.name = d + y + "}");
     }
-    function yo(f, h) {
-      let d = f.returnVars[h];
+    function yo(f, y) {
+      let d = f.returnVars[y];
       if (!d || (d = d.trim(), !d) || /^[$@&%]\{[^}]+\}$/.test(d)) return;
-      let v = "${";
-      d.startsWith("@") ? v = "@{" : d.startsWith("&") ? v = "&{" : d.startsWith("%") && (v = "%{"), d = d.replace(/^[$@&%]\{?/, "").replace(/\}$/, "").replace(/[$@&%{}]/g, "").trim(), d && (f.returnVars[h] = v + d + "}");
+      let h = "${";
+      d.startsWith("@") ? h = "@{" : d.startsWith("&") ? h = "&{" : d.startsWith("%") && (h = "%{"), d = d.replace(/^[$@&%]\{?/, "").replace(/\}$/, "").replace(/[$@&%{}]/g, "").trim(), d && (f.returnVars[y] = h + d + "}");
     }
-    function an(f) {
+    function un(f) {
       if (f.startsWith("@{")) return "*" + f.replace(/^@\{([^}]*)\}.*$/, "$1");
       if (f.startsWith("&{")) return "**" + f.replace(/^&\{([^}]*)\}.*$/, "$1");
-      const h = f.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1").replace(/=.*$/, "");
-      return f.includes("=") ? h + "?" : h;
+      const y = f.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1").replace(/=.*$/, "");
+      return f.includes("=") ? y + "?" : y;
     }
-    function $e(f) {
-      var v;
-      const h = f.keyword.toLowerCase().trim(), d = h.includes(".") ? h.substring(h.indexOf(".") + 1).trim() : h;
-      for (const l of [h, d]) {
-        const S = _o.get(l);
-        if (S) return S;
-        const b = Q.keywords.find((s) => s.name.toLowerCase() === l);
-        if ((v = b == null ? void 0 : b.arguments) != null && v.length)
-          return b.arguments.filter((s) => s !== "@{}").map(an);
-        const o = ee.get(l);
-        if (o != null && o.length)
-          return o.filter((s) => s !== "@{}").map(an);
+    function ke(f) {
+      var h;
+      const y = f.keyword.toLowerCase().trim(), d = y.includes(".") ? y.substring(y.indexOf(".") + 1).trim() : y;
+      for (const l of [y, d]) {
+        const E = wo.get(l);
+        if (E) return E;
+        const t = ee.keywords.find((v) => v.name.toLowerCase() === l);
+        if ((h = t == null ? void 0 : t.arguments) != null && h.length)
+          return t.arguments.filter((v) => v !== "@{}").map(un);
+        const n = H.get(l);
+        if (n != null && n.length)
+          return n.filter((v) => v !== "@{}").map(un);
       }
       return [];
     }
-    function bo() {
-      Q.testCases.push({
+    function Fo() {
+      ee.testCases.push({
         name: "",
         documentation: "",
         tags: [],
@@ -8221,24 +8223,24 @@ const ym = { class: "spec-tabs" }, bm = { class: "tab-buttons" }, wm = { class: 
         steps: []
       });
     }
-    function sn(f) {
-      Q.testCases.splice(f, 1), M.value.delete(f);
-    }
     function Un(f) {
-      M.value.has(f) ? M.value.delete(f) : M.value.add(f);
+      ee.testCases.splice(f, 1), Z.value.delete(f);
     }
-    const rt = N(/* @__PURE__ */ new Map());
-    function Bn(f, h) {
-      h.trim() && !Q.testCases[f].tags.includes(h.trim()) && Q.testCases[f].tags.push(h.trim());
+    function qt(f) {
+      Z.value.has(f) ? Z.value.delete(f) : Z.value.add(f);
     }
-    function Kn(f, h) {
-      Q.testCases[f].tags.splice(h, 1);
+    const ro = N(/* @__PURE__ */ new Map());
+    function Bn(f, y) {
+      y.trim() && !ee.testCases[f].tags.includes(y.trim()) && ee.testCases[f].tags.push(y.trim());
     }
-    function Po(f) {
-      Bn(f, rt.value.get(f) || ""), rt.value.set(f, "");
+    function cn(f, y) {
+      ee.testCases[f].tags.splice(y, 1);
     }
-    function Zt() {
-      Q.keywords.push({
+    function zt(f) {
+      Bn(f, ro.value.get(f) || ""), ro.value.set(f, "");
+    }
+    function Po() {
+      ee.keywords.push({
         name: "",
         documentation: "",
         arguments: [],
@@ -8250,19 +8252,19 @@ const ym = { class: "spec-tabs" }, bm = { class: "tab-buttons" }, wm = { class: 
         steps: []
       });
     }
-    function ln(f) {
-      Q.keywords.splice(f, 1), J.value.delete(f);
+    function dn(f) {
+      ee.keywords.splice(f, 1), Q.value.delete(f);
     }
-    function rn(f) {
-      J.value.has(f) ? J.value.delete(f) : J.value.add(f);
+    function Do(f) {
+      Q.value.has(f) ? Q.value.delete(f) : Q.value.add(f);
     }
     N(/* @__PURE__ */ new Map());
-    function Do(f, h) {
-      Q.keywords[f].arguments.splice(h, 1);
+    function Mo(f, y) {
+      ee.keywords[f].arguments.splice(y, 1);
     }
-    function xt(f, h) {
-      const d = Q.keywords[f];
-      switch (h) {
+    function io(f, y) {
+      const d = ee.keywords[f];
+      switch (y) {
         case "positional":
           d.arguments.push("${arg}");
           break;
@@ -8270,2096 +8272,2104 @@ const ym = { class: "spec-tabs" }, bm = { class: "tab-buttons" }, wm = { class: 
           d.arguments.push("${arg}=");
           break;
         case "varargs":
-          d.arguments.some((v) => v.startsWith("@{")) || d.arguments.push("@{args}");
+          d.arguments.some((h) => h.startsWith("@{")) || d.arguments.push("@{args}");
           break;
         case "kwargs":
-          d.arguments.some((v) => v.startsWith("&{")) || d.arguments.push("&{kwargs}");
+          d.arguments.some((h) => h.startsWith("&{")) || d.arguments.push("&{kwargs}");
           break;
         case "named-only":
-          d.arguments.some((v) => v.startsWith("@{")) || d.arguments.push("@{}"), d.arguments.push("${arg}=");
+          d.arguments.some((h) => h.startsWith("@{")) || d.arguments.push("@{}"), d.arguments.push("${arg}=");
           break;
       }
     }
-    function Hn(f) {
+    function Kn(f) {
       return f === "@{}" ? "named-only-sep" : f.startsWith("@{") ? "varargs" : f.startsWith("&{") ? "kwargs" : f.includes("=") ? "optional" : "positional";
     }
-    function Mo(f) {
+    function xo(f) {
       return f.replace(/^[$@&%]\{([^}]*)\}.*$/, "$1");
     }
-    function un(f) {
-      const h = f.match(/\}=(.*)$/);
-      return h ? h[1] : "";
+    function Uo(f) {
+      const y = f.match(/\}=(.*)$/);
+      return y ? y[1] : "";
     }
-    function wo(f, h, d) {
-      var o, s;
-      const v = f.arguments[h], l = ((o = v.match(/^([$@&%]\{)/)) == null ? void 0 : o[1]) || "${", S = ((s = v.match(/(\}=?.*)$/)) == null ? void 0 : s[1]) || "}", b = d.replace(/[$@&%{}]/g, "");
-      f.arguments[h] = l + b + S;
+    function bo(f, y, d) {
+      var n, v;
+      const h = f.arguments[y], l = ((n = h.match(/^([$@&%]\{)/)) == null ? void 0 : n[1]) || "${", E = ((v = h.match(/(\}=?.*)$/)) == null ? void 0 : v[1]) || "}", t = d.replace(/[$@&%{}]/g, "");
+      f.arguments[y] = l + t + E;
     }
-    function cn(f, h, d) {
-      const l = f.arguments[h].replace(/\}=.*$/, "}");
-      f.arguments[h] = l + "=" + d;
+    function pn(f, y, d) {
+      const l = f.arguments[y].replace(/\}=.*$/, "}");
+      f.arguments[y] = l + "=" + d;
     }
-    function xo(f, h) {
-      for (let d = 0; d < h; d++)
+    function fn(f, y) {
+      for (let d = 0; d < y; d++)
         if (f.arguments[d].startsWith("@{")) return !0;
       return !1;
     }
-    const so = N(/* @__PURE__ */ new Map());
-    function On(f, h) {
-      h.trim() && !Q.keywords[f].tags.includes(h.trim()) && Q.keywords[f].tags.push(h.trim());
+    const uo = N(/* @__PURE__ */ new Map());
+    function Gt(f, y) {
+      y.trim() && !ee.keywords[f].tags.includes(y.trim()) && ee.keywords[f].tags.push(y.trim());
     }
-    function Qt(f, h) {
-      Q.keywords[f].tags.splice(h, 1);
+    function Hn(f, y) {
+      ee.keywords[f].tags.splice(y, 1);
     }
-    function dn(f) {
-      On(f, so.value.get(f) || ""), so.value.set(f, "");
+    function Xe(f) {
+      Gt(f, uo.value.get(f) || ""), uo.value.set(f, "");
     }
-    const Ke = N(null);
-    let Jt = null, ft = null;
-    function Je() {
-      if (!Ke.value) return;
-      const f = Ke.value.querySelectorAll(".step-row");
-      for (const h of f) {
-        const d = h, v = d.scrollHeight > 40;
-        d.classList.toggle("args-vertical", v);
+    const Yt = N(null);
+    let pt = null, He = null;
+    function Mt() {
+      if (!Yt.value) return;
+      const f = Yt.value.querySelectorAll(".step-row");
+      for (const y of f) {
+        const d = y, h = d.scrollHeight > 40;
+        d.classList.toggle("args-vertical", h);
       }
     }
-    function lo() {
-      Ke.value && (Jt = new MutationObserver(() => Xe(Je)), Jt.observe(Ke.value, { childList: !0, subtree: !0 }), ft = new ResizeObserver(() => Je()), ft.observe(Ke.value), Xe(Je));
+    function On() {
+      Yt.value && (pt = new MutationObserver(() => je(Mt)), pt.observe(Yt.value, { childList: !0, subtree: !0 }), He = new ResizeObserver(() => Mt()), He.observe(Yt.value), je(Mt));
     }
     function In() {
-      Jt == null || Jt.disconnect(), ft == null || ft.disconnect(), Jt = null, ft = null;
+      pt == null || pt.disconnect(), He == null || He.disconnect(), pt = null, He = null;
     }
-    return qo(() => {
-      Se(c.content), E.value = c.content, Kt = c.content, ht(), Xe(lo);
-    }), Ho(() => {
-      bt(), In();
-    }), Le(() => c.content, (f) => {
-      if (f !== oo) {
-        if (Kt = f, g("dirty", !1), y.value === "visual" || y.value === "flow")
-          Se(f), ht();
-        else if (E.value = f, V.value) {
-          const h = V.value.state.doc.toString();
-          h !== f && V.value.dispatch({ changes: { from: 0, to: h.length, insert: f } });
+    return Go(() => {
+      De(c.content), B.value = c.content, St = c.content, Zt(), je(On), b.value === "code" && je(Et);
+    }), Se(() => c.readonly, (f) => {
+      var y;
+      (y = L.value) == null || y.dispatch({
+        effects: T.reconfigure([
+          Wn.readOnly.of(!!f),
+          Ko.editable.of(!f)
+        ])
+      });
+    }), Io(() => {
+      Ut(), In();
+    }), Se(() => c.content, (f) => {
+      if (f !== Jt) {
+        if (St = f, g("dirty", !1), b.value === "visual" || b.value === "flow")
+          De(f), Zt();
+        else if (B.value = f, L.value) {
+          const y = L.value.state.doc.toString();
+          y !== f && L.value.dispatch({ changes: { from: 0, to: y.length, insert: f } });
         }
       }
-    }), (f, h) => (i(), u("div", {
-      class: ne(["robot-editor", { "robot-editor--readonly": e.readonly }]),
+    }), (f, y) => (i(), u("div", {
+      class: te(["robot-editor", { "robot-editor--readonly": e.readonly }]),
       style: Ee(e.height ? { height: e.height } : void 0)
     }, [
-      e.readonly ? (i(), Ut(zf, {
+      e.readonly ? (i(), xt(Gf, {
         key: 0,
         role: "viewer"
-      })) : T("", !0),
-      t("div", ym, [
-        t("div", bm, [
-          t("button", {
-            class: ne(["tab-btn", { active: y.value === "code" }]),
-            onClick: h[0] || (h[0] = (d) => Vt("code"))
-          }, m(p(a)("robotEditor.codeTab")), 3),
-          t("button", {
-            class: ne(["tab-btn", { active: y.value === "visual" }]),
-            onClick: h[1] || (h[1] = (d) => Vt("visual"))
-          }, m(p(a)("robotEditor.visualTab")), 3),
-          t("button", {
-            class: ne(["tab-btn", { active: y.value === "flow" }]),
-            onClick: h[2] || (h[2] = (d) => Vt("flow"))
-          }, m(p(a)("robotEditor.flowTab")), 3)
+      })) : $("", !0),
+      o("div", bm, [
+        o("div", wm, [
+          o("button", {
+            class: te(["tab-btn", { active: b.value === "code" }]),
+            onClick: y[0] || (y[0] = (d) => nt("code"))
+          }, m(p(s)("robotEditor.codeTab")), 3),
+          o("button", {
+            class: te(["tab-btn", { active: b.value === "visual" }]),
+            onClick: y[1] || (y[1] = (d) => nt("visual"))
+          }, m(p(s)("robotEditor.visualTab")), 3),
+          o("button", {
+            class: te(["tab-btn", { active: b.value === "flow" }]),
+            onClick: y[2] || (y[2] = (d) => nt("flow"))
+          }, m(p(s)("robotEditor.flowTab")), 3)
         ]),
-        t("div", wm, [
-          t("span", _m, m(ot.value ? ".resource" : ".robot"), 1),
-          !ot.value && pe.value > 0 ? (i(), u("span", km, m(pe.value) + " " + m(p(a)("robotEditor.tests")), 1)) : T("", !0),
-          se.value > 0 ? (i(), u("span", Cm, m(se.value) + " " + m(p(a)("robotEditor.keywordsCount")), 1)) : T("", !0),
-          me.value ? (i(), u("span", {
+        o("div", _m, [
+          o("span", km, m(de.value ? ".resource" : ".robot"), 1),
+          !de.value && ne.value > 0 ? (i(), u("span", Cm, m(ne.value) + " " + m(p(s)("robotEditor.tests")), 1)) : $("", !0),
+          fe.value > 0 ? (i(), u("span", $m, m(fe.value) + " " + m(p(s)("robotEditor.keywordsCount")), 1)) : $("", !0),
+          Ae.value ? (i(), u("span", {
             key: 2,
             class: "badge badge-warning",
             "data-testid": "init-file-warning",
-            title: p(a)("robotEditor.initFileWarning")
-          }, m(p(a)("robotEditor.initFileWarning")), 9, $m)) : T("", !0),
-          _t.value !== "hidden" ? (i(), u("button", {
+            title: p(s)("robotEditor.initFileWarning")
+          }, m(p(s)("robotEditor.initFileWarning")), 9, Tm)) : $("", !0),
+          A.value !== "hidden" ? (i(), u("button", {
             key: 3,
-            class: ne(["heal-toggle-btn", { "heal-toggle-btn--on": _t.value === "on" }]),
+            class: te(["heal-toggle-btn", { "heal-toggle-btn--on": A.value === "on" }]),
             "data-testid": "suite-heal-toggle",
-            title: _t.value === "on" ? p(a)("robotEditor.heal.toggleOnHint") : p(a)("robotEditor.heal.toggleOffHint"),
-            onClick: w
+            title: A.value === "on" ? p(s)("robotEditor.heal.toggleOnHint") : p(s)("robotEditor.heal.toggleOffHint"),
+            onClick: M
           }, [
-            h[9] || (h[9] = t("span", { "aria-hidden": "true" }, "🩹", -1)),
-            we(" " + m(_t.value === "on" ? p(a)("robotEditor.heal.toggleOn") : p(a)("robotEditor.heal.toggleOff")), 1)
-          ], 10, Tm)) : T("", !0),
-          y.value === "visual" ? (i(), u("button", {
+            y[9] || (y[9] = o("span", { "aria-hidden": "true" }, "🩹", -1)),
+            we(" " + m(A.value === "on" ? p(s)("robotEditor.heal.toggleOn") : p(s)("robotEditor.heal.toggleOff")), 1)
+          ], 10, Em)) : $("", !0),
+          b.value === "visual" ? (i(), u("button", {
             key: 4,
             class: "icon-btn",
-            onClick: ae,
-            title: p(a)("robotEditor.expandAll")
-          }, "⊞", 8, Em)) : T("", !0),
-          y.value === "visual" ? (i(), u("button", {
+            onClick: G,
+            title: p(s)("robotEditor.expandAll")
+          }, "⊞", 8, Sm)) : $("", !0),
+          b.value === "visual" ? (i(), u("button", {
             key: 5,
             class: "icon-btn",
-            onClick: z,
-            title: p(a)("robotEditor.collapseAll")
-          }, "⊟", 8, Sm)) : T("", !0)
+            onClick: R,
+            title: p(s)("robotEditor.collapseAll")
+          }, "⊟", 8, Lm)) : $("", !0)
         ])
       ]),
-      k.value ? (i(), u("div", Lm, [
-        t("span", null, m(p(a)("robotEditor.parseError")) + ":", 1),
+      k.value ? (i(), u("div", Vm, [
+        o("span", null, m(p(s)("robotEditor.parseError")) + ":", 1),
         we(" " + m(k.value), 1)
-      ])) : T("", !0),
-      q(t("div", {
+      ])) : $("", !0),
+      z(o("div", {
         ref_key: "visualEditorRef",
-        ref: Ke,
+        ref: Yt,
         class: "visual-editor"
       }, [
-        t("div", Vm, [
-          t("div", {
+        o("div", Am, [
+          o("div", {
             class: "section-header",
-            onClick: h[3] || (h[3] = (d) => B.value = !B.value)
+            onClick: y[3] || (y[3] = (d) => I.value = !I.value)
           }, [
-            t("span", Am, m(B.value ? "▶" : "▼"), 1),
-            t("h3", null, m(p(a)("robotEditor.settingsSection")), 1),
-            t("span", Nm, m(Q.settings.filter((d) => d.key !== "#").length), 1),
+            o("span", Nm, m(I.value ? "▶" : "▼"), 1),
+            o("h3", null, m(p(s)("robotEditor.settingsSection")), 1),
+            o("span", Rm, m(ee.settings.filter((d) => d.key !== "#").length), 1),
             ve(Oe, {
               size: "sm",
               variant: "secondary",
-              onClick: re(Fn, ["stop"])
+              onClick: le(tn, ["stop"])
             }, {
               default: _e(() => [
-                we("+ " + m(p(a)("robotEditor.addSetting")), 1)
+                we("+ " + m(p(s)("robotEditor.addSetting")), 1)
               ]),
               _: 1
             })
           ]),
-          q(t("div", Rm, [
-            Q.settings.length === 0 ? (i(), u("div", Fm, m(p(a)("robotEditor.noSettings")), 1)) : T("", !0),
-            (i(!0), u(x, null, X(Q.settings, (d, v) => (i(), u("div", {
-              key: v,
+          z(o("div", Fm, [
+            ee.settings.length === 0 ? (i(), u("div", Pm, m(p(s)("robotEditor.noSettings")), 1)) : $("", !0),
+            (i(!0), u(U, null, Y(ee.settings, (d, h) => (i(), u("div", {
+              key: h,
               class: "setting-row"
             }, [
-              d.key === "#" ? (i(), u(x, { key: 0 }, [
-                q(t("input", {
+              d.key === "#" ? (i(), u(U, { key: 0 }, [
+                z(o("input", {
                   "onUpdate:modelValue": (l) => d.value = l,
                   class: "form-input flex-1",
                   placeholder: "# Comment"
-                }, null, 8, Pm), [
-                  [le, d.value]
+                }, null, 8, Dm), [
+                  [ae, d.value]
                 ]),
-                t("button", {
+                o("button", {
                   class: "step-btn danger",
-                  onClick: (l) => Ao(v),
-                  title: p(a)("editor.common.delete")
-                }, "×", 8, Dm)
-              ], 64)) : (i(), u(x, { key: 1 }, [
-                q(t("select", {
+                  onClick: (l) => on(h),
+                  title: p(s)("editor.common.delete")
+                }, "×", 8, Mm)
+              ], 64)) : (i(), u(U, { key: 1 }, [
+                z(o("select", {
                   "onUpdate:modelValue": (l) => d.key = l,
-                  class: ne(["form-input setting-type-select", Wt(d.key)])
+                  class: te(["form-input setting-type-select", ln(d.key)])
                 }, [
-                  (i(), u(x, null, X(Rn, (l) => t("option", {
+                  (i(), u(U, null, Y(Rn, (l) => o("option", {
                     key: l,
                     value: l
-                  }, m(p(a)("robotEditor.settingType." + l.replace(/ /g, ""))), 9, xm)), 64))
-                ], 10, Mm), [
+                  }, m(p(s)("robotEditor.settingType." + l.replace(/ /g, ""))), 9, Um)), 64))
+                ], 10, xm), [
                   [it, d.key]
                 ]),
-                d.key === "Library" ? (i(), u("div", Um, [
-                  q(t("input", {
+                d.key === "Library" ? (i(), u("div", Bm, [
+                  z(o("input", {
                     "onUpdate:modelValue": (l) => d.value = l,
                     class: "form-input setting-library-input",
-                    placeholder: p(a)("robotEditor.settingValuePlaceholder"),
-                    onFocus: (l) => Nn(v),
-                    onBlur: Ne,
-                    onKeydown: (l) => Ue(l, v),
-                    onInput: (l) => Vo(v)
-                  }, null, 40, Bm), [
-                    [le, d.value]
+                    placeholder: p(s)("robotEditor.settingValuePlaceholder"),
+                    onFocus: (l) => Ne(h),
+                    onBlur: Lo,
+                    onKeydown: (l) => Nn(l, h),
+                    onInput: (l) => Me(h)
+                  }, null, 40, Km), [
+                    [ae, d.value]
                   ]),
-                  Pt.value === v && Lo.value.length > 0 ? (i(), u("div", {
+                  Rt.value === h && So.value.length > 0 ? (i(), u("div", {
                     key: 0,
                     ref_for: !0,
                     ref_key: "librarySettingDropdownRef",
-                    ref: So,
+                    ref: Jo,
                     class: "keyword-dropdown"
                   }, [
-                    (i(!0), u(x, null, X(Lo.value, (l, S) => (i(), u("div", {
+                    (i(!0), u(U, null, Y(So.value, (l, E) => (i(), u("div", {
                       key: l,
-                      class: ne(["keyword-dropdown-item", { active: S === xe.value }]),
-                      onMousedown: re((b) => Zo(v, l), ["prevent"])
+                      class: te(["keyword-dropdown-item", { active: E === Ie.value }]),
+                      onMousedown: le((t) => en(h, l), ["prevent"])
                     }, [
-                      t("span", Hm, m(l), 1)
-                    ], 42, Km))), 128))
-                  ], 512)) : T("", !0)
-                ])) : (i(), u("span", Om, [
-                  t("span", {
+                      o("span", Om, m(l), 1)
+                    ], 42, Hm))), 128))
+                  ], 512)) : $("", !0)
+                ])) : (i(), u("span", Im, [
+                  o("span", {
                     class: "form-hl-overlay",
-                    innerHTML: Te(d.value)
-                  }, null, 8, Im),
-                  q(t("input", {
+                    innerHTML: Ve(d.value)
+                  }, null, 8, Wm),
+                  z(o("input", {
                     "onUpdate:modelValue": (l) => d.value = l,
                     class: "form-input",
                     style: { width: "100%" },
-                    placeholder: p(a)("robotEditor.settingValuePlaceholder"),
+                    placeholder: p(s)("robotEditor.settingValuePlaceholder"),
                     spellcheck: "false"
-                  }, null, 8, Wm), [
-                    [le, d.value]
+                  }, null, 8, jm), [
+                    [ae, d.value]
                   ])
                 ])),
-                d.args.length > 0 ? (i(), u("div", jm, [
-                  (i(!0), u(x, null, X(d.args, (l, S) => (i(), u("span", {
-                    key: S,
+                d.args.length > 0 ? (i(), u("div", qm, [
+                  (i(!0), u(U, null, Y(d.args, (l, E) => (i(), u("span", {
+                    key: E,
                     class: "chip"
                   }, [
-                    q(t("input", {
-                      "onUpdate:modelValue": (b) => d.args[S] = b,
+                    z(o("input", {
+                      "onUpdate:modelValue": (t) => d.args[E] = t,
                       class: "chip-edit-input",
-                      placeholder: p(a)("robotEditor.argPlaceholder")
-                    }, null, 8, qm), [
-                      [le, d.args[S]]
+                      placeholder: p(s)("robotEditor.argPlaceholder")
+                    }, null, 8, zm), [
+                      [ae, d.args[E]]
                     ]),
-                    t("button", {
+                    o("button", {
                       class: "chip-remove",
-                      onClick: (b) => fo(v, S)
-                    }, "×", 8, zm)
+                      onClick: (t) => Fn(h, E)
+                    }, "×", 8, Gm)
                   ]))), 128))
-                ])) : T("", !0),
-                t("button", {
+                ])) : $("", !0),
+                o("button", {
                   class: "step-btn",
-                  onClick: (l) => Pn(v),
+                  onClick: (l) => fo(h),
                   title: "Add argument"
-                }, "+", 8, Gm),
-                t("button", {
+                }, "+", 8, Ym),
+                o("button", {
                   class: "step-btn danger",
-                  onClick: (l) => Ao(v),
-                  title: p(a)("editor.common.delete")
-                }, "×", 8, Ym)
+                  onClick: (l) => on(h),
+                  title: p(s)("editor.common.delete")
+                }, "×", 8, Xm)
               ], 64))
             ]))), 128))
           ], 512), [
-            [eo, !B.value]
+            [Xt, !I.value]
           ])
         ]),
-        t("div", Xm, [
-          t("div", {
+        o("div", Zm, [
+          o("div", {
             class: "section-header",
-            onClick: h[4] || (h[4] = (d) => I.value = !I.value)
+            onClick: y[4] || (y[4] = (d) => W.value = !W.value)
           }, [
-            t("span", Zm, m(I.value ? "▶" : "▼"), 1),
-            t("h3", null, m(p(a)("robotEditor.variablesSection")), 1),
-            t("span", Qm, m(Q.variables.filter((d) => d.name !== "#").length), 1),
+            o("span", Qm, m(W.value ? "▶" : "▼"), 1),
+            o("h3", null, m(p(s)("robotEditor.variablesSection")), 1),
+            o("span", Jm, m(ee.variables.filter((d) => d.name !== "#").length), 1),
             ve(Oe, {
               size: "sm",
               variant: "secondary",
-              onClick: re(Dn, ["stop"])
+              onClick: le(Pn, ["stop"])
             }, {
               default: _e(() => [
-                we("+ " + m(p(a)("robotEditor.addVariable")), 1)
+                we("+ " + m(p(s)("robotEditor.addVariable")), 1)
               ]),
               _: 1
             })
           ]),
-          q(t("div", Jm, [
-            Q.variables.length === 0 ? (i(), u("div", eg, m(p(a)("robotEditor.noVariables")), 1)) : T("", !0),
-            (i(!0), u(x, null, X(Q.variables, (d, v) => (i(), u("div", {
-              key: v,
+          z(o("div", eg, [
+            ee.variables.length === 0 ? (i(), u("div", tg, m(p(s)("robotEditor.noVariables")), 1)) : $("", !0),
+            (i(!0), u(U, null, Y(ee.variables, (d, h) => (i(), u("div", {
+              key: h,
               class: "variable-row"
             }, [
-              d.name === "#" ? (i(), u(x, { key: 0 }, [
-                q(t("input", {
+              d.name === "#" ? (i(), u(U, { key: 0 }, [
+                z(o("input", {
                   "onUpdate:modelValue": (l) => d.value = l,
                   class: "form-input flex-1",
                   placeholder: "# Comment"
-                }, null, 8, tg), [
-                  [le, d.value]
+                }, null, 8, og), [
+                  [ae, d.value]
                 ]),
-                t("button", {
+                o("button", {
                   class: "step-btn danger",
-                  onClick: (l) => Qo(v),
-                  title: p(a)("editor.common.delete")
-                }, "×", 8, og)
-              ], 64)) : (i(), u(x, { key: 1 }, [
-                t("span", ng, [
-                  t("span", {
+                  onClick: (l) => Vo(h),
+                  title: p(s)("editor.common.delete")
+                }, "×", 8, ng)
+              ], 64)) : (i(), u(U, { key: 1 }, [
+                o("span", ag, [
+                  o("span", {
                     class: "form-hl-overlay hl-mono",
-                    innerHTML: Te(d.name)
-                  }, null, 8, ag),
-                  q(t("input", {
+                    innerHTML: Ve(d.name)
+                  }, null, 8, sg),
+                  z(o("input", {
                     "onUpdate:modelValue": (l) => d.name = l,
                     class: "form-input var-name-input",
-                    placeholder: p(a)("robotEditor.variableNamePlaceholder"),
+                    placeholder: p(s)("robotEditor.variableNamePlaceholder"),
                     onBlur: (l) => xn(d),
                     spellcheck: "false"
-                  }, null, 40, sg), [
-                    [le, d.name]
+                  }, null, 40, lg), [
+                    [ae, d.name]
                   ])
                 ]),
-                t("span", lg, [
-                  t("span", {
+                o("span", rg, [
+                  o("span", {
                     class: "form-hl-overlay",
-                    innerHTML: Te(d.value)
-                  }, null, 8, rg),
-                  q(t("input", {
+                    innerHTML: Ve(d.value)
+                  }, null, 8, ig),
+                  z(o("input", {
                     "onUpdate:modelValue": (l) => d.value = l,
                     class: "form-input",
                     style: { width: "100%" },
-                    placeholder: p(a)("robotEditor.variableValuePlaceholder"),
+                    placeholder: p(s)("robotEditor.variableValuePlaceholder"),
                     spellcheck: "false"
-                  }, null, 8, ig), [
-                    [le, d.value]
+                  }, null, 8, ug), [
+                    [ae, d.value]
                   ])
                 ]),
-                t("button", {
+                o("button", {
                   class: "step-btn danger",
-                  onClick: (l) => Qo(v),
-                  title: p(a)("editor.common.delete")
-                }, "×", 8, ug)
+                  onClick: (l) => Vo(h),
+                  title: p(s)("editor.common.delete")
+                }, "×", 8, cg)
               ], 64))
             ]))), 128))
           ], 512), [
-            [eo, !I.value]
+            [Xt, !W.value]
           ])
         ]),
-        ot.value ? T("", !0) : (i(), u("div", cg, [
-          t("div", {
+        de.value ? $("", !0) : (i(), u("div", dg, [
+          o("div", {
             class: "section-header",
-            onClick: h[5] || (h[5] = (d) => j.value = !j.value)
+            onClick: y[5] || (y[5] = (d) => re.value = !re.value)
           }, [
-            t("span", dg, m(j.value ? "▶" : "▼"), 1),
-            t("h3", null, m(p(a)("robotEditor.testCasesSection")), 1),
-            t("span", pg, m(Q.testCases.length), 1),
+            o("span", pg, m(re.value ? "▶" : "▼"), 1),
+            o("h3", null, m(p(s)("robotEditor.testCasesSection")), 1),
+            o("span", fg, m(ee.testCases.length), 1),
             ve(Oe, {
               size: "sm",
               variant: "secondary",
-              onClick: re(bo, ["stop"])
+              onClick: le(Fo, ["stop"])
             }, {
               default: _e(() => [
-                we("+ " + m(p(a)("robotEditor.addTestCase")), 1)
+                we("+ " + m(p(s)("robotEditor.addTestCase")), 1)
               ]),
               _: 1
             })
           ]),
-          q(t("div", fg, [
-            Q.testCases.length === 0 ? (i(), u("div", mg, m(p(a)("robotEditor.noTestCases")), 1)) : T("", !0),
-            (i(!0), u(x, null, X(Q.testCases, (d, v) => (i(), u("div", {
-              key: v,
+          z(o("div", mg, [
+            ee.testCases.length === 0 ? (i(), u("div", gg, m(p(s)("robotEditor.noTestCases")), 1)) : $("", !0),
+            (i(!0), u(U, null, Y(ee.testCases, (d, h) => (i(), u("div", {
+              key: h,
               class: "item-card"
             }, [
-              t("div", {
+              o("div", {
                 class: "item-header",
-                onClick: (l) => Un(v)
+                onClick: (l) => qt(h)
               }, [
-                t("span", vg, m(M.value.has(v) ? "▶" : "▼"), 1),
-                t("span", hg, m(d.name || p(a)("robotEditor.unnamedTestCase")), 1),
-                t("span", yg, m(d.steps.length) + " " + m(p(a)("robotEditor.steps")), 1),
-                t("button", {
+                o("span", hg, m(Z.value.has(h) ? "▶" : "▼"), 1),
+                o("span", yg, m(d.name || p(s)("robotEditor.unnamedTestCase")), 1),
+                o("span", bg, m(d.steps.length) + " " + m(p(s)("robotEditor.steps")), 1),
+                o("button", {
                   class: "remove-btn",
-                  onClick: re((l) => sn(v), ["stop"]),
-                  title: p(a)("editor.common.delete")
-                }, "🗑", 8, bg)
-              ], 8, gg),
-              q(t("div", wg, [
-                t("div", _g, [
-                  t("label", kg, [
-                    we(m(p(a)("robotEditor.testCaseName")) + " ", 1),
-                    h[10] || (h[10] = t("span", { class: "required" }, "*", -1))
+                  onClick: le((l) => Un(h), ["stop"]),
+                  title: p(s)("editor.common.delete")
+                }, "🗑", 8, wg)
+              ], 8, vg),
+              z(o("div", _g, [
+                o("div", kg, [
+                  o("label", Cg, [
+                    we(m(p(s)("robotEditor.testCaseName")) + " ", 1),
+                    y[10] || (y[10] = o("span", { class: "required" }, "*", -1))
                   ]),
-                  q(t("input", {
+                  z(o("input", {
                     "onUpdate:modelValue": (l) => d.name = l,
                     class: "form-input",
-                    placeholder: p(a)("robotEditor.testCaseNamePlaceholder")
-                  }, null, 8, Cg), [
-                    [le, d.name]
+                    placeholder: p(s)("robotEditor.testCaseNamePlaceholder")
+                  }, null, 8, $g), [
+                    [ae, d.name]
                   ])
                 ]),
-                t("div", $g, [
-                  t("label", Tg, m(p(a)("robotEditor.documentation")), 1),
-                  q(t("textarea", {
+                o("div", Tg, [
+                  o("label", Eg, m(p(s)("robotEditor.documentation")), 1),
+                  z(o("textarea", {
                     "onUpdate:modelValue": (l) => d.documentation = l,
                     class: "form-input form-textarea",
                     rows: "2",
-                    placeholder: p(a)("robotEditor.documentationPlaceholder")
-                  }, null, 8, Eg), [
-                    [le, d.documentation]
+                    placeholder: p(s)("robotEditor.documentationPlaceholder")
+                  }, null, 8, Sg), [
+                    [ae, d.documentation]
                   ])
                 ]),
-                R("tc", v, "tags", d.tags.length ? "x" : "") ? (i(), u("div", Sg, [
-                  t("label", Lg, [
-                    we(m(p(a)("robotEditor.tags")) + " ", 1),
-                    d.tags.length ? T("", !0) : (i(), u("button", {
+                K("tc", h, "tags", d.tags.length ? "x" : "") ? (i(), u("div", Lg, [
+                  o("label", Vg, [
+                    we(m(p(s)("robotEditor.tags")) + " ", 1),
+                    d.tags.length ? $("", !0) : (i(), u("button", {
                       key: 0,
                       class: "meta-close-btn",
-                      onClick: (l) => H("tc", v, "tags")
-                    }, "×", 8, Vg))
+                      onClick: (l) => j("tc", h, "tags")
+                    }, "×", 8, Ag))
                   ]),
-                  t("div", Ag, [
-                    (i(!0), u(x, null, X(d.tags, (l, S) => (i(), u("span", {
-                      key: S,
+                  o("div", Ng, [
+                    (i(!0), u(U, null, Y(d.tags, (l, E) => (i(), u("span", {
+                      key: E,
                       class: "chip chip-tag"
                     }, [
                       we(m(l) + " ", 1),
-                      t("button", {
+                      o("button", {
                         class: "chip-remove",
-                        onClick: (b) => Kn(v, S)
-                      }, "×", 8, Ng)
+                        onClick: (t) => cn(h, E)
+                      }, "×", 8, Rg)
                     ]))), 128)),
-                    t("div", Rg, [
-                      t("input", {
-                        value: rt.value.get(v) || "",
-                        onInput: (l) => rt.value.set(v, l.target.value),
+                    o("div", Fg, [
+                      o("input", {
+                        value: ro.value.get(h) || "",
+                        onInput: (l) => ro.value.set(h, l.target.value),
                         class: "chip-input",
-                        placeholder: p(a)("robotEditor.addTag"),
-                        onKeydown: Ye(re((l) => Po(v), ["prevent"]), ["enter"])
-                      }, null, 40, Fg),
-                      (rt.value.get(v) || "").trim() ? (i(), u("button", {
+                        placeholder: p(s)("robotEditor.addTag"),
+                        onKeydown: Ze(le((l) => zt(h), ["prevent"]), ["enter"])
+                      }, null, 40, Pg),
+                      (ro.value.get(h) || "").trim() ? (i(), u("button", {
                         key: 0,
                         class: "chip-add-btn",
-                        onClick: (l) => Po(v)
-                      }, "+", 8, Pg)) : T("", !0)
+                        onClick: (l) => zt(h)
+                      }, "+", 8, Dg)) : $("", !0)
                     ])
                   ])
-                ])) : T("", !0),
-                t("div", Dg, [
-                  R("tc", v, "tags", d.tags.length ? "x" : "") ? T("", !0) : (i(), u("button", {
+                ])) : $("", !0),
+                o("div", Mg, [
+                  K("tc", h, "tags", d.tags.length ? "x" : "") ? $("", !0) : (i(), u("button", {
                     key: 0,
                     class: "meta-toggle-btn mt-tags",
-                    onClick: (l) => H("tc", v, "tags")
-                  }, "+ Tags", 8, Mg)),
-                  R("tc", v, "setup", d.setup) ? T("", !0) : (i(), u("button", {
+                    onClick: (l) => j("tc", h, "tags")
+                  }, "+ Tags", 8, xg)),
+                  K("tc", h, "setup", d.setup) ? $("", !0) : (i(), u("button", {
                     key: 1,
                     class: "meta-toggle-btn mt-setup",
-                    onClick: (l) => H("tc", v, "setup")
-                  }, "+ Setup", 8, xg)),
-                  R("tc", v, "teardown", d.teardown) ? T("", !0) : (i(), u("button", {
+                    onClick: (l) => j("tc", h, "setup")
+                  }, "+ Setup", 8, Ug)),
+                  K("tc", h, "teardown", d.teardown) ? $("", !0) : (i(), u("button", {
                     key: 2,
                     class: "meta-toggle-btn mt-teardown",
-                    onClick: (l) => H("tc", v, "teardown")
-                  }, "+ Teardown", 8, Ug)),
-                  R("tc", v, "timeout", d.timeout) ? T("", !0) : (i(), u("button", {
+                    onClick: (l) => j("tc", h, "teardown")
+                  }, "+ Teardown", 8, Bg)),
+                  K("tc", h, "timeout", d.timeout) ? $("", !0) : (i(), u("button", {
                     key: 3,
                     class: "meta-toggle-btn mt-config",
-                    onClick: (l) => H("tc", v, "timeout")
-                  }, "+ Timeout", 8, Bg)),
-                  R("tc", v, "template", d.template) ? T("", !0) : (i(), u("button", {
+                    onClick: (l) => j("tc", h, "timeout")
+                  }, "+ Timeout", 8, Kg)),
+                  K("tc", h, "template", d.template) ? $("", !0) : (i(), u("button", {
                     key: 4,
                     class: "meta-toggle-btn mt-config",
-                    onClick: (l) => H("tc", v, "template")
-                  }, "+ Template", 8, Kg))
+                    onClick: (l) => j("tc", h, "template")
+                  }, "+ Template", 8, Hg))
                 ]),
-                R("tc", v, "setup", d.setup) ? (i(), u("div", Hg, [
-                  t("label", Og, [
-                    we(m(p(a)("robotEditor.setup")) + " ", 1),
-                    d.setup ? T("", !0) : (i(), u("button", {
+                K("tc", h, "setup", d.setup) ? (i(), u("div", Og, [
+                  o("label", Ig, [
+                    we(m(p(s)("robotEditor.setup")) + " ", 1),
+                    d.setup ? $("", !0) : (i(), u("button", {
                       key: 0,
                       class: "meta-close-btn",
-                      onClick: (l) => H("tc", v, "setup")
-                    }, "×", 8, Ig))
+                      onClick: (l) => j("tc", h, "setup")
+                    }, "×", 8, Wg))
                   ]),
-                  t("div", Wg, [
-                    t("div", jg, [
-                      t("input", {
-                        value: ie("tc", v, "setup", d).keyword,
+                  o("div", jg, [
+                    o("div", qg, [
+                      o("input", {
+                        value: ie("tc", h, "setup", d).keyword,
                         onInput: (l) => {
-                          ie("tc", v, "setup", d).keyword = l.target.value, tt("tc", v, "setup", d);
+                          ie("tc", h, "setup", d).keyword = l.target.value, mt("tc", h, "setup", d);
                         },
                         class: "form-input step-keyword-input",
                         spellcheck: "false",
-                        style: Ee({ width: Math.max(18, Math.min((ie("tc", v, "setup", d).keyword || "").length + 5, 40)) + "ch" }),
-                        placeholder: p(a)("robotEditor.setupPlaceholder"),
-                        onFocus: (l) => gt("tc", v, "setup", d),
-                        onBlur: pt,
-                        onKeydown: (l) => Tt(l, ie("tc", v, "setup", d))
-                      }, null, 44, qg),
-                      Y.value === ie("tc", v, "setup", d) && De.value.length > 0 ? (i(), u("div", {
+                        style: Ee({ width: Math.max(18, Math.min((ie("tc", h, "setup", d).keyword || "").length + 5, 40)) + "ch" }),
+                        placeholder: p(s)("robotEditor.setupPlaceholder"),
+                        onFocus: (l) => ut("tc", h, "setup", d),
+                        onBlur: dt,
+                        onKeydown: (l) => wt(l, ie("tc", h, "setup", d))
+                      }, null, 44, zg),
+                      D.value === ie("tc", h, "setup", d) && xe.value.length > 0 ? (i(), u("div", {
                         key: 0,
                         ref_for: !0,
                         ref_key: "keywordDropdownRef",
-                        ref: ce,
+                        ref: be,
                         class: "keyword-dropdown"
                       }, [
-                        (i(!0), u(x, null, X(De.value, (l, S) => {
-                          var b;
+                        (i(!0), u(U, null, Y(xe.value, (l, E) => {
+                          var t;
                           return i(), u("div", {
                             key: l.name,
-                            class: ne(["keyword-dropdown-item", { active: S === Z.value }]),
-                            onMousedown: re((o) => ut("tc", v, "setup", d, l), ["prevent"])
+                            class: te(["keyword-dropdown-item", { active: E === oe.value }]),
+                            onMousedown: le((n) => Je("tc", h, "setup", d, l), ["prevent"])
                           }, [
-                            t("span", Gg, m(l.name), 1),
-                            (b = l.args) != null && b.length ? (i(), u("span", Yg, m(l.args.map((o) => o.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1")).join(", ")), 1)) : T("", !0)
-                          ], 42, zg);
+                            o("span", Yg, m(l.name), 1),
+                            (t = l.args) != null && t.length ? (i(), u("span", Xg, m(l.args.map((n) => n.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1")).join(", ")), 1)) : $("", !0)
+                          ], 42, Gg);
                         }), 128))
-                      ], 512)) : T("", !0)
+                      ], 512)) : $("", !0)
                     ]),
-                    ie("tc", v, "setup", d).args.length ? (i(), u("div", Xg, [
-                      (i(!0), u(x, null, X(ie("tc", v, "setup", d).args, (l, S) => (i(), u("span", {
-                        key: S,
+                    ie("tc", h, "setup", d).args.length ? (i(), u("div", Zg, [
+                      (i(!0), u(U, null, Y(ie("tc", h, "setup", d).args, (l, E) => (i(), u("span", {
+                        key: E,
                         class: "step-arg-chip"
                       }, [
-                        $e(ie("tc", v, "setup", d))[S] ? (i(), u("span", Zg, m($e(ie("tc", v, "setup", d))[S]), 1)) : T("", !0),
-                        t("span", {
+                        ke(ie("tc", h, "setup", d))[E] ? (i(), u("span", Qg, m(ke(ie("tc", h, "setup", d))[E]), 1)) : $("", !0),
+                        o("span", {
                           class: "arg-highlight-wrap",
-                          style: Ee({ width: lt(l) })
+                          style: Ee({ width: rt(l) })
                         }, [
-                          t("span", {
+                          o("span", {
                             class: "arg-highlight-overlay",
-                            innerHTML: Te(l)
-                          }, null, 8, Qg),
-                          t("input", {
+                            innerHTML: Ve(l)
+                          }, null, 8, Jg),
+                          o("input", {
                             value: l,
-                            onInput: (b) => {
-                              ie("tc", v, "setup", d).args[S] = b.target.value, ze("tc", v, "setup", d);
+                            onInput: (t) => {
+                              ie("tc", h, "setup", d).args[E] = t.target.value, Ke("tc", h, "setup", d);
                             },
                             class: "step-arg-input",
                             spellcheck: "false",
                             style: { width: "100%" },
-                            placeholder: $e(ie("tc", v, "setup", d))[S] || p(a)("robotEditor.argPlaceholder")
-                          }, null, 40, Jg)
+                            placeholder: ke(ie("tc", h, "setup", d))[E] || p(s)("robotEditor.argPlaceholder")
+                          }, null, 40, ev)
                         ], 4),
-                        t("button", {
+                        o("button", {
                           class: "chip-remove",
-                          onClick: (b) => vt("tc", v, "setup", d, S)
-                        }, "×", 8, ev)
+                          onClick: (t) => Ye("tc", h, "setup", d, E)
+                        }, "×", 8, tv)
                       ]))), 128))
-                    ])) : T("", !0),
-                    t("button", {
+                    ])) : $("", !0),
+                    o("button", {
                       class: "step-btn step-add-arg",
-                      onClick: (l) => Ze("tc", v, "setup", d),
-                      title: p(a)("robotEditor.addArg")
-                    }, "+", 8, tv)
+                      onClick: (l) => gt("tc", h, "setup", d),
+                      title: p(s)("robotEditor.addArg")
+                    }, "+", 8, ov)
                   ])
-                ])) : T("", !0),
-                R("tc", v, "teardown", d.teardown) ? (i(), u("div", ov, [
-                  t("label", nv, [
-                    we(m(p(a)("robotEditor.teardown")) + " ", 1),
-                    d.teardown ? T("", !0) : (i(), u("button", {
+                ])) : $("", !0),
+                K("tc", h, "teardown", d.teardown) ? (i(), u("div", nv, [
+                  o("label", av, [
+                    we(m(p(s)("robotEditor.teardown")) + " ", 1),
+                    d.teardown ? $("", !0) : (i(), u("button", {
                       key: 0,
                       class: "meta-close-btn",
-                      onClick: (l) => H("tc", v, "teardown")
-                    }, "×", 8, av))
+                      onClick: (l) => j("tc", h, "teardown")
+                    }, "×", 8, sv))
                   ]),
-                  t("div", sv, [
-                    t("div", lv, [
-                      t("input", {
-                        value: ie("tc", v, "teardown", d).keyword,
+                  o("div", lv, [
+                    o("div", rv, [
+                      o("input", {
+                        value: ie("tc", h, "teardown", d).keyword,
                         onInput: (l) => {
-                          ie("tc", v, "teardown", d).keyword = l.target.value, tt("tc", v, "teardown", d);
+                          ie("tc", h, "teardown", d).keyword = l.target.value, mt("tc", h, "teardown", d);
                         },
                         class: "form-input step-keyword-input",
                         spellcheck: "false",
-                        style: Ee({ width: Math.max(18, Math.min((ie("tc", v, "teardown", d).keyword || "").length + 5, 40)) + "ch" }),
-                        placeholder: p(a)("robotEditor.teardownPlaceholder"),
-                        onFocus: (l) => gt("tc", v, "teardown", d),
-                        onBlur: pt,
-                        onKeydown: (l) => Tt(l, ie("tc", v, "teardown", d))
-                      }, null, 44, rv),
-                      Y.value === ie("tc", v, "teardown", d) && De.value.length > 0 ? (i(), u("div", {
+                        style: Ee({ width: Math.max(18, Math.min((ie("tc", h, "teardown", d).keyword || "").length + 5, 40)) + "ch" }),
+                        placeholder: p(s)("robotEditor.teardownPlaceholder"),
+                        onFocus: (l) => ut("tc", h, "teardown", d),
+                        onBlur: dt,
+                        onKeydown: (l) => wt(l, ie("tc", h, "teardown", d))
+                      }, null, 44, iv),
+                      D.value === ie("tc", h, "teardown", d) && xe.value.length > 0 ? (i(), u("div", {
                         key: 0,
                         ref_for: !0,
                         ref_key: "keywordDropdownRef",
-                        ref: ce,
+                        ref: be,
                         class: "keyword-dropdown"
                       }, [
-                        (i(!0), u(x, null, X(De.value, (l, S) => {
-                          var b;
+                        (i(!0), u(U, null, Y(xe.value, (l, E) => {
+                          var t;
                           return i(), u("div", {
                             key: l.name,
-                            class: ne(["keyword-dropdown-item", { active: S === Z.value }]),
-                            onMousedown: re((o) => ut("tc", v, "teardown", d, l), ["prevent"])
+                            class: te(["keyword-dropdown-item", { active: E === oe.value }]),
+                            onMousedown: le((n) => Je("tc", h, "teardown", d, l), ["prevent"])
                           }, [
-                            t("span", uv, m(l.name), 1),
-                            (b = l.args) != null && b.length ? (i(), u("span", cv, m(l.args.map((o) => o.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1")).join(", ")), 1)) : T("", !0)
-                          ], 42, iv);
+                            o("span", cv, m(l.name), 1),
+                            (t = l.args) != null && t.length ? (i(), u("span", dv, m(l.args.map((n) => n.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1")).join(", ")), 1)) : $("", !0)
+                          ], 42, uv);
                         }), 128))
-                      ], 512)) : T("", !0)
+                      ], 512)) : $("", !0)
                     ]),
-                    ie("tc", v, "teardown", d).args.length ? (i(), u("div", dv, [
-                      (i(!0), u(x, null, X(ie("tc", v, "teardown", d).args, (l, S) => (i(), u("span", {
-                        key: S,
+                    ie("tc", h, "teardown", d).args.length ? (i(), u("div", pv, [
+                      (i(!0), u(U, null, Y(ie("tc", h, "teardown", d).args, (l, E) => (i(), u("span", {
+                        key: E,
                         class: "step-arg-chip"
                       }, [
-                        $e(ie("tc", v, "teardown", d))[S] ? (i(), u("span", pv, m($e(ie("tc", v, "teardown", d))[S]), 1)) : T("", !0),
-                        t("span", {
+                        ke(ie("tc", h, "teardown", d))[E] ? (i(), u("span", fv, m(ke(ie("tc", h, "teardown", d))[E]), 1)) : $("", !0),
+                        o("span", {
                           class: "arg-highlight-wrap",
-                          style: Ee({ width: lt(l) })
+                          style: Ee({ width: rt(l) })
                         }, [
-                          t("span", {
+                          o("span", {
                             class: "arg-highlight-overlay",
-                            innerHTML: Te(l)
-                          }, null, 8, fv),
-                          t("input", {
+                            innerHTML: Ve(l)
+                          }, null, 8, mv),
+                          o("input", {
                             value: l,
-                            onInput: (b) => {
-                              ie("tc", v, "teardown", d).args[S] = b.target.value, ze("tc", v, "teardown", d);
+                            onInput: (t) => {
+                              ie("tc", h, "teardown", d).args[E] = t.target.value, Ke("tc", h, "teardown", d);
                             },
                             class: "step-arg-input",
                             spellcheck: "false",
                             style: { width: "100%" },
-                            placeholder: $e(ie("tc", v, "teardown", d))[S] || p(a)("robotEditor.argPlaceholder")
-                          }, null, 40, mv)
+                            placeholder: ke(ie("tc", h, "teardown", d))[E] || p(s)("robotEditor.argPlaceholder")
+                          }, null, 40, gv)
                         ], 4),
-                        t("button", {
+                        o("button", {
                           class: "chip-remove",
-                          onClick: (b) => vt("tc", v, "teardown", d, S)
-                        }, "×", 8, gv)
+                          onClick: (t) => Ye("tc", h, "teardown", d, E)
+                        }, "×", 8, vv)
                       ]))), 128))
-                    ])) : T("", !0),
-                    t("button", {
+                    ])) : $("", !0),
+                    o("button", {
                       class: "step-btn step-add-arg",
-                      onClick: (l) => Ze("tc", v, "teardown", d),
-                      title: p(a)("robotEditor.addArg")
-                    }, "+", 8, vv)
+                      onClick: (l) => gt("tc", h, "teardown", d),
+                      title: p(s)("robotEditor.addArg")
+                    }, "+", 8, hv)
                   ])
-                ])) : T("", !0),
-                R("tc", v, "timeout", d.timeout) || R("tc", v, "template", d.template) ? (i(), u("div", hv, [
-                  R("tc", v, "timeout", d.timeout) ? (i(), u("div", yv, [
-                    t("label", bv, [
-                      we(m(p(a)("robotEditor.timeout")) + " ", 1),
-                      d.timeout ? T("", !0) : (i(), u("button", {
+                ])) : $("", !0),
+                K("tc", h, "timeout", d.timeout) || K("tc", h, "template", d.template) ? (i(), u("div", yv, [
+                  K("tc", h, "timeout", d.timeout) ? (i(), u("div", bv, [
+                    o("label", wv, [
+                      we(m(p(s)("robotEditor.timeout")) + " ", 1),
+                      d.timeout ? $("", !0) : (i(), u("button", {
                         key: 0,
                         class: "meta-close-btn",
-                        onClick: (l) => H("tc", v, "timeout")
-                      }, "×", 8, wv))
+                        onClick: (l) => j("tc", h, "timeout")
+                      }, "×", 8, _v))
                     ]),
-                    t("span", _v, [
-                      t("span", {
+                    o("span", kv, [
+                      o("span", {
                         class: "form-hl-overlay",
-                        innerHTML: Te(d.timeout)
-                      }, null, 8, kv),
-                      q(t("input", {
+                        innerHTML: Ve(d.timeout)
+                      }, null, 8, Cv),
+                      z(o("input", {
                         "onUpdate:modelValue": (l) => d.timeout = l,
                         class: "form-input",
                         style: { width: "100%" },
-                        placeholder: p(a)("robotEditor.timeoutPlaceholder"),
+                        placeholder: p(s)("robotEditor.timeoutPlaceholder"),
                         spellcheck: "false"
-                      }, null, 8, Cv), [
-                        [le, d.timeout]
+                      }, null, 8, $v), [
+                        [ae, d.timeout]
                       ])
                     ])
-                  ])) : T("", !0),
-                  R("tc", v, "template", d.template) ? (i(), u("div", $v, [
-                    t("label", Tv, [
-                      we(m(p(a)("robotEditor.template")) + " ", 1),
-                      d.template ? T("", !0) : (i(), u("button", {
+                  ])) : $("", !0),
+                  K("tc", h, "template", d.template) ? (i(), u("div", Tv, [
+                    o("label", Ev, [
+                      we(m(p(s)("robotEditor.template")) + " ", 1),
+                      d.template ? $("", !0) : (i(), u("button", {
                         key: 0,
                         class: "meta-close-btn",
-                        onClick: (l) => H("tc", v, "template")
-                      }, "×", 8, Ev))
+                        onClick: (l) => j("tc", h, "template")
+                      }, "×", 8, Sv))
                     ]),
-                    t("span", Sv, [
-                      t("span", {
+                    o("span", Lv, [
+                      o("span", {
                         class: "form-hl-overlay",
-                        innerHTML: Te(d.template)
-                      }, null, 8, Lv),
-                      q(t("input", {
+                        innerHTML: Ve(d.template)
+                      }, null, 8, Vv),
+                      z(o("input", {
                         "onUpdate:modelValue": (l) => d.template = l,
                         class: "form-input",
                         style: { width: "100%" },
-                        placeholder: p(a)("robotEditor.templatePlaceholder"),
+                        placeholder: p(s)("robotEditor.templatePlaceholder"),
                         spellcheck: "false"
-                      }, null, 8, Vv), [
-                        [le, d.template]
+                      }, null, 8, Av), [
+                        [ae, d.template]
                       ])
                     ])
-                  ])) : T("", !0)
-                ])) : T("", !0),
-                t("div", Av, [
-                  t("label", Nv, m(p(a)("robotEditor.steps")), 1),
-                  t("div", Rv, [
-                    (i(!0), u(x, null, X(d.steps, (l, S) => (i(), u("div", {
-                      key: S,
+                  ])) : $("", !0)
+                ])) : $("", !0),
+                o("div", Nv, [
+                  o("label", Rv, m(p(s)("robotEditor.steps")), 1),
+                  o("div", Fv, [
+                    (i(!0), u(U, null, Y(d.steps, (l, E) => (i(), u("div", {
+                      key: E,
                       class: "step-row",
-                      style: Ee({ paddingLeft: st(d.steps, S) * 24 + "px" })
+                      style: Ee({ paddingLeft: Pt(d.steps, E) * 24 + "px" })
                     }, [
-                      t("span", Fv, m(S + 1) + ".", 1),
-                      q(t("select", {
-                        "onUpdate:modelValue": (b) => l.type = b,
-                        class: ne(["step-type-select", Ro(l.type)]),
-                        onChange: (b) => vo(l)
+                      o("span", Pv, m(E + 1) + ".", 1),
+                      z(o("select", {
+                        "onUpdate:modelValue": (t) => l.type = t,
+                        class: te(["step-type-select", rn(l.type)]),
+                        onChange: (t) => sn(l)
                       }, [
-                        (i(!0), u(x, null, X(p(Ta), (b) => (i(), u("option", {
-                          key: b,
-                          value: b
-                        }, m(en(b)), 9, Dv))), 128))
-                      ], 42, Pv), [
+                        (i(!0), u(U, null, Y(p(Ta), (t) => (i(), u("option", {
+                          key: t,
+                          value: t
+                        }, m(Ft(t)), 9, Mv))), 128))
+                      ], 42, Dv), [
                         [it, l.type]
                       ]),
-                      l.type === "keyword" ? (i(), u(x, { key: 0 }, [
-                        t("div", Mv, [
-                          q(t("input", {
-                            "onUpdate:modelValue": (b) => l.keyword = b,
+                      l.type === "keyword" ? (i(), u(U, { key: 0 }, [
+                        o("div", xv, [
+                          z(o("input", {
+                            "onUpdate:modelValue": (t) => l.keyword = t,
                             class: "form-input step-keyword-input",
                             spellcheck: "false",
                             style: Ee({ width: Math.max(18, Math.min((l.keyword || "").length + 5, 60)) + "ch" }),
-                            placeholder: p(a)("robotEditor.keywordPlaceholder"),
-                            onFocus: (b) => qt(l),
-                            onBlur: pt,
-                            onKeydown: (b) => Tt(b, l),
-                            onInput: (b) => zt(l)
-                          }, null, 44, xv), [
-                            [le, l.keyword]
+                            placeholder: p(s)("robotEditor.keywordPlaceholder"),
+                            onFocus: (t) => It(l),
+                            onBlur: dt,
+                            onKeydown: (t) => wt(t, l),
+                            onInput: (t) => Wt(l)
+                          }, null, 44, Uv), [
+                            [ae, l.keyword]
                           ]),
-                          Y.value === l && De.value.length > 0 ? (i(), u("div", {
+                          D.value === l && xe.value.length > 0 ? (i(), u("div", {
                             key: 0,
                             ref_for: !0,
                             ref_key: "keywordDropdownRef",
-                            ref: ce,
+                            ref: be,
                             class: "keyword-dropdown"
                           }, [
-                            (i(!0), u(x, null, X(De.value, (b, o) => {
-                              var s;
+                            (i(!0), u(U, null, Y(xe.value, (t, n) => {
+                              var v;
                               return i(), u("div", {
-                                key: b.name,
-                                class: ne(["keyword-dropdown-item", { active: o === Z.value }]),
-                                onMousedown: re(($) => Gt(l, b), ["prevent"])
+                                key: t.name,
+                                class: te(["keyword-dropdown-item", { active: n === oe.value }]),
+                                onMousedown: le((F) => Dt(l, t), ["prevent"])
                               }, [
-                                t("span", Bv, m(b.name), 1),
-                                (s = b.args) != null && s.length ? (i(), u("span", Kv, m(b.args.map(($) => $.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1")).join(", ")), 1)) : T("", !0),
-                                t("span", {
-                                  class: ne(["kw-suggestion-source", "source-" + (b.source === "builtin" ? "builtin" : b.source === "local" || b.source === "project" ? "local" : "library")])
-                                }, m(b.source === "builtin" ? p(a)("robotEditor.builtinKeyword") : b.source === "local" || b.source === "project" ? p(a)("robotEditor.localKeyword") : b.source), 3)
-                              ], 42, Uv);
+                                o("span", Kv, m(t.name), 1),
+                                (v = t.args) != null && v.length ? (i(), u("span", Hv, m(t.args.map((F) => F.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1")).join(", ")), 1)) : $("", !0),
+                                o("span", {
+                                  class: te(["kw-suggestion-source", "source-" + (t.source === "builtin" ? "builtin" : t.source === "local" || t.source === "project" ? "local" : "library")])
+                                }, m(t.source === "builtin" ? p(s)("robotEditor.builtinKeyword") : t.source === "local" || t.source === "project" ? p(s)("robotEditor.localKeyword") : t.source), 3)
+                              ], 42, Bv);
                             }), 128))
-                          ], 512)) : T("", !0)
+                          ], 512)) : $("", !0)
                         ]),
-                        l.args.length ? (i(), u("div", Hv, [
-                          (i(!0), u(x, null, X(l.args, (b, o) => (i(), u("span", {
-                            key: o,
+                        l.args.length ? (i(), u("div", Ov, [
+                          (i(!0), u(U, null, Y(l.args, (t, n) => (i(), u("span", {
+                            key: n,
                             class: "step-arg-chip arg-ac-wrapper"
                           }, [
-                            $e(l)[o] ? (i(), u("span", Ov, m($e(l)[o]), 1)) : T("", !0),
-                            t("span", {
+                            ke(l)[n] ? (i(), u("span", Iv, m(ke(l)[n]), 1)) : $("", !0),
+                            o("span", {
                               class: "arg-highlight-wrap",
-                              style: Ee({ width: lt(l.args[o]) })
+                              style: Ee({ width: rt(l.args[n]) })
                             }, [
-                              t("span", {
+                              o("span", {
                                 class: "arg-highlight-overlay",
-                                innerHTML: Te(l.args[o])
-                              }, null, 8, Iv),
-                              q(t("input", {
-                                "onUpdate:modelValue": (s) => l.args[o] = s,
+                                innerHTML: Ve(l.args[n])
+                              }, null, 8, Wv),
+                              z(o("input", {
+                                "onUpdate:modelValue": (v) => l.args[n] = v,
                                 class: "step-arg-input",
                                 spellcheck: "false",
-                                onScroll: Xt,
+                                onScroll: jt,
                                 style: { width: "100%" },
-                                placeholder: $e(l)[o] || p(a)("robotEditor.argPlaceholder"),
-                                onInput: (s) => Dt(s.target.value, `${S}-${o}`),
-                                onKeydown: (s) => Mt(s, l, o),
-                                onBlur: ho,
+                                placeholder: ke(l)[n] || p(s)("robotEditor.argPlaceholder"),
+                                onInput: (v) => so(v.target.value, `${E}-${n}`),
+                                onKeydown: (v) => ho(v, l, n),
+                                onBlur: lo,
                                 autocomplete: "off"
-                              }, null, 40, Wv), [
-                                [le, l.args[o]]
+                              }, null, 40, jv), [
+                                [ae, l.args[n]]
                               ])
                             ], 4),
-                            be.value === `${S}-${o}` && oe.value.length ? (i(), u("div", jv, [
-                              (i(!0), u(x, null, X(oe.value, (s, $) => (i(), u("div", {
-                                key: s,
-                                class: ne(["arg-ac-item", { active: $ === fe.value }]),
-                                onMousedown: re((K) => Yt(l, o, s), ["prevent"])
-                              }, m(s), 43, qv))), 128))
-                            ])) : T("", !0),
-                            t("button", {
+                            Le.value === `${E}-${n}` && ce.value.length ? (i(), u("div", qv, [
+                              (i(!0), u(U, null, Y(ce.value, (v, F) => (i(), u("div", {
+                                key: v,
+                                class: te(["arg-ac-item", { active: F === ge.value }]),
+                                onMousedown: le((X) => _t(l, n, v), ["prevent"])
+                              }, m(v), 43, zv))), 128))
+                            ])) : $("", !0),
+                            o("button", {
                               class: "chip-remove",
-                              onClick: (s) => Qe(l, o)
-                            }, "×", 8, zv)
+                              onClick: (v) => Ue(l, n)
+                            }, "×", 8, Gv)
                           ]))), 128))
-                        ])) : T("", !0),
-                        t("button", {
-                          class: ne(["step-btn step-add-arg", { "has-hint": $t(l) !== "+" }]),
-                          onClick: (b) => dt(l),
-                          title: p(a)("robotEditor.addArg")
-                        }, m($t(l)), 11, Gv)
-                      ], 64)) : l.type === "assignment" ? (i(), u(x, { key: 1 }, [
-                        (i(!0), u(x, null, X(l.returnVars, (b, o) => (i(), u("span", {
-                          key: o,
+                        ])) : $("", !0),
+                        o("button", {
+                          class: te(["step-btn step-add-arg", { "has-hint": tt(l) !== "+" }]),
+                          onClick: (t) => bt(l),
+                          title: p(s)("robotEditor.addArg")
+                        }, m(tt(l)), 11, Yv)
+                      ], 64)) : l.type === "assignment" ? (i(), u(U, { key: 1 }, [
+                        (i(!0), u(U, null, Y(l.returnVars, (t, n) => (i(), u("span", {
+                          key: n,
                           class: "step-var-chip"
                         }, [
-                          q(t("input", {
-                            "onUpdate:modelValue": (s) => l.returnVars[o] = s,
+                          z(o("input", {
+                            "onUpdate:modelValue": (v) => l.returnVars[n] = v,
                             class: "step-var-input",
                             spellcheck: "false",
                             placeholder: "${var}",
-                            onBlur: (s) => yo(l, o)
-                          }, null, 40, Yv), [
-                            [le, l.returnVars[o]]
+                            onBlur: (v) => yo(l, n)
+                          }, null, 40, Xv), [
+                            [ae, l.returnVars[n]]
                           ]),
-                          t("button", {
+                          o("button", {
                             class: "chip-remove",
-                            onClick: (s) => Jo(l, o)
-                          }, "×", 8, Xv)
+                            onClick: (v) => ao(l, n)
+                          }, "×", 8, Zv)
                         ]))), 128)),
-                        t("button", {
+                        o("button", {
                           class: "step-btn step-add-var",
-                          onClick: (b) => at(l),
+                          onClick: (t) => an(l),
                           title: "+var"
-                        }, "+v", 8, Zv),
-                        h[11] || (h[11] = t("span", { class: "step-assign-eq" }, "=", -1)),
-                        t("div", Qv, [
-                          q(t("input", {
-                            "onUpdate:modelValue": (b) => l.keyword = b,
+                        }, "+v", 8, Qv),
+                        y[11] || (y[11] = o("span", { class: "step-assign-eq" }, "=", -1)),
+                        o("div", Jv, [
+                          z(o("input", {
+                            "onUpdate:modelValue": (t) => l.keyword = t,
                             class: "form-input step-keyword-input",
                             spellcheck: "false",
                             style: Ee({ width: Math.max(18, Math.min((l.keyword || "").length + 5, 60)) + "ch" }),
-                            placeholder: p(a)("robotEditor.keywordPlaceholder"),
-                            onFocus: (b) => qt(l),
-                            onBlur: pt,
-                            onKeydown: (b) => Tt(b, l),
-                            onInput: (b) => zt(l)
-                          }, null, 44, Jv), [
-                            [le, l.keyword]
+                            placeholder: p(s)("robotEditor.keywordPlaceholder"),
+                            onFocus: (t) => It(l),
+                            onBlur: dt,
+                            onKeydown: (t) => wt(t, l),
+                            onInput: (t) => Wt(l)
+                          }, null, 44, eh), [
+                            [ae, l.keyword]
                           ]),
-                          Y.value === l && De.value.length > 0 ? (i(), u("div", {
+                          D.value === l && xe.value.length > 0 ? (i(), u("div", {
                             key: 0,
                             ref_for: !0,
                             ref_key: "keywordDropdownRef",
-                            ref: ce,
+                            ref: be,
                             class: "keyword-dropdown"
                           }, [
-                            (i(!0), u(x, null, X(De.value, (b, o) => {
-                              var s;
+                            (i(!0), u(U, null, Y(xe.value, (t, n) => {
+                              var v;
                               return i(), u("div", {
-                                key: b.name,
-                                class: ne(["keyword-dropdown-item", { active: o === Z.value }]),
-                                onMousedown: re(($) => Gt(l, b), ["prevent"])
+                                key: t.name,
+                                class: te(["keyword-dropdown-item", { active: n === oe.value }]),
+                                onMousedown: le((F) => Dt(l, t), ["prevent"])
                               }, [
-                                t("span", th, m(b.name), 1),
-                                (s = b.args) != null && s.length ? (i(), u("span", oh, m(b.args.map(($) => $.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1")).join(", ")), 1)) : T("", !0),
-                                t("span", {
-                                  class: ne(["kw-suggestion-source", "source-" + (b.source === "builtin" ? "builtin" : b.source === "local" || b.source === "project" ? "local" : "library")])
-                                }, m(b.source === "builtin" ? p(a)("robotEditor.builtinKeyword") : b.source === "local" || b.source === "project" ? p(a)("robotEditor.localKeyword") : b.source), 3)
-                              ], 42, eh);
+                                o("span", oh, m(t.name), 1),
+                                (v = t.args) != null && v.length ? (i(), u("span", nh, m(t.args.map((F) => F.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1")).join(", ")), 1)) : $("", !0),
+                                o("span", {
+                                  class: te(["kw-suggestion-source", "source-" + (t.source === "builtin" ? "builtin" : t.source === "local" || t.source === "project" ? "local" : "library")])
+                                }, m(t.source === "builtin" ? p(s)("robotEditor.builtinKeyword") : t.source === "local" || t.source === "project" ? p(s)("robotEditor.localKeyword") : t.source), 3)
+                              ], 42, th);
                             }), 128))
-                          ], 512)) : T("", !0)
+                          ], 512)) : $("", !0)
                         ]),
-                        l.args.length ? (i(), u("div", nh, [
-                          (i(!0), u(x, null, X(l.args, (b, o) => (i(), u("span", {
-                            key: o,
+                        l.args.length ? (i(), u("div", ah, [
+                          (i(!0), u(U, null, Y(l.args, (t, n) => (i(), u("span", {
+                            key: n,
                             class: "step-arg-chip arg-ac-wrapper"
                           }, [
-                            $e(l)[o] ? (i(), u("span", ah, m($e(l)[o]), 1)) : T("", !0),
-                            t("span", {
+                            ke(l)[n] ? (i(), u("span", sh, m(ke(l)[n]), 1)) : $("", !0),
+                            o("span", {
                               class: "arg-highlight-wrap",
-                              style: Ee({ width: lt(l.args[o]) })
+                              style: Ee({ width: rt(l.args[n]) })
                             }, [
-                              t("span", {
+                              o("span", {
                                 class: "arg-highlight-overlay",
-                                innerHTML: Te(l.args[o])
-                              }, null, 8, sh),
-                              q(t("input", {
-                                "onUpdate:modelValue": (s) => l.args[o] = s,
+                                innerHTML: Ve(l.args[n])
+                              }, null, 8, lh),
+                              z(o("input", {
+                                "onUpdate:modelValue": (v) => l.args[n] = v,
                                 class: "step-arg-input",
                                 spellcheck: "false",
-                                onScroll: Xt,
+                                onScroll: jt,
                                 style: { width: "100%" },
-                                placeholder: $e(l)[o] || p(a)("robotEditor.argPlaceholder"),
-                                onInput: (s) => Dt(s.target.value, `${S}-${o}`),
-                                onKeydown: (s) => Mt(s, l, o),
-                                onBlur: ho,
+                                placeholder: ke(l)[n] || p(s)("robotEditor.argPlaceholder"),
+                                onInput: (v) => so(v.target.value, `${E}-${n}`),
+                                onKeydown: (v) => ho(v, l, n),
+                                onBlur: lo,
                                 autocomplete: "off"
-                              }, null, 40, lh), [
-                                [le, l.args[o]]
+                              }, null, 40, rh), [
+                                [ae, l.args[n]]
                               ])
                             ], 4),
-                            be.value === `${S}-${o}` && oe.value.length ? (i(), u("div", rh, [
-                              (i(!0), u(x, null, X(oe.value, (s, $) => (i(), u("div", {
-                                key: s,
-                                class: ne(["arg-ac-item", { active: $ === fe.value }]),
-                                onMousedown: re((K) => Yt(l, o, s), ["prevent"])
-                              }, m(s), 43, ih))), 128))
-                            ])) : T("", !0),
-                            t("button", {
+                            Le.value === `${E}-${n}` && ce.value.length ? (i(), u("div", ih, [
+                              (i(!0), u(U, null, Y(ce.value, (v, F) => (i(), u("div", {
+                                key: v,
+                                class: te(["arg-ac-item", { active: F === ge.value }]),
+                                onMousedown: le((X) => _t(l, n, v), ["prevent"])
+                              }, m(v), 43, uh))), 128))
+                            ])) : $("", !0),
+                            o("button", {
                               class: "chip-remove",
-                              onClick: (s) => Qe(l, o)
-                            }, "×", 8, uh)
+                              onClick: (v) => Ue(l, n)
+                            }, "×", 8, ch)
                           ]))), 128))
-                        ])) : T("", !0),
-                        t("button", {
-                          class: ne(["step-btn step-add-arg", { "has-hint": $t(l) !== "+" }]),
-                          onClick: (b) => dt(l),
-                          title: p(a)("robotEditor.addArg")
-                        }, m($t(l)), 11, ch)
-                      ], 64)) : l.type === "var" ? (i(), u(x, { key: 2 }, [
-                        t("span", dh, [
-                          q(t("input", {
-                            "onUpdate:modelValue": (b) => l.returnVars[0] = b,
+                        ])) : $("", !0),
+                        o("button", {
+                          class: te(["step-btn step-add-arg", { "has-hint": tt(l) !== "+" }]),
+                          onClick: (t) => bt(l),
+                          title: p(s)("robotEditor.addArg")
+                        }, m(tt(l)), 11, dh)
+                      ], 64)) : l.type === "var" ? (i(), u(U, { key: 2 }, [
+                        o("span", ph, [
+                          z(o("input", {
+                            "onUpdate:modelValue": (t) => l.returnVars[0] = t,
                             class: "step-var-input",
                             spellcheck: "false",
                             placeholder: "${var}",
-                            onBlur: (b) => yo(l, 0)
-                          }, null, 40, ph), [
-                            [le, l.returnVars[0]]
+                            onBlur: (t) => yo(l, 0)
+                          }, null, 40, fh), [
+                            [ae, l.returnVars[0]]
                           ])
                         ]),
-                        h[13] || (h[13] = t("span", { class: "step-assign-eq" }, "=", -1)),
-                        (i(!0), u(x, null, X(l.args, (b, o) => (i(), u("span", {
-                          key: o,
+                        y[13] || (y[13] = o("span", { class: "step-assign-eq" }, "=", -1)),
+                        (i(!0), u(U, null, Y(l.args, (t, n) => (i(), u("span", {
+                          key: n,
                           class: "step-arg-chip"
                         }, [
-                          t("span", {
+                          o("span", {
                             class: "arg-highlight-wrap",
-                            style: Ee({ width: lt(l.args[o]) })
+                            style: Ee({ width: rt(l.args[n]) })
                           }, [
-                            t("span", {
+                            o("span", {
                               class: "arg-highlight-overlay",
-                              innerHTML: Te(l.args[o])
-                            }, null, 8, fh),
-                            q(t("input", {
-                              "onUpdate:modelValue": (s) => l.args[o] = s,
+                              innerHTML: Ve(l.args[n])
+                            }, null, 8, mh),
+                            z(o("input", {
+                              "onUpdate:modelValue": (v) => l.args[n] = v,
                               class: "step-arg-input",
                               spellcheck: "false",
-                              onScroll: Xt,
+                              onScroll: jt,
                               style: { width: "100%" },
-                              placeholder: p(a)("robotEditor.valuePlaceholder")
-                            }, null, 40, mh), [
-                              [le, l.args[o]]
+                              placeholder: p(s)("robotEditor.valuePlaceholder")
+                            }, null, 40, gh), [
+                              [ae, l.args[n]]
                             ])
                           ], 4),
-                          t("button", {
+                          o("button", {
                             class: "chip-remove",
-                            onClick: (s) => Qe(l, o)
-                          }, "×", 8, gh)
+                            onClick: (v) => Ue(l, n)
+                          }, "×", 8, vh)
                         ]))), 128)),
-                        t("button", {
+                        o("button", {
                           class: "step-btn step-add-arg",
-                          onClick: (b) => dt(l),
-                          title: p(a)("robotEditor.addValue")
-                        }, "+", 8, vh),
-                        q(t("select", {
-                          "onUpdate:modelValue": (b) => l.varScope = b,
+                          onClick: (t) => bt(l),
+                          title: p(s)("robotEditor.addValue")
+                        }, "+", 8, hh),
+                        z(o("select", {
+                          "onUpdate:modelValue": (t) => l.varScope = t,
                           class: "step-scope-select"
                         }, [
-                          h[12] || (h[12] = t("option", { value: "" }, "scope", -1)),
-                          (i(!0), u(x, null, X(p(Ea), (b) => (i(), u("option", {
-                            key: b,
-                            value: b
-                          }, m(b), 9, yh))), 128))
-                        ], 8, hh), [
+                          y[12] || (y[12] = o("option", { value: "" }, "scope", -1)),
+                          (i(!0), u(U, null, Y(p(Ea), (t) => (i(), u("option", {
+                            key: t,
+                            value: t
+                          }, m(t), 9, bh))), 128))
+                        ], 8, yh), [
                           [it, l.varScope]
                         ])
-                      ], 64)) : l.type === "for" ? (i(), u(x, { key: 3 }, [
-                        t("span", bh, [
-                          t("span", {
+                      ], 64)) : l.type === "for" ? (i(), u(U, { key: 3 }, [
+                        o("span", wh, [
+                          o("span", {
                             class: "form-hl-overlay hl-mono",
-                            innerHTML: Te(l.loopVar)
-                          }, null, 8, wh),
-                          q(t("input", {
-                            "onUpdate:modelValue": (b) => l.loopVar = b,
+                            innerHTML: Ve(l.loopVar)
+                          }, null, 8, _h),
+                          z(o("input", {
+                            "onUpdate:modelValue": (t) => l.loopVar = t,
                             class: "form-input step-var-input-inline",
                             spellcheck: "false",
                             style: { width: "100%" },
                             placeholder: "${item}"
-                          }, null, 8, _h), [
-                            [le, l.loopVar]
+                          }, null, 8, kh), [
+                            [ae, l.loopVar]
                           ])
                         ]),
-                        q(t("select", {
-                          "onUpdate:modelValue": (b) => l.loopFlavor = b,
+                        z(o("select", {
+                          "onUpdate:modelValue": (t) => l.loopFlavor = t,
                           class: "step-flavor-select"
                         }, [
-                          (i(!0), u(x, null, X(p(ea), (b) => (i(), u("option", {
-                            key: b,
-                            value: b
-                          }, m(b), 9, Ch))), 128))
-                        ], 8, kh), [
+                          (i(!0), u(U, null, Y(p(ta), (t) => (i(), u("option", {
+                            key: t,
+                            value: t
+                          }, m(t), 9, $h))), 128))
+                        ], 8, Ch), [
                           [it, l.loopFlavor]
                         ]),
-                        (i(!0), u(x, null, X(l.loopValues, (b, o) => (i(), u("span", {
-                          key: o,
+                        (i(!0), u(U, null, Y(l.loopValues, (t, n) => (i(), u("span", {
+                          key: n,
                           class: "step-arg-chip"
                         }, [
-                          q(t("input", {
-                            "onUpdate:modelValue": (s) => l.loopValues[o] = s,
+                          z(o("input", {
+                            "onUpdate:modelValue": (v) => l.loopValues[n] = v,
                             class: "step-arg-input",
-                            placeholder: p(a)("robotEditor.valuePlaceholder")
-                          }, null, 8, $h), [
-                            [le, l.loopValues[o]]
+                            placeholder: p(s)("robotEditor.valuePlaceholder")
+                          }, null, 8, Th), [
+                            [ae, l.loopValues[n]]
                           ]),
-                          t("button", {
+                          o("button", {
                             class: "chip-remove",
-                            onClick: (s) => No(l, o)
-                          }, "×", 8, Th)
+                            onClick: (v) => go(l, n)
+                          }, "×", 8, Eh)
                         ]))), 128)),
-                        t("button", {
+                        o("button", {
                           class: "step-btn step-add-arg",
-                          onClick: (b) => ao(l),
-                          title: p(a)("robotEditor.addValue")
-                        }, "+", 8, Eh)
-                      ], 64)) : l.type === "if" || l.type === "else_if" || l.type === "while" ? (i(), u("span", Sh, [
-                        t("span", {
+                          onClick: (t) => Ao(l),
+                          title: p(s)("robotEditor.addValue")
+                        }, "+", 8, Sh)
+                      ], 64)) : l.type === "if" || l.type === "else_if" || l.type === "while" ? (i(), u("span", Lh, [
+                        o("span", {
                           class: "form-hl-overlay hl-condition",
-                          innerHTML: Te(l.condition)
-                        }, null, 8, Lh),
-                        q(t("input", {
-                          "onUpdate:modelValue": (b) => l.condition = b,
+                          innerHTML: Ve(l.condition)
+                        }, null, 8, Vh),
+                        z(o("input", {
+                          "onUpdate:modelValue": (t) => l.condition = t,
                           class: "form-input step-condition-input",
                           style: { width: "100%" },
-                          placeholder: p(a)("robotEditor.conditionPlaceholder"),
+                          placeholder: p(s)("robotEditor.conditionPlaceholder"),
                           spellcheck: "false"
-                        }, null, 8, Vh), [
-                          [le, l.condition]
+                        }, null, 8, Ah), [
+                          [ae, l.condition]
                         ])
-                      ])) : l.type === "except" ? (i(), u(x, { key: 5 }, [
-                        q(t("input", {
-                          "onUpdate:modelValue": (b) => l.exceptPattern = b,
+                      ])) : l.type === "except" ? (i(), u(U, { key: 5 }, [
+                        z(o("input", {
+                          "onUpdate:modelValue": (t) => l.exceptPattern = t,
                           class: "form-input step-keyword-input",
                           spellcheck: "false",
-                          placeholder: p(a)("robotEditor.exceptPatternPlaceholder")
-                        }, null, 8, Ah), [
-                          [le, l.exceptPattern]
+                          placeholder: p(s)("robotEditor.exceptPatternPlaceholder")
+                        }, null, 8, Nh), [
+                          [ae, l.exceptPattern]
                         ]),
-                        l.exceptVar || l.exceptPattern ? (i(), u("span", Nh, "AS")) : T("", !0),
-                        l.exceptVar || l.exceptPattern ? (i(), u("span", Rh, [
-                          t("span", {
+                        l.exceptVar || l.exceptPattern ? (i(), u("span", Rh, "AS")) : $("", !0),
+                        l.exceptVar || l.exceptPattern ? (i(), u("span", Fh, [
+                          o("span", {
                             class: "form-hl-overlay hl-mono",
-                            innerHTML: Te(l.exceptVar)
-                          }, null, 8, Fh),
-                          q(t("input", {
-                            "onUpdate:modelValue": (b) => l.exceptVar = b,
+                            innerHTML: Ve(l.exceptVar)
+                          }, null, 8, Ph),
+                          z(o("input", {
+                            "onUpdate:modelValue": (t) => l.exceptVar = t,
                             class: "form-input step-var-input-inline",
                             spellcheck: "false",
                             style: { width: "100%" },
                             placeholder: "${error}"
-                          }, null, 8, Ph), [
-                            [le, l.exceptVar]
+                          }, null, 8, Dh), [
+                            [ae, l.exceptVar]
                           ])
-                        ])) : T("", !0)
-                      ], 64)) : l.type === "return" ? (i(), u(x, { key: 6 }, [
-                        (i(!0), u(x, null, X(l.args, (b, o) => (i(), u("span", {
-                          key: o,
+                        ])) : $("", !0)
+                      ], 64)) : l.type === "return" ? (i(), u(U, { key: 6 }, [
+                        (i(!0), u(U, null, Y(l.args, (t, n) => (i(), u("span", {
+                          key: n,
                           class: "step-arg-chip"
                         }, [
-                          q(t("input", {
-                            "onUpdate:modelValue": (s) => l.args[o] = s,
+                          z(o("input", {
+                            "onUpdate:modelValue": (v) => l.args[n] = v,
                             class: "step-arg-input",
-                            placeholder: p(a)("robotEditor.valuePlaceholder")
-                          }, null, 8, Dh), [
-                            [le, l.args[o]]
+                            placeholder: p(s)("robotEditor.valuePlaceholder")
+                          }, null, 8, Mh), [
+                            [ae, l.args[n]]
                           ]),
-                          t("button", {
+                          o("button", {
                             class: "chip-remove",
-                            onClick: (s) => Qe(l, o)
-                          }, "×", 8, Mh)
+                            onClick: (v) => Ue(l, n)
+                          }, "×", 8, xh)
                         ]))), 128)),
-                        t("button", {
+                        o("button", {
                           class: "step-btn step-add-arg",
-                          onClick: (b) => dt(l),
-                          title: p(a)("robotEditor.addValue")
-                        }, "+", 8, xh)
-                      ], 64)) : l.type === "comment" ? q((i(), u("input", {
+                          onClick: (t) => bt(l),
+                          title: p(s)("robotEditor.addValue")
+                        }, "+", 8, Uh)
+                      ], 64)) : l.type === "comment" ? z((i(), u("input", {
                         key: 7,
-                        "onUpdate:modelValue": (b) => l.comment = b,
+                        "onUpdate:modelValue": (t) => l.comment = t,
                         class: "form-input flex-1 step-comment-input",
                         spellcheck: "false",
                         placeholder: "# ..."
-                      }, null, 8, Uh)), [
-                        [le, l.comment]
-                      ]) : T("", !0),
-                      t("div", Bh, [
-                        t("button", {
+                      }, null, 8, Bh)), [
+                        [ae, l.comment]
+                      ]) : $("", !0),
+                      o("div", Kh, [
+                        o("button", {
                           class: "step-btn",
-                          onClick: (b) => go(d.steps, S, -1),
-                          disabled: S === 0
-                        }, "↑", 8, Kh),
-                        t("button", {
+                          onClick: (t) => no(d.steps, E, -1),
+                          disabled: E === 0
+                        }, "↑", 8, Hh),
+                        o("button", {
                           class: "step-btn",
-                          onClick: (b) => go(d.steps, S, 1),
-                          disabled: S === d.steps.length - 1
-                        }, "↓", 8, Hh),
-                        t("button", {
+                          onClick: (t) => no(d.steps, E, 1),
+                          disabled: E === d.steps.length - 1
+                        }, "↓", 8, Oh),
+                        o("button", {
                           class: "step-btn danger",
-                          onClick: (b) => mo(d.steps, S),
-                          title: p(a)("editor.common.delete")
-                        }, "×", 8, Oh)
+                          onClick: (t) => nn(d.steps, E),
+                          title: p(s)("editor.common.delete")
+                        }, "×", 8, Ih)
                       ])
                     ], 4))), 128)),
-                    t("div", Ih, [
-                      t("button", {
+                    o("div", Wh, [
+                      o("button", {
                         class: "add-step-btn add-keyword",
-                        onClick: (l) => no(d.steps)
-                      }, "+ " + m(p(a)("robotEditor.addStep")), 9, Wh),
-                      t("button", {
+                        onClick: (l) => mo(d.steps)
+                      }, "+ " + m(p(s)("robotEditor.addStep")), 9, jh),
+                      o("button", {
                         class: "add-step-btn add-block add-var",
-                        onClick: (l) => no(d.steps, "var")
-                      }, "+ VAR", 8, jh),
-                      t("button", {
+                        onClick: (l) => mo(d.steps, "var")
+                      }, "+ VAR", 8, qh),
+                      o("button", {
                         class: "add-step-btn add-block add-loop",
-                        onClick: (l) => Ct(d.steps, "for")
-                      }, "+ FOR", 8, qh),
-                      t("button", {
+                        onClick: (l) => st(d.steps, "for")
+                      }, "+ FOR", 8, zh),
+                      o("button", {
                         class: "add-step-btn add-block add-condition",
-                        onClick: (l) => Ct(d.steps, "if")
-                      }, "+ IF", 8, zh),
-                      t("button", {
+                        onClick: (l) => st(d.steps, "if")
+                      }, "+ IF", 8, Gh),
+                      o("button", {
                         class: "add-step-btn add-block add-loop",
-                        onClick: (l) => Ct(d.steps, "while")
-                      }, "+ WHILE", 8, Gh),
-                      t("button", {
+                        onClick: (l) => st(d.steps, "while")
+                      }, "+ WHILE", 8, Yh),
+                      o("button", {
                         class: "add-step-btn add-block add-error",
-                        onClick: (l) => Ct(d.steps, "try")
-                      }, "+ TRY", 8, Yh)
+                        onClick: (l) => st(d.steps, "try")
+                      }, "+ TRY", 8, Xh)
                     ])
                   ])
                 ])
               ], 512), [
-                [eo, !M.value.has(v)]
+                [Xt, !Z.value.has(h)]
               ])
             ]))), 128))
           ], 512), [
-            [eo, !j.value]
+            [Xt, !re.value]
           ])
         ])),
-        t("div", Xh, [
-          t("div", {
+        o("div", Zh, [
+          o("div", {
             class: "section-header",
-            onClick: h[6] || (h[6] = (d) => ue.value = !ue.value)
+            onClick: y[6] || (y[6] = (d) => x.value = !x.value)
           }, [
-            t("span", Zh, m(ue.value ? "▶" : "▼"), 1),
-            t("h3", null, m(p(a)("robotEditor.keywordsSection")), 1),
-            t("span", Qh, m(Q.keywords.length), 1),
+            o("span", Qh, m(x.value ? "▶" : "▼"), 1),
+            o("h3", null, m(p(s)("robotEditor.keywordsSection")), 1),
+            o("span", Jh, m(ee.keywords.length), 1),
             ve(Oe, {
               size: "sm",
               variant: "secondary",
-              onClick: re(Zt, ["stop"])
+              onClick: le(Po, ["stop"])
             }, {
               default: _e(() => [
-                we("+ " + m(p(a)("robotEditor.addKeyword")), 1)
+                we("+ " + m(p(s)("robotEditor.addKeyword")), 1)
               ]),
               _: 1
             })
           ]),
-          q(t("div", Jh, [
-            Q.keywords.length === 0 ? (i(), u("div", ey, m(p(a)("robotEditor.noKeywords")), 1)) : T("", !0),
-            (i(!0), u(x, null, X(Q.keywords, (d, v) => (i(), u("div", {
-              key: v,
+          z(o("div", ey, [
+            ee.keywords.length === 0 ? (i(), u("div", ty, m(p(s)("robotEditor.noKeywords")), 1)) : $("", !0),
+            (i(!0), u(U, null, Y(ee.keywords, (d, h) => (i(), u("div", {
+              key: h,
               class: "item-card"
             }, [
-              t("div", {
+              o("div", {
                 class: "item-header",
-                onClick: (l) => rn(v)
+                onClick: (l) => Do(h)
               }, [
-                t("span", oy, m(J.value.has(v) ? "▶" : "▼"), 1),
-                t("span", ny, m(d.name || p(a)("robotEditor.unnamedKeyword")), 1),
-                t("span", ay, m(d.steps.length) + " " + m(p(a)("robotEditor.steps")), 1),
-                t("button", {
+                o("span", ny, m(Q.value.has(h) ? "▶" : "▼"), 1),
+                o("span", ay, m(d.name || p(s)("robotEditor.unnamedKeyword")), 1),
+                o("span", sy, m(d.steps.length) + " " + m(p(s)("robotEditor.steps")), 1),
+                o("button", {
                   class: "remove-btn",
-                  onClick: re((l) => ln(v), ["stop"]),
-                  title: p(a)("editor.common.delete")
-                }, "🗑", 8, sy)
-              ], 8, ty),
-              q(t("div", ly, [
-                t("div", ry, [
-                  t("label", iy, [
-                    we(m(p(a)("robotEditor.keywordName")) + " ", 1),
-                    h[14] || (h[14] = t("span", { class: "required" }, "*", -1))
+                  onClick: le((l) => dn(h), ["stop"]),
+                  title: p(s)("editor.common.delete")
+                }, "🗑", 8, ly)
+              ], 8, oy),
+              z(o("div", ry, [
+                o("div", iy, [
+                  o("label", uy, [
+                    we(m(p(s)("robotEditor.keywordName")) + " ", 1),
+                    y[14] || (y[14] = o("span", { class: "required" }, "*", -1))
                   ]),
-                  q(t("input", {
+                  z(o("input", {
                     "onUpdate:modelValue": (l) => d.name = l,
                     class: "form-input",
-                    placeholder: p(a)("robotEditor.keywordNamePlaceholder")
-                  }, null, 8, uy), [
-                    [le, d.name]
+                    placeholder: p(s)("robotEditor.keywordNamePlaceholder")
+                  }, null, 8, cy), [
+                    [ae, d.name]
                   ])
                 ]),
-                t("div", cy, [
-                  t("label", dy, m(p(a)("robotEditor.arguments")), 1),
-                  t("div", py, [
-                    (i(!0), u(x, null, X(d.arguments, (l, S) => (i(), u("div", {
-                      key: S,
-                      class: ne(["kw-arg-row", "kw-arg-" + (l === "@{}" ? "sep" : xo(d, S) ? "named" : Hn(l))])
+                o("div", dy, [
+                  o("label", py, m(p(s)("robotEditor.arguments")), 1),
+                  o("div", fy, [
+                    (i(!0), u(U, null, Y(d.arguments, (l, E) => (i(), u("div", {
+                      key: E,
+                      class: te(["kw-arg-row", "kw-arg-" + (l === "@{}" ? "sep" : fn(d, E) ? "named" : Kn(l))])
                     }, [
-                      l === "@{}" ? (i(), u(x, { key: 0 }, [
-                        h[15] || (h[15] = t("span", { class: "kw-arg-sep-line" }, null, -1)),
-                        t("span", fy, m(p(a)("robotEditor.argTypes.namedOnlyBelow")), 1),
-                        h[16] || (h[16] = t("span", { class: "kw-arg-sep-line" }, null, -1))
-                      ], 64)) : l.startsWith("@{") ? (i(), u(x, { key: 1 }, [
-                        t("span", my, "*" + m(p(a)("robotEditor.argTypes.varargs")), 1),
-                        t("input", {
+                      l === "@{}" ? (i(), u(U, { key: 0 }, [
+                        y[15] || (y[15] = o("span", { class: "kw-arg-sep-line" }, null, -1)),
+                        o("span", my, m(p(s)("robotEditor.argTypes.namedOnlyBelow")), 1),
+                        y[16] || (y[16] = o("span", { class: "kw-arg-sep-line" }, null, -1))
+                      ], 64)) : l.startsWith("@{") ? (i(), u(U, { key: 1 }, [
+                        o("span", gy, "*" + m(p(s)("robotEditor.argTypes.varargs")), 1),
+                        o("input", {
                           class: "kw-arg-name-input",
                           spellcheck: "false",
-                          value: Mo(l),
-                          onInput: (b) => wo(d, S, b.target.value),
-                          onBlur: (b) => Fo(d, S),
+                          value: xo(l),
+                          onInput: (t) => bo(d, E, t.target.value),
+                          onBlur: (t) => Ro(d, E),
                           placeholder: "args"
-                        }, null, 40, gy)
-                      ], 64)) : l.startsWith("&{") ? (i(), u(x, { key: 2 }, [
-                        t("span", vy, "**" + m(p(a)("robotEditor.argTypes.kwargs")), 1),
-                        t("input", {
+                        }, null, 40, vy)
+                      ], 64)) : l.startsWith("&{") ? (i(), u(U, { key: 2 }, [
+                        o("span", hy, "**" + m(p(s)("robotEditor.argTypes.kwargs")), 1),
+                        o("input", {
                           class: "kw-arg-name-input",
                           spellcheck: "false",
-                          value: Mo(l),
-                          onInput: (b) => wo(d, S, b.target.value),
-                          onBlur: (b) => Fo(d, S),
+                          value: xo(l),
+                          onInput: (t) => bo(d, E, t.target.value),
+                          onBlur: (t) => Ro(d, E),
                           placeholder: "kwargs"
-                        }, null, 40, hy)
-                      ], 64)) : (i(), u(x, { key: 3 }, [
-                        xo(d, S) ? (i(), u("span", yy, m(p(a)("robotEditor.argTypes.namedOnly")), 1)) : l.includes("=") ? (i(), u("span", by, m(p(a)("robotEditor.argTypes.optional")), 1)) : (i(), u("span", wy, m(p(a)("robotEditor.argTypes.required")), 1)),
-                        t("input", {
+                        }, null, 40, yy)
+                      ], 64)) : (i(), u(U, { key: 3 }, [
+                        fn(d, E) ? (i(), u("span", by, m(p(s)("robotEditor.argTypes.namedOnly")), 1)) : l.includes("=") ? (i(), u("span", wy, m(p(s)("robotEditor.argTypes.optional")), 1)) : (i(), u("span", _y, m(p(s)("robotEditor.argTypes.required")), 1)),
+                        o("input", {
                           class: "kw-arg-name-input",
                           spellcheck: "false",
-                          value: Mo(l),
-                          onInput: (b) => wo(d, S, b.target.value),
-                          onBlur: (b) => Fo(d, S),
-                          placeholder: p(a)("robotEditor.argTypes.namePlaceholder")
-                        }, null, 40, _y),
-                        l.includes("=") ? (i(), u(x, { key: 3 }, [
-                          h[17] || (h[17] = t("span", { class: "kw-arg-eq" }, "=", -1)),
-                          t("span", ky, [
-                            t("span", {
+                          value: xo(l),
+                          onInput: (t) => bo(d, E, t.target.value),
+                          onBlur: (t) => Ro(d, E),
+                          placeholder: p(s)("robotEditor.argTypes.namePlaceholder")
+                        }, null, 40, ky),
+                        l.includes("=") ? (i(), u(U, { key: 3 }, [
+                          y[17] || (y[17] = o("span", { class: "kw-arg-eq" }, "=", -1)),
+                          o("span", Cy, [
+                            o("span", {
                               class: "form-hl-overlay hl-kw-default",
-                              innerHTML: Te(un(l))
-                            }, null, 8, Cy),
-                            t("input", {
+                              innerHTML: Ve(Uo(l))
+                            }, null, 8, $y),
+                            o("input", {
                               class: "kw-arg-default-input",
                               spellcheck: "false",
-                              value: un(l),
-                              onInput: (b) => cn(d, S, b.target.value),
-                              placeholder: p(a)("robotEditor.argTypes.defaultPlaceholder")
-                            }, null, 40, $y)
+                              value: Uo(l),
+                              onInput: (t) => pn(d, E, t.target.value),
+                              placeholder: p(s)("robotEditor.argTypes.defaultPlaceholder")
+                            }, null, 40, Ty)
                           ])
-                        ], 64)) : T("", !0),
-                        l.includes("=") ? T("", !0) : (i(), u("button", {
+                        ], 64)) : $("", !0),
+                        l.includes("=") ? $("", !0) : (i(), u("button", {
                           key: 4,
                           class: "kw-arg-opt-btn",
-                          onClick: (b) => d.arguments[S] = l + "=",
-                          title: p(a)("robotEditor.argTypes.addDefault")
-                        }, "= ?", 8, Ty))
+                          onClick: (t) => d.arguments[E] = l + "=",
+                          title: p(s)("robotEditor.argTypes.addDefault")
+                        }, "= ?", 8, Ey))
                       ], 64)),
-                      t("button", {
+                      o("button", {
                         class: "chip-remove",
-                        onClick: (b) => Do(v, S)
-                      }, "×", 8, Ey)
+                        onClick: (t) => Mo(h, E)
+                      }, "×", 8, Sy)
                     ], 2))), 128))
                   ]),
-                  t("div", Sy, [
-                    t("button", {
+                  o("div", Ly, [
+                    o("button", {
                       class: "kw-arg-add-btn",
-                      onClick: (l) => xt(v, "positional")
-                    }, "+ " + m(p(a)("robotEditor.argTypes.required")), 9, Ly),
-                    t("button", {
+                      onClick: (l) => io(h, "positional")
+                    }, "+ " + m(p(s)("robotEditor.argTypes.required")), 9, Vy),
+                    o("button", {
                       class: "kw-arg-add-btn",
-                      onClick: (l) => xt(v, "optional")
-                    }, "+ " + m(p(a)("robotEditor.argTypes.optional")), 9, Vy),
-                    t("button", {
+                      onClick: (l) => io(h, "optional")
+                    }, "+ " + m(p(s)("robotEditor.argTypes.optional")), 9, Ay),
+                    o("button", {
                       class: "kw-arg-add-btn",
                       disabled: d.arguments.some((l) => l.startsWith("@{")),
-                      onClick: (l) => xt(v, "varargs")
-                    }, "+ " + m(p(a)("robotEditor.argTypes.varargs")), 9, Ay),
-                    t("button", {
+                      onClick: (l) => io(h, "varargs")
+                    }, "+ " + m(p(s)("robotEditor.argTypes.varargs")), 9, Ny),
+                    o("button", {
                       class: "kw-arg-add-btn",
                       disabled: d.arguments.some((l) => l.startsWith("&{")),
-                      onClick: (l) => xt(v, "kwargs")
-                    }, "+ " + m(p(a)("robotEditor.argTypes.kwargs")), 9, Ny),
-                    t("button", {
+                      onClick: (l) => io(h, "kwargs")
+                    }, "+ " + m(p(s)("robotEditor.argTypes.kwargs")), 9, Ry),
+                    o("button", {
                       class: "kw-arg-add-btn",
-                      onClick: (l) => xt(v, "named-only")
-                    }, "+ " + m(p(a)("robotEditor.argTypes.namedOnly")), 9, Ry)
+                      onClick: (l) => io(h, "named-only")
+                    }, "+ " + m(p(s)("robotEditor.argTypes.namedOnly")), 9, Fy)
                   ])
                 ]),
-                t("div", Fy, [
-                  t("label", Py, m(p(a)("robotEditor.documentation")), 1),
-                  q(t("textarea", {
+                o("div", Py, [
+                  o("label", Dy, m(p(s)("robotEditor.documentation")), 1),
+                  z(o("textarea", {
                     "onUpdate:modelValue": (l) => d.documentation = l,
                     class: "form-input form-textarea",
                     rows: "2",
-                    placeholder: p(a)("robotEditor.documentationPlaceholder")
-                  }, null, 8, Dy), [
-                    [le, d.documentation]
+                    placeholder: p(s)("robotEditor.documentationPlaceholder")
+                  }, null, 8, My), [
+                    [ae, d.documentation]
                   ])
                 ]),
-                R("kw", v, "tags", d.tags.length ? "x" : "") ? (i(), u("div", My, [
-                  t("label", xy, [
-                    we(m(p(a)("robotEditor.tags")) + " ", 1),
-                    d.tags.length ? T("", !0) : (i(), u("button", {
+                K("kw", h, "tags", d.tags.length ? "x" : "") ? (i(), u("div", xy, [
+                  o("label", Uy, [
+                    we(m(p(s)("robotEditor.tags")) + " ", 1),
+                    d.tags.length ? $("", !0) : (i(), u("button", {
                       key: 0,
                       class: "meta-close-btn",
-                      onClick: (l) => H("kw", v, "tags")
-                    }, "×", 8, Uy))
+                      onClick: (l) => j("kw", h, "tags")
+                    }, "×", 8, By))
                   ]),
-                  t("div", By, [
-                    (i(!0), u(x, null, X(d.tags, (l, S) => (i(), u("span", {
-                      key: S,
+                  o("div", Ky, [
+                    (i(!0), u(U, null, Y(d.tags, (l, E) => (i(), u("span", {
+                      key: E,
                       class: "chip chip-tag"
                     }, [
                       we(m(l) + " ", 1),
-                      t("button", {
+                      o("button", {
                         class: "chip-remove",
-                        onClick: (b) => Qt(v, S)
-                      }, "×", 8, Ky)
+                        onClick: (t) => Hn(h, E)
+                      }, "×", 8, Hy)
                     ]))), 128)),
-                    t("div", Hy, [
-                      t("input", {
-                        value: so.value.get(v) || "",
-                        onInput: (l) => so.value.set(v, l.target.value),
+                    o("div", Oy, [
+                      o("input", {
+                        value: uo.value.get(h) || "",
+                        onInput: (l) => uo.value.set(h, l.target.value),
                         class: "chip-input",
-                        placeholder: p(a)("robotEditor.addTag"),
-                        onKeydown: Ye(re((l) => dn(v), ["prevent"]), ["enter"])
-                      }, null, 40, Oy),
-                      (so.value.get(v) || "").trim() ? (i(), u("button", {
+                        placeholder: p(s)("robotEditor.addTag"),
+                        onKeydown: Ze(le((l) => Xe(h), ["prevent"]), ["enter"])
+                      }, null, 40, Iy),
+                      (uo.value.get(h) || "").trim() ? (i(), u("button", {
                         key: 0,
                         class: "chip-add-btn",
-                        onClick: (l) => dn(v)
-                      }, "+", 8, Iy)) : T("", !0)
+                        onClick: (l) => Xe(h)
+                      }, "+", 8, Wy)) : $("", !0)
                     ])
                   ])
-                ])) : T("", !0),
-                t("div", Wy, [
-                  R("kw", v, "tags", d.tags.length ? "x" : "") ? T("", !0) : (i(), u("button", {
+                ])) : $("", !0),
+                o("div", jy, [
+                  K("kw", h, "tags", d.tags.length ? "x" : "") ? $("", !0) : (i(), u("button", {
                     key: 0,
                     class: "meta-toggle-btn mt-tags",
-                    onClick: (l) => H("kw", v, "tags")
-                  }, "+ Tags", 8, jy)),
-                  R("kw", v, "setup", d.setup) ? T("", !0) : (i(), u("button", {
+                    onClick: (l) => j("kw", h, "tags")
+                  }, "+ Tags", 8, qy)),
+                  K("kw", h, "setup", d.setup) ? $("", !0) : (i(), u("button", {
                     key: 1,
                     class: "meta-toggle-btn mt-setup",
-                    onClick: (l) => H("kw", v, "setup")
-                  }, "+ Setup", 8, qy)),
-                  R("kw", v, "teardown", d.teardown) ? T("", !0) : (i(), u("button", {
+                    onClick: (l) => j("kw", h, "setup")
+                  }, "+ Setup", 8, zy)),
+                  K("kw", h, "teardown", d.teardown) ? $("", !0) : (i(), u("button", {
                     key: 2,
                     class: "meta-toggle-btn mt-teardown",
-                    onClick: (l) => H("kw", v, "teardown")
-                  }, "+ Teardown", 8, zy)),
-                  R("kw", v, "timeout", d.timeout) ? T("", !0) : (i(), u("button", {
+                    onClick: (l) => j("kw", h, "teardown")
+                  }, "+ Teardown", 8, Gy)),
+                  K("kw", h, "timeout", d.timeout) ? $("", !0) : (i(), u("button", {
                     key: 3,
                     class: "meta-toggle-btn mt-config",
-                    onClick: (l) => H("kw", v, "timeout")
-                  }, "+ Timeout", 8, Gy)),
-                  R("kw", v, "return", d.returnValue) ? T("", !0) : (i(), u("button", {
+                    onClick: (l) => j("kw", h, "timeout")
+                  }, "+ Timeout", 8, Yy)),
+                  K("kw", h, "return", d.returnValue) ? $("", !0) : (i(), u("button", {
                     key: 4,
                     class: "meta-toggle-btn mt-return",
-                    onClick: (l) => H("kw", v, "return")
-                  }, "+ Return", 8, Yy))
+                    onClick: (l) => j("kw", h, "return")
+                  }, "+ Return", 8, Xy))
                 ]),
-                R("kw", v, "setup", d.setup) ? (i(), u("div", Xy, [
-                  t("label", Zy, [
-                    we(m(p(a)("robotEditor.setup")) + " ", 1),
-                    d.setup ? T("", !0) : (i(), u("button", {
+                K("kw", h, "setup", d.setup) ? (i(), u("div", Zy, [
+                  o("label", Qy, [
+                    we(m(p(s)("robotEditor.setup")) + " ", 1),
+                    d.setup ? $("", !0) : (i(), u("button", {
                       key: 0,
                       class: "meta-close-btn",
-                      onClick: (l) => H("kw", v, "setup")
-                    }, "×", 8, Qy))
+                      onClick: (l) => j("kw", h, "setup")
+                    }, "×", 8, Jy))
                   ]),
-                  t("div", Jy, [
-                    t("div", eb, [
-                      t("input", {
-                        value: ie("kw", v, "setup", d).keyword,
+                  o("div", eb, [
+                    o("div", tb, [
+                      o("input", {
+                        value: ie("kw", h, "setup", d).keyword,
                         onInput: (l) => {
-                          ie("kw", v, "setup", d).keyword = l.target.value, tt("kw", v, "setup", d);
+                          ie("kw", h, "setup", d).keyword = l.target.value, mt("kw", h, "setup", d);
                         },
                         class: "form-input step-keyword-input",
                         spellcheck: "false",
-                        style: Ee({ width: Math.max(18, Math.min((ie("kw", v, "setup", d).keyword || "").length + 5, 40)) + "ch" }),
-                        placeholder: p(a)("robotEditor.setupPlaceholder"),
-                        onFocus: (l) => gt("kw", v, "setup", d),
-                        onBlur: pt,
-                        onKeydown: (l) => Tt(l, ie("kw", v, "setup", d))
-                      }, null, 44, tb),
-                      Y.value === ie("kw", v, "setup", d) && De.value.length > 0 ? (i(), u("div", {
+                        style: Ee({ width: Math.max(18, Math.min((ie("kw", h, "setup", d).keyword || "").length + 5, 40)) + "ch" }),
+                        placeholder: p(s)("robotEditor.setupPlaceholder"),
+                        onFocus: (l) => ut("kw", h, "setup", d),
+                        onBlur: dt,
+                        onKeydown: (l) => wt(l, ie("kw", h, "setup", d))
+                      }, null, 44, ob),
+                      D.value === ie("kw", h, "setup", d) && xe.value.length > 0 ? (i(), u("div", {
                         key: 0,
                         ref_for: !0,
                         ref_key: "keywordDropdownRef",
-                        ref: ce,
+                        ref: be,
                         class: "keyword-dropdown"
                       }, [
-                        (i(!0), u(x, null, X(De.value, (l, S) => {
-                          var b;
+                        (i(!0), u(U, null, Y(xe.value, (l, E) => {
+                          var t;
                           return i(), u("div", {
                             key: l.name,
-                            class: ne(["keyword-dropdown-item", { active: S === Z.value }]),
-                            onMousedown: re((o) => ut("kw", v, "setup", d, l), ["prevent"])
+                            class: te(["keyword-dropdown-item", { active: E === oe.value }]),
+                            onMousedown: le((n) => Je("kw", h, "setup", d, l), ["prevent"])
                           }, [
-                            t("span", nb, m(l.name), 1),
-                            (b = l.args) != null && b.length ? (i(), u("span", ab, m(l.args.map((o) => o.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1")).join(", ")), 1)) : T("", !0)
-                          ], 42, ob);
+                            o("span", ab, m(l.name), 1),
+                            (t = l.args) != null && t.length ? (i(), u("span", sb, m(l.args.map((n) => n.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1")).join(", ")), 1)) : $("", !0)
+                          ], 42, nb);
                         }), 128))
-                      ], 512)) : T("", !0)
+                      ], 512)) : $("", !0)
                     ]),
-                    ie("kw", v, "setup", d).args.length ? (i(), u("div", sb, [
-                      (i(!0), u(x, null, X(ie("kw", v, "setup", d).args, (l, S) => (i(), u("span", {
-                        key: S,
+                    ie("kw", h, "setup", d).args.length ? (i(), u("div", lb, [
+                      (i(!0), u(U, null, Y(ie("kw", h, "setup", d).args, (l, E) => (i(), u("span", {
+                        key: E,
                         class: "step-arg-chip"
                       }, [
-                        $e(ie("kw", v, "setup", d))[S] ? (i(), u("span", lb, m($e(ie("kw", v, "setup", d))[S]), 1)) : T("", !0),
-                        t("span", {
+                        ke(ie("kw", h, "setup", d))[E] ? (i(), u("span", rb, m(ke(ie("kw", h, "setup", d))[E]), 1)) : $("", !0),
+                        o("span", {
                           class: "arg-highlight-wrap",
-                          style: Ee({ width: lt(l) })
+                          style: Ee({ width: rt(l) })
                         }, [
-                          t("span", {
+                          o("span", {
                             class: "arg-highlight-overlay",
-                            innerHTML: Te(l)
-                          }, null, 8, rb),
-                          t("input", {
+                            innerHTML: Ve(l)
+                          }, null, 8, ib),
+                          o("input", {
                             value: l,
-                            onInput: (b) => {
-                              ie("kw", v, "setup", d).args[S] = b.target.value, ze("kw", v, "setup", d);
+                            onInput: (t) => {
+                              ie("kw", h, "setup", d).args[E] = t.target.value, Ke("kw", h, "setup", d);
                             },
                             class: "step-arg-input",
                             spellcheck: "false",
                             style: { width: "100%" },
-                            placeholder: $e(ie("kw", v, "setup", d))[S] || p(a)("robotEditor.argPlaceholder")
-                          }, null, 40, ib)
+                            placeholder: ke(ie("kw", h, "setup", d))[E] || p(s)("robotEditor.argPlaceholder")
+                          }, null, 40, ub)
                         ], 4),
-                        t("button", {
+                        o("button", {
                           class: "chip-remove",
-                          onClick: (b) => vt("kw", v, "setup", d, S)
-                        }, "×", 8, ub)
+                          onClick: (t) => Ye("kw", h, "setup", d, E)
+                        }, "×", 8, cb)
                       ]))), 128))
-                    ])) : T("", !0),
-                    t("button", {
+                    ])) : $("", !0),
+                    o("button", {
                       class: "step-btn step-add-arg",
-                      onClick: (l) => Ze("kw", v, "setup", d),
-                      title: p(a)("robotEditor.addArg")
-                    }, "+", 8, cb)
+                      onClick: (l) => gt("kw", h, "setup", d),
+                      title: p(s)("robotEditor.addArg")
+                    }, "+", 8, db)
                   ])
-                ])) : T("", !0),
-                R("kw", v, "teardown", d.teardown) ? (i(), u("div", db, [
-                  t("label", pb, [
-                    we(m(p(a)("robotEditor.teardown")) + " ", 1),
-                    d.teardown ? T("", !0) : (i(), u("button", {
+                ])) : $("", !0),
+                K("kw", h, "teardown", d.teardown) ? (i(), u("div", pb, [
+                  o("label", fb, [
+                    we(m(p(s)("robotEditor.teardown")) + " ", 1),
+                    d.teardown ? $("", !0) : (i(), u("button", {
                       key: 0,
                       class: "meta-close-btn",
-                      onClick: (l) => H("kw", v, "teardown")
-                    }, "×", 8, fb))
+                      onClick: (l) => j("kw", h, "teardown")
+                    }, "×", 8, mb))
                   ]),
-                  t("div", mb, [
-                    t("div", gb, [
-                      t("input", {
-                        value: ie("kw", v, "teardown", d).keyword,
+                  o("div", gb, [
+                    o("div", vb, [
+                      o("input", {
+                        value: ie("kw", h, "teardown", d).keyword,
                         onInput: (l) => {
-                          ie("kw", v, "teardown", d).keyword = l.target.value, tt("kw", v, "teardown", d);
+                          ie("kw", h, "teardown", d).keyword = l.target.value, mt("kw", h, "teardown", d);
                         },
                         class: "form-input step-keyword-input",
                         spellcheck: "false",
-                        style: Ee({ width: Math.max(18, Math.min((ie("kw", v, "teardown", d).keyword || "").length + 5, 40)) + "ch" }),
-                        placeholder: p(a)("robotEditor.teardownPlaceholder"),
-                        onFocus: (l) => gt("kw", v, "teardown", d),
-                        onBlur: pt,
-                        onKeydown: (l) => Tt(l, ie("kw", v, "teardown", d))
-                      }, null, 44, vb),
-                      Y.value === ie("kw", v, "teardown", d) && De.value.length > 0 ? (i(), u("div", {
+                        style: Ee({ width: Math.max(18, Math.min((ie("kw", h, "teardown", d).keyword || "").length + 5, 40)) + "ch" }),
+                        placeholder: p(s)("robotEditor.teardownPlaceholder"),
+                        onFocus: (l) => ut("kw", h, "teardown", d),
+                        onBlur: dt,
+                        onKeydown: (l) => wt(l, ie("kw", h, "teardown", d))
+                      }, null, 44, hb),
+                      D.value === ie("kw", h, "teardown", d) && xe.value.length > 0 ? (i(), u("div", {
                         key: 0,
                         ref_for: !0,
                         ref_key: "keywordDropdownRef",
-                        ref: ce,
+                        ref: be,
                         class: "keyword-dropdown"
                       }, [
-                        (i(!0), u(x, null, X(De.value, (l, S) => {
-                          var b;
+                        (i(!0), u(U, null, Y(xe.value, (l, E) => {
+                          var t;
                           return i(), u("div", {
                             key: l.name,
-                            class: ne(["keyword-dropdown-item", { active: S === Z.value }]),
-                            onMousedown: re((o) => ut("kw", v, "teardown", d, l), ["prevent"])
+                            class: te(["keyword-dropdown-item", { active: E === oe.value }]),
+                            onMousedown: le((n) => Je("kw", h, "teardown", d, l), ["prevent"])
                           }, [
-                            t("span", yb, m(l.name), 1),
-                            (b = l.args) != null && b.length ? (i(), u("span", bb, m(l.args.map((o) => o.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1")).join(", ")), 1)) : T("", !0)
-                          ], 42, hb);
+                            o("span", bb, m(l.name), 1),
+                            (t = l.args) != null && t.length ? (i(), u("span", wb, m(l.args.map((n) => n.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1")).join(", ")), 1)) : $("", !0)
+                          ], 42, yb);
                         }), 128))
-                      ], 512)) : T("", !0)
+                      ], 512)) : $("", !0)
                     ]),
-                    ie("kw", v, "teardown", d).args.length ? (i(), u("div", wb, [
-                      (i(!0), u(x, null, X(ie("kw", v, "teardown", d).args, (l, S) => (i(), u("span", {
-                        key: S,
+                    ie("kw", h, "teardown", d).args.length ? (i(), u("div", _b, [
+                      (i(!0), u(U, null, Y(ie("kw", h, "teardown", d).args, (l, E) => (i(), u("span", {
+                        key: E,
                         class: "step-arg-chip"
                       }, [
-                        $e(ie("kw", v, "teardown", d))[S] ? (i(), u("span", _b, m($e(ie("kw", v, "teardown", d))[S]), 1)) : T("", !0),
-                        t("span", {
+                        ke(ie("kw", h, "teardown", d))[E] ? (i(), u("span", kb, m(ke(ie("kw", h, "teardown", d))[E]), 1)) : $("", !0),
+                        o("span", {
                           class: "arg-highlight-wrap",
-                          style: Ee({ width: lt(l) })
+                          style: Ee({ width: rt(l) })
                         }, [
-                          t("span", {
+                          o("span", {
                             class: "arg-highlight-overlay",
-                            innerHTML: Te(l)
-                          }, null, 8, kb),
-                          t("input", {
+                            innerHTML: Ve(l)
+                          }, null, 8, Cb),
+                          o("input", {
                             value: l,
-                            onInput: (b) => {
-                              ie("kw", v, "teardown", d).args[S] = b.target.value, ze("kw", v, "teardown", d);
+                            onInput: (t) => {
+                              ie("kw", h, "teardown", d).args[E] = t.target.value, Ke("kw", h, "teardown", d);
                             },
                             class: "step-arg-input",
                             spellcheck: "false",
                             style: { width: "100%" },
-                            placeholder: $e(ie("kw", v, "teardown", d))[S] || p(a)("robotEditor.argPlaceholder")
-                          }, null, 40, Cb)
+                            placeholder: ke(ie("kw", h, "teardown", d))[E] || p(s)("robotEditor.argPlaceholder")
+                          }, null, 40, $b)
                         ], 4),
-                        t("button", {
+                        o("button", {
                           class: "chip-remove",
-                          onClick: (b) => vt("kw", v, "teardown", d, S)
-                        }, "×", 8, $b)
+                          onClick: (t) => Ye("kw", h, "teardown", d, E)
+                        }, "×", 8, Tb)
                       ]))), 128))
-                    ])) : T("", !0),
-                    t("button", {
+                    ])) : $("", !0),
+                    o("button", {
                       class: "step-btn step-add-arg",
-                      onClick: (l) => Ze("kw", v, "teardown", d),
-                      title: p(a)("robotEditor.addArg")
-                    }, "+", 8, Tb)
+                      onClick: (l) => gt("kw", h, "teardown", d),
+                      title: p(s)("robotEditor.addArg")
+                    }, "+", 8, Eb)
                   ])
-                ])) : T("", !0),
-                R("kw", v, "timeout", d.timeout) || R("kw", v, "return", d.returnValue) ? (i(), u("div", Eb, [
-                  R("kw", v, "timeout", d.timeout) ? (i(), u("div", Sb, [
-                    t("label", Lb, [
-                      we(m(p(a)("robotEditor.timeout")) + " ", 1),
-                      d.timeout ? T("", !0) : (i(), u("button", {
+                ])) : $("", !0),
+                K("kw", h, "timeout", d.timeout) || K("kw", h, "return", d.returnValue) ? (i(), u("div", Sb, [
+                  K("kw", h, "timeout", d.timeout) ? (i(), u("div", Lb, [
+                    o("label", Vb, [
+                      we(m(p(s)("robotEditor.timeout")) + " ", 1),
+                      d.timeout ? $("", !0) : (i(), u("button", {
                         key: 0,
                         class: "meta-close-btn",
-                        onClick: (l) => H("kw", v, "timeout")
-                      }, "×", 8, Vb))
+                        onClick: (l) => j("kw", h, "timeout")
+                      }, "×", 8, Ab))
                     ]),
-                    t("span", Ab, [
-                      t("span", {
+                    o("span", Nb, [
+                      o("span", {
                         class: "form-hl-overlay",
-                        innerHTML: Te(d.timeout)
-                      }, null, 8, Nb),
-                      q(t("input", {
+                        innerHTML: Ve(d.timeout)
+                      }, null, 8, Rb),
+                      z(o("input", {
                         "onUpdate:modelValue": (l) => d.timeout = l,
                         class: "form-input",
                         style: { width: "100%" },
-                        placeholder: p(a)("robotEditor.timeoutPlaceholder"),
+                        placeholder: p(s)("robotEditor.timeoutPlaceholder"),
                         spellcheck: "false"
-                      }, null, 8, Rb), [
-                        [le, d.timeout]
+                      }, null, 8, Fb), [
+                        [ae, d.timeout]
                       ])
                     ])
-                  ])) : T("", !0),
-                  R("kw", v, "return", d.returnValue) ? (i(), u("div", Fb, [
-                    t("label", Pb, [
-                      we(m(p(a)("robotEditor.returnValue")) + " ", 1),
-                      d.returnValue ? T("", !0) : (i(), u("button", {
+                  ])) : $("", !0),
+                  K("kw", h, "return", d.returnValue) ? (i(), u("div", Pb, [
+                    o("label", Db, [
+                      we(m(p(s)("robotEditor.returnValue")) + " ", 1),
+                      d.returnValue ? $("", !0) : (i(), u("button", {
                         key: 0,
                         class: "meta-close-btn",
-                        onClick: (l) => H("kw", v, "return")
-                      }, "×", 8, Db))
+                        onClick: (l) => j("kw", h, "return")
+                      }, "×", 8, Mb))
                     ]),
-                    t("span", Mb, [
-                      t("span", {
+                    o("span", xb, [
+                      o("span", {
                         class: "form-hl-overlay",
-                        innerHTML: Te(d.returnValue)
-                      }, null, 8, xb),
-                      q(t("input", {
+                        innerHTML: Ve(d.returnValue)
+                      }, null, 8, Ub),
+                      z(o("input", {
                         "onUpdate:modelValue": (l) => d.returnValue = l,
                         class: "form-input",
                         style: { width: "100%" },
-                        placeholder: p(a)("robotEditor.returnValuePlaceholder"),
+                        placeholder: p(s)("robotEditor.returnValuePlaceholder"),
                         spellcheck: "false"
-                      }, null, 8, Ub), [
-                        [le, d.returnValue]
+                      }, null, 8, Bb), [
+                        [ae, d.returnValue]
                       ])
                     ])
-                  ])) : T("", !0)
-                ])) : T("", !0),
-                t("div", Bb, [
-                  t("label", Kb, m(p(a)("robotEditor.steps")), 1),
-                  t("div", Hb, [
-                    (i(!0), u(x, null, X(d.steps, (l, S) => (i(), u("div", {
-                      key: S,
+                  ])) : $("", !0)
+                ])) : $("", !0),
+                o("div", Kb, [
+                  o("label", Hb, m(p(s)("robotEditor.steps")), 1),
+                  o("div", Ob, [
+                    (i(!0), u(U, null, Y(d.steps, (l, E) => (i(), u("div", {
+                      key: E,
                       class: "step-row",
-                      style: Ee({ paddingLeft: st(d.steps, S) * 24 + "px" })
+                      style: Ee({ paddingLeft: Pt(d.steps, E) * 24 + "px" })
                     }, [
-                      t("span", Ob, m(S + 1) + ".", 1),
-                      q(t("select", {
-                        "onUpdate:modelValue": (b) => l.type = b,
-                        class: ne(["step-type-select", Ro(l.type)]),
-                        onChange: (b) => vo(l)
+                      o("span", Ib, m(E + 1) + ".", 1),
+                      z(o("select", {
+                        "onUpdate:modelValue": (t) => l.type = t,
+                        class: te(["step-type-select", rn(l.type)]),
+                        onChange: (t) => sn(l)
                       }, [
-                        (i(!0), u(x, null, X(p(Ta), (b) => (i(), u("option", {
-                          key: b,
-                          value: b
-                        }, m(en(b)), 9, Wb))), 128))
-                      ], 42, Ib), [
+                        (i(!0), u(U, null, Y(p(Ta), (t) => (i(), u("option", {
+                          key: t,
+                          value: t
+                        }, m(Ft(t)), 9, jb))), 128))
+                      ], 42, Wb), [
                         [it, l.type]
                       ]),
-                      l.type === "keyword" ? (i(), u(x, { key: 0 }, [
-                        t("div", jb, [
-                          q(t("input", {
-                            "onUpdate:modelValue": (b) => l.keyword = b,
+                      l.type === "keyword" ? (i(), u(U, { key: 0 }, [
+                        o("div", qb, [
+                          z(o("input", {
+                            "onUpdate:modelValue": (t) => l.keyword = t,
                             class: "form-input step-keyword-input",
                             spellcheck: "false",
                             style: Ee({ width: Math.max(18, Math.min((l.keyword || "").length + 5, 60)) + "ch" }),
-                            placeholder: p(a)("robotEditor.keywordPlaceholder"),
-                            onFocus: (b) => qt(l),
-                            onBlur: pt,
-                            onKeydown: (b) => Tt(b, l),
-                            onInput: (b) => zt(l)
-                          }, null, 44, qb), [
-                            [le, l.keyword]
+                            placeholder: p(s)("robotEditor.keywordPlaceholder"),
+                            onFocus: (t) => It(l),
+                            onBlur: dt,
+                            onKeydown: (t) => wt(t, l),
+                            onInput: (t) => Wt(l)
+                          }, null, 44, zb), [
+                            [ae, l.keyword]
                           ]),
-                          Y.value === l && De.value.length > 0 ? (i(), u("div", {
+                          D.value === l && xe.value.length > 0 ? (i(), u("div", {
                             key: 0,
                             ref_for: !0,
                             ref_key: "keywordDropdownRef",
-                            ref: ce,
+                            ref: be,
                             class: "keyword-dropdown"
                           }, [
-                            (i(!0), u(x, null, X(De.value, (b, o) => {
-                              var s;
+                            (i(!0), u(U, null, Y(xe.value, (t, n) => {
+                              var v;
                               return i(), u("div", {
-                                key: b.name,
-                                class: ne(["keyword-dropdown-item", { active: o === Z.value }]),
-                                onMousedown: re(($) => Gt(l, b), ["prevent"])
+                                key: t.name,
+                                class: te(["keyword-dropdown-item", { active: n === oe.value }]),
+                                onMousedown: le((F) => Dt(l, t), ["prevent"])
                               }, [
-                                t("span", Gb, m(b.name), 1),
-                                (s = b.args) != null && s.length ? (i(), u("span", Yb, m(b.args.map(($) => $.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1")).join(", ")), 1)) : T("", !0),
-                                t("span", {
-                                  class: ne(["kw-suggestion-source", "source-" + (b.source === "builtin" ? "builtin" : b.source === "local" || b.source === "project" ? "local" : "library")])
-                                }, m(b.source === "builtin" ? p(a)("robotEditor.builtinKeyword") : b.source === "local" || b.source === "project" ? p(a)("robotEditor.localKeyword") : b.source), 3)
-                              ], 42, zb);
+                                o("span", Yb, m(t.name), 1),
+                                (v = t.args) != null && v.length ? (i(), u("span", Xb, m(t.args.map((F) => F.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1")).join(", ")), 1)) : $("", !0),
+                                o("span", {
+                                  class: te(["kw-suggestion-source", "source-" + (t.source === "builtin" ? "builtin" : t.source === "local" || t.source === "project" ? "local" : "library")])
+                                }, m(t.source === "builtin" ? p(s)("robotEditor.builtinKeyword") : t.source === "local" || t.source === "project" ? p(s)("robotEditor.localKeyword") : t.source), 3)
+                              ], 42, Gb);
                             }), 128))
-                          ], 512)) : T("", !0)
+                          ], 512)) : $("", !0)
                         ]),
-                        l.args.length ? (i(), u("div", Xb, [
-                          (i(!0), u(x, null, X(l.args, (b, o) => (i(), u("span", {
-                            key: o,
+                        l.args.length ? (i(), u("div", Zb, [
+                          (i(!0), u(U, null, Y(l.args, (t, n) => (i(), u("span", {
+                            key: n,
                             class: "step-arg-chip arg-ac-wrapper"
                           }, [
-                            $e(l)[o] ? (i(), u("span", Zb, m($e(l)[o]), 1)) : T("", !0),
-                            t("span", {
+                            ke(l)[n] ? (i(), u("span", Qb, m(ke(l)[n]), 1)) : $("", !0),
+                            o("span", {
                               class: "arg-highlight-wrap",
-                              style: Ee({ width: lt(l.args[o]) })
+                              style: Ee({ width: rt(l.args[n]) })
                             }, [
-                              t("span", {
+                              o("span", {
                                 class: "arg-highlight-overlay",
-                                innerHTML: Te(l.args[o])
-                              }, null, 8, Qb),
-                              q(t("input", {
-                                "onUpdate:modelValue": (s) => l.args[o] = s,
+                                innerHTML: Ve(l.args[n])
+                              }, null, 8, Jb),
+                              z(o("input", {
+                                "onUpdate:modelValue": (v) => l.args[n] = v,
                                 class: "step-arg-input",
                                 spellcheck: "false",
-                                onScroll: Xt,
+                                onScroll: jt,
                                 style: { width: "100%" },
-                                placeholder: $e(l)[o] || p(a)("robotEditor.argPlaceholder"),
-                                onInput: (s) => Dt(s.target.value, `${S}-${o}`),
-                                onKeydown: (s) => Mt(s, l, o),
-                                onBlur: ho,
+                                placeholder: ke(l)[n] || p(s)("robotEditor.argPlaceholder"),
+                                onInput: (v) => so(v.target.value, `${E}-${n}`),
+                                onKeydown: (v) => ho(v, l, n),
+                                onBlur: lo,
                                 autocomplete: "off"
-                              }, null, 40, Jb), [
-                                [le, l.args[o]]
+                              }, null, 40, ew), [
+                                [ae, l.args[n]]
                               ])
                             ], 4),
-                            be.value === `${S}-${o}` && oe.value.length ? (i(), u("div", ew, [
-                              (i(!0), u(x, null, X(oe.value, (s, $) => (i(), u("div", {
-                                key: s,
-                                class: ne(["arg-ac-item", { active: $ === fe.value }]),
-                                onMousedown: re((K) => Yt(l, o, s), ["prevent"])
-                              }, m(s), 43, tw))), 128))
-                            ])) : T("", !0),
-                            t("button", {
+                            Le.value === `${E}-${n}` && ce.value.length ? (i(), u("div", tw, [
+                              (i(!0), u(U, null, Y(ce.value, (v, F) => (i(), u("div", {
+                                key: v,
+                                class: te(["arg-ac-item", { active: F === ge.value }]),
+                                onMousedown: le((X) => _t(l, n, v), ["prevent"])
+                              }, m(v), 43, ow))), 128))
+                            ])) : $("", !0),
+                            o("button", {
                               class: "chip-remove",
-                              onClick: (s) => Qe(l, o)
-                            }, "×", 8, ow)
+                              onClick: (v) => Ue(l, n)
+                            }, "×", 8, nw)
                           ]))), 128))
-                        ])) : T("", !0),
-                        t("button", {
-                          class: ne(["step-btn step-add-arg", { "has-hint": $t(l) !== "+" }]),
-                          onClick: (b) => dt(l),
-                          title: p(a)("robotEditor.addArg")
-                        }, m($t(l)), 11, nw)
-                      ], 64)) : l.type === "assignment" ? (i(), u(x, { key: 1 }, [
-                        (i(!0), u(x, null, X(l.returnVars, (b, o) => (i(), u("span", {
-                          key: o,
+                        ])) : $("", !0),
+                        o("button", {
+                          class: te(["step-btn step-add-arg", { "has-hint": tt(l) !== "+" }]),
+                          onClick: (t) => bt(l),
+                          title: p(s)("robotEditor.addArg")
+                        }, m(tt(l)), 11, aw)
+                      ], 64)) : l.type === "assignment" ? (i(), u(U, { key: 1 }, [
+                        (i(!0), u(U, null, Y(l.returnVars, (t, n) => (i(), u("span", {
+                          key: n,
                           class: "step-var-chip"
                         }, [
-                          q(t("input", {
-                            "onUpdate:modelValue": (s) => l.returnVars[o] = s,
+                          z(o("input", {
+                            "onUpdate:modelValue": (v) => l.returnVars[n] = v,
                             class: "step-var-input",
                             spellcheck: "false",
                             placeholder: "${var}",
-                            onBlur: (s) => yo(l, o)
-                          }, null, 40, aw), [
-                            [le, l.returnVars[o]]
+                            onBlur: (v) => yo(l, n)
+                          }, null, 40, sw), [
+                            [ae, l.returnVars[n]]
                           ]),
-                          t("button", {
+                          o("button", {
                             class: "chip-remove",
-                            onClick: (s) => Jo(l, o)
-                          }, "×", 8, sw)
+                            onClick: (v) => ao(l, n)
+                          }, "×", 8, lw)
                         ]))), 128)),
-                        t("button", {
+                        o("button", {
                           class: "step-btn step-add-var",
-                          onClick: (b) => at(l),
+                          onClick: (t) => an(l),
                           title: "+var"
-                        }, "+v", 8, lw),
-                        h[18] || (h[18] = t("span", { class: "step-assign-eq" }, "=", -1)),
-                        t("div", rw, [
-                          q(t("input", {
-                            "onUpdate:modelValue": (b) => l.keyword = b,
+                        }, "+v", 8, rw),
+                        y[18] || (y[18] = o("span", { class: "step-assign-eq" }, "=", -1)),
+                        o("div", iw, [
+                          z(o("input", {
+                            "onUpdate:modelValue": (t) => l.keyword = t,
                             class: "form-input step-keyword-input",
                             spellcheck: "false",
                             style: Ee({ width: Math.max(18, Math.min((l.keyword || "").length + 5, 60)) + "ch" }),
-                            placeholder: p(a)("robotEditor.keywordPlaceholder"),
-                            onFocus: (b) => qt(l),
-                            onBlur: pt,
-                            onKeydown: (b) => Tt(b, l),
-                            onInput: (b) => zt(l)
-                          }, null, 44, iw), [
-                            [le, l.keyword]
+                            placeholder: p(s)("robotEditor.keywordPlaceholder"),
+                            onFocus: (t) => It(l),
+                            onBlur: dt,
+                            onKeydown: (t) => wt(t, l),
+                            onInput: (t) => Wt(l)
+                          }, null, 44, uw), [
+                            [ae, l.keyword]
                           ]),
-                          Y.value === l && De.value.length > 0 ? (i(), u("div", {
+                          D.value === l && xe.value.length > 0 ? (i(), u("div", {
                             key: 0,
                             ref_for: !0,
                             ref_key: "keywordDropdownRef",
-                            ref: ce,
+                            ref: be,
                             class: "keyword-dropdown"
                           }, [
-                            (i(!0), u(x, null, X(De.value, (b, o) => {
-                              var s;
+                            (i(!0), u(U, null, Y(xe.value, (t, n) => {
+                              var v;
                               return i(), u("div", {
-                                key: b.name,
-                                class: ne(["keyword-dropdown-item", { active: o === Z.value }]),
-                                onMousedown: re(($) => Gt(l, b), ["prevent"])
+                                key: t.name,
+                                class: te(["keyword-dropdown-item", { active: n === oe.value }]),
+                                onMousedown: le((F) => Dt(l, t), ["prevent"])
                               }, [
-                                t("span", cw, m(b.name), 1),
-                                (s = b.args) != null && s.length ? (i(), u("span", dw, m(b.args.map(($) => $.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1")).join(", ")), 1)) : T("", !0),
-                                t("span", {
-                                  class: ne(["kw-suggestion-source", "source-" + (b.source === "builtin" ? "builtin" : b.source === "local" || b.source === "project" ? "local" : "library")])
-                                }, m(b.source === "builtin" ? p(a)("robotEditor.builtinKeyword") : b.source === "local" || b.source === "project" ? p(a)("robotEditor.localKeyword") : b.source), 3)
-                              ], 42, uw);
+                                o("span", dw, m(t.name), 1),
+                                (v = t.args) != null && v.length ? (i(), u("span", pw, m(t.args.map((F) => F.replace(/^[$@&%]\{([^}]+)\}.*$/, "$1")).join(", ")), 1)) : $("", !0),
+                                o("span", {
+                                  class: te(["kw-suggestion-source", "source-" + (t.source === "builtin" ? "builtin" : t.source === "local" || t.source === "project" ? "local" : "library")])
+                                }, m(t.source === "builtin" ? p(s)("robotEditor.builtinKeyword") : t.source === "local" || t.source === "project" ? p(s)("robotEditor.localKeyword") : t.source), 3)
+                              ], 42, cw);
                             }), 128))
-                          ], 512)) : T("", !0)
+                          ], 512)) : $("", !0)
                         ]),
-                        l.args.length ? (i(), u("div", pw, [
-                          (i(!0), u(x, null, X(l.args, (b, o) => (i(), u("span", {
-                            key: o,
+                        l.args.length ? (i(), u("div", fw, [
+                          (i(!0), u(U, null, Y(l.args, (t, n) => (i(), u("span", {
+                            key: n,
                             class: "step-arg-chip arg-ac-wrapper"
                           }, [
-                            $e(l)[o] ? (i(), u("span", fw, m($e(l)[o]), 1)) : T("", !0),
-                            t("span", {
+                            ke(l)[n] ? (i(), u("span", mw, m(ke(l)[n]), 1)) : $("", !0),
+                            o("span", {
                               class: "arg-highlight-wrap",
-                              style: Ee({ width: lt(l.args[o]) })
+                              style: Ee({ width: rt(l.args[n]) })
                             }, [
-                              t("span", {
+                              o("span", {
                                 class: "arg-highlight-overlay",
-                                innerHTML: Te(l.args[o])
-                              }, null, 8, mw),
-                              q(t("input", {
-                                "onUpdate:modelValue": (s) => l.args[o] = s,
+                                innerHTML: Ve(l.args[n])
+                              }, null, 8, gw),
+                              z(o("input", {
+                                "onUpdate:modelValue": (v) => l.args[n] = v,
                                 class: "step-arg-input",
                                 spellcheck: "false",
-                                onScroll: Xt,
+                                onScroll: jt,
                                 style: { width: "100%" },
-                                placeholder: $e(l)[o] || p(a)("robotEditor.argPlaceholder"),
-                                onInput: (s) => Dt(s.target.value, `${S}-${o}`),
-                                onKeydown: (s) => Mt(s, l, o),
-                                onBlur: ho,
+                                placeholder: ke(l)[n] || p(s)("robotEditor.argPlaceholder"),
+                                onInput: (v) => so(v.target.value, `${E}-${n}`),
+                                onKeydown: (v) => ho(v, l, n),
+                                onBlur: lo,
                                 autocomplete: "off"
-                              }, null, 40, gw), [
-                                [le, l.args[o]]
+                              }, null, 40, vw), [
+                                [ae, l.args[n]]
                               ])
                             ], 4),
-                            be.value === `${S}-${o}` && oe.value.length ? (i(), u("div", vw, [
-                              (i(!0), u(x, null, X(oe.value, (s, $) => (i(), u("div", {
-                                key: s,
-                                class: ne(["arg-ac-item", { active: $ === fe.value }]),
-                                onMousedown: re((K) => Yt(l, o, s), ["prevent"])
-                              }, m(s), 43, hw))), 128))
-                            ])) : T("", !0),
-                            t("button", {
+                            Le.value === `${E}-${n}` && ce.value.length ? (i(), u("div", hw, [
+                              (i(!0), u(U, null, Y(ce.value, (v, F) => (i(), u("div", {
+                                key: v,
+                                class: te(["arg-ac-item", { active: F === ge.value }]),
+                                onMousedown: le((X) => _t(l, n, v), ["prevent"])
+                              }, m(v), 43, yw))), 128))
+                            ])) : $("", !0),
+                            o("button", {
                               class: "chip-remove",
-                              onClick: (s) => Qe(l, o)
-                            }, "×", 8, yw)
+                              onClick: (v) => Ue(l, n)
+                            }, "×", 8, bw)
                           ]))), 128))
-                        ])) : T("", !0),
-                        t("button", {
-                          class: ne(["step-btn step-add-arg", { "has-hint": $t(l) !== "+" }]),
-                          onClick: (b) => dt(l),
-                          title: p(a)("robotEditor.addArg")
-                        }, m($t(l)), 11, bw)
-                      ], 64)) : l.type === "var" ? (i(), u(x, { key: 2 }, [
-                        t("span", ww, [
-                          q(t("input", {
-                            "onUpdate:modelValue": (b) => l.returnVars[0] = b,
+                        ])) : $("", !0),
+                        o("button", {
+                          class: te(["step-btn step-add-arg", { "has-hint": tt(l) !== "+" }]),
+                          onClick: (t) => bt(l),
+                          title: p(s)("robotEditor.addArg")
+                        }, m(tt(l)), 11, ww)
+                      ], 64)) : l.type === "var" ? (i(), u(U, { key: 2 }, [
+                        o("span", _w, [
+                          z(o("input", {
+                            "onUpdate:modelValue": (t) => l.returnVars[0] = t,
                             class: "step-var-input",
                             spellcheck: "false",
                             placeholder: "${var}",
-                            onBlur: (b) => yo(l, 0)
-                          }, null, 40, _w), [
-                            [le, l.returnVars[0]]
+                            onBlur: (t) => yo(l, 0)
+                          }, null, 40, kw), [
+                            [ae, l.returnVars[0]]
                           ])
                         ]),
-                        h[20] || (h[20] = t("span", { class: "step-assign-eq" }, "=", -1)),
-                        (i(!0), u(x, null, X(l.args, (b, o) => (i(), u("span", {
-                          key: o,
+                        y[20] || (y[20] = o("span", { class: "step-assign-eq" }, "=", -1)),
+                        (i(!0), u(U, null, Y(l.args, (t, n) => (i(), u("span", {
+                          key: n,
                           class: "step-arg-chip"
                         }, [
-                          t("span", {
+                          o("span", {
                             class: "arg-highlight-wrap",
-                            style: Ee({ width: lt(l.args[o]) })
+                            style: Ee({ width: rt(l.args[n]) })
                           }, [
-                            t("span", {
+                            o("span", {
                               class: "arg-highlight-overlay",
-                              innerHTML: Te(l.args[o])
-                            }, null, 8, kw),
-                            q(t("input", {
-                              "onUpdate:modelValue": (s) => l.args[o] = s,
+                              innerHTML: Ve(l.args[n])
+                            }, null, 8, Cw),
+                            z(o("input", {
+                              "onUpdate:modelValue": (v) => l.args[n] = v,
                               class: "step-arg-input",
                               spellcheck: "false",
-                              onScroll: Xt,
+                              onScroll: jt,
                               style: { width: "100%" },
-                              placeholder: p(a)("robotEditor.valuePlaceholder")
-                            }, null, 40, Cw), [
-                              [le, l.args[o]]
+                              placeholder: p(s)("robotEditor.valuePlaceholder")
+                            }, null, 40, $w), [
+                              [ae, l.args[n]]
                             ])
                           ], 4),
-                          t("button", {
+                          o("button", {
                             class: "chip-remove",
-                            onClick: (s) => Qe(l, o)
-                          }, "×", 8, $w)
+                            onClick: (v) => Ue(l, n)
+                          }, "×", 8, Tw)
                         ]))), 128)),
-                        t("button", {
+                        o("button", {
                           class: "step-btn step-add-arg",
-                          onClick: (b) => dt(l),
-                          title: p(a)("robotEditor.addValue")
-                        }, "+", 8, Tw),
-                        q(t("select", {
-                          "onUpdate:modelValue": (b) => l.varScope = b,
+                          onClick: (t) => bt(l),
+                          title: p(s)("robotEditor.addValue")
+                        }, "+", 8, Ew),
+                        z(o("select", {
+                          "onUpdate:modelValue": (t) => l.varScope = t,
                           class: "step-scope-select"
                         }, [
-                          h[19] || (h[19] = t("option", { value: "" }, "scope", -1)),
-                          (i(!0), u(x, null, X(p(Ea), (b) => (i(), u("option", {
-                            key: b,
-                            value: b
-                          }, m(b), 9, Sw))), 128))
-                        ], 8, Ew), [
+                          y[19] || (y[19] = o("option", { value: "" }, "scope", -1)),
+                          (i(!0), u(U, null, Y(p(Ea), (t) => (i(), u("option", {
+                            key: t,
+                            value: t
+                          }, m(t), 9, Lw))), 128))
+                        ], 8, Sw), [
                           [it, l.varScope]
                         ])
-                      ], 64)) : l.type === "for" ? (i(), u(x, { key: 3 }, [
-                        t("span", Lw, [
-                          t("span", {
+                      ], 64)) : l.type === "for" ? (i(), u(U, { key: 3 }, [
+                        o("span", Vw, [
+                          o("span", {
                             class: "form-hl-overlay hl-mono",
-                            innerHTML: Te(l.loopVar)
-                          }, null, 8, Vw),
-                          q(t("input", {
-                            "onUpdate:modelValue": (b) => l.loopVar = b,
+                            innerHTML: Ve(l.loopVar)
+                          }, null, 8, Aw),
+                          z(o("input", {
+                            "onUpdate:modelValue": (t) => l.loopVar = t,
                             class: "form-input step-var-input-inline",
                             spellcheck: "false",
                             style: { width: "100%" },
                             placeholder: "${item}"
-                          }, null, 8, Aw), [
-                            [le, l.loopVar]
+                          }, null, 8, Nw), [
+                            [ae, l.loopVar]
                           ])
                         ]),
-                        q(t("select", {
-                          "onUpdate:modelValue": (b) => l.loopFlavor = b,
+                        z(o("select", {
+                          "onUpdate:modelValue": (t) => l.loopFlavor = t,
                           class: "step-flavor-select"
                         }, [
-                          (i(!0), u(x, null, X(p(ea), (b) => (i(), u("option", {
-                            key: b,
-                            value: b
-                          }, m(b), 9, Rw))), 128))
-                        ], 8, Nw), [
+                          (i(!0), u(U, null, Y(p(ta), (t) => (i(), u("option", {
+                            key: t,
+                            value: t
+                          }, m(t), 9, Fw))), 128))
+                        ], 8, Rw), [
                           [it, l.loopFlavor]
                         ]),
-                        (i(!0), u(x, null, X(l.loopValues, (b, o) => (i(), u("span", {
-                          key: o,
+                        (i(!0), u(U, null, Y(l.loopValues, (t, n) => (i(), u("span", {
+                          key: n,
                           class: "step-arg-chip"
                         }, [
-                          q(t("input", {
-                            "onUpdate:modelValue": (s) => l.loopValues[o] = s,
+                          z(o("input", {
+                            "onUpdate:modelValue": (v) => l.loopValues[n] = v,
                             class: "step-arg-input",
-                            placeholder: p(a)("robotEditor.valuePlaceholder")
-                          }, null, 8, Fw), [
-                            [le, l.loopValues[o]]
+                            placeholder: p(s)("robotEditor.valuePlaceholder")
+                          }, null, 8, Pw), [
+                            [ae, l.loopValues[n]]
                           ]),
-                          t("button", {
+                          o("button", {
                             class: "chip-remove",
-                            onClick: (s) => No(l, o)
-                          }, "×", 8, Pw)
+                            onClick: (v) => go(l, n)
+                          }, "×", 8, Dw)
                         ]))), 128)),
-                        t("button", {
+                        o("button", {
                           class: "step-btn step-add-arg",
-                          onClick: (b) => ao(l),
-                          title: p(a)("robotEditor.addValue")
-                        }, "+", 8, Dw)
-                      ], 64)) : l.type === "if" || l.type === "else_if" || l.type === "while" ? (i(), u("span", Mw, [
-                        t("span", {
+                          onClick: (t) => Ao(l),
+                          title: p(s)("robotEditor.addValue")
+                        }, "+", 8, Mw)
+                      ], 64)) : l.type === "if" || l.type === "else_if" || l.type === "while" ? (i(), u("span", xw, [
+                        o("span", {
                           class: "form-hl-overlay hl-condition",
-                          innerHTML: Te(l.condition)
-                        }, null, 8, xw),
-                        q(t("input", {
-                          "onUpdate:modelValue": (b) => l.condition = b,
+                          innerHTML: Ve(l.condition)
+                        }, null, 8, Uw),
+                        z(o("input", {
+                          "onUpdate:modelValue": (t) => l.condition = t,
                           class: "form-input step-condition-input",
                           style: { width: "100%" },
-                          placeholder: p(a)("robotEditor.conditionPlaceholder"),
+                          placeholder: p(s)("robotEditor.conditionPlaceholder"),
                           spellcheck: "false"
-                        }, null, 8, Uw), [
-                          [le, l.condition]
+                        }, null, 8, Bw), [
+                          [ae, l.condition]
                         ])
-                      ])) : l.type === "except" ? (i(), u(x, { key: 5 }, [
-                        q(t("input", {
-                          "onUpdate:modelValue": (b) => l.exceptPattern = b,
+                      ])) : l.type === "except" ? (i(), u(U, { key: 5 }, [
+                        z(o("input", {
+                          "onUpdate:modelValue": (t) => l.exceptPattern = t,
                           class: "form-input step-keyword-input",
                           spellcheck: "false",
-                          placeholder: p(a)("robotEditor.exceptPatternPlaceholder")
-                        }, null, 8, Bw), [
-                          [le, l.exceptPattern]
+                          placeholder: p(s)("robotEditor.exceptPatternPlaceholder")
+                        }, null, 8, Kw), [
+                          [ae, l.exceptPattern]
                         ]),
-                        l.exceptVar || l.exceptPattern ? (i(), u("span", Kw, "AS")) : T("", !0),
-                        l.exceptVar || l.exceptPattern ? (i(), u("span", Hw, [
-                          t("span", {
+                        l.exceptVar || l.exceptPattern ? (i(), u("span", Hw, "AS")) : $("", !0),
+                        l.exceptVar || l.exceptPattern ? (i(), u("span", Ow, [
+                          o("span", {
                             class: "form-hl-overlay hl-mono",
-                            innerHTML: Te(l.exceptVar)
-                          }, null, 8, Ow),
-                          q(t("input", {
-                            "onUpdate:modelValue": (b) => l.exceptVar = b,
+                            innerHTML: Ve(l.exceptVar)
+                          }, null, 8, Iw),
+                          z(o("input", {
+                            "onUpdate:modelValue": (t) => l.exceptVar = t,
                             class: "form-input step-var-input-inline",
                             spellcheck: "false",
                             style: { width: "100%" },
                             placeholder: "${error}"
-                          }, null, 8, Iw), [
-                            [le, l.exceptVar]
+                          }, null, 8, Ww), [
+                            [ae, l.exceptVar]
                           ])
-                        ])) : T("", !0)
-                      ], 64)) : l.type === "return" ? (i(), u(x, { key: 6 }, [
-                        (i(!0), u(x, null, X(l.args, (b, o) => (i(), u("span", {
-                          key: o,
+                        ])) : $("", !0)
+                      ], 64)) : l.type === "return" ? (i(), u(U, { key: 6 }, [
+                        (i(!0), u(U, null, Y(l.args, (t, n) => (i(), u("span", {
+                          key: n,
                           class: "step-arg-chip"
                         }, [
-                          q(t("input", {
-                            "onUpdate:modelValue": (s) => l.args[o] = s,
+                          z(o("input", {
+                            "onUpdate:modelValue": (v) => l.args[n] = v,
                             class: "step-arg-input",
-                            placeholder: p(a)("robotEditor.valuePlaceholder")
-                          }, null, 8, Ww), [
-                            [le, l.args[o]]
+                            placeholder: p(s)("robotEditor.valuePlaceholder")
+                          }, null, 8, jw), [
+                            [ae, l.args[n]]
                           ]),
-                          t("button", {
+                          o("button", {
                             class: "chip-remove",
-                            onClick: (s) => Qe(l, o)
-                          }, "×", 8, jw)
+                            onClick: (v) => Ue(l, n)
+                          }, "×", 8, qw)
                         ]))), 128)),
-                        t("button", {
+                        o("button", {
                           class: "step-btn step-add-arg",
-                          onClick: (b) => dt(l),
-                          title: p(a)("robotEditor.addValue")
-                        }, "+", 8, qw)
-                      ], 64)) : l.type === "comment" ? q((i(), u("input", {
+                          onClick: (t) => bt(l),
+                          title: p(s)("robotEditor.addValue")
+                        }, "+", 8, zw)
+                      ], 64)) : l.type === "comment" ? z((i(), u("input", {
                         key: 7,
-                        "onUpdate:modelValue": (b) => l.comment = b,
+                        "onUpdate:modelValue": (t) => l.comment = t,
                         class: "form-input flex-1 step-comment-input",
                         spellcheck: "false",
                         placeholder: "# ..."
-                      }, null, 8, zw)), [
-                        [le, l.comment]
-                      ]) : T("", !0),
-                      t("div", Gw, [
-                        t("button", {
+                      }, null, 8, Gw)), [
+                        [ae, l.comment]
+                      ]) : $("", !0),
+                      o("div", Yw, [
+                        o("button", {
                           class: "step-btn",
-                          onClick: (b) => go(d.steps, S, -1),
-                          disabled: S === 0
-                        }, "↑", 8, Yw),
-                        t("button", {
+                          onClick: (t) => no(d.steps, E, -1),
+                          disabled: E === 0
+                        }, "↑", 8, Xw),
+                        o("button", {
                           class: "step-btn",
-                          onClick: (b) => go(d.steps, S, 1),
-                          disabled: S === d.steps.length - 1
-                        }, "↓", 8, Xw),
-                        t("button", {
+                          onClick: (t) => no(d.steps, E, 1),
+                          disabled: E === d.steps.length - 1
+                        }, "↓", 8, Zw),
+                        o("button", {
                           class: "step-btn danger",
-                          onClick: (b) => mo(d.steps, S),
-                          title: p(a)("editor.common.delete")
-                        }, "×", 8, Zw)
+                          onClick: (t) => nn(d.steps, E),
+                          title: p(s)("editor.common.delete")
+                        }, "×", 8, Qw)
                       ])
                     ], 4))), 128)),
-                    t("div", Qw, [
-                      t("button", {
+                    o("div", Jw, [
+                      o("button", {
                         class: "add-step-btn",
-                        onClick: (l) => no(d.steps)
-                      }, "+ " + m(p(a)("robotEditor.addStep")), 9, Jw),
-                      t("button", {
+                        onClick: (l) => mo(d.steps)
+                      }, "+ " + m(p(s)("robotEditor.addStep")), 9, e_),
+                      o("button", {
                         class: "add-step-btn add-block",
-                        onClick: (l) => no(d.steps, "var")
-                      }, "+ VAR", 8, e_),
-                      t("button", {
+                        onClick: (l) => mo(d.steps, "var")
+                      }, "+ VAR", 8, t_),
+                      o("button", {
                         class: "add-step-btn add-block",
-                        onClick: (l) => Ct(d.steps, "for")
-                      }, "+ FOR", 8, t_),
-                      t("button", {
+                        onClick: (l) => st(d.steps, "for")
+                      }, "+ FOR", 8, o_),
+                      o("button", {
                         class: "add-step-btn add-block",
-                        onClick: (l) => Ct(d.steps, "if")
-                      }, "+ IF", 8, o_),
-                      t("button", {
+                        onClick: (l) => st(d.steps, "if")
+                      }, "+ IF", 8, n_),
+                      o("button", {
                         class: "add-step-btn add-block",
-                        onClick: (l) => Ct(d.steps, "while")
-                      }, "+ WHILE", 8, n_),
-                      t("button", {
+                        onClick: (l) => st(d.steps, "while")
+                      }, "+ WHILE", 8, a_),
+                      o("button", {
                         class: "add-step-btn add-block",
-                        onClick: (l) => Ct(d.steps, "try")
-                      }, "+ TRY", 8, a_)
+                        onClick: (l) => st(d.steps, "try")
+                      }, "+ TRY", 8, s_)
                     ])
                   ])
                 ])
               ], 512), [
-                [eo, !J.value.has(v)]
+                [Xt, !Q.value.has(h)]
               ])
             ]))), 128))
           ], 512), [
-            [eo, !ue.value]
+            [Xt, !x.value]
           ])
         ])
       ], 512), [
-        [eo, y.value === "visual"]
+        [Xt, b.value === "visual"]
       ]),
-      y.value === "flow" ? (i(), u("div", s_, [
-        ve(If, {
-          form: Q,
-          sidecar: P.value,
-          "onUpdate:sidecar": Ht,
-          onAddTestCase: bo,
-          onAddKeyword: Zt,
-          onLibrariesChanged: kt
+      b.value === "flow" ? (i(), u("div", l_, [
+        ve(Wf, {
+          form: ee,
+          sidecar: q.value,
+          "onUpdate:sidecar": Xo,
+          onAddTestCase: Fo,
+          onAddKeyword: Po,
+          onLibrariesChanged: Eo
         }, null, 8, ["form", "sidecar"])
-      ])) : T("", !0),
-      q(t("div", {
+      ])) : $("", !0),
+      z(o("div", {
         class: "code-editor",
         ref_key: "codeEditorContainer",
-        ref: A
+        ref: V
       }, null, 512), [
-        [eo, y.value === "code"]
+        [Xt, b.value === "code"]
       ]),
-      ve(Io, {
+      ve(jo, {
         modelValue: ct.value,
-        "onUpdate:modelValue": h[8] || (h[8] = (d) => ct.value = d),
-        title: p(a)("robotEditor.libraryInstallDialogTitle", { library: Rt.value }),
+        "onUpdate:modelValue": y[8] || (y[8] = (d) => ct.value = d),
+        title: p(s)("robotEditor.libraryInstallDialogTitle", { library: to.value }),
         size: "sm"
       }, {
         footer: _e(() => [
           ve(Oe, {
             variant: "secondary",
-            disabled: Ot.value,
-            onClick: An
+            disabled: Nt.value,
+            onClick: yt
           }, {
             default: _e(() => [
-              we(m(p(a)("editor.common.cancel")), 1)
+              we(m(p(s)("editor.common.cancel")), 1)
             ]),
             _: 1
           }, 8, ["disabled"]),
           ve(Oe, {
             variant: "primary",
-            disabled: Ot.value || !Ft.value.trim(),
+            disabled: Nt.value || !Ot.value.trim(),
             "data-testid": "lib-install-confirm",
             onClick: Vn
           }, {
             default: _e(() => [
-              we(m(Ot.value ? p(a)("robotEditor.libraryInstallDialogInstalling") : p(a)("robotEditor.libraryInstallDialogConfirm")), 1)
+              we(m(Nt.value ? p(s)("robotEditor.libraryInstallDialogInstalling") : p(s)("robotEditor.libraryInstallDialogConfirm")), 1)
             ]),
             _: 1
           }, 8, ["disabled"])
         ]),
         default: _e(() => [
-          t("p", l_, m(p(a)("robotEditor.libraryInstallDialogIntro", {
-            library: Rt.value,
-            env: Xo.value
+          o("p", r_, m(p(s)("robotEditor.libraryInstallDialogIntro", {
+            library: to.value,
+            env: Qo.value
           })), 1),
-          t("label", r_, [
-            we(m(p(a)("robotEditor.libraryInstallDialogPipName")) + " ", 1),
-            q(t("input", {
-              "onUpdate:modelValue": h[7] || (h[7] = (d) => Ft.value = d),
+          o("label", i_, [
+            we(m(p(s)("robotEditor.libraryInstallDialogPipName")) + " ", 1),
+            z(o("input", {
+              "onUpdate:modelValue": y[7] || (y[7] = (d) => Ot.value = d),
               type: "text",
               class: "lib-install-pkg-input",
               autocomplete: "off",
               spellcheck: "false",
               "data-testid": "lib-install-pkg-input",
-              disabled: Ot.value
-            }, null, 8, i_), [
-              [le, Ft.value]
+              disabled: Nt.value
+            }, null, 8, u_), [
+              [ae, Ot.value]
             ]),
-            t("small", u_, m(p(a)("robotEditor.libraryInstallDialogPipHint")), 1)
+            o("small", c_, m(p(s)("robotEditor.libraryInstallDialogPipHint")), 1)
           ]),
-          It.value ? (i(), u("div", c_, m(It.value), 1)) : T("", !0)
+          oo.value ? (i(), u("div", d_, m(oo.value), 1)) : $("", !0)
         ]),
         _: 1
       }, 8, ["modelValue", "title"])
     ], 6));
   }
-}), N_ = /* @__PURE__ */ qe(d_, [["__scopeId", "data-v-8d9875d7"]]), p_ = {
+}), R_ = /* @__PURE__ */ ze(p_, [["__scopeId", "data-v-18099ffe"]]), f_ = {
   robotEditor: {
     visualTab: "可视化编辑器",
     flowTab: "流程",
@@ -10902,7 +10912,7 @@ const ym = { class: "spec-tabs" }, bm = { class: "tab-buttons" }, wm = { class: 
       menu: "菜单"
     }
   }
-}, f_ = {
+}, m_ = {
   robotEditor: {
     visualTab: "Visual Editor",
     flowTab: "Flow",
@@ -11445,36 +11455,36 @@ with the recorded candidate
       menu: "Menu"
     }
   }
-}, R_ = {
-  "zh-CN": p_,
-  "en-US": f_
+}, F_ = {
+  "zh-CN": f_,
+  "en-US": m_
 };
 export {
-  If as FlowEditor,
-  ea as LOOP_FLAVORS,
-  zf as ReadOnlyBanner,
-  N_ as RobotEditor,
+  Wf as FlowEditor,
+  ta as LOOP_FLAVORS,
+  Gf as ReadOnlyBanner,
+  R_ as RobotEditor,
   Ta as STEP_TYPES,
   Ea as VAR_SCOPES,
-  hm as collectRbsIdsFromContent,
-  V_ as configureEditorAdapter,
+  ym as collectRbsIdsFromContent,
+  A_ as configureEditorAdapter,
   ye as editorAdapter,
-  R_ as editorMessages,
+  F_ as editorMessages,
   Da as editorScope,
   La as emitMultilineSetting,
-  lm as escapeRfCell,
+  rm as escapeRfCell,
   as as escapeRfToken,
-  mm as initFileHasTestCases,
-  fm as isInitFile,
-  Bo as makeStep,
-  gm as parseRobotText,
-  dm as parseStepLine,
-  A_ as resetEditorAdapter,
-  L_ as resetEditorScope,
-  vm as serializeRobotForm,
-  pm as serializeStep,
-  S_ as setEditorScope,
+  gm as initFileHasTestCases,
+  mm as isInitFile,
+  Ho as makeStep,
+  vm as parseRobotText,
+  pm as parseStepLine,
+  N_ as resetEditorAdapter,
+  V_ as resetEditorScope,
+  hm as serializeRobotForm,
+  fm as serializeStep,
+  L_ as setEditorScope,
   Sa as unescapeRfCell,
-  Cn as unescapeRfToken
+  $n as unescapeRfToken
 };
 //# sourceMappingURL=editor.js.map

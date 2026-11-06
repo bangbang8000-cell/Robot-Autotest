@@ -66,4 +66,34 @@ class ProcessRobotSyntaxValidatorTest {
         assertFalse(report.checked(), "没装 RF 时必须如实标注未校验");
         assertTrue(report.ok(), "未校验不得当成校验失败");
     }
+
+    /**
+     * 回归：Robot Framework 7.5.1 对语法错误打印 {@code [ ERROR ]} 但**退出码为 0**。
+     * 旧实现只看退出码，于是「未知 section / 未知 setting」被当成通过，
+     * 编辑器保存时的语法校验实际不起作用。
+     */
+    @Test
+    @DisplayName("EDT09-REG-01 退出码 0 但输出含 ERROR 必须判失败")
+    void exitZeroWithErrorLineIsFatal() {
+        assertTrue(ProcessRobotSyntaxValidator.looksFatal(0,
+                "[ ERROR ] Error in file '/tmp/a.robot' on line 5: "
+                        + "Unrecognized section header '*** This Is Not A Section ***'."));
+        assertTrue(ProcessRobotSyntaxValidator.looksFatal(0,
+                "[ ERROR ] Error in file '/tmp/a.robot' on line 2: Non-existing setting 'Foo Bar'."));
+    }
+
+    @Test
+    @DisplayName("EDT09-REG-02 退出码非 0 一律判失败")
+    void nonZeroExitIsFatal() {
+        assertTrue(ProcessRobotSyntaxValidator.looksFatal(2, ""));
+        assertTrue(ProcessRobotSyntaxValidator.looksFatal(1, "坏语法 | FAIL |"));
+    }
+
+    @Test
+    @DisplayName("EDT09-REG-03 退出码 0 且无 ERROR 才判通过")
+    void cleanOutputIsFine() {
+        assertFalse(ProcessRobotSyntaxValidator.looksFatal(0, ""));
+        assertFalse(ProcessRobotSyntaxValidator.looksFatal(0,
+                "========================================\nCase1\n========================================"));
+    }
 }
