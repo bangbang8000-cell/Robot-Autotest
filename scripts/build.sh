@@ -7,6 +7,10 @@ cd "$ROOT"
 
 built=0
 
+# NAV-03 / FR-v2.0-11：关于页的版本 / commit / 构建时间 / 依赖清单必须来自构建产物。
+# 生成物被 .gitignore 忽略；未跑构建时 BuildInfoService 会显示 source=runtime，不伪装。
+python3 scripts/gen_build_info.py
+
 if [[ -f backend/pom.xml ]]; then
     command -v mvn >/dev/null 2>&1 || { echo "[build] 缺少 mvn，无法构建 backend"; exit 1; }
     echo "[build] backend: mvn -DskipTests package"

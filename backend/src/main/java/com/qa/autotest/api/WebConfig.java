@@ -21,7 +21,10 @@ public class WebConfig implements WebMvcConfigurer {
                 // /api/print/** 用一次性 token 授权（签发时已校验项目权限），
                 // 无头浏览器访问打印页时没有登录态，不能走 Bearer 拦截。
                 // /api/ci/** 用项目 API token（Bearer，scope=ci:trigger）自认证，不走用户会话。
+                // /api/health 是就绪探针（ENVX-02）：容器 / 统一入口探活时没有登录态，
+                // 且它内部只做 SELECT 1，不读任何业务数据。
                 .excludePathPatterns(
-                        "/api/_ping", "/api/auth/login", "/api/print/**", "/api/ci/**");
+                        "/api/_ping", "/api/health", "/api/auth/login",
+                        "/api/print/**", "/api/ci/**");
     }
 }

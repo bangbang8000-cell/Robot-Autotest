@@ -16,7 +16,10 @@ import {
   isLeafActive,
   isNodeActive,
   leafTarget,
+  navKeysForRole,
+  roleFromCodes,
   visibleNav,
+  visibleNavByCapabilities,
   type NavGroup,
   type NavLeaf,
 } from '@/config/navigation'
@@ -55,12 +58,17 @@ describe('权限过滤', () => {
   it('非管理员看不到审计子项，但「管理」分组仍在（项目成员归 PM/所有者用）', () => {
     const admin = visibleNav(false).find((node) => node.key === 'admin') as NavGroup
     expect(admin).toBeTruthy()
-    expect(admin.children.map((child) => child.key)).toEqual(['admin-users'])
+    // W1 起管理域新增系统设置 / 关于 / 版本迭代三个系统页（不新增一级菜单）
+    expect(admin.children.map((child) => child.key)).toEqual([
+      'admin-users', 'admin-settings', 'admin-about', 'admin-changelog',
+    ])
   })
 
-  it('管理员能看到管理分组下的两个子项', () => {
+  it('管理员能看到管理分组下的全部子项（含审计）', () => {
     const admin = visibleNav(true).find((node) => node.key === 'admin') as NavGroup
-    expect(admin.children.map((child) => child.key)).toEqual(['admin-users', 'admin-audit'])
+    expect(admin.children.map((child) => child.key)).toEqual([
+      'admin-users', 'admin-audit', 'admin-settings', 'admin-about', 'admin-changelog',
+    ])
   })
 
   it('过滤后子项归零的分组整组去掉，不留空折叠组', () => {
@@ -80,6 +88,49 @@ describe('权限过滤', () => {
     }
     expect(filterNav([onlyAudit], false)).toHaveLength(0)
     expect(filterNav([onlyAudit], true)).toHaveLength(1)
+  })
+})
+
+describe('v2.0 六域 IA 与能力驱动过滤（NAV-01 / FR-v2.0-07、08）', () => {
+  it('一级恰好 6 域，层级不超过 2', () => {
+    expect(NAVIGATION).toHaveLength(6)
+    expect(NAVIGATION.map((node) => node.key)).toEqual([
+      'overview', 'assets', 'cases', 'runs', 'reports', 'admin',
+    ])
+    for (const node of NAVIGATION) {
+      if (isGroup(node)) {
+        for (const child of node.children) expect('children' in child).toBe(false)
+      }
+    }
+  })
+
+  it('四角色菜单快照：权限只减不增，未知角色按最小权限', () => {
+    const viewer = navKeysForRole('viewer')
+    const pm = navKeysForRole('pm')
+    const engineer = navKeysForRole('engineer')
+    const admin = navKeysForRole('admin')
+
+    expect(viewer).not.toContain('runs')            // execution:read
+    expect(viewer).not.toContain('admin-audit')    // audit:read
+    expect(viewer).not.toContain('admin-settings') // settings:read
+    expect(engineer).toContain('runs')
+    expect(engineer).not.toContain('admin-settings')
+    expect(pm).toContain('admin-settings')
+    expect(pm).not.toContain('admin-audit')
+    expect(admin).toContain('admin-audit')
+    expect(admin.length).toBeGreaterThanOrEqual(pm.length)
+    expect(roleFromCodes(['something-new'])).toBe('viewer')
+    expect(roleFromCodes(null)).toBe('viewer')
+  })
+
+  it('能力为空时只留无门槛入口，审计与设置都不出现', () => {
+    const keys = visibleNavByCapabilities([]).flatMap((node) =>
+      isGroup(node) ? [node.key, ...node.children.map((child) => child.key)] : [node.key],
+    )
+    expect(keys).toContain('overview')
+    expect(keys).not.toContain('admin-audit')
+    expect(keys).not.toContain('admin-settings')
+    expect(keys).not.toContain('runs')
   })
 })
 

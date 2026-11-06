@@ -1,0 +1,57 @@
+# ENVX-02 / FR-v2.0-55：生产统一入口的 nginx 等价配置（TLS 样例）。
+#
+# 本机自用走 scripts/serve-entry.mjs（免 root、零依赖）；生产若已有 nginx，用本文件替换。
+# 证书与私钥自备，本仓库不代签、不内置任何凭据。启用前把 example 复制成站点配置并改路径。
+
+server {
+    listen 8001 ssl;
+    server_name _;
+
+    ssl_certificate     /etc/nginx/certs/robot-autotest.crt;
+    ssl_certificate_key /etc/nginx/certs/robot-autotest.key;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+
+    root /opt/robot-autotest/frontend/dist;
+    index index.html;
+
+    # 存活探针：由 nginx 直接应答，不打扰后端
+    location = /healthz {
+        access_log off;
+        default_type application/json;
+        return 200 '{"status":"UP","check":"liveness"}';
+    }
+
+    # API 反代：保留原始 Host 以外的请求信息，超时与后端一致
+    location /api/ {
+        proxy_pass http://127.0.0.1:8081;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 90s;
+    }
+
+    # WebSocket：日志流 / 执行事件走这里
+    location /ws {
+        proxy_pass http://127.0.0.1:8081;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 3600s;
+    }
+
+    # SPA fallback：深链接刷新回 index.html
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location = /index.html {
+        add_header Cache-Control "no-cache, must-revalidate";
+    }
+
+    # Vite 带指纹资源长缓存（文件名含 8+ 位 hash）
+    location ~* /assets/.*-[A-Za-z0-9_]{8,}\.(js|css|woff2?|svg|png)$ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+}

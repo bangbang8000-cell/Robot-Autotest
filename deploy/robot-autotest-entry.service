@@ -1,0 +1,22 @@
+# ENVX-02：8001 统一入口的 systemd user unit 样例。
+# 安装：cp deploy/robot-autotest-entry.service ~/.config/systemd/user/
+#       systemctl --user daemon-reload && systemctl --user enable --now robot-autotest-entry
+# 开机自启需先 `loginctl enable-linger <用户>`（149 已实测该做法）。
+[Unit]
+Description=Robot-Autotest unified entry (:8001)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/robot-autotest
+Environment=ENTRY_PORT=8001
+Environment=ENTRY_BACKEND=http://127.0.0.1:8081
+ExecStart=/usr/bin/node %h/robot-autotest/scripts/serve-entry.mjs
+Restart=always
+RestartSec=3
+StandardOutput=append:%h/robot-autotest/logs/entry.log
+StandardError=append:%h/robot-autotest/logs/entry.log
+
+[Install]
+WantedBy=default.target

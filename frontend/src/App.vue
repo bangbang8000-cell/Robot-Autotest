@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { NConfigProvider } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -15,13 +15,16 @@ import AppLogo from '@/components/AppLogo.vue'
 import AboutDialog from '@/components/AboutDialog.vue'
 import AppearanceDialog from '@/components/AppearanceDialog.vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
+import CommandPalette from '@/components/CommandPalette.vue'
 import type { IconName } from '@/components/iconMap'
 import {
   activeGroupKey,
+  capabilitiesForRole,
   isGroup,
   isNodeActive,
   leafTarget,
-  visibleNav,
+  roleFromCodes,
+  visibleNavByCapabilities,
   type NavGroup,
   type NavLeaf,
   type NavNode,
@@ -54,8 +57,28 @@ const themeLabel = computed(() => t('theme.switchTo', { mode: t(`theme.${theme.m
 const appearanceOpen = ref(false)
 const aboutOpen = ref(false)
 
-// 两级导航：结构在 config/navigation.ts，这里只管「按权限过滤 + 展开态」。
-const nav = computed<NavNode[]>(() => visibleNav(auth.isAdmin))
+// 两级导航：结构在 config/navigation.ts，这里只管「按能力过滤 + 展开态」。
+// v2.0 起不再是单一 adminOnly：四角色能力集决定入口显隐，越权仍由后端 403 兜底。
+const nav = computed<NavNode[]>(() =>
+  visibleNavByCapabilities(capabilitiesForRole(roleFromCodes(auth.user?.roles))),
+)
+
+// NAV-04：命令面板全局快捷键。打印页/登录页不响应，避免无头打印被快捷键干扰。
+const paletteOpen = ref(false)
+function onGlobalKeydown(event: KeyboardEvent): void {
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+    if (isStandalone.value) return
+    event.preventDefault()
+    paletteOpen.value = !paletteOpen.value
+  }
+}
+
+// NAV-01 / FR-v2.0-13：项目选择器上移顶栏。切换后当前路由不动，跨项目页按各自
+// 的 projectId 重新取数；无项目时显示引导，不留给空白页。
+function changeProject(event: Event): void {
+  const raw = (event.target as HTMLSelectElement).value
+  auth.setProject(raw ? Number(raw) : null)
+}
 
 // 展开态落 localStorage：默认全展开（新分组直接可见，不用先点一下才知道里面有什么），
 // 只记住用户手动折叠过的分组。刷新后保持手型，切到某分组的子页时自动展开该组。
@@ -143,6 +166,9 @@ async function toggleTheme(): Promise<void> {
   }
 }
 
+onMounted(() => window.addEventListener('keydown', onGlobalKeydown))
+onUnmounted(() => window.removeEventListener('keydown', onGlobalKeydown))
+
 onMounted(async () => {
   if (!auth.authenticated) return
   try {
@@ -224,7 +250,28 @@ onMounted(async () => {
         <header class="app-header">
           <span class="app-header-title">{{ t('app.subtitle') }}</span>
           <div class="app-header-right">
+            <select
+              class="app-project app-lang"
+              :value="auth.projectId ?? ''"
+              :aria-label="t('projectPicker.select')"
+              :title="t('projectPicker.select')"
+              @change="changeProject"
+            >
+              <option value="" disabled>{{ t('projectPicker.empty') }}</option>
+              <option v-for="project in auth.projects" :key="project.id" :value="project.id">
+                {{ project.name }}
+              </option>
+            </select>
             <span v-if="displayName" class="muted">{{ displayName }}</span>
+            <button
+              class="btn btn-ghost"
+              type="button"
+              :aria-label="t('palette.open')"
+              :title="`${t('palette.open')} (${t('palette.shortcut')})`"
+              @click="paletteOpen = true"
+            >
+              <AppIcon name="search" :size="16" />
+            </button>
             <button
               class="btn btn-ghost theme-btn"
               type="button"
@@ -277,6 +324,7 @@ onMounted(async () => {
       <AppearanceDialog v-model:open="appearanceOpen" />
       <AboutDialog v-model:open="aboutOpen" />
       <ConfirmModal />
+      <CommandPalette v-model:open="paletteOpen" />
     </div>
   </NConfigProvider>
 </template>
