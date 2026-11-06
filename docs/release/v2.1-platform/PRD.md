@@ -19,7 +19,7 @@
 | F1 | 执行计划已有 `execution_plan` 表（cron 六段式、单 `test_set_id`、`concurrency`、`overlap_policy=SKIP`） | `db/migration/V6_1__execution_plan.sql` | D1 不新建计划实体，只在既有实体上加「组」 |
 | F2 | 计划依赖 DAG **已存在**：`execution_plan_dependency`（前置→后置边，环检测在应用层） | `db/migration/V6_2__plan_dependency.sql`、`PlanDependencyGraph` | 「DAG 编排」不是缺口，D1 缺的是**批量建边与可视化**，不是图能力 |
 | F3 | 场景编排 `ScenarioService` 只有 `(project_id, name, case_set_ids, parent_scenario_id)`，且**强制一层**（`parent_scenario_id` 非空即判违规） | `ScenarioService.java` L37–L54 | D1 的增强不得引入多层嵌套，沿用「仅一层」裁决 |
-| F4 | **失败已有四类粗分类**：`FailureClassifier` + `FailureRuleSet` 已实现 `CANCELED > ENV > INFRA > ASSERT` 四级判定，关键词与正则规则可配；但**没有比「类」更细的聚合**（全仓 `cluster` / `聚类` 命中 0 处），界面只能逐条看 `failure_message` | `application/execution/FailureClassifier.java` L14–L27、`FailureRuleSet.java` L18–L25；`RunRepositoryJdbc.java` L33/L51/L186 | D1 的失败聚类**不重写分类**，而是在既有「类」之下加「簇」；ORCH-03 因此省掉一半工作量 |
+| F4 | **失败已有四类粗分类**：`FailureClassifier` + `FailureRuleSet` 已实现 `CANCELED > ENV > INFRA > ASSERT` 四级判定，关键词与正则规则可配；但**没有比「类」更细的聚合**（全仓 `cluster` / `聚类` 命中 0 处），界面只能逐条看失败文本。**且失败字段分两级**：`run` 表有 `failure_reason` / `failure_class` / `failure_message`（整轮结论），`test_result` 只有 `failure_msg`（用例级） | `application/execution/FailureClassifier.java` L14–L27、`FailureRuleSet.java` L18–L25；`db/migration/V4_1__lease.sql` L18–L19、`V4_3__failure_class.sql` L5–L7、`V1__baseline.sql` L473–L489 | D1 的失败聚类**不重写分类**，而是在既有「类」之下加「簇」；簇必须按**用例级** `failure_msg` 聚合，run 表字段只能作整轮上下文（ORCH-03 实测订正） |
 | F5 | 报告导出 `ExportService` 只分支 `pdf` / `docx`（HTML 走视图），**无 xlsx 分支** | `ReportExportService.java` L31–L41 | D2 的 XLSX 是新增分支，POI 依赖已在（DOCX 在用） |
 | F6 | 报告模板是**代码内固定视图**（`PrintReportView` + `ExportMode` 枚举），无模板实体、无字段配置表 | `PrintReportView.java`、`ExportService.java` | D2 必须新建模板实体，否则「可配置」无从落地 |
 | F7 | `FR-v2.0-24` 验收标准写明「平台库升级提示新版本」，实测只到字段级（有可见性字段，无版本检测与提示） | `v2.0-platform/PRD.md` L145；`05-TEST-REPORT.md` 对应 TC | D3 是**补 v2.0 欠的 P1 深度**，不是新面 |
@@ -144,7 +144,7 @@
 | FR-v2.1-01 | 计划组实体：多计划成组、组内有序、组可启停 | P0 | 一个组含 2..N 个计划；组内顺序可调且持久化；组停用后组内计划不再触发；删除组不删计划；跨项目组引用被拒绝（403） | ORCH-01 |
 | FR-v2.1-02 | 批量成组与自动建边：加入组时按组内顺序自动生成依赖边 | P0 | 3 个计划成组后自动产生 2 条边；重复加入幂等（不重复建边）；成环时**拒绝并指出环上计划名**（复用 `PlanDependencyGraph`） | ORCH-01 |
 | FR-v2.1-03 | 依赖图可视化（只读）+ 关键路径 + 预计时长 | P1 | 图上节点=计划、边=依赖；环/孤立点有视觉区分；关键路径高亮；预计时长 = 路径上 `timeout_seconds` 之和，标注「估算」不当承诺 | ORCH-02 |
-| FR-v2.1-04 | 失败聚类：在既有四类之下按「簇」聚合一轮（或一组）内的失败 | P0 | **两级口径**：一级 = 既有 `FailureClass`（CANCELED / ENV / INFRA / ASSERT，**复用 `FailureClassifier`，不重写**）；二级簇键 = `failure_reason` 优先、缺失时取 `failure_message` 归一化首行（去数字/去路径/去 IP 端口，截 40 字符），都空则入 `未分类`。簇按条数倒序；每簇显示条数、占比、3 条样例；**同一输入两次跑出的簇划分逐字节一致**（禁 k-means / embedding） | ORCH-03 |
+| FR-v2.1-04 | 失败聚类：在既有四类之下按「簇」聚合一轮（或一组）内的失败 | P0 | **两级口径**：一级 = 既有 `FailureClass`（CANCELED / ENV / INFRA / ASSERT，**复用 `FailureClassifier`，不重写**）；二级簇键 = **`test_result.failure_msg`** 归一化首行（去路径 → 去 IP 端口 → 去数字，折叠空白，截 40 字符），为空则入 `未分类`。簇按条数倒序、同条数按簇键字典序；每簇显示条数、占比、3 条样例；**同一输入两次跑出的簇划分逐字节一致**（禁 k-means / embedding） | ORCH-03 |
 | FR-v2.1-05 | 建议重跑清单：从簇生成可执行清单 | P1 | 清单可直接发起 run；清单条数 = 簇内可重跑条数；跳过/error 是否入清单有明确口径且可切换；清单落审计 | ORCH-03 |
 
 ### 4.2 R2 报告模板与 XLSX（FR-v2.1-06 ~ 09）
@@ -272,4 +272,6 @@
 | 日期 | 版本 | 改了什么 | 为什么改 |
 |---|---|---|---|
 | 2026-11-06 | v1.0 | 初版：§0 调研与可行性（12 条事实 / 5 项判断 / 4 项否决方案）+ 17 条 FR（5 域）+ 8 条 NFR + 9 条验收 + 依赖风险 + 非目标 | 承接评估文档 v1.1 与 7 条拍板结论；按拍板第 6 条把第 ①② 道合并为 §0 |
+| 2026-11-06 | v1.1 | §0 F4 改写：`FailureClassifier` 已实现四类判定，缺的是簇级聚合；FR-v2.1-04 改为类 + 簇两级 | 写开工单时读代码发现分类器已存在，避免重复造组件 |
+| 2026-11-06 | v1.2 | FR-v2.1-04 与 §0 F4 订正簇键来源：由「`failure_reason` 优先 / `failure_message` 首行」改为**只用 `test_result.failure_msg`**；补记 `run` 表三个字段是整轮结论 | **ORCH-03 实测推翻**：`test_result` 没有 `failure_reason` / `failure_message` 列，二者在 `run` 表上。原文照字面开发会读不到值，簇全落「未分类」。证据见 `docs/evidence/v2.1/ORCH-03/README.md` §4.1 |
 | 2026-11-06 | v1.1 | ① §0 F4 据实订正：**既有 `FailureClassifier` 已实现四类（CANCELED/ENV/INFRA/ASSERT）**，缺的是簇级聚合，不是分类能力；② FR-v2.1-04 改为「类 + 簇两级」，明确复用既有分类器、不重写；③ §1 定位表同步 | 写开工单时读代码发现：初版把「无聚类」误写成「无分类」，若照原文实现会重复造一个已有组件 |

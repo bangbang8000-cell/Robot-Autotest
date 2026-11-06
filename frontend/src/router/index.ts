@@ -56,6 +56,13 @@ const router = createRouter({
       component: () => import('@/views/PlanGroupsView.vue'),
     },
     {
+      // 失败聚类（ORCH-03，v2.1）：运行详情的下钻页，入口在运行列表的失败数。
+      // 用 query 里的 runId 预填，深链可分享——贴一条链接就能让同事看到同一批失败。
+      path: '/runs/failure-clusters',
+      name: 'failure-clusters',
+      component: () => import('@/views/FailureClustersView.vue'),
+    },
+    {
       path: '/reports',
       name: 'reports',
       component: () => import('@/views/ReportsView.vue'),

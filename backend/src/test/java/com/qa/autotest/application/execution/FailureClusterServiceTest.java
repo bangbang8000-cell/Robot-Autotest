@@ -1,0 +1,247 @@
+package com.qa.autotest.application.execution;
+
+import com.qa.autotest.application.iam.AccessControlService;
+import com.qa.autotest.application.repository.FailureResultRepository;
+import com.qa.autotest.common.BusinessException;
+import com.qa.autotest.common.ErrorCode;
+import com.qa.autotest.domain.execution.FailureClass;
+import com.qa.autotest.domain.execution.FailureClusterKey;
+import com.qa.autotest.domain.iam.PermissionAction;
+import com.qa.autotest.domain.iam.PermissionResource;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * 失败聚类（ORCH-03）：归一化、类+簇两级、稳定排序、空字段兜底、确定性。
+ *
+ * <p>刻意不测「分类规则本身」——那是 `FailureClassifier` 的职责，已有其他用例覆盖。
+ * 本类只保证两件事：**喂进去的文本被正确归一**，以及**同一输入两次输出一模一样**。
+ */
+class FailureClusterServiceTest {
+
+    private static final long PROJECT = 7L;
+    private static final String RUN_ID = "RUN-20261106-001";
+
+    private FakeResults results;
+    private FailureClusterService service;
+
+    @BeforeEach
+    void setUp() {
+        results = new FakeResults();
+        service = new FailureClusterService(results,
+                new FailureClassifier(null), new PermissiveAccess(),
+                new CaseRunService(null, null, null, null));
+    }
+
+    @Test
+    @DisplayName("路径与行号不同的两条失败归到同一簇")
+    void 路径归一() {
+        results.add(line("/a/b/x.py:12", "AssertionError: boom"));
+        results.add(line("/c/d/y.py:98", "AssertionError: boom"));
+
+        FailureClusterView view = service.cluster(PROJECT, RUN_ID);
+
+        assertEquals(1, view.classes().size());
+        assertEquals(1, view.classes().get(0).clusters().size());
+        assertEquals(2, view.classes().get(0).clusters().get(0).count());
+    }
+
+    @Test
+    @DisplayName("数字不同的断言失败归到同一簇（3 != 5 与 3 != 7）")
+    void 数字归一() {
+        results.add(line(null, "AssertionError: 3 != 5"));
+        results.add(line(null, "AssertionError: 3 != 7"));
+
+        FailureClusterView view = service.cluster(PROJECT, RUN_ID);
+
+        assertEquals(1, view.classes().get(0).clusters().size());
+        assertEquals("AssertionError: <n> != <n>", view.classes().get(0).clusters().get(0).key());
+    }
+
+    @Test
+    @DisplayName("多行堆栈只看首行：同一失败不会因为第 2 行不同被拆成两簇")
+    void 只看首行() {
+        results.add(line(null, "Traceback: boom\n  at /a/b.py:1\n  at /a/c.py:2"));
+        results.add(line(null, "Traceback: boom\n  at /x/y.py:9"));
+
+        FailureClusterView view = service.cluster(PROJECT, RUN_ID);
+
+        assertEquals(1, view.classes().get(0).clusters().size());
+    }
+
+    @Test
+    @DisplayName("空失败信息归入固定簇「未分类」，不丢数据")
+    void 空字段兜底() {
+        results.add(line(null, null));
+        results.add(line(null, "   "));
+
+        FailureClusterView view = service.cluster(PROJECT, RUN_ID);
+
+        assertEquals(2, view.total());
+        assertEquals(FailureClusterKey.UNCLASSIFIED,
+                view.classes().get(0).clusters().get(0).key());
+    }
+
+    @Test
+    @DisplayName("两级结构：环境类与断言类分开，不混在一张表里")
+    void 类加簇两级() {
+        // ENV 规则默认含 "connection refused" 一类关键词，用它把一条打到 ENV
+        results.add(line(null, "Connection refused to 10.0.0.1:22"));
+        results.add(line(null, "AssertionError: 3 != 5"));
+
+        FailureClusterView view = service.cluster(PROJECT, RUN_ID);
+
+        List<String> classes = view.classes().stream().map(FailureClusterView.ClassGroup::failureClass)
+                .toList();
+        assertTrue(classes.size() >= 2, "至少应分成两类，实际：" + classes);
+        assertTrue(classes.contains(FailureClass.ASSERT.name()));
+    }
+
+    @Test
+    @DisplayName("簇按条数倒序，同条数按簇键字典序（不依赖插入顺序）")
+    void 稳定排序() {
+        results.add(line(null, "B failure"));
+        results.add(line(null, "A failure"));
+        results.add(line(null, "A failure"));
+        results.add(line(null, "C failure"));
+
+        FailureClusterView view = service.cluster(PROJECT, RUN_ID);
+        List<String> keys = view.classes().get(0).clusters().stream()
+                .map(FailureClusterView.Cluster::key).toList();
+
+        assertEquals(List.of("A failure", "B failure", "C failure"), keys);
+    }
+
+    @Test
+    @DisplayName("同一输入两次聚类的输出逐字段一致（确定性）")
+    void 两次结果一致() {
+        for (int i = 0; i < 50; i++) {
+            results.add(line("/x/y" + i + ".py:" + i, "AssertionError: " + i + " != 99"));
+        }
+
+        FailureClusterView first = service.cluster(PROJECT, RUN_ID);
+        FailureClusterView second = service.cluster(PROJECT, RUN_ID);
+
+        assertEquals(first.total(), second.total());
+        assertEquals(first.classes().size(), second.classes().size());
+        for (int i = 0; i < first.classes().size(); i++) {
+            List<String> left = first.classes().get(i).clusters().stream()
+                    .map(FailureClusterView.Cluster::key).toList();
+            List<String> right = second.classes().get(i).clusters().stream()
+                    .map(FailureClusterView.Cluster::key).toList();
+            assertEquals(left, right);
+        }
+    }
+
+    @Test
+    @DisplayName("样例最多 3 条，但 caseIds 不截断（重跑要用全量）")
+    void 样例截断而清单不截断() {
+        for (int i = 1; i <= 5; i++) {
+            results.add(new FailureResultRepository.FailureRow(i, (long) i,
+                    "CASE-" + i, "title-" + i, "FAIL", "AssertionError: boom"));
+        }
+
+        FailureClusterView.Cluster cluster = service.cluster(PROJECT, RUN_ID)
+                .classes().get(0).clusters().get(0);
+
+        assertEquals(3, cluster.samples().size());
+        assertEquals(5, cluster.caseIds().size());
+    }
+
+    @Test
+    @DisplayName("占比：类别占全部失败、簇占全部失败，各自按同一分母算")
+    void 占比() {
+        results.add(line(null, "boom"));
+        results.add(line(null, "boom"));
+        results.add(line(null, "other"));
+
+        FailureClusterView view = service.cluster(PROJECT, RUN_ID);
+
+        // 三条都是 ASSERT 类：类别占比 3/3 = 1.0
+        assertEquals(1.0, view.classes().get(0).ratio(), 0.00005);
+        // 簇占比按全部失败算：2/3 = 0.6667（不是占本类的 2/3 —— 这里恰好一样，故意留一条
+        // 不同类的用例就会分叉，所以分母口径必须写死在实现里）
+        assertEquals(0.6667, view.classes().get(0).clusters().get(0).ratio(), 0.00005);
+    }
+
+    @Test
+    @DisplayName("空 runId 直接拒绝，不返回空视图糊过去")
+    void 空runId拒绝() {
+        BusinessException error = assertThrows(BusinessException.class,
+                () -> service.cluster(PROJECT, " "));
+        assertEquals(ErrorCode.INVALID_ARGUMENT, error.errorCode());
+    }
+
+    @Test
+    @DisplayName("簇不存在时重跑返回 404")
+    void 重跑簇不存在() {
+        results.add(line(null, "boom"));
+        BusinessException error = assertThrows(BusinessException.class,
+                () -> service.rerun(PROJECT, RUN_ID, "no-such-cluster"));
+        assertEquals(ErrorCode.NOT_FOUND, error.errorCode());
+    }
+
+    @Test
+    @DisplayName("归一化：IP 与端口被打成占位符，不同环境不分成两簇")
+    void IP归一() {
+        results.add(line(null, "connect to 10.0.0.1:22 failed"));
+        results.add(line(null, "connect to 192.168.1.9:2200 failed"));
+
+        FailureClusterView view = service.cluster(PROJECT, RUN_ID);
+
+        assertEquals(1, view.classes().get(0).clusters().size());
+    }
+
+    private static FailureResultRepository.FailureRow line(String caseCode, String failureMsg) {
+        return new FailureResultRepository.FailureRow(
+                System.nanoTime(), caseCode == null ? null : (long) caseCode.hashCode(),
+                caseCode, "title", "FAIL", failureMsg);
+    }
+
+    /** 内存失败行仓储。 */
+    static final class FakeResults implements FailureResultRepository {
+
+        private final List<FailureRow> rows = new ArrayList<>();
+
+        void add(FailureRow row) {
+            rows.add(row);
+        }
+
+        @Override
+        public List<FailureRow> failedRows(long projectId, String runId) {
+            return List.copyOf(rows);
+        }
+
+        @Override
+        public RunFailureContext runContext(long projectId, String runId) {
+            return new RunFailureContext(runId, "FAILED", "assert", "ASSERT");
+        }
+    }
+
+    /** 权限桩：不做项目/角色校验。 */
+    static final class PermissiveAccess extends AccessControlService {
+
+        PermissiveAccess() {
+            super(null, null);
+        }
+
+        @Override
+        public void bindProject(long projectId) {
+            // 测试不做项目成员校验
+        }
+
+        @Override
+        public void require(PermissionResource resource, PermissionAction action) {
+            // 测试不做角色校验
+        }
+    }
+}

@@ -1,0 +1,12 @@
+# 夹具项目 projectId=29，runId=RUN-ORCH03-FIXTURE
+
+PASS  ORCH03-01   查询返回 200              HTTP 200
+PASS  ORCH03-02   总失败数=3（PASS 行不计）      total=3
+PASS  ORCH03-03   分成 ASSERT 与 ENV 两类    classes=['ASSERT', 'ENV']
+PASS  ORCH03-04   路径与数字不同的两条断言失败归为 1 簇  簇数=1 键=<path>:<n>
+PASS  ORCH03-05   环境失败单独成簇（不混进断言簇）      簇数=1 键=Connection refused to <ip>
+PASS  ORCH03-06   同一 runId 两次查询逐字节一致    diff 为空
+PASS  ORCH03-07   不存在的簇重跑返回 404         HTTP 404 message=簇不存在: no-such-cluster
+PASS  ORCH03-08   簇内无用例时重跑返回 400        HTTP 400 raw={"code":40001,"codeName":"INVALID_ARGUMENT","message":"该簇没有关联用例，无法重跑: 
+
+合计 8 项，FAIL 0 项

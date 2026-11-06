@@ -930,6 +930,24 @@ export default {
     empty: 'No cases parsed',
     failed: 'Preflight failed',
   },
+  failureClusters: {
+    title: 'Failure Clusters',
+    subtitle:
+      'Group a run’s failures by class and normalized key: each kind of failure appears once and can be re-run per cluster',
+    runIdPlaceholder: 'Enter RUN_ID, e.g. RUN-20261106-001',
+    query: 'Query',
+    summary: '{total} failures across {classes} classes',
+    classCount: '{count} ({percent})',
+    clusterKey: 'Cluster key',
+    count: 'Count',
+    share: 'Share',
+    samples: 'Sample cases',
+    rerun: 'Re-run cluster ({count})',
+    noCase: 'No linked cases in this cluster, cannot re-run',
+    noFailure: 'No failures in this run',
+    rerunStarted: 'Re-run started: {runId}',
+    unknownError: 'Request failed, please retry',
+  },
   planGroups: {
     title: 'Plan Groups',
     subtitle:
