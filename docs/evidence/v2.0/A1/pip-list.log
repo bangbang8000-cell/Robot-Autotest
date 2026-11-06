@@ -1,0 +1,12 @@
+Package            Version
+------------------ -------
+execnet            2.1.2
+iniconfig          2.3.1
+packaging          26.3
+pip                26.3
+pluggy             1.7.0
+Pygments           2.21.0
+pytest             9.2.0
+pytest-json-report 1.5.0
+pytest-metadata    3.1.1
+pytest-xdist       3.8.0

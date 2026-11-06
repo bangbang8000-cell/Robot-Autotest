@@ -1,0 +1,14 @@
+[1/5] 配置真源: /home/evergreen/robot-autotest/config/pytest-venv.yml
+      venv 路径: /home/evergreen/venvs/pytest-kernel
+      python  : >=3.10
+      白名单  : pytest pytest-json-report pytest-xdist
+[2/5] 解释器 python3 = 3.12.3
+[3/5] venv 已存在，跳过创建（随后按白名单补齐）
+[4/5] 安装白名单插件
+[5/5] 自检
+python            3.12.3
+pytest            9.2.0
+pytest-json-report1.5.0
+pytest-xdist      3.8.0
+[OK] pytest 运行时就绪: /home/evergreen/venvs/pytest-kernel
+     跑法: /home/evergreen/venvs/pytest-kernel/bin/python -m pytest <路径> -q
