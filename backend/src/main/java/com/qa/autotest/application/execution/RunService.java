@@ -114,8 +114,14 @@ public class RunService {
 
         @Override
         public ExecutionNode insert(String name, String tokenHash, boolean rfAvailable,
-                                    boolean pytestAvailable, int maxConcurrency, Long operatorId) {
+                                    boolean pytestAvailable, int maxConcurrency, Long operatorId,
+                                    String agentBaseUrl) {
             throw new UnsupportedOperationException("NO_NODES 桩不支持注册");
+        }
+
+        @Override
+        public void updateAgentBaseUrl(long id, String agentBaseUrl) {
+            throw new UnsupportedOperationException("NO_NODES 桩不支持地址更新");
         }
 
         @Override
@@ -136,6 +142,16 @@ public class RunService {
         @Override
         public java.util.Map<Long, Integer> runningRunsByNode() {
             return java.util.Map.of();
+        }
+
+        @Override
+        public List<Long> findStaleOnlineIds(java.time.Instant staleBefore) {
+            return List.of();
+        }
+
+        @Override
+        public int failRunningRunsByNodes(List<Long> nodeIds, String reason) {
+            return 0;
         }
     };
 
@@ -236,6 +252,15 @@ public class RunService {
     public RunRecord get(long projectId, String runId) {
         access.bindProject(projectId);
         access.require(PermissionResource.EXECUTION, PermissionAction.READ);
+        return runs.findByRunId(projectId, runId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "运行不存在: " + runId));
+    }
+
+    /**
+     * 执行线程内部查询（无用户会话）：派发线程与节点 agent 专用（NODX-03）。
+     * 调用方必须已在 {@code TenantContext.runAs} 的项目上下文里；不做权限校验。
+     */
+    public RunRecord findForRunner(long projectId, String runId) {
         return runs.findByRunId(projectId, runId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "运行不存在: " + runId));
     }

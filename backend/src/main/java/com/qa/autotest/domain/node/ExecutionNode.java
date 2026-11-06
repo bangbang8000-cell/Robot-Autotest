@@ -22,7 +22,9 @@ public record ExecutionNode(long id,
                             boolean pytestAvailable,
                             int maxConcurrency,
                             java.time.Instant lastHeartbeatAt,
-                            java.time.Instant registeredAt) {
+                            java.time.Instant registeredAt,
+                            /** 节点 agent 接入地址；null = 未部署 agent（NODX-03）。 */
+                            String agentBaseUrl) {
 
     public static final String NEW = "NEW";
     public static final String ONLINE = "ONLINE";

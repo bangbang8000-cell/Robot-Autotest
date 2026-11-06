@@ -80,9 +80,19 @@ class NodeHeartbeatMonitorTest {
         final List<Instant> staleSweeps = new ArrayList<>();
         final AtomicLong seq = new AtomicLong();
 
+        @Override
+        public int failRunningRunsByNodes(List<Long> nodeIds, String reason) {
+            return 0;
+        }
+
+        @Override
+        public void updateAgentBaseUrl(long id, String agentBaseUrl) {
+            throw new UnsupportedOperationException("桩不支持地址更新");
+        }
+
         void seed(long id, String status, Instant lastHeartbeat) {
             nodes.put(id, new ExecutionNode(id, "node-" + id, "hash-" + id, status,
-                    true, false, 1, lastHeartbeat, Instant.EPOCH));
+                    true, false, 1, lastHeartbeat, Instant.EPOCH, null));
         }
 
         @Override
@@ -107,10 +117,11 @@ class NodeHeartbeatMonitorTest {
 
         @Override
         public ExecutionNode insert(String name, String tokenHash, boolean rfAvailable,
-                                    boolean pytestAvailable, int maxConcurrency, Long operatorId) {
+                                    boolean pytestAvailable, int maxConcurrency, Long operatorId,
+                                    String agentBaseUrl) {
             long id = seq.incrementAndGet();
             ExecutionNode node = new ExecutionNode(id, name, tokenHash, ExecutionNode.NEW,
-                    rfAvailable, pytestAvailable, maxConcurrency, null, Instant.EPOCH);
+                    rfAvailable, pytestAvailable, maxConcurrency, null, Instant.EPOCH, null);
             nodes.put(id, node);
             return node;
         }
@@ -120,7 +131,7 @@ class NodeHeartbeatMonitorTest {
             ExecutionNode node = nodes.get(id);
             nodes.put(id, new ExecutionNode(node.id(), node.name(), node.tokenHash(),
                     ExecutionNode.ONLINE, rfAvailable, pytestAvailable, node.maxConcurrency(),
-                    Instant.now(), node.registeredAt()));
+                    Instant.now(), node.registeredAt(), null));
         }
 
         @Override
@@ -133,7 +144,7 @@ class NodeHeartbeatMonitorTest {
                         && node.lastHeartbeatAt().isBefore(staleBefore)) {
                     entry.setValue(new ExecutionNode(node.id(), node.name(), node.tokenHash(),
                             ExecutionNode.OFFLINE, node.rfAvailable(), node.pytestAvailable(),
-                            node.maxConcurrency(), node.lastHeartbeatAt(), node.registeredAt()));
+                            node.maxConcurrency(), node.lastHeartbeatAt(), node.registeredAt(), null));
                     marked++;
                 }
             }
@@ -146,11 +157,24 @@ class NodeHeartbeatMonitorTest {
         }
 
         @Override
+        public List<Long> findStaleOnlineIds(Instant staleBefore) {
+            List<Long> stale = new ArrayList<>();
+            for (ExecutionNode node : nodes.values()) {
+                if (ExecutionNode.ONLINE.equals(node.status())
+                        && node.lastHeartbeatAt() != null
+                        && node.lastHeartbeatAt().isBefore(staleBefore)) {
+                    stale.add(node.id());
+                }
+            }
+            return stale;
+        }
+
+        @Override
         public void updateStatus(long id, String status, Long operatorId) {
             ExecutionNode node = nodes.get(id);
             nodes.put(id, new ExecutionNode(node.id(), node.name(), node.tokenHash(), status,
                     node.rfAvailable(), node.pytestAvailable(), node.maxConcurrency(),
-                    node.lastHeartbeatAt(), node.registeredAt()));
+                    node.lastHeartbeatAt(), node.registeredAt(), null));
         }
     }
 }

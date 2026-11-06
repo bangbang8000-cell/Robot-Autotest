@@ -48,7 +48,7 @@ class ExecutionNodeServiceTest {
     @Test
     @DisplayName("注册：明文令牌只在响应里出现一次，库里只有 SHA-256 哈希")
     void 注册只存哈希() {
-        ExecutionNodeService.RegisterResult result = service.register("node-a", true, false, 2);
+        ExecutionNodeService.RegisterResult result = service.register("node-a", true, false, 2, null);
         assertNotNull(result.token());
         assertEquals(64, result.token().length());
 
@@ -66,22 +66,22 @@ class ExecutionNodeServiceTest {
     @Test
     @DisplayName("重名注册 → 409；并发上限越界 → 400")
     void 注册守门() {
-        service.register("node-a", true, false, 1);
+        service.register("node-a", true, false, 1, null);
         assertEquals(ErrorCode.CONFLICT,
                 assertThrows(BusinessException.class,
-                        () -> service.register("node-a", true, true, 1)).errorCode());
+                        () -> service.register("node-a", true, true, 1, null)).errorCode());
         assertEquals(ErrorCode.INVALID_ARGUMENT,
                 assertThrows(BusinessException.class,
-                        () -> service.register("node-b", true, true, 0)).errorCode());
+                        () -> service.register("node-b", true, true, 0, null)).errorCode());
         assertEquals(ErrorCode.INVALID_ARGUMENT,
                 assertThrows(BusinessException.class,
-                        () -> service.register("node-b", true, true, 65)).errorCode());
+                        () -> service.register("node-b", true, true, 65, null)).errorCode());
     }
 
     @Test
     @DisplayName("心跳：正确令牌 → ONLINE + 能力更新 + last_heartbeat_at 非空")
     void 心跳置在线() {
-        ExecutionNodeService.RegisterResult result = service.register("node-a", false, false, 1);
+        ExecutionNodeService.RegisterResult result = service.register("node-a", false, false, 1, null);
         ExecutionNodeService.NodeView view =
                 service.heartbeat(result.nodeId(), result.token(), true, true);
         assertEquals(ExecutionNode.ONLINE, view.status());
@@ -93,7 +93,7 @@ class ExecutionNodeServiceTest {
     @Test
     @DisplayName("心跳：错令牌 / 缺令牌 / 不存在的节点 → 一律 401（防枚举）")
     void 心跳防枚举() {
-        ExecutionNodeService.RegisterResult result = service.register("node-a", true, false, 1);
+        ExecutionNodeService.RegisterResult result = service.register("node-a", true, false, 1, null);
         assertEquals(ErrorCode.UNAUTHENTICATED,
                 assertThrows(BusinessException.class,
                         () -> service.heartbeat(result.nodeId(), "wrong-token", true, true))
@@ -109,7 +109,7 @@ class ExecutionNodeServiceTest {
     @Test
     @DisplayName("DISABLED 节点心跳 → 403（停用不能靠心跳复活）")
     void 停用拒绝心跳() {
-        ExecutionNodeService.RegisterResult result = service.register("node-a", true, false, 1);
+        ExecutionNodeService.RegisterResult result = service.register("node-a", true, false, 1, null);
         service.heartbeat(result.nodeId(), result.token(), true, false);
         service.disable(result.nodeId());
         assertEquals(ExecutionNode.DISABLED, repo.nodes.get(result.nodeId()).status());
@@ -129,7 +129,7 @@ class ExecutionNodeServiceTest {
                 audit, 30);
         assertEquals(ErrorCode.FORBIDDEN,
                 assertThrows(BusinessException.class,
-                        () -> stranger.register("node-x", true, false, 1)).errorCode());
+                        () -> stranger.register("node-x", true, false, 1, null)).errorCode());
         assertEquals(ErrorCode.FORBIDDEN,
                 assertThrows(BusinessException.class, stranger::list).errorCode());
     }
@@ -137,7 +137,7 @@ class ExecutionNodeServiceTest {
     @Test
     @DisplayName("列表：能力与并发上限可见，令牌哈希不外泄")
     void 列表不泄露哈希() {
-        ExecutionNodeService.RegisterResult result = service.register("node-a", true, false, 3);
+        ExecutionNodeService.RegisterResult result = service.register("node-a", true, false, 3, null);
         service.heartbeat(result.nodeId(), result.token(), true, false);
         List<ExecutionNodeService.NodeView> views = service.list();
         assertEquals(1, views.size());
@@ -157,6 +157,29 @@ class ExecutionNodeServiceTest {
         final Map<Long, ExecutionNode> nodes = new HashMap<>();
         final List<Instant> staleSweeps = new ArrayList<>();
         final AtomicLong seq = new AtomicLong();
+
+        @Override
+        public List<Long> findStaleOnlineIds(Instant staleBefore) {
+            List<Long> stale = new ArrayList<>();
+            for (ExecutionNode node : nodes.values()) {
+                if (ExecutionNode.ONLINE.equals(node.status())
+                        && node.lastHeartbeatAt() != null
+                        && node.lastHeartbeatAt().isBefore(staleBefore)) {
+                    stale.add(node.id());
+                }
+            }
+            return stale;
+        }
+
+        @Override
+        public int failRunningRunsByNodes(List<Long> nodeIds, String reason) {
+            return 0;
+        }
+
+        @Override
+        public void updateAgentBaseUrl(long id, String agentBaseUrl) {
+            throw new UnsupportedOperationException("桩不支持地址更新");
+        }
 
         @Override
         public Optional<ExecutionNode> find(long id) {
@@ -181,10 +204,11 @@ class ExecutionNodeServiceTest {
 
         @Override
         public ExecutionNode insert(String name, String tokenHash, boolean rfAvailable,
-                                    boolean pytestAvailable, int maxConcurrency, Long operatorId) {
+                                    boolean pytestAvailable, int maxConcurrency, Long operatorId,
+                                    String agentBaseUrl) {
             long id = seq.incrementAndGet();
             ExecutionNode node = new ExecutionNode(id, name, tokenHash, ExecutionNode.NEW,
-                    rfAvailable, pytestAvailable, maxConcurrency, null, Instant.EPOCH);
+                    rfAvailable, pytestAvailable, maxConcurrency, null, Instant.EPOCH, null);
             nodes.put(id, node);
             return node;
         }
@@ -194,7 +218,7 @@ class ExecutionNodeServiceTest {
             ExecutionNode node = nodes.get(id);
             nodes.put(id, new ExecutionNode(node.id(), node.name(), node.tokenHash(),
                     ExecutionNode.ONLINE, rfAvailable, pytestAvailable, node.maxConcurrency(),
-                    Instant.now(), node.registeredAt()));
+                    Instant.now(), node.registeredAt(), null));
         }
 
         @Override
@@ -207,7 +231,7 @@ class ExecutionNodeServiceTest {
                         && node.lastHeartbeatAt().isBefore(staleBefore)) {
                     entry.setValue(new ExecutionNode(node.id(), node.name(), node.tokenHash(),
                             ExecutionNode.OFFLINE, node.rfAvailable(), node.pytestAvailable(),
-                            node.maxConcurrency(), node.lastHeartbeatAt(), node.registeredAt()));
+                            node.maxConcurrency(), node.lastHeartbeatAt(), node.registeredAt(), null));
                     marked++;
                 }
             }
@@ -224,7 +248,7 @@ class ExecutionNodeServiceTest {
             ExecutionNode node = nodes.get(id);
             nodes.put(id, new ExecutionNode(node.id(), node.name(), node.tokenHash(), status,
                     node.rfAvailable(), node.pytestAvailable(), node.maxConcurrency(),
-                    node.lastHeartbeatAt(), node.registeredAt()));
+                    node.lastHeartbeatAt(), node.registeredAt(), null));
         }
     }
 

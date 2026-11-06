@@ -28,7 +28,9 @@ public class NodeController {
     }
 
     public record RegisterRequest(String name, Boolean rfAvailable, Boolean pytestAvailable,
-                                  Integer maxConcurrency) {
+                                  Integer maxConcurrency,
+                                  /** 节点 agent 接入地址（NODX-03），可空。 */
+                                  String agentBaseUrl) {
     }
 
     @PostMapping("/register")
@@ -38,7 +40,8 @@ public class NodeController {
                 request.name(),
                 Boolean.TRUE.equals(request.rfAvailable()),
                 Boolean.TRUE.equals(request.pytestAvailable()),
-                request.maxConcurrency() == null ? 1 : request.maxConcurrency()));
+                request.maxConcurrency() == null ? 1 : request.maxConcurrency(),
+                request.agentBaseUrl()));
     }
 
     @PostMapping("/{id}/heartbeat")

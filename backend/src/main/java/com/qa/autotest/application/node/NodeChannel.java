@@ -47,19 +47,27 @@ public class NodeChannel {
     }
 
     /**
-     * POST JSON 到节点端点。
-     *
-     * @param uri  节点端点绝对地址（NODX-03 起来自节点登记的接入地址）
-     * @param json 任务 JSON（NODX-03 起带签名）
-     * @return 2xx 响应体；网络层失败（含重试后仍失败）返回 empty
+     * POST JSON 到节点端点（不带额外头，便捷重载）。
      */
     public Result post(URI uri, String json) {
-        HttpRequest request = HttpRequest.newBuilder()
+        return post(uri, json, java.util.Map.of());
+    }
+
+    /**
+     * POST JSON 到节点端点，可带额外头（NODX-03：X-Task-Signature）。
+     *
+     * @param uri  节点端点绝对地址（来自节点登记的接入地址）
+     * @param json 任务 JSON
+     * @return 2xx 响应体；网络层失败（含重试后仍失败）返回 UNREACHABLE
+     */
+    public Result post(URI uri, String json, java.util.Map<String, String> extraHeaders) {
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(uri)
                 .timeout(TIMEOUT)
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(json))
-                .build();
+                .POST(HttpRequest.BodyPublishers.ofString(json));
+        extraHeaders.forEach(builder::header);
+        HttpRequest request = builder.build();
         IOException lastFailure = null;
         for (int attempt = 0; attempt <= RETRIES; attempt++) {
             if (attempt > 0) {

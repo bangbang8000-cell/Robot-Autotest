@@ -1,5 +1,10 @@
 package com.qa.autotest.application.execution;
 
+import com.qa.autotest.application.node.NodeChannel;
+import com.qa.autotest.application.node.NodeTask;
+import com.qa.autotest.application.node.TaskSigner;
+import com.qa.autotest.domain.node.ExecutionNode;
+import com.qa.autotest.application.repository.ExecutionNodeRepository;
 import com.qa.autotest.application.repository.RunArtifactRepository;
 import com.qa.autotest.application.repository.TestResultWriter;
 import com.qa.autotest.common.BusinessException;
@@ -49,6 +54,10 @@ public class RunExecutionService {
     private final RetryPolicy retryPolicy;
     private final Clock clock;
     private final LeaseWaitRegistry leaseWaits;
+    /** NODX-03：节点投递；旧构造默认空实现（本机语义，任何 nodeId 都判不可投递）。 */
+    private final ExecutionNodeRepository nodeRepo;
+    private final NodeChannel nodeChannel;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     public RunExecutionService(RunService runs,
                                ExecutionProperties props,
@@ -63,6 +72,27 @@ public class RunExecutionService {
                                RetryPolicy retryPolicy,
                                Clock clock,
                                LeaseWaitRegistry leaseWaits) {
+        this(runs, props, precheck, leases, workspaces, commands, orchestrator, artifacts,
+                results, classifier, retryPolicy, clock, leaseWaits, null, null, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public RunExecutionService(RunService runs,
+                               ExecutionProperties props,
+                               ExecutionPrecheck precheck,
+                               LeaseService leases,
+                               ExecutionWorkspaceMaterializer workspaces,
+                               PabotCommandBuilder commands,
+                               PabotOrchestrator orchestrator,
+                               RunArtifactRepository artifacts,
+                               TestResultWriter results,
+                               FailureClassifier classifier,
+                               RetryPolicy retryPolicy,
+                               Clock clock,
+                               LeaseWaitRegistry leaseWaits,
+                               ExecutionNodeRepository nodeRepo,
+                               NodeChannel nodeChannel,
+                               com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
         this.runs = runs;
         this.props = props;
         this.precheck = precheck;
@@ -76,6 +106,10 @@ public class RunExecutionService {
         this.retryPolicy = retryPolicy;
         this.clock = clock;
         this.leaseWaits = leaseWaits;
+        this.nodeRepo = nodeRepo;
+        this.nodeChannel = nodeChannel;
+        this.objectMapper = objectMapper == null
+                ? new com.fasterxml.jackson.databind.ObjectMapper() : objectMapper;
     }
 
     public RunRecord execute(RunService.CreateRunCommand cmd) {
@@ -93,7 +127,13 @@ public class RunExecutionService {
         if (cmd.nodeId() != null) {
             return executeOnNode(created, cmd);
         }
-        runs.transition(created.runId(), RunState.PREPARING, RunService.TransitionContext.plain());
+        // NODX-03：节点与主控同库——主控投递前已迁 PREPARING，节点侧不重复迁移
+        //（状态机禁同态跃迁）。本机路径 state=QUEUED，照常迁移。
+        RunRecord current = runs.findForRunner(created.projectId(), created.runId());
+        if (current.state() != RunState.PREPARING) {
+            runs.transition(created.runId(), RunState.PREPARING,
+                    RunService.TransitionContext.plain());
+        }
 
         Path artifactsRoot = ExecutionPaths.resolve(props.getArtifactsRoot());
         Path runDir = artifactsRoot.resolve(created.runId());
@@ -263,19 +303,81 @@ public class RunExecutionService {
     }
 
     /**
-     * 节点执行体（NODX-02 占位，NODX-03 实装）：指定节点的 run <b>不跑本机 pabot</b>。
+     * 节点执行体（NODX-03 实装）：把任务经 {@link NodeChannel} 推到节点 agent，
+     * 命令由**节点用同一套 PabotCommandBuilder / KRN** 按任务参数生成（命令等价）。
      *
-     * <p>本版只完成「派发进节点道 + run.node_id 落库」；真正的执行要经
-     * {@code NodeChannel} 把任务推到节点，而节点接入地址（agent 端点）随 NODX-03
-     * 的迁移才登记。通道未启用时 run 明确判 FAILED（原因入 failure_reason），
-     * 绝不静默回落本机——那是 v2.1 明确禁止的行为（DEV-PLAN §5.3）。
-     * NODX-03 把本方法主体换成 NodeChannel 投递 + 产物回传。
+     * <p>投递成功后 run 状态由节点侧执行链路正常迁移（本版节点与主控同库）；
+     * 主控在投递前用同一参数 build 一条<b>参照命令</b>写入
+     * {@code node-cmd-master.json}，节点回传 argv 写 {@code node-cmd-agent.json}，
+     * {@code tools/kernel_cmd_diff.py} 归一化对比——判据「同参数命令 diff 为空」。
+     *
+     * <p>三种失败都不排队不重投（DEV-PLAN §5.3 口径）：节点不存在 / 未登记接入地址 /
+     * 投递被拒或不可达，一律判 FAILED（node_dispatch_failed），绝不回落本机。
+     * 投递成功后 agent 崩溃由 {@code NodeHeartbeatMonitor} 按心跳超时判失败。
      */
     private RunRecord executeOnNode(RunRecord created, RunService.CreateRunCommand cmd) {
         runs.transition(created.runId(), RunState.PREPARING, RunService.TransitionContext.plain());
-        return fail(created, "node_channel_unavailable",
-                "节点执行通道尚未启用（NODX-03 将实装 NodeChannel 投递）；"
-                        + "本次运行已按节点 " + cmd.nodeId() + " 派发，不回落本机执行");
+        ExecutionNode node = cmd.nodeId() == null ? null
+                : nodeRepo.find(cmd.nodeId()).orElse(null);
+        if (node == null) {
+            return fail(created, "node_dispatch_failed",
+                    "执行节点不存在: " + cmd.nodeId() + "；不回落本机执行");
+        }
+        if (node.agentBaseUrl() == null || node.agentBaseUrl().isBlank()) {
+            return fail(created, "node_dispatch_failed",
+                    "节点 " + node.name() + " 未登记 agent 接入地址，无法投递；"
+                            + "不排队不重投，不回落本机执行");
+        }
+
+        Path runDir = ExecutionPaths.resolve(props.getArtifactsRoot()).resolve(created.runId());
+        // 参照命令：与节点同参数（命令等价 diff 的主控侧基线）
+        int processes = Math.min(cmd.concurrency(), cmd.suitePaths().size());
+        PabotCommandBuilder.PabotCommand reference = commands.build(
+                new PabotCommandBuilder.ShardSpec(0, cmd.suitePaths(), processes,
+                        cmd.includeTag(), "run-" + created.runId(), cmd.testNames()),
+                props, runDir, ExecutionPaths.resolve(props.getWorkspaceRoot()));
+        writeReferenceCommand(runDir, created.runId(), reference.argv());
+
+        NodeTask task = new NodeTask(created.runId(), created.projectId(),
+                cmd.suitePaths(), cmd.concurrency(), cmd.environmentId(), cmd.deviceKeys(),
+                cmd.timeoutSeconds(), cmd.testTimeoutSeconds(), cmd.includeTag(),
+                cmd.testNames(), null, null);
+        String payload;
+        try {
+            payload = objectMapper.writeValueAsString(task);
+        } catch (Exception jsonError) {
+            return fail(created, "node_dispatch_failed",
+                    "任务序列化失败: " + jsonError.getMessage());
+        }
+        String signature = TaskSigner.sign(node.tokenHash(), payload);
+        NodeChannel.Result result = nodeChannel.post(
+                java.net.URI.create(node.agentBaseUrl() + "/api/agent/run"),
+                payload, java.util.Map.of("X-Task-Signature", signature));
+        if (result.ok()) {
+            results.write(created.projectId(), created.id(), "run-" + created.runId(),
+                    "DISPATCHED", 0, "node=" + node.name(), 1);
+            return runs.findForRunner(created.projectId(), created.runId());
+        }
+        return fail(created, "node_dispatch_failed",
+                "节点 " + node.name() + " 任务投递失败（" + result.kind() + " "
+                        + result.statusCode() + " " + nullToEmpty(result.body())
+                        + "）；不排队不重投，不回落本机执行");
+    }
+
+    /** 参照命令基线（best effort：写盘失败不影响投递主流程）。 */
+    private void writeReferenceCommand(Path runDir, String runId, java.util.List<String> argv) {
+        try {
+            java.nio.file.Files.createDirectories(runDir);
+            java.nio.file.Files.writeString(runDir.resolve("node-cmd-master.json"),
+                    objectMapper.writeValueAsString(java.util.Map.of(
+                            "runId", runId, "argv", argv)));
+        } catch (Exception ignored) {
+            // 基线写不进去只影响 diff 取证，不阻断执行
+        }
+    }
+
+    private static String nullToEmpty(String value) {
+        return value == null ? "" : value;
     }
 
     /** 分类只依赖 reason 与产物结论；分片文本已由 {@link PabotOrchestrator} 落到 run.log。 */

@@ -92,14 +92,29 @@ public class ReportIngestService {
      */
     @Transactional
     public ReportRecord parseAndIngest(long projectId, String runId, String outputXmlPath) {
+        access.bindProject(projectId);
+        access.require(PermissionResource.EXECUTION, PermissionAction.READ);
+        return ingest(projectId, runId, outputXmlPath);
+    }
+
+    /**
+     * 节点回传专用入库（NODX-03）：agent 无用户会话，权限在回传端点以节点令牌
+     * 认证替代（{@code NodeResultService} 已验 {@code X-Node-Token} 并核对
+     * {@code run.node_id} 归属）；其余逻辑与 {@link #parseAndIngest} 完全一致。
+     */
+    @Transactional
+    public ReportRecord parseAndIngestForAgent(long projectId, String runId,
+                                               String outputXmlPath) {
+        return ingest(projectId, runId, outputXmlPath);
+    }
+
+    private ReportRecord ingest(long projectId, String runId, String outputXmlPath) {
         if (projectId <= 0) {
             throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "projectId 非法");
         }
         if (runId == null || runId.isBlank()) {
             throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "runId 不能为空");
         }
-        access.bindProject(projectId);
-        access.require(PermissionResource.EXECUTION, PermissionAction.READ);
 
         RunRecord run = runs.findByRunId(projectId, runId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "运行不存在: " + runId));

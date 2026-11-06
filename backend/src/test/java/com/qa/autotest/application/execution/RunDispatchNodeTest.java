@@ -203,7 +203,7 @@ class RunDispatchNodeTest {
 
     private static ExecutionNode node(long id, String status, Instant heartbeat) {
         return new ExecutionNode(id, "node-" + id, "hash-" + id, status,
-                true, false, 2, heartbeat, Instant.EPOCH);
+                true, false, 2, heartbeat, Instant.EPOCH, null);
     }
 
     private final Map<String, Long> assignedNodeId = new java.util.HashMap<>();
@@ -265,7 +265,8 @@ class RunDispatchNodeTest {
 
         @Override
         public ExecutionNode insert(String name, String tokenHash, boolean rfAvailable,
-                                    boolean pytestAvailable, int maxConcurrency, Long operatorId) {
+                                    boolean pytestAvailable, int maxConcurrency, Long operatorId,
+                                    String agentBaseUrl) {
             throw new UnsupportedOperationException("桩不支持注册");
         }
 
@@ -287,6 +288,21 @@ class RunDispatchNodeTest {
         @Override
         public Map<Long, Integer> runningRunsByNode() {
             return Map.of();
+        }
+
+        @Override
+        public List<Long> findStaleOnlineIds(Instant staleBefore) {
+            return List.of();
+        }
+
+        @Override
+        public int failRunningRunsByNodes(List<Long> nodeIds, String reason) {
+            return 0;
+        }
+
+        @Override
+        public void updateAgentBaseUrl(long id, String agentBaseUrl) {
+            throw new UnsupportedOperationException("桩不支持地址更新");
         }
     }
 

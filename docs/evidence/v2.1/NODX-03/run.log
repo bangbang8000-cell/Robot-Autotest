@@ -1,0 +1,20 @@
+# 已登录 qa-e2e-admin
+
+PASS  NODX03-01   注册节点并登记 agent 接入地址（agentBaseUrl 落库）                   HTTP 200 id=26
+PASS  NODX03-02   V9_5 迁移：agent_base_url 真实落库                           agent_base_url=http://127.0.0.1:8082
+PASS  NODX03-03   agent 心跳保活：节点置 ONLINE（同 jar node profile）             waited=yes
+PASS  NODX03-04   指定节点发起 200                                            HTTP 200 runId=RUN-20261107014314-910000
+PASS  NODX03-05   节点真实执行 1 条示例用例 → run FINISHED                         state=FINISHED reason=None
+PASS  NODX03-06   回传后主控解析入库：test_result 行存在（同链路门禁）                      test_result rows=2
+PASS  NODX03-07   同参数命令 diff 为空（kernel_cmd_diff.py）                     [PASS] 命令 diff 为空（8 个参数，归一化后逐项一致）
+PASS  NODX03-08   产物完整回传：output.xml 已落主控产物目录                            size=1460
+PASS  NODX03-09   崩溃注入准备：第二节点 ONLINE                                    id=27
+PASS  NODX03-PROBE:8083 agent HTTP 层可服务                                 
+PASS  NODX03-10   run 已到执行态（PREPARING/RUNNING）后注入崩溃                     runId=RUN-20261107014329-910000 state=RUNNING reason=None
+PASS  NODX03-HEARTBEATkill 后心跳停止（last_heartbeat 不再更新）                       1793987007.960 -> 1793987007.960
+PASS  NODX03-11   agent 崩溃不留悬挂 run：监视器判 FAILED(node_agent_lost)         state=FAILED reason=node_agent_lost: 节点心跳连续 3 个周期缺席，agent 已判离线，本次运行终止（不回落本机）
+PASS  NODX03-12   崩溃节点被监视器置 OFFLINE                                     status=OFFLINE
+
+# 节点进程已清理
+
+合计 14 项，FAIL 0 项

@@ -1,0 +1,23 @@
+# NODX-03：执行端 agent 配置（--spring.profiles.active=node 时生效）。
+#
+# 同 jar 双角色：主控 = 默认 profile（:8081）；节点 = node profile（:8082）。
+# 节点连同一个 MySQL（本版内网单机口径，见 DEV-PLAN §10.12 回写）；
+# run 状态由节点上的执行链路正常迁移，output.xml 仍走 HTTP 回传主控。
+#
+# 启动示例：
+#   java -jar backend.jar --spring.profiles.active=node \
+#        --server.port=8082 \
+#        --node.id=7 --node.token=<注册明文令牌> \
+#        --node.master-url=http://127.0.0.1:8081
+server:
+  port: ${NODE_PORT:8082}
+
+node:
+  # 注册时主控返回的节点 id（回传与心跳身份）
+  id: ${NODE_ID:0}
+  # 注册明文令牌（agent 自持；主控只存哈希）
+  token: ${NODE_TOKEN:}
+  # 主控基址：心跳与回传都打这里
+  master-url: ${NODE_MASTER_URL:http://127.0.0.1:8081}
+  # agent 心跳周期（秒）；与主控 node.heartbeat-interval-seconds 同口径
+  heartbeat-interval-seconds: ${NODE_HEARTBEAT_SECONDS:30}

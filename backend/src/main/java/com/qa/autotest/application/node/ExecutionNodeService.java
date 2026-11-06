@@ -68,7 +68,7 @@ public class ExecutionNodeService {
 
     @Transactional
     public RegisterResult register(String name, boolean rfAvailable, boolean pytestAvailable,
-                                   int maxConcurrency) {
+                                   int maxConcurrency, String agentBaseUrl) {
         requireAdmin();
         if (name == null || name.isBlank() || name.length() > 64) {
             throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "节点名必填且 ≤ 64 字符");
@@ -80,11 +80,12 @@ public class ExecutionNodeService {
             throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
                     "并发上限必须是 1..64: " + maxConcurrency);
         }
+        String agentUrl = normalizeAgentBaseUrl(agentBaseUrl);
         byte[] raw = new byte[32];
         random.nextBytes(raw);
         String token = HexFormat.of().formatHex(raw);
         ExecutionNode node = nodes.insert(name.trim(), sha256(token),
-                rfAvailable, pytestAvailable, maxConcurrency, null);
+                rfAvailable, pytestAvailable, maxConcurrency, null, agentUrl);
         // 审计只记名字与能力，**绝不记明文令牌**（摘要里也不行——日志是持久面）
         audit.record("NODE_REGISTER", "execution_node", String.valueOf(node.id()),
                 "name=" + node.name() + "; rf=" + rfAvailable + "; pytest=" + pytestAvailable
@@ -146,6 +147,19 @@ public class ExecutionNodeService {
             throw new BusinessException(ErrorCode.UNAUTHENTICATED, "节点令牌无效");
         }
         return node;
+    }
+
+    /** agent 接入地址校验：可空（未部署 agent），有值必须是 http(s) URL 且 ≤200 字符。 */
+    private String normalizeAgentBaseUrl(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        String url = raw.trim();
+        if (url.length() > 200 || !url.startsWith("http://") && !url.startsWith("https://")) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
+                    "agent 接入地址必须是 http(s):// 且 ≤ 200 字符");
+        }
+        return url;
     }
 
     private void requireAdmin() {

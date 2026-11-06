@@ -23,7 +23,11 @@ public interface ExecutionNodeRepository {
 
     /** 注册：tokenHash 是 SHA-256(明文)，明文只在服务层返回值里出现一次。 */
     ExecutionNode insert(String name, String tokenHash, boolean rfAvailable,
-                         boolean pytestAvailable, int maxConcurrency, Long operatorId);
+                         boolean pytestAvailable, int maxConcurrency, Long operatorId,
+                         String agentBaseUrl);
+
+    /** NODX-03：登记/更新 agent 接入地址（注册后也可单独补录）。 */
+    void updateAgentBaseUrl(long id, String agentBaseUrl);
 
     /** 心跳：更新能力上报与 last_heartbeat_at，并置 ONLINE。 */
     void heartbeat(long id, boolean rfAvailable, boolean pytestAvailable);
@@ -38,4 +42,13 @@ public interface ExecutionNodeRepository {
      * 只数 {@code run_status='running'}。节点无在跑任务时不出现在结果里。
      */
     java.util.Map<Long, Integer> runningRunsByNode();
+
+    /** NODX-03：心跳已超期的 ONLINE 节点 id（崩溃判失败的候选）。 */
+    List<Long> findStaleOnlineIds(java.time.Instant staleBefore);
+
+    /**
+     * NODX-03：把指定节点上 RUNNING 的 run 全部判 FAILED（agent 崩溃不留悬挂 run）。
+     * 平台级 SQL，写在实现类豁免注释里；返回受影响 run 数。
+     */
+    int failRunningRunsByNodes(List<Long> nodeIds, String reason);
 }

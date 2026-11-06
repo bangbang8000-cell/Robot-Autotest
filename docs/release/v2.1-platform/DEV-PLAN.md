@@ -330,6 +330,9 @@
 - **跑**：`mvn -o -B test -Dtest=NodeAgentRunnerTest`；端到端：本机 `:8082` 起节点跑 1 条示例用例；`python3 tools/kernel_cmd_diff.py`（命令 diff）
 - **判**：同参数命令 **diff 为空**；产物完整回传；节点崩溃不留悬挂 run
 - **证**：`docs/evidence/v2.1/NODX-03/`（命令 diff 空 + 产物清单 + 崩溃注入记录）
+- **实测结论（2026-11-07，完成回写）**：端到端 14 项全 PASS（真实 HTTP + 真实节点进程 `--spring.profiles.active=node` :8083 + 真实 RF 执行 + mysql 直查取证）。核心判据逐条实证：① 同参数命令 diff 为空（`kernel_cmd_diff.py` 归一化绝对路径后 8 参数逐项一致——节点不自己拼命令，复用主控 KRN 同参数 build）；② 产物完整回传（output.xml 经 `/api/agent/result` 落主控产物目录并解析入 test_result）；③ 崩溃不留悬挂 run（killpg 杀节点进程 → 心跳停止经 last_heartbeat_at 不变实证 → `NodeHeartbeatMonitor` 判 FAILED reason=`node_agent_lost` 并置 OFFLINE，不排队不重投不回落本机）。
+  - 实现与计划差异：计划中的 `NodeResultUploader` 落地为 `NodeChannel`（出站 HttpClient，超时 10s/网络失败重试 1 次/HTTP 拒绝不重试）+ `NodeResultService`/`NodeResultController`（回传接收入口 `POST /api/agent/result`，X-Node-Token 认证 + run.node_id 归属核对防替跑）；签名 key 为 `sha256Hex(token)`，主控存哈希可自算、节点持明文派生。
+  - 修订记录：① V9_5 迁移加 `execution_node.agent_base_url`（计划未列，注册时登记 agent 接入地址）；② 主控 HttpClient 复用 stale keep-alive 连接导致投递报 `header parser received no bytes`——网络失败重试时新建 HttpClient；③ 主控与节点对同一 run 双重 PREPARING 迁移撞状态机——`execute` 开头幂等预查（state != PREPARING 才迁移）；④ EXEC-05 口径实证：robot_file 是脚本真源，materialize 只落库内脚本，端到端 seed 必须直插 robot_file；⑤ 单测 24 条节点相关全绿（`NodeAgentRunnerTest` 4 条 + 既有桩适配）。
 
 ### 10.13 NODX-04 · 节点页与离线口径
 

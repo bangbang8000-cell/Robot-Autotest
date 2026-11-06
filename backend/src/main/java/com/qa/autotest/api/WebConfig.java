@@ -27,6 +27,8 @@ public class WebConfig implements WebMvcConfigurer {
                 // 自认证——agent 上没有用户登录态；注册/列表仍走管理员会话，不排除。
                 .excludePathPatterns(
                         "/api/_ping", "/api/health", "/api/auth/login",
-                        "/api/print/**", "/api/ci/**", "/api/nodes/*/heartbeat");
+                        "/api/print/**", "/api/ci/**", "/api/nodes/*/heartbeat",
+                // NODX-03：agent 无用户会话——节点收任务（node profile）与主控收回传都以 X-Node-Token / 任务签名自认证
+                "/api/agent/**");
     }
 }

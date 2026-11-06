@@ -20,7 +20,7 @@ public class ExecutionNodeRepositoryJdbc implements ExecutionNodeRepository {
 
     private static final String SELECT = """
             SELECT id, name, token_hash, status, rf_available, pytest_available,
-                   max_concurrency, last_heartbeat_at, created_at
+                   max_concurrency, last_heartbeat_at, created_at, agent_base_url
               FROM execution_node
             """;
 
@@ -58,14 +58,22 @@ public class ExecutionNodeRepositoryJdbc implements ExecutionNodeRepository {
 
     @Override
     public ExecutionNode insert(String name, String tokenHash, boolean rfAvailable,
-                                boolean pytestAvailable, int maxConcurrency, Long operatorId) {
+                                boolean pytestAvailable, int maxConcurrency, Long operatorId,
+                                String agentBaseUrl) {
         jdbc.update("""
                 INSERT INTO execution_node
                   (name, token_hash, status, rf_available, pytest_available, max_concurrency,
-                   created_by)
-                VALUES (?, ?, 'NEW', ?, ?, ?, ?)
-                """, name, tokenHash, rfAvailable, pytestAvailable, maxConcurrency, operatorId);
+                   agent_base_url, created_by)
+                VALUES (?, ?, 'NEW', ?, ?, ?, ?, ?)
+                """, name, tokenHash, rfAvailable, pytestAvailable, maxConcurrency,
+                agentBaseUrl, operatorId);
         return findByName(name).orElseThrow();
+    }
+
+    @Override
+    public void updateAgentBaseUrl(long id, String agentBaseUrl) {
+        jdbc.update("UPDATE execution_node SET agent_base_url = ? WHERE id = ?",
+                agentBaseUrl, id);
     }
 
     @Override
@@ -113,6 +121,41 @@ public class ExecutionNodeRepositoryJdbc implements ExecutionNodeRepository {
         });
     }
 
+    @Override
+    public List<Long> findStaleOnlineIds(Instant staleBefore) {
+        return jdbc.queryForList("""
+                SELECT id FROM execution_node
+                 WHERE status = 'ONLINE' AND last_heartbeat_at < ?
+                """, Long.class, Timestamp.from(staleBefore));
+    }
+
+    /**
+     * 崩溃判失败（NODX-03）：平台级 SQL——节点与 run 的归属关系是平台维度
+     * （run.node_id 无租户路径），监视器线程也无用户会话；豁免理由与
+     * runningRunsByNode 同口径（本类有意不进 TenantGuard）。
+     * 只动挂在指定节点上的未终态 run（queued/preparing/running 都是悬挂）；
+     * test_result 不伪造（崩溃无用例级结果）。
+     */
+    @Override
+    public int failRunningRunsByNodes(List<Long> nodeIds, String reason) {
+        if (nodeIds.isEmpty()) {
+            return 0;
+        }
+        String placeholders = String.join(",", java.util.Collections.nCopies(nodeIds.size(), "?"));
+        Object[] params = new Object[nodeIds.size() + 1];
+        params[0] = reason;
+        for (int i = 0; i < nodeIds.size(); i++) {
+            params[i + 1] = nodeIds.get(i);
+        }
+        return jdbc.update("""
+                UPDATE run
+                   SET run_status = 'failed', finished_at = NOW(3),
+                       failure_class = 'ENV', failure_reason = ?
+                 WHERE run_status IN ('queued', 'preparing', 'running')
+                   AND node_id IN (%s)
+                """.formatted(placeholders), params);
+    }
+
     private static ExecutionNode map(java.sql.ResultSet rs, int rowNum)
             throws java.sql.SQLException {
         Timestamp heartbeat = rs.getTimestamp("last_heartbeat_at");
@@ -121,6 +164,7 @@ public class ExecutionNodeRepositoryJdbc implements ExecutionNodeRepository {
                 rs.getBoolean("rf_available"), rs.getBoolean("pytest_available"),
                 rs.getInt("max_concurrency"),
                 heartbeat == null ? null : heartbeat.toInstant(),
-                rs.getTimestamp("created_at").toInstant());
+                rs.getTimestamp("created_at").toInstant(),
+                rs.getString("agent_base_url"));
     }
 }

@@ -36,6 +36,14 @@ public interface RunRepository {
     }
 
     /**
+     * 回读 run 归属节点（NODX-03 回传校验）：空 Optional = run 不存在；
+     * 有值但为 null 不可能（Optional.empty 已区分）。默认实现表示仓储未建模 node_id。
+     */
+    default Optional<Long> findNodeId(long projectId, String runId) {
+        throw new UnsupportedOperationException("该仓储不支持节点归属查询: " + runId);
+    }
+
+    /**
      * 读取运行来源，供报告入库时把 PLAN_ID / TRIGGER_TYPE 合并进 metadata。
      * 默认返回空（内存仓储/旧实现没有来源概念）。
      */

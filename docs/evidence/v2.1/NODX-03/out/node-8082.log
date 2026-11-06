@@ -1,0 +1,27 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.5)
+
+2026-11-07T01:43:05.669+08:00  INFO 1513789 --- [robot-autotest] [           main] c.qa.autotest.RobotAutotestApplication   : Starting RobotAutotestApplication v0.1.0-SNAPSHOT using Java 21.0.12.1 with PID 1513789 (/home/evergreen/robot-autotest/backend/target/robot-autotest-backend-0.1.0-SNAPSHOT.jar started by evergreen in /home/evergreen/robot-autotest)
+2026-11-07T01:43:05.672+08:00  INFO 1513789 --- [robot-autotest] [           main] c.qa.autotest.RobotAutotestApplication   : The following 1 profile is active: "node"
+2026-11-07T01:43:07.173+08:00  INFO 1513789 --- [robot-autotest] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8082 (http)
+2026-11-07T01:43:07.188+08:00  INFO 1513789 --- [robot-autotest] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-11-07T01:43:07.189+08:00  INFO 1513789 --- [robot-autotest] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.31]
+2026-11-07T01:43:07.219+08:00  INFO 1513789 --- [robot-autotest] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-11-07T01:43:07.220+08:00  INFO 1513789 --- [robot-autotest] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1505 ms
+2026-11-07T01:43:09.022+08:00  INFO 1513789 --- [robot-autotest] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8082 (http) with context path '/'
+2026-11-07T01:43:09.046+08:00  INFO 1513789 --- [robot-autotest] [           main] c.qa.autotest.RobotAutotestApplication   : Started RobotAutotestApplication in 3.833 seconds (process running for 4.332)
+2026-11-07T01:43:09.056+08:00  INFO 1513789 --- [robot-autotest] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-07T01:43:09.177+08:00  INFO 1513789 --- [robot-autotest] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.mariadb.jdbc.Connection@369a95a5
+2026-11-07T01:43:09.181+08:00  INFO 1513789 --- [robot-autotest] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-11-07T01:43:15.057+08:00  INFO 1513789 --- [robot-autotest] [nio-8082-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-11-07T01:43:15.058+08:00  INFO 1513789 --- [robot-autotest] [nio-8082-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-11-07T01:43:15.060+08:00  INFO 1513789 --- [robot-autotest] [nio-8082-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-11-07T01:43:15.140+08:00  INFO 1513789 --- [robot-autotest] [nio-8082-exec-1] c.q.a.api.node.NodeAgentController       : node-agent: 任务 RUN-20261107014314-910000 已受理（projectId=29）
+2026-11-07T01:43:17.080+08:00  INFO 1513789 --- [robot-autotest] [de-agent-worker] c.q.a.application.node.NodeAgentRunner   : node-agent: run RUN-20261107014314-910000 回传完成（HTTP 200）
