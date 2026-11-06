@@ -107,6 +107,13 @@ def subset(source: Path, target: Path, chars: set[str]) -> None:
     sub = ft_subset.Subsetter(options=options)
     sub.populate(unicodes=sorted({ord(c) for c in chars}))
     sub.subset(font)
+    head = font.get("head")
+    if head is not None:
+        # TTFont.save 在 recalcTimestamp=True（默认）时会用当前时间覆盖 head.modified，
+        # 同一份源码每次构建出的字节都不同（产物在 git 里反复抖动）。关掉并把时间固定为 0，
+        # 保证 subset_font 的输出可复现。
+        font.recalcTimestamp = False
+        head.modified = 0
     font.flavor = "woff2"
     font.save(target)
 

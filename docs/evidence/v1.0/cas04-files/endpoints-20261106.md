@@ -41,8 +41,8 @@ BUILD SUCCESS
 | `mvn -o test` | 573 / 573 |
 | `vitest run` | 28 文件 / 200 用例 |
 | `vue-tsc --noEmit` | 0 错误 |
-| `vite build` | 成功（10.82s） |
-| `subset_font.py` | 1029 字 / 178778 B gzip，未超预算 |
+| `vite build` | 成功（8.32s） |
+| `subset_font.py` | 1029 字 / 178762 B gzip，未超预算 |
 | `lint.sh` | PASS |
 | `check_release_docs.py` | FAIL 0 / WARN 0 |
 | `check_wbs_consistency.py` | PASS |
