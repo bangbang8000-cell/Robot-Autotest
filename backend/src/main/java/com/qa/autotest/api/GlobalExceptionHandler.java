@@ -10,9 +10,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -43,6 +45,24 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity.badRequest()
                 .body(ApiResponse.fail(ErrorCode.INVALID_ARGUMENT, ex.getMessage()));
+    }
+
+    /**
+     * 查询参数缺失或类型不对：`GET /api/reports/RUN-1`（漏 projectId）、
+     * `?page=abc` 这类请求本身不成立，必须 400。
+     *
+     * <p>这两个异常默认会落到下面的兜底分支变成 **500「服务内部错误」**：
+     * 前端漏传一个参数就会被当成服务故障，真正的 500 也被淹掉
+     * （与 405、路径不存在同类，均由 2026-11-06 的 {@code ReportControllerTest} 实测暴露）。
+     */
+    @ExceptionHandler({MissingServletRequestParameterException.class,
+            MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ApiResponse<Void>> handleBadRequestParam(Exception ex) {
+        String detail = ex instanceof MissingServletRequestParameterException missing
+                ? "缺少参数：" + missing.getParameterName()
+                : "参数类型不正确：" + ((MethodArgumentTypeMismatchException) ex).getName();
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.fail(ErrorCode.INVALID_ARGUMENT, detail));
     }
 
     /**
