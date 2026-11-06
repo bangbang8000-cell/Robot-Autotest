@@ -29,6 +29,14 @@ public final class TenantGuard {
             "robot_file", "robot_file_version", "case_requirement", "editor_keyword",
             "schedule", "schedule_dependency", "execution_job", "run", "export_record",
             "execution_plan", "execution_plan_dependency",
+            // v2.1 ORCH-01：计划组与成员（都按 project_id 隔离）
+            "plan_group", "plan_group_item",
+            // v2.1 TPLX-01/TPLX-02：报告模板与模板字段（项目级）
+            "report_template", "report_template_field",
+            // v2.1 PUBX-01：资产版本（内容哈希 + 同步状态）
+            "asset_version",
+            // v2.1 NODX-01：执行节点（节点本身是全局的，但归属项目用于可见性）
+            "execution_node",
             "resource_lease", "resource_lease_history", "run_artifact", "run_attempt",
             "run_metadata", "ci_trigger");
 

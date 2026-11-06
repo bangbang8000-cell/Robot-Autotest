@@ -1,0 +1,14 @@
+# 夹具项目 projectId=29，已登录 qa-e2e-admin
+
+# 计划 id = [2, 3, 4]
+
+PASS  ORCH01-01   建组返回 200                        HTTP 200
+PASS  ORCH01-02   加入 3 个成员后 items=3，edgeCount=2   HTTP 200 items=3 edgeCount=2
+PASS  ORCH01-03   重复加入不报错、成员数仍为 3                 HTTP 200 items=3
+PASS  ORCH01-04   首次应用 created=2 且库内边数=2          HTTP 200 created=2 skipped=0 库内边数=2
+PASS  ORCH01-05   二次应用 created=0 skipped=2 且边数不变  HTTP 200 created=0 skipped=2 库内边数=2
+PASS  ORCH01-06   成环返回 400 且消息带计划名                HTTP 400 message=组内顺序与既有依赖成环: orch01-chain-a → orch01-chain-b → orch01-chain-a
+PASS  ORCH01-07   跨项目计划返回 403                     HTTP 403 message=计划属于其它项目: 1
+PASS  ORCH01-08   删组后组不存在但边保留（2 条）                HTTP 200 组数=0 边数=2
+
+合计 8 项，FAIL 0 项

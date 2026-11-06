@@ -49,6 +49,13 @@ const router = createRouter({
       component: () => import('@/views/PlansView.vue'),
     },
     {
+      // 计划组（ORCH-01，v2.1）：计划页的子页面，入口在计划页工具栏。
+      // 独立页面而不是计划页里的弹层——组成员顺序是整页操作的场景，弹层放不下。
+      path: '/plans/groups',
+      name: 'plan-groups',
+      component: () => import('@/views/PlanGroupsView.vue'),
+    },
+    {
       path: '/reports',
       name: 'reports',
       component: () => import('@/views/ReportsView.vue'),
