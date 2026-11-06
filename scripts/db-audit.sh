@@ -18,11 +18,11 @@ check() {
     fi
 }
 
-# 口径：v0.1 设计为 38 表；后续版本新增 7 张（editor_keyword / case_requirement /
+# 口径：v0.1 设计为 38 表；后续版本新增 8 张（editor_keyword / case_requirement /
 # export_record / ci_trigger / execution_plan_dependency / schedule_dependency /
-# project_asset），实测 46（2026-11-04 加 project_asset，AST-05）。
+# project_asset / run_metadata），实测 47（2026-11-06 加 run_metadata，V7_6）。
 # 此处期望值随迁移演进而更新，不是「表越多越好」的口径。
-check "业务表数 = 46" "46" \
+check "业务表数 = 47" "47" \
     "SELECT COUNT(*) FROM information_schema.tables
      WHERE table_schema='$DB_NAME' AND table_name<>'flyway_schema_history';"
 
