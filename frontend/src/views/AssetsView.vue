@@ -25,7 +25,6 @@ import {
 import { executionApi, type LeaseView } from '@/api/execution'
 import { useAuthStore } from '@/stores/auth'
 import DataTable from '@/components/DataTable.vue'
-import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
@@ -906,7 +905,6 @@ async function forceRelease(lease: LeaseView): Promise<void> {
   <div class="page">
     <div class="page-head">
       <h1 class="page-title">{{ t('menu.assets') }}</h1>
-      <ProjectPicker />
     </div>
 
     <!--

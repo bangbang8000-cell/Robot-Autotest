@@ -151,6 +151,12 @@ watch(
 
 async function logout(): Promise<void> {
   await auth.logout()
+  // 外观回默认：偏好按用户走（服务端 user_preference），本地键是全局单值——
+  // 不重置的话，下一个登录用户在服务端偏好到达前会先看到上一个用户的选择
+  // （换主题色时服务端没存过的用户则会一直看错）。
+  theme.setMode('system')
+  accent.setAccent('blue')
+  density.setDensity('comfortable')
   await router.replace('/login')
 }
 
@@ -174,6 +180,24 @@ async function toggleTheme(): Promise<void> {
 onMounted(() => window.addEventListener('keydown', onGlobalKeydown))
 onUnmounted(() => window.removeEventListener('keydown', onGlobalKeydown))
 
+// 偏好跟随用户：同一浏览器换账号登录（App 不重挂）也要切到当前用户的服务端偏好，
+// 只靠启动时拉一次的话，第二个登录的人会一直用第一个人的主题/强调色。
+// 登出时本地已回默认（见 logout），这里在 user 置位后拉当前用户的值覆盖。
+watch(
+  () => auth.user?.id,
+  async (id) => {
+    if (!id) return
+    try {
+      const prefs = await preferenceApi.get()
+      theme.applyRemote(prefs.theme)
+      accent.applyRemote(prefs.accent)
+      density.applyRemote(prefs.density)
+    } catch {
+      // 偏好单独兜住：它失败不该把人踢下线（否则后端少一个接口就登不进来了）
+    }
+  },
+)
+
 onMounted(async () => {
   if (!auth.authenticated) return
   try {
@@ -183,15 +207,6 @@ onMounted(async () => {
     auth.clear()
     await router.replace('/login')
     return
-  }
-  // 偏好单独兜住：它失败不该把人踢下线（否则后端少一个接口就登不进来了）
-  try {
-    const prefs = await preferenceApi.get()
-    theme.applyRemote(prefs.theme)
-    accent.applyRemote(prefs.accent)
-    density.applyRemote(prefs.density)
-  } catch {
-    // 用本地值继续
   }
 })
 </script>
@@ -251,91 +266,93 @@ onMounted(async () => {
         </nav>
       </aside>
 
+
+      <header class="app-header">
+        <span class="app-header-title">{{ t('app.subtitle') }}</span>
+        <div class="app-header-right">
+          <select
+            class="app-project app-lang"
+            :value="auth.projectId ?? ''"
+            :aria-label="t('projectPicker.select')"
+            :title="t('projectPicker.select')"
+            @change="changeProject"
+          >
+            <option value="" disabled>{{ t('projectPicker.empty') }}</option>
+            <option v-for="project in auth.projects" :key="project.id" :value="project.id">
+              {{ project.name }}
+            </option>
+          </select>
+          <span v-if="displayName" class="muted">{{ displayName }}</span>
+          <button
+            class="btn btn-ghost"
+            type="button"
+            :aria-label="t('layout.toggleSide')"
+            :title="t('layout.toggleSide')"
+            @click="toggleSide()"
+          >
+            <AppIcon :name="sideCollapsed ? 'chevronRight' : 'chevronDown'" :size="16" />
+          </button>
+          <button
+            class="btn btn-ghost"
+            type="button"
+            :aria-label="t('aiPanel.toggle')"
+            :title="t('aiPanel.toggle')"
+            @click="toggleDrawer()"
+          >
+            <AppIcon name="sparkles" :size="16" />
+          </button>
+          <button
+            class="btn btn-ghost"
+            type="button"
+            :aria-label="t('palette.open')"
+            :title="`${t('palette.open')} (${t('palette.shortcut')})`"
+            @click="paletteOpen = true"
+          >
+            <AppIcon name="search" :size="16" />
+          </button>
+          <button
+            class="btn btn-ghost theme-btn"
+            type="button"
+            :title="themeLabel"
+            :aria-label="themeLabel"
+            @click="toggleTheme"
+          >
+            <AppIcon :name="themeIcon" :size="16" />
+          </button>
+          <button
+            class="btn btn-ghost"
+            type="button"
+            :aria-label="t('appearance.open')"
+            :title="t('appearance.open')"
+            @click="appearanceOpen = true"
+          >
+            <AppIcon name="palette" :size="16" />
+          </button>
+          <!-- 版本号从顶部副标题移到「关于」（UX-05）：副标题只放定位语 -->
+          <button
+            class="btn btn-ghost"
+            type="button"
+            :aria-label="t('about.open')"
+            :title="t('about.open')"
+            @click="aboutOpen = true"
+          >
+            <AppIcon name="help" :size="16" />
+          </button>
+          <select
+            class="app-lang"
+            :value="localeStore.locale"
+            @change="
+              localeStore.setLocale(($event.target as HTMLSelectElement).value as 'zh-CN' | 'en-US')
+            "
+          >
+            <option value="zh-CN">中文</option>
+            <option value="en-US">English</option>
+          </select>
+          <button class="btn btn-ghost" type="button" @click="logout">{{ t('app.logout') }}</button>
+        </div>
+      </header>
+
       <main class="app-main">
-        <header class="app-header">
-          <span class="app-header-title">{{ t('app.subtitle') }}</span>
-          <div class="app-header-right">
-            <select
-              class="app-project app-lang"
-              :value="auth.projectId ?? ''"
-              :aria-label="t('projectPicker.select')"
-              :title="t('projectPicker.select')"
-              @change="changeProject"
-            >
-              <option value="" disabled>{{ t('projectPicker.empty') }}</option>
-              <option v-for="project in auth.projects" :key="project.id" :value="project.id">
-                {{ project.name }}
-              </option>
-            </select>
-            <span v-if="displayName" class="muted">{{ displayName }}</span>
-            <button
-              class="btn btn-ghost"
-              type="button"
-              :aria-label="t('layout.toggleSide')"
-              :title="t('layout.toggleSide')"
-              @click="toggleSide()"
-            >
-              <AppIcon :name="sideCollapsed ? 'chevronRight' : 'chevronDown'" :size="16" />
-            </button>
-            <button
-              class="btn btn-ghost"
-              type="button"
-              :aria-label="t('aiPanel.toggle')"
-              :title="t('aiPanel.toggle')"
-              @click="toggleDrawer()"
-            >
-              <AppIcon name="sparkles" :size="16" />
-            </button>
-            <button
-              class="btn btn-ghost"
-              type="button"
-              :aria-label="t('palette.open')"
-              :title="`${t('palette.open')} (${t('palette.shortcut')})`"
-              @click="paletteOpen = true"
-            >
-              <AppIcon name="search" :size="16" />
-            </button>
-            <button
-              class="btn btn-ghost theme-btn"
-              type="button"
-              :title="themeLabel"
-              :aria-label="themeLabel"
-              @click="toggleTheme"
-            >
-              <AppIcon :name="themeIcon" :size="16" />
-            </button>
-            <button
-              class="btn btn-ghost"
-              type="button"
-              :aria-label="t('appearance.open')"
-              :title="t('appearance.open')"
-              @click="appearanceOpen = true"
-            >
-              <AppIcon name="palette" :size="16" />
-            </button>
-            <!-- 版本号从顶部副标题移到「关于」（UX-05）：副标题只放定位语 -->
-            <button
-              class="btn btn-ghost"
-              type="button"
-              :aria-label="t('about.open')"
-              :title="t('about.open')"
-              @click="aboutOpen = true"
-            >
-              <AppIcon name="help" :size="16" />
-            </button>
-            <select
-              class="app-lang"
-              :value="localeStore.locale"
-              @change="
-                localeStore.setLocale(($event.target as HTMLSelectElement).value as 'zh-CN' | 'en-US')
-              "
-            >
-              <option value="zh-CN">中文</option>
-              <option value="en-US">English</option>
-            </select>
-            <button class="btn btn-ghost" type="button" @click="logout">{{ t('app.logout') }}</button>
-          </div>
-        </header>
 
         <p v-if="auth.passwordExpired" class="banner-warn">{{ t('login.passwordExpired') }}</p>
 

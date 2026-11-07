@@ -17,7 +17,6 @@ import { ApiError } from '@/api/http'
 import { caseSetApi, type TestSet } from '@/api/cases'
 import { useAuthStore } from '@/stores/auth'
 import DataTable from '@/components/DataTable.vue'
-import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import FormField from '@/components/FormField.vue'
 import StatusTag from '@/components/StatusTag.vue'
@@ -507,7 +506,6 @@ void load()
   <div class="page">
     <div class="page-head">
       <h1 class="page-title">{{ t('plans.title') }}</h1>
-      <ProjectPicker />
     </div>
 
     <div class="toolbar">

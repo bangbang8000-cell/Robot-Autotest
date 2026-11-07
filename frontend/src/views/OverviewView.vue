@@ -16,7 +16,6 @@ import {
 } from '@/api/overview'
 import { useAuthStore } from '@/stores/auth'
 import DataTable from '@/components/DataTable.vue'
-import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
@@ -239,7 +238,6 @@ function rateBarClass(point: DigestTrendPoint): string {
     <div class="page-head">
       <h1 class="page-title">{{ t('menu.overview') }}</h1>
       <div class="page-head-actions">
-        <ProjectPicker />
         <NButton :disabled="loading || !projectId" :loading="loading" @click="load">
           {{ t('common.refresh') }}
         </NButton>

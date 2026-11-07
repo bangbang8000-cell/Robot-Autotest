@@ -14,7 +14,6 @@ import { caseApi, caseSetApi, assetVersionApi, type TestCase, type TestSet,
 import { executionApi } from '@/api/execution'
 import { useAuthStore } from '@/stores/auth'
 import DataTable from '@/components/DataTable.vue'
-import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import FormField from '@/components/FormField.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
@@ -407,7 +406,6 @@ void load()
   <div class="page">
     <div class="page-head">
       <h1 class="page-title">{{ t('caseSets.title') }}</h1>
-      <ProjectPicker />
     </div>
 
     <div class="toolbar">

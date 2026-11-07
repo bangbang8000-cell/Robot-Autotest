@@ -24,7 +24,6 @@ import {
 import { useAuthStore } from '@/stores/auth'
 import { executionApi, type BlockedCase, type SafetyPrecheck } from '@/api/execution'
 import DataTable from '@/components/DataTable.vue'
-import ProjectPicker from '@/components/ProjectPicker.vue'
 import SelectionBar from '@/components/SelectionBar.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import StatusTag from '@/components/StatusTag.vue'
@@ -589,7 +588,6 @@ async function runCommit(): Promise<void> {
   <div class="page">
     <div class="page-head">
       <h1 class="page-title">{{ t('menu.cases') }}</h1>
-      <ProjectPicker />
     </div>
 
     <div class="toolbar">

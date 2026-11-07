@@ -854,9 +854,14 @@ textarea:focus-visible {
 }
 
 /* ============ W7 / UIX-02 + UIX-04: three columns, responsive, a11y ============ */
+/* 两行结构：row1 = 顶栏（横贯侧栏以外的全部宽度），row2 = 工作区 + AI 抽屉。
+   顶栏不再只属于主列——AI 抽屉的顶端因此与工作区对齐，不占顶栏那行的高度。
+   整页滚动随之改为 app-main 内容区滚动（顶栏/侧栏固定，sticky 语义更正确）。 */
 .app-shell {
   display: grid;
   grid-template-columns: 200px minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100vh;
 }
 
 .app-shell.side-collapsed {
@@ -871,18 +876,32 @@ textarea:focus-visible {
   grid-template-columns: 56px minmax(0, 1fr) 340px;
 }
 
-.app-main { min-width: 0; }
+.app-side {
+  grid-area: 1 / 1 / 3 / 2;   /* 侧栏跨两行（顶栏从第 2 列开始） */
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.app-header {
+  grid-area: 1 / 2 / 2 / -1;  /* 横贯主列 + AI 抽屉列 */
+}
+
+.app-main {
+  grid-area: 2 / 2 / 3 / 3;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
 
 .app-shell.side-collapsed .app-side { padding: 16px 8px; }
 .app-shell.side-collapsed .app-side .app-brand,
 .app-shell.side-collapsed .app-side .app-nav-item span { display: none; }
 
 .ai-drawer {
+  grid-area: 2 / 3 / 3 / 4;   /* 与工作区同一行：顶端对齐工作区，不占顶栏 */
   min-width: 0;
-  height: 100vh;
+  height: 100%;
   overflow-y: auto;
-  position: sticky;
-  top: 0;
   border-left: 1px solid var(--w7-border);
   background: var(--w7-surface);
 }

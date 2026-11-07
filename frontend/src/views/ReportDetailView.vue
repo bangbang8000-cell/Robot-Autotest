@@ -29,7 +29,6 @@ import {
 } from '@/api/reports'
 import { useAuthStore } from '@/stores/auth'
 import DataTable from '@/components/DataTable.vue'
-import ProjectPicker from '@/components/ProjectPicker.vue'
 import SuiteTree from '@/components/report/SuiteTree.vue'
 import TrendChart from '@/components/report/TrendChart.vue'
 import type { TrendChartSeries } from '@/components/report/trendChart'
@@ -566,7 +565,6 @@ watch(granularity, () => {
         </NButton>
         <h1 class="page-title">{{ runId }}</h1>
       </div>
-      <ProjectPicker />
     </div>
 
     <ErrorLineView v-if="error" :error="error" />

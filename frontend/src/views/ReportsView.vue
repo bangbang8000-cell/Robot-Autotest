@@ -6,7 +6,6 @@ import { NButton, NPagination, type DataTableColumns } from 'naive-ui'
 import { reportsApi, type ReportListItem, type RetentionResult } from '@/api/reports'
 import { useAuthStore } from '@/stores/auth'
 import DataTable from '@/components/DataTable.vue'
-import ProjectPicker from '@/components/ProjectPicker.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import AppIcon from '@/components/AppIcon.vue'
@@ -182,7 +181,6 @@ watch(
   </div>
     <div class="page-head">
       <h1 class="page-title">{{ t('menu.reports') }}</h1>
-      <ProjectPicker />
     </div>
 
     <div class="toolbar">
