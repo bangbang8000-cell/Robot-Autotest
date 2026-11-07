@@ -301,6 +301,8 @@ export default {
     hint: '口令连续 5 次错误将锁定 15 分钟',
     required: '用户名和密码必填',
     passwordExpired: '口令已过期，请联系管理员重置',
+    rememberUsername: '记住账号名',
+    rememberPassword: '记住密码并自动登录',
   },
   project: {
     label: '当前项目',

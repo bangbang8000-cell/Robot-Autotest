@@ -18,10 +18,12 @@ const authState = vi.hoisted(() => ({
   // 又能让 `toHaveBeenCalledWith(username, password)` 保持类型检查
   login: vi.fn<(username: string, password: string) => Promise<void>>(),
   failWith: null as null | Error,
+  authenticated: false,
 }))
 
 vi.mock('@/stores/auth', () => ({
   useAuthStore: () => ({
+    authenticated: authState.authenticated,
     login: async (username: string, password: string) => {
       if (authState.failWith) throw authState.failWith
       return authState.login(username, password)
@@ -80,7 +82,9 @@ function submitButton(root: HTMLElement): HTMLButtonElement {
 
 beforeEach(() => {
   authState.failWith = null
+  authState.authenticated = false
   vi.clearAllMocks()
+  localStorage.clear()
   pushState.replaced = []
   pinia = createPinia()
   setActivePinia(pinia)
@@ -160,5 +164,71 @@ describe('LoginView 表单', () => {
     expect(brand!.textContent).toContain(i18n.global.t('app.subtitle'))
     // 版本号不该在登录页出现：它只在「关于」里，且从 /_ping 读
     expect(root.textContent).not.toMatch(/v\d+\.\d+/)
+  })
+})
+
+describe('LoginView 记住账号名与自动登录', () => {
+  it('勾选记住账号名：登录成功后落 localStorage，重挂载自动预填', async () => {
+    const root = await mountView()
+    const checks = [...root.querySelectorAll<HTMLElement>('.login-remember .n-checkbox')]
+    expect(checks.length).toBe(2)
+    // NCheckbox 的原生 input 被 ui 库隐藏，点击组件根才可靠触发勾选
+    ;(checks[0] as HTMLElement).click()
+    await flush()
+
+    await typeInto(root, 0, 'evergreen')
+    await typeInto(root, 1, 'secret')
+    submitButton(root).click()
+    await flush()
+
+    expect(localStorage.getItem('login_remember_username')).toBe('evergreen')
+    // 只勾了账号名：凭据不得落盘
+    expect(localStorage.getItem('login_saved_credentials')).toBeNull()
+
+    const root2 = await mountView()
+    const nameInput = [...root2.querySelectorAll<HTMLInputElement>('input')][0]!
+    expect(nameInput.value).toBe('evergreen')
+  })
+
+  it('预置记住的凭据：未认证挂载即自动提交一次登录', async () => {
+    localStorage.setItem(
+      'login_saved_credentials',
+      JSON.stringify({ username: 'evergreen', password: 'secret' }),
+    )
+    await mountView()
+    await flush()
+
+    expect(authState.login).toHaveBeenCalledWith('evergreen', 'secret')
+    expect(pushState.replaced).toEqual(['/reports'])
+  })
+
+  it('自动登录失败：清掉记住的密码（防反复 401 撞锁定），保留账号名', async () => {
+    authState.failWith = new Error('bad credentials')
+    localStorage.setItem('login_remember_username', 'evergreen')
+    localStorage.setItem(
+      'login_saved_credentials',
+      JSON.stringify({ username: 'evergreen', password: 'expired' }),
+    )
+    const root = await mountView()
+    await flush()
+
+    // mock 在 failWith 非空时直接 throw（spy 不计数），所以断言效果而非调用：
+    // 「凭据被清」只会发生在 submit 的 catch 里，即自动登录确实尝试过并失败了
+    // 密码已失效：必须清，否则下次自动重试会去撞「连续 5 次锁 15 分钟」
+    expect(localStorage.getItem('login_saved_credentials')).toBeNull()
+    expect(localStorage.getItem('login_remember_username')).toBe('evergreen')
+    expect((root.textContent ?? '').length).toBeGreaterThan(0)
+  })
+
+  it('已认证状态不自动提交（路由守卫本该拦住，这里兜底防御）', async () => {
+    authState.authenticated = true
+    localStorage.setItem(
+      'login_saved_credentials',
+      JSON.stringify({ username: 'evergreen', password: 'secret' }),
+    )
+    await mountView()
+    await flush()
+
+    expect(authState.login).not.toHaveBeenCalled()
   })
 })

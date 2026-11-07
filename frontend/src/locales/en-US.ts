@@ -292,6 +292,8 @@ export default {
     hint: 'Account locks for 15 minutes after 5 failed attempts',
     required: 'Username and password are required',
     passwordExpired: 'Password expired — ask an administrator to reset it',
+    rememberUsername: 'Remember username',
+    rememberPassword: 'Remember password & auto-login',
   },
   project: {
     label: 'Current project',
