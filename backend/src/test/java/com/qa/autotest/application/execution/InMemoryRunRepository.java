@@ -15,6 +15,7 @@ final class InMemoryRunRepository implements RunRepository {
 
     private final Map<String, RunRecord> byRunId = new LinkedHashMap<>();
     private final Map<String, RunRecord> byRequest = new LinkedHashMap<>();
+    private final Map<String, String> retryOf = new LinkedHashMap<>();
     private long seq;
 
     void seed(RunRecord run) {
@@ -24,6 +25,11 @@ final class InMemoryRunRepository implements RunRepository {
 
     Optional<RunRecord> peek(String runId) {
         return Optional.ofNullable(byRunId.get(runId));
+    }
+
+    /** 重试来源（{@code retry_of_run_id}）：RunRecord 不暴露该字段，测试从仓储侧读取。 */
+    Optional<String> retryOf(String runId) {
+        return Optional.ofNullable(retryOf.get(runId));
     }
 
     int insertCount() {
@@ -106,7 +112,18 @@ final class InMemoryRunRepository implements RunRepository {
     }
 
     @Override
-    public int markAttempt(String runId, int attemptNo, String retryOf) {
-        return 0;
+    public int markAttempt(String runId, int attemptNo, String retryOfRunId) {
+        RunRecord current = byRunId.get(runId);
+        if (current == null) {
+            return 0;
+        }
+        byRunId.put(runId, new RunRecord(current.id(), current.runId(), current.projectId(),
+                current.testSetId(), current.state(), current.priority(), current.concurrency(),
+                attemptNo, current.totalTests(), current.passedTests(), current.failedTests(),
+                current.failureClass(), current.failureReason(), current.failureMessage(),
+                current.artifactsDir(), current.enqueuedAt(), current.startedAt(),
+                current.finishedAt(), current.deviceScope()));
+        retryOf.put(runId, retryOfRunId);
+        return 1;
     }
 }

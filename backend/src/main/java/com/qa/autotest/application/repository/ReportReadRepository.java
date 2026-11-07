@@ -30,9 +30,11 @@ public interface ReportReadRepository {
                                        Instant before, String excludeRunId);
 
     /**
-     * 手动基线候选：同项目 + 同 DUT/LINK + state=finished + 排除本轮，按开始时间倒序。
+     * 手动基线候选：同项目 + state=finished + 排除本轮；同 DUT/LINK 的排在前面，其余跨环境候选随后。
      *
-     * <p>不限制「早于本轮」—— 手动基线允许拿新一轮当对照，由调用方自行判断；
+     * <p>N4：v2.1 允许跨环境手动基线（服务层标记 {@code crossEnvironment}），所以这里不再过滤 DUT/LINK；
+     * dut/link 仅用于排序权重。
+     * 不限制「早于本轮」—— 手动基线允许拿新一轮当对照，由调用方自行判断；
      * 也不做「必须早于本轮」之外的排序假设，避免和 {@link #findBaseline} 的语义混在一起。
      *
      * @param limit 最多返回条数，调用方负责夹取范围

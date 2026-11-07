@@ -159,18 +159,20 @@ async function loadBaselineCandidates(): Promise<void> {
   }
 }
 
-const baselineOptions = computed(() => [
-  { label: t('reports.compare.baselineAuto'), value: '' },
-  ...baselineCandidates.value.map((item) => ({
-    label: item.startedAt
-      ? t('reports.compare.baselineOption', {
-          runId: item.runId,
-          at: formatDateTime(item.startedAt),
-        })
-      : item.runId,
-    value: item.runId,
-  })),
-])
+const baselineOptions = computed(() =>
+  ([{ label: t('reports.compare.baselineAuto'), value: '' }]).concat(
+    baselineCandidates.value.map((item) => {
+      const base = item.startedAt
+        ? t('reports.compare.baselineOption', { runId: item.runId, at: formatDateTime(item.startedAt) })
+        : item.runId
+      // N4：跨环境候选必须在下拉里就看得见，别让用户选完才发现环境不同
+      return {
+        label: item.crossEnvironment ? `${base} · ${t('reports.compare.crossEnvironment')}` : base,
+        value: item.runId,
+      }
+    }),
+  ),
+)
 
 /** `NSelect` 的 value 是 `string | number | null`，收敛成字符串再落 ref。 */
 function selectBaseline(value: string | number | null): void {
@@ -804,6 +806,14 @@ watch(granularity, () => {
           </label>
           <span v-if="compare?.baseline" class="muted">
             {{ t('reports.compare.baseline', { runId: compare.baseline.runId }) }}
+          </span>
+          <StatusTag
+            v-if="compare?.crossEnvironment"
+            tone="warn"
+            :label="t('reports.compare.crossEnvironment')"
+          />
+          <span v-if="compare?.crossEnvironment" class="muted">
+            {{ t('reports.compare.crossEnvironmentHint') }}
           </span>
           <span v-else-if="compare" class="text-fail">{{ t('reports.compare.noBaseline') }}</span>
         </div>

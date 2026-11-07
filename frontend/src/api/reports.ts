@@ -109,12 +109,17 @@ export interface CompareSummary {
 export interface CompareBaseline {
   runId: string
   startedAt: string | null
+  /** N4：与本轮 DUT/LINK 不同时为 true，前端需显示「跨环境」提示 */
+  crossEnvironment: boolean
+  dut: string | null
+  link: string | null
 }
 
 export interface CompareResult {
   baseline: CompareBaseline | null
   rows: CompareRow[]
   summary: CompareSummary
+  crossEnvironment: boolean
 }
 
 /** 趋势单点；envKey 为 DUT+LINK，环境变化时必须断线。 */

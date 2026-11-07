@@ -266,6 +266,34 @@ export interface AssetDiffRow {
   detail: string
 }
 
+/** 同步策略（N9）：FULL 整体覆盖；ADD_ONLY 只补平台新增，保留本地修改与顺序。 */
+export type SyncStrategy = 'FULL' | 'ADD_ONLY'
+
+/** 平台集被哪些项目副本引用（N9 只读视图）。 */
+export interface AssetVersionReference {
+  projectId: number
+  projectCode: string
+  copyAssetId: number
+  syncedAssetVersion: number | null
+  forkState: string
+  latestAssetVersion: number
+  hasNewVersion: boolean
+}
+
+/** 平台用例集行（N9 只读库）：不属于任何项目，`test_set.project_id IS NULL`。 */
+export interface PlatformCaseSetRow {
+  id: number
+  setCode: string
+  name: string
+  description: string | null
+  itemCount: number
+  assetVersion: number
+  contentHash: string | null
+  hasNewVersion: boolean
+  referenceCount: number
+  references: AssetVersionReference[]
+}
+
 /**
  * 用例集资产版本（PUBX-01/02）。
  *
@@ -281,9 +309,9 @@ export const assetVersionApi = {
       `/test-sets/${setId}/asset-version/diff?projectId=${projectId}`,
     )
   },
-  sync(projectId: number, setId: number) {
+  sync(projectId: number, setId: number, strategy: SyncStrategy = 'FULL') {
     return request<AssetVersionView>(
-      `/test-sets/${setId}/asset-version/sync?projectId=${projectId}`,
+      `/test-sets/${setId}/asset-version/sync?projectId=${projectId}&strategy=${strategy}`,
       { method: 'POST' },
     )
   },
@@ -292,5 +320,22 @@ export const assetVersionApi = {
       `/test-sets/${setId}/asset-version/diverge?projectId=${projectId}`,
       { method: 'POST' },
     )
+  },
+}
+
+/**
+ * 平台用例集库（N9，只读）。
+ *
+ * 平台集不属于任何项目，路径不带 projectId；写操作刻意不提供——
+ * 平台库一改，所有副本会静默跟着变，风险高于收益。
+ */
+export const platformCaseSetApi = {
+  page(params: { keyword?: string; page?: number; size?: number }) {
+    return request<PageResult<PlatformCaseSetRow>>(
+      `/platform/case-sets${toQuery(params)}`,
+    )
+  },
+  items(id: number) {
+    return request<TestCase[]>(`/platform/case-sets/${id}/items`)
   },
 }

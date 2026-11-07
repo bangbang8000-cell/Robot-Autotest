@@ -18,6 +18,7 @@ import FailureClustersView from '@/views/FailureClustersView.vue'
 vi.mock('@/api/failureClusters', () => ({
   failureClusterApi: {
     load: vi.fn(),
+    recent: vi.fn(),
     rerun: vi.fn(),
   },
 }))
@@ -87,6 +88,12 @@ async function query(root: HTMLElement): Promise<void> {
 
 beforeEach(() => {
   vi.mocked(failureClusterApi.load).mockResolvedValue(view as never)
+  vi.mocked(failureClusterApi.recent).mockResolvedValue({
+    ...view,
+    runId: 'recent:5',
+    runStatus: null,
+    runFailureClass: null,
+  } as never)
   vi.mocked(failureClusterApi.rerun).mockResolvedValue({ runId: 'RUN-2' } as never)
   pinia = createPinia()
   setActivePinia(pinia)
@@ -149,5 +156,28 @@ describe('FailureClustersView', () => {
 
     expect(failureClusterApi.rerun).toHaveBeenCalledWith(1, 'RUN-1', 'AssertionError: <n> != <n>')
     expect(root.querySelector('[data-testid="notice"]')?.textContent).toContain('RUN-2')
+  })
+
+  it('切到最近 N 轮：走 recent 接口，不再要求输入 runId', async () => {
+    const root = await mountView()
+    root.querySelector<HTMLButtonElement>('[data-testid="mode-recent"]')!.click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(failureClusterApi.recent).toHaveBeenCalledWith(1, 5)
+    expect(failureClusterApi.load).not.toHaveBeenCalled()
+    expect(root.querySelector('[data-testid="query"] input')).toBeNull()
+    expect(root.querySelector('[data-testid="summary"]')?.textContent).toContain('5')
+  })
+
+  it('跨轮模式下重跑按钮全部禁用', async () => {
+    const root = await mountView()
+    root.querySelector<HTMLButtonElement>('[data-testid="mode-recent"]')!.click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    const buttons = root.querySelectorAll<HTMLButtonElement>('[data-testid="rerun"]')
+    expect(buttons.length).toBeGreaterThan(0)
+    expect([...buttons].every((button) => button.disabled)).toBe(true)
   })
 })

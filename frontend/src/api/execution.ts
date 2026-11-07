@@ -97,6 +97,28 @@ export interface LeaseWait {
   totalMs: number | null
 }
 
+/**
+ * 运行进度快照（N15）：与实时日志同源，由后端解析 pabot 控制台行得到。
+ *
+ * 口径说明：`total = 0` 表示总数未知（前端按不确定进度渲染，不伪造百分比）；
+ * `lastTest` 是**最近一条完成**的用例，不是「此刻正在执行」的那条 —— RF 控制台只在用例
+ * 结束时打印结果行，界面文案按「最近完成」表述。
+ */
+export interface RunProgress {
+  runId: string
+  state: string
+  /** queued / preparing / running / reporting / done */
+  phase: string
+  total: number
+  completed: number
+  passed: number
+  failed: number
+  skipped: number
+  lastTest: string | null
+  lastVerdict: string | null
+  elapsedSeconds: number
+}
+
 export interface PageResult<T> {
   items: T[]
   total: number
@@ -249,6 +271,13 @@ export const executionApi = {
   recentLog(projectId: number, runId: string, limit = 200): Promise<RunLogLine[]> {
     return request<RunLogLine[]>(
       `/execution/runs/${encodeURIComponent(runId)}/log${toQuery({ projectId, limit })}`,
+    )
+  },
+
+  /** 进度快照（N15）：日志面板按 3 秒轮询展示进度条、阶段与最近用例。 */
+  progress(projectId: number, runId: string): Promise<RunProgress> {
+    return request<RunProgress>(
+      `/execution/runs/${encodeURIComponent(runId)}/progress${toQuery({ projectId })}`,
     )
   },
 

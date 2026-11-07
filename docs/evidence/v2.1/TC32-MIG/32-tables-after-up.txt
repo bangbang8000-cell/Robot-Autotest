@@ -20,6 +20,7 @@ execution_node
 execution_plan
 execution_plan_dependency
 execution_queue
+execution_shard
 export_record
 import_batch
 keyword_result

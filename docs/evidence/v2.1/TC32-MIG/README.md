@@ -1,10 +1,10 @@
-# TC-v2.1-32 证据：V9_1–V9_4 迁移往返（up → down → up）+ 备份恢复
+# TC-v2.1-32 证据：V9_1–V9_5 迁移往返（up → down → up）+ 备份恢复
 
 ## 结论
 
-- **61 项断言全 OK、FAIL 0**（`32-up-down-up.log`，退出码 0）：V9_4 → V9_3 → V9_2 → V9_1
+- **67 项断言全 OK、FAIL 0**（`32-up-down-up.log`，退出码 0）：V9_5 → V9_4 → V9_3 → V9_2 → V9_1
   逐个 down 后，对应表/列/索引确实消失；V8_x 数据行数（`test_report=2`、`project=1`）全程未变；
-  重新 up 回 V9_4 成功，表清单与首次 up **逐行一致**（66 张）。
+  重新 up 回 V9_5 成功，表清单与首次 up **逐行一致**（66 张）。
 - **备份恢复后行数一致**：`32-backup-after-up.sql`（103,288 字节）DROP+CREATE+导入后，
   project/test_report/plan_group 行数与备份时相同，表清单一致。
 - **恢复后 `db-audit` 7 项全 PASS**（业务表 66、审计四列、append-only 历史表 created_at、
@@ -14,20 +14,21 @@
 
 | 阶段 | flyway max | 业务表 |
 |---|---|---|
-| 首次 up | 9.4 | 66 |
+| 首次 up | 9.5 | 66 |
+| down V9_5（execution_node.agent_base_url） | 9.4 | 66（只删列，表不动） |
 | down V9_4（execution_node） | 9.3 | 65 |
 | down V9_3（asset_version 等） | 9.2 | 64 |
 | down V9_2（report_template ×2） | 9.1 | 62 |
 | down V9_1（plan_group ×2） | 8.6 | 60 |
-| 再次 up | 9.4 | 66 |
+| 再次 up | 9.5 | 66 |
 
 ## 判据对照（TEST-PLAN §4.7 / §5.4 TC-v2.1-32）
 
 | 判据 | 证据 |
 |---|---|
-| down 后表/列消失 | V9_4：`execution_node` 表、`run.node_id` 列、`idx_run_node` 索引均 0；V9_3：`asset_version` 表、`test_set.owner_scope/source_asset_id/scope_project_id`、`uk_test_set_scope_code`、`idx_test_set_source` 均 0，`project_id` 恢复 NOT NULL、`uk_test_set_project_code` 恢复；V9_2：`report_template`、`report_template_field` 均 0；V9_1：`plan_group`、`plan_group_item` 均 0 |
+| down 后表/列消失 | V9_5：`execution_node.agent_base_url` 列 0；V9_4：`execution_node` 表、`run.node_id` 列、`idx_run_node` 索引均 0；V9_3：`asset_version` 表、`test_set.owner_scope/source_asset_id/scope_project_id`、`uk_test_set_scope_code`、`idx_test_set_source` 均 0，`project_id` 恢复 NOT NULL、`uk_test_set_project_code` 恢复；V9_2：`report_template`、`report_template_field` 均 0；V9_1：`plan_group`、`plan_group_item` 均 0 |
 | 不影响 V8_x 数据 | 每一步（含 down 全部完成后）都断言 `test_report=2`、`project=1`，实测不变 |
-| 重新 up 成功 | `mvn flyway:migrate -Dflyway.target=9.4` 退出码 0；history max=9.4；5 个对象全部恢复；表清单 diff 为空 |
+| 重新 up 成功 | `mvn flyway:migrate -Dflyway.target=9.5` 退出码 0；history max=9.5；5 个对象全部恢复（含 `agent_base_url`）；表清单 diff 为空 |
 | 备份恢复后行数一致 | 恢复后 project=1 / test_report=2 / plan_group=1 / 表 66，与备份时一致 |
 
 ## 命令
@@ -44,8 +45,8 @@ KEEP_DB=1 bash scripts/v21/migrate-roundtrip.sh
 1. **只在 scratch 库上演练**：默认 `TARGET_DB=robot_it_local`（robot 用户已授权、演练前为空），
    脚本拒绝 `robot_it` / `robot_dev` / `mysql` / `sys`，并要求库名含 `_it`。演练结束默认
    `DROP DATABASE`，不碰真实业务库。
-2. **首次 up 从空库真跑 V1..V9_4**，不依赖既有库的历史状态；`-Dflyway.target=9.4` 明确停在
-   V9_4（V9_5 不在本 TC 范围）。
+2. **首次 up 从空库真跑 V1..V9_5**，不依赖既有库的历史状态；`-Dflyway.target=9.5` 明确停在
+   V9_5（最新一版，只加列，不改表数）。
 3. **手写 down 不维护 `flyway_schema_history`**，脚本在每次 down 后显式删除该版本记录，
    否则重放 up 会报 already applied。这是 `db-undo.sh`（一次性倒序回退全部版本）之外
    必须逐版本执行的原因。
@@ -58,7 +59,7 @@ KEEP_DB=1 bash scripts/v21/migrate-roundtrip.sh
 
 | 文件 | 内容 |
 |---|---|
-| `32-up-down-up.log` | 全流程 8 个阶段 + 61 项 OK/FAIL，末行「TC-v2.1-32: PASS」 |
+| `32-up-down-up.log` | 全流程 8 个阶段 + 67 项 OK/FAIL，末行「TC-v2.1-32: PASS」 |
 | `32-tables-after-up.txt` | 首次 up 后 66 张表清单（基线） |
 | `32-tables-after-reup.txt` | 再次 up 后表清单 |
 | `32-tables-diff.log` | 基线与重放表清单的 diff（空 = 一致） |

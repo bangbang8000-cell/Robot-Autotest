@@ -1,0 +1,5 @@
+$ mvn -o test -Dtest=RunProgressRegistryTest   # 2026-11-07
+(mvn exit code = 0)
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.788 s -- in com.qa.autotest.application.execution.RunProgressRegistryTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS

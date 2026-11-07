@@ -11,7 +11,7 @@ import {
   NSelect,
   type DataTableColumns,
 } from 'naive-ui'
-import { planApi, type ExecutionPlan, type PlanPayload } from '@/api/plans'
+import { planApi, type ExecutionPlan, type PlanConflict, type PlanPayload } from '@/api/plans'
 import { auditApi, type AuditEntry } from '@/api/audit'
 import { ApiError } from '@/api/http'
 import { caseSetApi, type TestSet } from '@/api/cases'
@@ -54,6 +54,102 @@ const skippedTotal = ref(0)
 // 解析，直接抛 RangeError（AuditView 早就踩过同一个坑）。
 const skippedRange = reactive({ from: null as string | null, to: null as string | null })
 const skippedPageCount = computed(() => Math.max(1, Math.ceil(skippedTotal.value / skippedSize)))
+
+/**
+ * 编排冲突（W5）：只读检测 + 批量启停。
+ *
+ * 检测与批量刻意分成两个动作：先看清「哪些计划撞在一起」，再决定停哪几条。
+ * 自动修复会把用户没想动的计划一起停掉，事故成本远高于多点一次按钮。
+ */
+const conflicts = ref<PlanConflict[]>([])
+const conflictLoading = ref(false)
+const conflictError = ref<ErrorLine | null>(null)
+const selectedConflictKeys = ref<string[]>([])
+const batchApplying = ref(false)
+const batchNotice = ref('')
+
+function conflictKey(conflict: PlanConflict): string {
+  return `${conflict.type}:${conflict.planIds.join(',')}`
+}
+
+const allConflictsSelected = computed(() =>
+  conflicts.value.length > 0 && selectedConflictKeys.value.length === conflicts.value.length)
+
+const selectedPlanIds = computed(() => {
+  const ids = new Set<number>()
+  for (const conflict of conflicts.value) {
+    if (selectedConflictKeys.value.includes(conflictKey(conflict))) {
+      for (const id of conflict.planIds) ids.add(id)
+    }
+  }
+  return [...ids].sort((left, right) => left - right)
+})
+
+function conflictTypeLabel(type: string): string {
+  const key = `plans.conflictTypes.${type}`
+  return te(key) ? t(key) : type
+}
+
+function planNames(ids: number[]): string {
+  return ids
+    .map((id) => plans.value.find((plan) => plan.id === id)?.name ?? `#${id}`)
+    .join('、')
+}
+
+function toggleConflict(key: string): void {
+  selectedConflictKeys.value = selectedConflictKeys.value.includes(key)
+    ? selectedConflictKeys.value.filter((value) => value !== key)
+    : [...selectedConflictKeys.value, key]
+}
+
+function toggleAllConflicts(): void {
+  selectedConflictKeys.value = allConflictsSelected.value
+    ? []
+    : conflicts.value.map((conflict) => conflictKey(conflict))
+}
+
+async function loadConflicts(): Promise<void> {
+  if (!projectId.value) {
+    conflicts.value = []
+    return
+  }
+  conflictLoading.value = true
+  conflictError.value = null
+  try {
+    conflicts.value = await planApi.conflicts(projectId.value)
+    // 列表可能已变（新建/删除/改 cron），旧勾选里失效的键要清掉，否则批量会把
+    // 「选择条数」算成 0 却仍显示有勾选
+    const live = new Set(conflicts.value.map((conflict) => conflictKey(conflict)))
+    selectedConflictKeys.value = selectedConflictKeys.value.filter((key) => live.has(key))
+  } catch (e) {
+    conflicts.value = []
+    conflictError.value = localizeError(e)
+  } finally {
+    conflictLoading.value = false
+  }
+}
+
+async function applyBatch(status: 'ENABLED' | 'PAUSED'): Promise<void> {
+  const ids = selectedPlanIds.value
+  if (ids.length === 0 || batchApplying.value) return
+  batchApplying.value = true
+  conflictError.value = null
+  batchNotice.value = ''
+  try {
+    const results = await planApi.batch(projectId.value, ids, status)
+    const succeeded = results.filter((result) => result.changed).length
+    batchNotice.value = t('plans.conflictApplied', {
+      ok: succeeded,
+      failed: results.length - succeeded,
+    })
+    selectedConflictKeys.value = []
+    await load()
+  } catch (e) {
+    conflictError.value = localizeError(e)
+  } finally {
+    batchApplying.value = false
+  }
+}
 
 const projectId = computed(() => auth.projectId ?? 0)
 
@@ -331,6 +427,7 @@ async function load(): Promise<void> {
   if (!projectId.value) {
     plans.value = []
     testSets.value = []
+    conflicts.value = []
     return
   }
   loading.value = true
@@ -341,6 +438,8 @@ async function load(): Promise<void> {
     ])
     plans.value = planPage.items
     testSets.value = setPage.items
+    // 计划的增删改都会影响冲突判定，随列表一起刷新，避免面板显示上一次的结论
+    await loadConflicts()
   } catch (e) {
     error.value = localizeError(e)
   } finally {
@@ -542,6 +641,68 @@ void load()
       :error="Boolean(error)"
     />
 
+    <div class="card conflict-card" data-testid="plan-conflicts">
+      <div class="conflict-head">
+        <h2 class="card-title">{{ t('plans.conflictTitle') }}</h2>
+        <span class="muted small">{{ t('plans.conflictHint') }}</span>
+        <NButton quaternary size="small" :loading="conflictLoading" @click="loadConflicts">
+          {{ t('plans.conflictRefresh') }}
+        </NButton>
+      </div>
+
+      <ErrorLineView v-if="conflictError" :error="conflictError" />
+      <p v-else-if="!conflictLoading && conflicts.length === 0" class="text-ok" data-testid="conflict-empty">
+        {{ t('plans.conflictEmpty') }}
+      </p>
+      <template v-else>
+        <div class="conflict-list">
+          <NCheckbox
+            class="conflict-all"
+            :checked="allConflictsSelected"
+            :indeterminate="selectedConflictKeys.length > 0 && !allConflictsSelected"
+            @update:checked="toggleAllConflicts"
+          >
+            {{ t('plans.conflictSelectAll') }}
+          </NCheckbox>
+          <label
+            v-for="conflict in conflicts"
+            :key="conflictKey(conflict)"
+            class="conflict-row"
+            :data-severity="conflict.severity"
+            data-testid="conflict-row"
+          >
+            <NCheckbox
+              :checked="selectedConflictKeys.includes(conflictKey(conflict))"
+              @update:checked="toggleConflict(conflictKey(conflict))"
+            />
+            <span class="conflict-type">{{ conflictTypeLabel(conflict.type) }}</span>
+            <span class="conflict-plans">{{ planNames(conflict.planIds) }}</span>
+            <span class="muted small">{{ conflict.detail }}</span>
+          </label>
+        </div>
+        <div class="conflict-actions">
+          <span class="muted small">{{ t('plans.conflictSelected', { n: selectedPlanIds.length }) }}</span>
+          <NButton
+            size="small"
+            :disabled="selectedPlanIds.length === 0 || batchApplying"
+            :loading="batchApplying"
+            @click="applyBatch('PAUSED')"
+          >
+            {{ t('plans.conflictPause') }}
+          </NButton>
+          <NButton
+            size="small"
+            :disabled="selectedPlanIds.length === 0 || batchApplying"
+            :loading="batchApplying"
+            @click="applyBatch('ENABLED')"
+          >
+            {{ t('plans.conflictEnable') }}
+          </NButton>
+        </div>
+      </template>
+      <p v-if="batchNotice" class="text-ok" data-testid="conflict-batch-result">{{ batchNotice }}</p>
+    </div>
+
     <div class="card skipped-card">
       <div class="skipped-head">
         <NButton quaternary size="small" :loading="skippedLoading" @click="toggleSkipped">
@@ -700,6 +861,57 @@ void load()
 
 .skipped-card {
   margin-top: var(--space-4);
+}
+
+.conflict-card {
+  margin-top: var(--space-4);
+}
+
+.conflict-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.conflict-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.conflict-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  /* FAIL 是硬故障（永远不触发/等不到），用左侧色条区分，不靠文字提示 */
+  border-left: 3px solid var(--warn);
+}
+
+.conflict-row[data-severity='FAIL'] {
+  border-left-color: var(--fail);
+}
+
+.conflict-type {
+  font-weight: 600;
+  min-width: 90px;
+}
+
+.conflict-plans {
+  font-weight: 500;
+}
+
+.conflict-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
 }
 
 .skipped-head {

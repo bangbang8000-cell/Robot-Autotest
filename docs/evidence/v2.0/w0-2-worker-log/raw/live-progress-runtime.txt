@@ -1,0 +1,55 @@
+################ A. 快套件（2 用例，进度应 completed<=total 且 lastTest 为用例名）
+[fast] trigger suites=["suites/a5-loop/loop-demo.robot", "suites/e2e-nodx03/demo.robot"]
+[fast] runId=RUN-20261107174205-510000 state=QUEUED
+t+0s state=PREPARING phase=preparing total=0 completed=0 passed=0 failed=0 skipped=0 elapsed=0 last=None verdict=None
+t+1s state=RUNNING phase=running total=1 completed=1 passed=1 failed=0 skipped=0 elapsed=1 last='NODX03 示例通过' verdict=PASS
+t+3s state=RUNNING phase=running total=2 completed=2 passed=2 failed=0 skipped=0 elapsed=2 last='A5 循环与分支' verdict=PASS
+t+4s state=FINISHED phase=done total=2 completed=2 passed=2 failed=0 skipped=0 elapsed=2 last='A5 循环与分支' verdict=PASS
+[fast] --- /log tail ---
+lines_returned=8
+   pabot | [stdout] Stopping PabotLib process
+   pabot | [stdout] Robot Framework remote server at 127.0.0.1:8270 stopped.
+   pabot | [stdout] PabotLib process stopped
+   pabot | [stdout] Total testing: 1.10 seconds
+   pabot | [stdout] Elapsed time:  2.15 seconds
+   pabot | [stdout] Logs flushed successfully.
+   pabot | [system] 进程退出码=0，耗时=PT2.780744612S
+   pabot | [system] 产物校验通过，totalTests=2
+RUN_ID=RUN-20261107174205-510000
+
+################ B. 一万行日志（B2 log10k）
+runId=RUN-20261107174209-510000
+t+0s state=PREPARING phase=preparing total=0 completed=0 passed=0 failed=0 elapsed=0 last=None verdict=None
+t+2s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=1 last=None verdict=None
+t+4s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=4 last=None verdict=None
+t+6s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=6 last=None verdict=None
+t+8s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=8 last=None verdict=None
+t+11s state=RUNNING phase=running total=1 completed=1 passed=1 failed=0 elapsed=10 last='B2 输出一万行' verdict=PASS
+t+13s state=RUNNING phase=running total=1 completed=1 passed=1 failed=0 elapsed=12 last='B2 输出一万行' verdict=PASS
+t+15s state=FINISHED phase=done total=1 completed=1 passed=1 failed=0 elapsed=14 last='B2 输出一万行' verdict=PASS
+--- /log?limit=20000 响应
+http=200 bytes=278397 seconds=0.088641
+lines_returned=2000
+first='[worker:0] 第 8025 行 B2 log line payload'
+last='[system] 产物校验通过，totalTests=1'
+contains_line_9999=True
+
+################ C. 长任务（180s Sleep）不确定进度
+runId=RUN-20261107174224-510000
+t+0s state=PREPARING phase=preparing total=0 completed=0 passed=0 failed=0 elapsed=0 last=None verdict=None
+t+2s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=1 last=None verdict=None
+t+4s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=3 last=None verdict=None
+t+6s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=5 last=None verdict=None
+t+8s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=7 last=None verdict=None
+t+11s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=10 last=None verdict=None
+t+13s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=12 last=None verdict=None
+t+15s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=14 last=None verdict=None
+t+17s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=16 last=None verdict=None
+t+19s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=18 last=None verdict=None
+t+21s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=20 last=None verdict=None
+t+23s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=22 last=None verdict=None
+t+25s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=24 last=None verdict=None
+t+27s state=RUNNING phase=running total=0 completed=0 passed=0 failed=0 elapsed=26 last=None verdict=None
+--- cancel
+state=CANCELED
+RUN_ID=RUN-20261107174209-510000 RUN_ID_SLOW=RUN-20261107174224-510000

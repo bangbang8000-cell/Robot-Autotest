@@ -174,11 +174,17 @@ public class ExecutionNodeRepositoryJdbc implements ExecutionNodeRepository {
             params[i + 1] = nodeIds.get(i);
         }
         return jdbc.update("""
-                UPDATE run
+                UPDATE run r
                    SET run_status = 'failed', finished_at = NOW(3),
                        failure_class = 'ENV', failure_reason = ?
-                 WHERE run_status IN ('queued', 'preparing', 'running')
-                   AND node_id IN (%s)
+                 WHERE r.run_status IN ('queued', 'preparing', 'running')
+                   AND r.node_id IN (%s)
+                   AND NOT EXISTS (
+                       SELECT 1 FROM execution_shard s
+                        WHERE s.run_id = r.run_id
+                          AND s.project_id = r.project_id
+                          AND s.state IN ('PENDING', 'LEASED', 'LOST')
+                   )
                 """.formatted(placeholders), params);
     }
 

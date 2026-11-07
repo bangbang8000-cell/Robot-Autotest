@@ -41,6 +41,14 @@ export const failureClusterApi = {
     return request<FailureClusterView>(`/failure-clusters${toQuery({ projectId, runId })}`)
   },
 
+  /**
+   * 跨 run 聚类（W5）：最近 N 轮失败按同一套归一化规则合并。
+   * 返回的 `runId` 是作用域标记 `recent:N`，不能拿去调 rerun。
+   */
+  recent(projectId: number, runs: number): Promise<FailureClusterView> {
+    return request<FailureClusterView>(`/failure-clusters/recent${toQuery({ projectId, runs })}`)
+  },
+
   rerun(projectId: number, runId: string, clusterKey: string): Promise<ExecutionRun> {
     return request<ExecutionRun>('/failure-clusters/rerun', {
       method: 'POST',

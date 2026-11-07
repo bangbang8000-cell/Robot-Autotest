@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.HexFormat;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,19 +37,52 @@ public class ExecutionNodeService {
     /** 心跳周期（秒）；离线阈值 = 周期 × missedLimit（默认 3 次）。 */
     private final int heartbeatIntervalSeconds;
 
+    /** 心跳写库限流窗口（秒）：同一节点窗口内的重复心跳只回应、不重复写库（N10）。 */
+    private final int heartbeatThrottleSeconds;
+
+    private final java.time.Clock clock;
+
     private final ExecutionNodeRepository nodes;
     private final AccessControlService access;
     private final AuditService audit;
     private final SecureRandom random = new SecureRandom();
 
+    /**
+     * 生产构造器必须显式标注：类里另有 3 个测试用的包级构造器，
+     * 有多个候选时 Spring 不再自动挑唯一构造器，会去找无参构造并报
+     * {@code No default constructor found}（本期门禁 05 实测踩到）。
+     */
+    @Autowired
     public ExecutionNodeService(ExecutionNodeRepository nodes, AccessControlService access,
                                 AuditService audit,
                                 @Value("${node.heartbeat-interval-seconds:30}")
-                                int heartbeatIntervalSeconds) {
+                                int heartbeatIntervalSeconds,
+                                @Value("${node.heartbeat-throttle-seconds:5}")
+                                int heartbeatThrottleSeconds) {
+        this(nodes, access, audit, heartbeatIntervalSeconds, heartbeatThrottleSeconds,
+                java.time.Clock.systemUTC());
+    }
+
+    /** 单测入口：默认 5 秒限流窗口。 */
+    ExecutionNodeService(ExecutionNodeRepository nodes, AccessControlService access,
+                         AuditService audit, int heartbeatIntervalSeconds) {
+        this(nodes, access, audit, heartbeatIntervalSeconds, 5, java.time.Clock.systemUTC());
+    }
+
+    ExecutionNodeService(ExecutionNodeRepository nodes, AccessControlService access,
+                         AuditService audit, int heartbeatIntervalSeconds,
+                         int heartbeatThrottleSeconds, java.time.Clock clock) {
         this.nodes = nodes;
         this.access = access;
         this.audit = audit;
         this.heartbeatIntervalSeconds = heartbeatIntervalSeconds;
+        this.heartbeatThrottleSeconds = Math.max(0, heartbeatThrottleSeconds);
+        this.clock = clock;
+    }
+
+    /** 心跳限流窗口（秒），0 表示关闭限流。 */
+    public int heartbeatThrottleSeconds() {
+        return heartbeatThrottleSeconds;
     }
 
     public int heartbeatIntervalSeconds() {
@@ -109,8 +143,22 @@ public class ExecutionNodeService {
         if (ExecutionNode.DISABLED.equals(node.status())) {
             throw new BusinessException(ErrorCode.FORBIDDEN, "节点已停用，先由管理员启用");
         }
+        // N10：同一节点在限流窗口内的重复心跳只回应、不再写库。
+        // 高速轮询（毫秒级探活）会打满执行节点表的写竞争，而心跳的语义本来就是「我还活着」，
+        // 5 秒内的第二条既不改变存活判定，也不该带来一次 UPDATE。
+        if (throttled(node)) {
+            return view(node);
+        }
         nodes.heartbeat(nodeId, rfAvailable, pytestAvailable);
         return view(nodes.find(nodeId).orElse(node));
+    }
+
+    private boolean throttled(ExecutionNode node) {
+        if (heartbeatThrottleSeconds <= 0 || node.lastHeartbeatAt() == null) {
+            return false;
+        }
+        return !clock.instant().isAfter(node.lastHeartbeatAt()
+                .plusSeconds(heartbeatThrottleSeconds));
     }
 
     public List<NodeView> list() {
@@ -147,7 +195,19 @@ public class ExecutionNodeService {
         return view(nodes.find(nodeId).orElse(node));
     }
 
-    /** 心跳鉴权：不存在与令牌错统一 401，防枚举。 */
+    /**
+     * 节点令牌鉴权（W2：分片 claim / complete 复用心跳同一口径）。
+     * 与心跳的差别是**不刷新 last_heartbeat**——领任务不该顺带证明存活；
+     * DISABLED 节点同样拒绝，停用必须真的停。
+     */
+    public ExecutionNode authenticate(long nodeId, String token) {
+        ExecutionNode node = requireNodeWithToken(nodeId, token);
+        if (ExecutionNode.DISABLED.equals(node.status())) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "节点已停用，先由管理员启用");
+        }
+        return node;
+    }
+
     private ExecutionNode requireNodeWithToken(long nodeId, String token) {
         if (token == null || token.isBlank()) {
             throw new BusinessException(ErrorCode.UNAUTHENTICATED, "缺少节点令牌");

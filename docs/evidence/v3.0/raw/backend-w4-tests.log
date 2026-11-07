@@ -1,0 +1,6 @@
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.453 s -- in com.qa.autotest.api.metrics.MetricsControllerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.233 s -- in com.qa.autotest.api.execution.RunTimelineControllerTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.605 s -- in com.qa.autotest.application.observability.RunTimelineServiceTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.167 s -- in com.qa.autotest.application.metrics.MetricsServiceTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS

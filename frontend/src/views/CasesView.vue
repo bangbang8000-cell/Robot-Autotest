@@ -24,6 +24,7 @@ import {
 import { useAuthStore } from '@/stores/auth'
 import { executionApi, type BlockedCase, type SafetyPrecheck } from '@/api/execution'
 import DataTable from '@/components/DataTable.vue'
+import CaseDetailPanel from '@/components/CaseDetailPanel.vue'
 import SelectionBar from '@/components/SelectionBar.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import StatusTag from '@/components/StatusTag.vue'
@@ -170,6 +171,13 @@ const blockedCodes = computed(() =>
  * 表头半选态也照旧从 `pageIndeterminate` 派生。
  */
 const columns = computed<DataTableColumns<TestCase>>(() => [
+  {
+    // W0.8 / N14：行内展开详情（前置条件/步骤/预期），按需拉 GET /cases/{id}。
+    type: 'expand',
+    width: 32,
+    renderExpand: (row) =>
+      h(CaseDetailPanel, { projectId: projectId.value, caseId: row.id }),
+  },
   {
     key: 'selection',
     width: 36,

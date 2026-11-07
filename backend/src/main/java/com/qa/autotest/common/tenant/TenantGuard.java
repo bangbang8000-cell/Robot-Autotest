@@ -38,7 +38,9 @@ public final class TenantGuard {
             // v2.1 NODX-01：执行节点（节点本身是全局的，但归属项目用于可见性）
             "execution_node",
             "resource_lease", "resource_lease_history", "run_artifact", "run_attempt",
-            "run_metadata", "ci_trigger");
+            "run_metadata", "ci_trigger",
+            // v2.2 W2：运行分片（按 project_id 隔离）
+            "execution_shard");
 
     private TenantGuard() {
     }

@@ -112,6 +112,23 @@ vi.mock('@/api/cases', () => ({
   },
 }))
 
+vi.mock('@/api/shards', () => ({
+  shardApi: {
+    view: vi.fn(async (_projectId: number, runId: string) => ({
+      runId,
+      shards: [],
+      totalShards: 0,
+      terminalShards: 0,
+      testCount: 0,
+      failCount: 0,
+      complete: true,
+      aggregateState: 'DONE' as const,
+    })),
+    plan: vi.fn(),
+    aggregate: vi.fn(),
+  },
+}))
+
 vi.mock('@/components/ProjectPicker.vue', () => ({
   default: { name: 'ProjectPicker', template: '<div />' },
 }))

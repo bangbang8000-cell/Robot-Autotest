@@ -13,7 +13,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { i18n } from '@/locales'
 import { useAuthStore } from '@/stores/auth'
 import { useConfirmHost } from '@/composables/useConfirm'
-import { caseSetApi, assetVersionApi } from '@/api/cases'
+import { caseSetApi, assetVersionApi, platformCaseSetApi } from '@/api/cases'
 import CaseSetsView from '@/views/CaseSetsView.vue'
 
 const sets = [
@@ -75,6 +75,10 @@ vi.mock('@/api/cases', () => ({
     diff: vi.fn(async () => []),
     sync: vi.fn(async () => syncedView),
     diverge: vi.fn(async () => divergedView),
+  },
+  platformCaseSetApi: {
+    page: vi.fn(async () => ({ items: [], total: 0, page: 1, size: 100 })),
+    items: vi.fn(async () => []),
   },
 }))
 
@@ -139,6 +143,9 @@ beforeEach(() => {
   setActivePinia(pinia)
   useAuthStore().projectId = 1
   vi.mocked(caseSetApi.reorder).mockClear()
+  vi.mocked(assetVersionApi.sync).mockClear()
+  vi.mocked(platformCaseSetApi.page).mockClear()
+  vi.mocked(platformCaseSetApi.items).mockClear()
 })
 
 afterEach(() => {
@@ -297,5 +304,158 @@ describe('CaseSetsView 资产版本（PUBX-01/02）', () => {
         (b) => b.dataset.testid === 'asset-sync',
       ),
     ).toBeUndefined()
+  })
+})
+
+describe('CaseSetsView 同步策略（N9）', () => {
+  async function openPanel(root: HTMLElement): Promise<HTMLElement> {
+    rowButton(root, 0, i18n.global.t('caseSets.manage')).click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+    return root.querySelector<HTMLElement>('[data-testid="asset-panel"]')!
+  }
+
+  function syncButton(root: HTMLElement): HTMLButtonElement {
+    return [...root.querySelectorAll<HTMLButtonElement>('button')].find(
+      (b) => b.dataset.testid === 'asset-sync',
+    )!
+  }
+
+  it('默认按 FULL 同步', async () => {
+    const root = await mountView()
+    const panel = await openPanel(root)
+    expect(panel.querySelector('[data-testid="asset-strategy"]')).not.toBeNull()
+
+    syncButton(root).click()
+    useConfirmHost().settle(true)
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(assetVersionApi.sync).toHaveBeenCalledWith(1, 7, 'FULL')
+  })
+
+  it('下拉切到 ADD_ONLY 后按策略同步', async () => {
+    const root = await mountView()
+    const panel = await openPanel(root)
+
+    // naive-ui 的下拉菜单用虚拟列表，jsdom 里量不到高度、渲染不出选项；
+    // 直接走组件的 v-model 回调，等价于用户选中「只补新增」。
+    const select = panel.querySelector<HTMLElement>('.n-select')
+    expect(select).not.toBeNull()
+    const instance = (
+      select as unknown as { __vueParentComponent?: { props: Record<string, unknown> } }
+    ).__vueParentComponent
+    expect(instance).toBeDefined()
+    const onUpdate = instance!.props['onUpdate:value'] as (value: string) => void
+    onUpdate('ADD_ONLY')
+    await nextTick()
+
+    syncButton(root).click()
+    useConfirmHost().settle(true)
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(assetVersionApi.sync).toHaveBeenCalledWith(1, 7, 'ADD_ONLY')
+  })
+})
+
+describe('CaseSetsView 平台用例集库（N9）', () => {
+  const platformRow = {
+    id: 31,
+    setCode: 'PLAT-SMOKE',
+    name: '平台冒烟集',
+    description: null,
+    itemCount: 2,
+    assetVersion: 4,
+    contentHash: 'b'.repeat(64),
+    hasNewVersion: true,
+    referenceCount: 2,
+    references: [
+      {
+        projectId: 1,
+        projectCode: 'PRJ-A',
+        copyAssetId: 7,
+        syncedAssetVersion: 3,
+        forkState: 'SYNCED',
+        latestAssetVersion: 4,
+        hasNewVersion: true,
+      },
+    ],
+  }
+
+  const platformItems = [
+    {
+      id: 301,
+      projectId: 0,
+      caseCode: 'PL-001',
+      title: '平台用例一',
+      category: null,
+      priority: 'P1',
+      safetyLevel: 'L1',
+      precondition: null,
+      expected: null,
+      domainTag: null,
+      reviewStatus: 'APPROVED',
+      source: 'PLATFORM',
+      capability: null,
+      description: null,
+    },
+  ]
+
+  function adminUser() {
+    return {
+      id: 1,
+      username: 'admin',
+      displayName: '管理员',
+      email: null,
+      orgId: null,
+      enabled: true,
+      passwordExpiresAt: null,
+      lastLoginAt: null,
+      roles: ['admin'],
+    }
+  }
+
+  it('管理员可见平台库、可展开只读成员', async () => {
+    useAuthStore().user = adminUser()
+    vi.mocked(platformCaseSetApi.page).mockResolvedValueOnce({
+      items: [platformRow],
+      total: 1,
+      page: 1,
+      size: 100,
+    })
+    vi.mocked(platformCaseSetApi.items).mockResolvedValueOnce(platformItems)
+
+    const root = await mountView()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(root.querySelector('[data-testid="platform-case-sets"]')).not.toBeNull()
+    expect(platformCaseSetApi.page).toHaveBeenCalledTimes(1)
+    const text = root.textContent ?? ''
+    expect(text).toContain('PLAT-SMOKE')
+    expect(text).toContain(i18n.global.t('caseSets.platformHint'))
+
+    const row = root.querySelector<HTMLElement>('[data-testid="platform-set-row"]')!
+    const viewButton = [...row.querySelectorAll<HTMLButtonElement>('button')].find(
+      (b) => b.textContent?.trim() === i18n.global.t('caseSets.platformViewMembers'),
+    )!
+    viewButton.click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(platformCaseSetApi.items).toHaveBeenCalledWith(31)
+    const panel = root.querySelector<HTMLElement>('[data-testid="platform-items"]')
+    expect(panel).not.toBeNull()
+    expect(panel!.textContent).toContain('PL-001')
+  })
+
+  it('非管理员不渲染平台库，也不发请求', async () => {
+    const root = await mountView()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(root.querySelector('[data-testid="platform-case-sets"]')).toBeNull()
+    expect(platformCaseSetApi.page).not.toHaveBeenCalled()
   })
 })

@@ -2,12 +2,12 @@
 # TC-v2.1-32 迁移往返专项：up → down → up 各一次 + 备份恢复。
 #
 # 判据（docs/release/v2.1-platform/TEST-PLAN.md §4.7 / §5.4）：
-#   1) V9_1..V9_4 逐个 down 后，对应表/列/索引确实消失，且 V8_x 数据行数不变；
-#   2) 重新 up（Flyway 重放到 9.4）成功，表清单与首次 up 后逐行一致；
+#   1) V9_1..V9_6 逐个 down 后，对应表/列/索引确实消失，且 V8_x 数据行数不变；
+#   2) 重新 up（Flyway 重放到 9.6）成功，表清单与首次 up 后逐行一致；
 #   3) 备份恢复后行数与备份时一致，且 db-audit 7 项 PASS。
 #
 # 用独立 scratch 库（默认 robot_it_local，robot 用户已授权且当前为空），不碰 robot_it / robot_dev：
-#   - 从空库真跑 V1..V9_4（这就是「up」），不依赖既有库的历史状态；
+#   - 从空库真跑 V1..V9_6（这就是「up」），不依赖既有库的历史状态；
 #   - 脚本结束默认 DROP 掉 scratch 库（KEEP_DB=1 可保留排查）。
 #
 # 用法：
@@ -129,15 +129,18 @@ for tool in mvn; do
 done
 
 # ---------------------------------------------------------------- 1. 首次 up
-say "--- 1. 首次 up：空库 → V9_4 ---"
+say "--- 1. 首次 up：空库 → V9_6 ---"
 db_exec -e "DROP DATABASE IF EXISTS \`$DB_NAME\`;
             CREATE DATABASE \`$DB_NAME\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
-migrate_to 9.4
+migrate_to 9.6
 
-expect_eq "V9_4 业务表数" 66 "$(table_count)"
-expect_eq "flyway history 最大版本" 9.4 "$(flyway_max)"
+expect_eq "V9_6 业务表数" 67 "$(table_count)"
+expect_eq "flyway history 最大版本" 9.6 "$(flyway_max)"
 expect_eq "execution_node 已建" 1 "$(has_table execution_node)"
 expect_eq "run.node_id 已加" 1 "$(has_column run node_id)"
+expect_eq "execution_node.agent_base_url 已加" 1 "$(has_column execution_node agent_base_url)"
+expect_eq "execution_shard 已建" 1 "$(has_table execution_shard)"
+expect_eq "execution_shard 唯一键已建" 1 "$(has_index execution_shard uk_shard_run_index)"
 expect_eq "report_template 已建" 1 "$(has_table report_template)"
 expect_eq "asset_version 已建" 1 "$(has_table asset_version)"
 expect_eq "plan_group 已建" 1 "$(has_table plan_group)"
@@ -170,13 +173,27 @@ restore_baseline() {
     expect_eq "备份时 project 行数" "$BASELINE_PROJECT" "$(row_count project)"
     expect_eq "备份时 test_report 行数" "$BASELINE_REPORT" "$(row_count test_report)"
     expect_eq "备份时 plan_group 行数" "$BASELINE_GROUP" "$(row_count plan_group)"
-    expect_eq "备份时业务表数" 66 "$(table_count)"
+    expect_eq "备份时业务表数" 67 "$(table_count)"
 }
 
 # ---------------------------------------------------------------- 4. 逐个 down
-say "--- 4. down：V9_4 → V9_3 → V9_2 → V9_1 ---"
+say "--- 4. down：V9_6 → V9_5 → V9_4 → V9_3 → V9_2 → V9_1 ---"
 
-say "-- 4.1 down V9_4（execution_node）--"
+say "-- 4.0 down V9_6（execution_shard）--"
+down_one 9.6 V9_6__execution_shard.down.sql
+expect_eq "down 后 execution_shard 表消失" 0 "$(has_table execution_shard)"
+expect_eq "down V9_6 后业务表数（回到 V9_5）" 66 "$(table_count)"
+expect_eq "down V9_6 后 test_report 行数不变" "$BASELINE_REPORT" "$(row_count test_report)"
+expect_eq "down V9_6 后 project 行数不变" "$BASELINE_PROJECT" "$(row_count project)"
+
+say "-- 4.1 down V9_5（execution_node.agent_base_url）--"
+down_one 9.5 V9_5__node_agent.down.sql
+expect_eq "down 后 execution_node.agent_base_url 列消失" 0 "$(has_column execution_node agent_base_url)"
+expect_eq "down V9_5 后业务表数（表未删）" 66 "$(table_count)"
+expect_eq "down V9_5 后 test_report 行数不变" "$BASELINE_REPORT" "$(row_count test_report)"
+expect_eq "down V9_5 后 project 行数不变" "$BASELINE_PROJECT" "$(row_count project)"
+
+say "-- 4.2 down V9_4（execution_node）--"
 down_one 9.4 V9_4__execution_node.down.sql
 expect_eq "down 后 execution_node 表消失" 0 "$(has_table execution_node)"
 expect_eq "down 后 run.node_id 列消失" 0 "$(has_column run node_id)"
@@ -185,7 +202,7 @@ expect_eq "down V9_4 后业务表数" 65 "$(table_count)"
 expect_eq "down V9_4 后 test_report 行数不变" "$BASELINE_REPORT" "$(row_count test_report)"
 expect_eq "down V9_4 后 project 行数不变" "$BASELINE_PROJECT" "$(row_count project)"
 
-say "-- 4.2 down V9_3（case_source_version）--"
+say "-- 4.3 down V9_3（case_source_version）--"
 down_one 9.3 V9_3__case_source_version.down.sql
 expect_eq "down 后 asset_version 表消失" 0 "$(has_table asset_version)"
 expect_eq "down 后 test_set.owner_scope 消失" 0 "$(has_column test_set owner_scope)"
@@ -199,7 +216,7 @@ expect_eq "down V9_3 后业务表数" 64 "$(table_count)"
 expect_eq "down V9_3 后 test_report 行数不变" "$BASELINE_REPORT" "$(row_count test_report)"
 expect_eq "down V9_3 后 project 行数不变" "$BASELINE_PROJECT" "$(row_count project)"
 
-say "-- 4.3 down V9_2（report_template）--"
+say "-- 4.4 down V9_2（report_template）--"
 down_one 9.2 V9_2__report_template.down.sql
 expect_eq "down 后 report_template 表消失" 0 "$(has_table report_template)"
 expect_eq "down 后 report_template_field 表消失" 0 "$(has_table report_template_field)"
@@ -207,7 +224,7 @@ expect_eq "down V9_2 后业务表数" 62 "$(table_count)"
 expect_eq "down V9_2 后 test_report 行数不变" "$BASELINE_REPORT" "$(row_count test_report)"
 expect_eq "down V9_2 后 project 行数不变" "$BASELINE_PROJECT" "$(row_count project)"
 
-say "-- 4.4 down V9_1（plan_group）--"
+say "-- 4.5 down V9_1（plan_group）--"
 down_one 9.1 V9_1__plan_group.down.sql
 expect_eq "down 后 plan_group 表消失" 0 "$(has_table plan_group)"
 expect_eq "down 后 plan_group_item 表消失" 0 "$(has_table plan_group_item)"
@@ -217,12 +234,14 @@ expect_eq "down 全部完成后 test_report 行数不变" "$BASELINE_REPORT" "$(
 expect_eq "down 全部完成后 project 行数不变" "$BASELINE_PROJECT" "$(row_count project)"
 
 # ---------------------------------------------------------------- 5. 再次 up
-say "--- 5. 再次 up：V8_6 → V9_4 ---"
-migrate_to 9.4
-expect_eq "重放后业务表数" 66 "$(table_count)"
-expect_eq "重放后 flyway history 最大版本" 9.4 "$(flyway_max)"
+say "--- 5. 再次 up：V8_6 → V9_6 ---"
+migrate_to 9.6
+expect_eq "重放后业务表数" 67 "$(table_count)"
+expect_eq "重放后 flyway history 最大版本" 9.6 "$(flyway_max)"
 expect_eq "重放后 execution_node 表恢复" 1 "$(has_table execution_node)"
 expect_eq "重放后 run.node_id 列恢复" 1 "$(has_column run node_id)"
+expect_eq "重放后 execution_node.agent_base_url 列恢复" 1 "$(has_column execution_node agent_base_url)"
+expect_eq "重放后 execution_shard 表恢复" 1 "$(has_table execution_shard)"
 expect_eq "重放后 report_template 表恢复" 1 "$(has_table report_template)"
 expect_eq "重放后 asset_version 表恢复" 1 "$(has_table asset_version)"
 expect_eq "重放后 plan_group 表恢复" 1 "$(has_table plan_group)"

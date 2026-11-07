@@ -14,6 +14,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { i18n } from '@/locales'
 import { useAuthStore } from '@/stores/auth'
 import PlansView from '@/views/PlansView.vue'
+import { planApi } from '@/api/plans'
 import { auditApi } from '@/api/audit'
 import { ApiError } from '@/api/http'
 
@@ -81,6 +82,8 @@ vi.mock('@/api/plans', () => ({
     resume: vi.fn(),
     triggerNow: vi.fn(async () => ({ runId: 'RUN-NEW' })),
     remove: vi.fn(),
+    conflicts: vi.fn(async () => []),
+    batch: vi.fn(async () => []),
   },
 }))
 
@@ -286,6 +289,58 @@ describe('PlansView 编辑对话框', () => {
     deps[0].click()
     await nextTick()
     expect(deps[0].className).toContain('n-checkbox--checked')
+  })
+})
+
+describe('PlansView 编排冲突（W5）', () => {
+  it('冲突行用计划名展示涉及的计划，并标记严重级', async () => {
+    vi.mocked(planApi.conflicts).mockResolvedValueOnce([
+      { type: 'DUPLICATE_TARGET', severity: 'WARN', planIds: [1, 2], detail: '目标完全相同' },
+    ])
+    const root = await mountView()
+
+    const row = root.querySelector<HTMLElement>('[data-testid="conflict-row"]')
+    expect(row).not.toBeNull()
+    expect(row!.textContent).toContain(i18n.global.t('plans.conflictTypes.DUPLICATE_TARGET'))
+    expect(row!.textContent).toContain('每夜全量')
+    expect(row!.textContent).toContain('手工回归')
+    expect(row!.getAttribute('data-severity')).toBe('WARN')
+  })
+
+  it('无冲突时显示空态，不显示批量按钮', async () => {
+    const root = await mountView()
+
+    expect(root.querySelector('[data-testid="conflict-empty"]')?.textContent).toContain(
+      i18n.global.t('plans.conflictEmpty'),
+    )
+    expect(root.querySelector('[data-testid="conflict-row"]')).toBeNull()
+  })
+
+  it('全选后批量暂停：多条冲突里的计划去重后一次性提交', async () => {
+    vi.mocked(planApi.conflicts).mockResolvedValue([
+      { type: 'DUPLICATE_TARGET', severity: 'WARN', planIds: [1, 2], detail: 'd1' },
+      { type: 'SAME_SLOT', severity: 'WARN', planIds: [2, 3], detail: 'd2' },
+    ])
+    vi.mocked(planApi.batch).mockResolvedValue([
+      { planId: 1, changed: true, status: 'PAUSED', message: '已更新' },
+      { planId: 2, changed: true, status: 'PAUSED', message: '已更新' },
+      { planId: 3, changed: false, status: 'PAUSED', message: '已处于目标状态' },
+    ])
+    const root = await mountView()
+
+    root.querySelector<HTMLElement>('.conflict-all')!.click()
+    await nextTick()
+    const pause = [...root.querySelectorAll<HTMLButtonElement>('[data-testid="plan-conflicts"] button')]
+      .find((button) => button.textContent?.includes(i18n.global.t('plans.conflictPause')))
+    expect(pause).toBeDefined()
+    pause!.click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await nextTick()
+
+    expect(planApi.batch).toHaveBeenCalledWith(1, [1, 2, 3], 'PAUSED')
+    expect(root.querySelector('[data-testid="conflict-batch-result"]')?.textContent).toContain(
+      i18n.global.t('plans.conflictApplied', { ok: 2, failed: 1 }),
+    )
   })
 })
 

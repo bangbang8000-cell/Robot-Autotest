@@ -26,6 +26,15 @@ const auth = useAuthStore()
 const projectId = computed(() => auth.projectId ?? 0)
 
 const runId = ref('')
+/**
+ * 两种口径（W5）：单轮看「这一轮哪里坏了」，最近 N 轮看「连续几轮都栽在同一处」。
+ *
+ * 跨轮视图不能重跑：后端按簇重跑要求单轮 runId，跨轮簇合并了多轮用例，
+ * 拿任意一轮去重跑都会破坏统计口径，所以按钮直接禁用并给出说明。
+ */
+const mode = ref<'run' | 'recent'>('run')
+const recentRuns = ref(5)
+const isRecent = computed(() => mode.value === 'recent')
 const view = ref<FailureClusterView | null>(null)
 const loading = ref(false)
 const errorText = ref('')
@@ -34,12 +43,14 @@ const notice = ref('')
 const total = computed(() => view.value?.total ?? 0)
 
 async function load(): Promise<void> {
-  if (!runId.value.trim()) return
+  if (!isRecent.value && !runId.value.trim()) return
   loading.value = true
   errorText.value = ''
   notice.value = ''
   try {
-    view.value = await failureClusterApi.load(projectId.value, runId.value.trim())
+    view.value = isRecent.value
+      ? await failureClusterApi.recent(projectId.value, recentRuns.value)
+      : await failureClusterApi.load(projectId.value, runId.value.trim())
   } catch (error) {
     view.value = null
     handle(error)
@@ -48,8 +59,18 @@ async function load(): Promise<void> {
   }
 }
 
+/** 切口径先清空旧结果：上一个口径的簇留在屏幕上会被误读成新口径的结论。 */
+function switchMode(next: 'run' | 'recent'): void {
+  if (mode.value === next) return
+  mode.value = next
+  view.value = null
+  notice.value = ''
+  errorText.value = ''
+  void load()
+}
+
 async function rerun(clusterKey: string, caseIds: number[]): Promise<void> {
-  if (caseIds.length === 0) return
+  if (isRecent.value || caseIds.length === 0) return
   try {
     const run = await failureClusterApi.rerun(projectId.value, runId.value.trim(), clusterKey)
     notice.value = t('failureClusters.rerunStarted', { runId: run.runId })
@@ -114,19 +135,24 @@ const columns = computed<DataTableColumns<FailureCluster>>(() => [
     title: '',
     key: 'actions',
     width: 170,
-    render: (row) =>
-      h(
+    render: (row) => {
+      const disabled = isRecent.value || row.caseIds.length === 0
+      const hint = isRecent.value
+        ? t('failureClusters.recentRerunHint')
+        : row.caseIds.length === 0 ? t('failureClusters.noCase') : ''
+      return h(
         'button',
         {
           class: 'btn btn-ghost',
           type: 'button',
           'data-testid': 'rerun',
-          disabled: row.caseIds.length === 0,
-          title: row.caseIds.length === 0 ? t('failureClusters.noCase') : '',
+          disabled,
+          title: hint,
           onClick: () => rerun(row.key, row.caseIds),
         },
         t('failureClusters.rerun', { count: row.caseIds.length }),
-      ),
+      )
+    },
   },
 ])
 
@@ -148,8 +174,42 @@ function rowProps(): Record<string, unknown> {
       <p class="muted">{{ t('failureClusters.subtitle') }}</p>
     </header>
 
+    <div class="bar mode-bar" data-testid="mode-switch">
+      <button
+        class="btn"
+        :class="{ 'btn-ghost': mode !== 'run' }"
+        type="button"
+        data-testid="mode-run"
+        :aria-pressed="mode === 'run'"
+        @click="switchMode('run')"
+      >
+        {{ t('failureClusters.modeRun') }}
+      </button>
+      <button
+        class="btn"
+        :class="{ 'btn-ghost': mode !== 'recent' }"
+        type="button"
+        data-testid="mode-recent"
+        :aria-pressed="mode === 'recent'"
+        @click="switchMode('recent')"
+      >
+        {{ t('failureClusters.modeRecent') }}
+      </button>
+    </div>
+
     <form class="bar" data-testid="query" @submit.prevent="load">
+      <select
+        v-if="isRecent"
+        v-model.number="recentRuns"
+        class="input"
+        data-testid="recent-runs"
+        :aria-label="t('failureClusters.recentRuns')"
+        @change="load"
+      >
+        <option v-for="n in [1, 3, 5, 10, 20]" :key="n" :value="n">{{ n }}</option>
+      </select>
       <input
+        v-else
         v-model="runId"
         class="input"
         type="text"
@@ -165,7 +225,15 @@ function rowProps(): Record<string, unknown> {
 
     <template v-if="view">
       <p class="muted" data-testid="summary">
-        {{ t('failureClusters.summary', { total, classes: view.classes.length }) }}
+        {{
+          isRecent
+            ? t('failureClusters.recentSummary', {
+                total,
+                classes: view.classes.length,
+                runs: recentRuns,
+              })
+            : t('failureClusters.summary', { total, classes: view.classes.length })
+        }}
       </p>
 
       <section
@@ -203,6 +271,10 @@ function rowProps(): Record<string, unknown> {
 <style scoped>
 .class-group {
   margin-top: 18px;
+}
+
+.mode-bar {
+  margin-bottom: 8px;
 }
 .badge {
   display: inline-block;

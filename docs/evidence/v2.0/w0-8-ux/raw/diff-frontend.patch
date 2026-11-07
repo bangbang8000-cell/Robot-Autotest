@@ -1,0 +1,661 @@
+diff --git a/frontend/src/api/execution.ts b/frontend/src/api/execution.ts
+index e4cef64..6eab754 100644
+--- a/frontend/src/api/execution.ts
++++ b/frontend/src/api/execution.ts
+@@ -97,6 +97,28 @@ export interface LeaseWait {
+   totalMs: number | null
+ }
+ 
++/**
++ * 运行进度快照（N15）：与实时日志同源，由后端解析 pabot 控制台行得到。
++ *
++ * 口径说明：`total = 0` 表示总数未知（前端按不确定进度渲染，不伪造百分比）；
++ * `lastTest` 是**最近一条完成**的用例，不是「此刻正在执行」的那条 —— RF 控制台只在用例
++ * 结束时打印结果行，界面文案按「最近完成」表述。
++ */
++export interface RunProgress {
++  runId: string
++  state: string
++  /** queued / preparing / running / reporting / done */
++  phase: string
++  total: number
++  completed: number
++  passed: number
++  failed: number
++  skipped: number
++  lastTest: string | null
++  lastVerdict: string | null
++  elapsedSeconds: number
++}
++
+ export interface PageResult<T> {
+   items: T[]
+   total: number
+@@ -252,6 +274,13 @@ export const executionApi = {
+     )
+   },
+ 
++  /** 进度快照（N15）：日志面板按 3 秒轮询展示进度条、阶段与最近用例。 */
++  progress(projectId: number, runId: string): Promise<RunProgress> {
++    return request<RunProgress>(
++      `/execution/runs/${encodeURIComponent(runId)}/progress${toQuery({ projectId })}`,
++    )
++  },
++
+   /** 排队位次（EXEC-10 残余）：运行列表在 state=queued 时展示「第 N 位 / 共 M 个」。 */
+   pendingActivity(projectId: number, runId: string): Promise<PendingActivity> {
+     return request<PendingActivity>(
+diff --git a/frontend/src/assets/fonts/noto-sans-sc-ui.woff2 b/frontend/src/assets/fonts/noto-sans-sc-ui.woff2
+index b962f24..5412927 100644
+Binary files a/frontend/src/assets/fonts/noto-sans-sc-ui.woff2 and b/frontend/src/assets/fonts/noto-sans-sc-ui.woff2 differ
+diff --git a/frontend/src/config/navigation.spec.ts b/frontend/src/config/navigation.spec.ts
+index 0b58f62..a9fbe1f 100644
+--- a/frontend/src/config/navigation.spec.ts
++++ b/frontend/src/config/navigation.spec.ts
+@@ -55,19 +55,18 @@ describe('navigation 结构', () => {
+ })
+ 
+ describe('权限过滤', () => {
+-  it('非管理员看不到审计子项，但「管理」分组仍在（项目成员归 PM/所有者用）', () => {
+-    const admin = visibleNav(false).find((node) => node.key === 'admin') as NavGroup
+-    expect(admin).toBeTruthy()
+-    // W1 起管理域新增系统设置 / 关于 / 版本迭代三个系统页（不新增一级菜单）
+-    expect(admin.children.map((child) => child.key)).toEqual([
+-      'admin-users', 'admin-settings', 'admin-about', 'admin-changelog',
++  it('非管理员看不到审计子项，但「系统设置」分组仍在（设置是高频入口）', () => {
++    const settings = visibleNav(false).find((node) => node.key === 'settings') as NavGroup
++    expect(settings).toBeTruthy()
++    expect(settings.children.map((child) => child.key)).toEqual([
++      'settings-platform', 'settings-users', 'settings-about', 'settings-changelog',
+     ])
+   })
+ 
+-  it('管理员能看到管理分组下的全部子项（含审计）', () => {
+-    const admin = visibleNav(true).find((node) => node.key === 'admin') as NavGroup
+-    expect(admin.children.map((child) => child.key)).toEqual([
+-      'admin-users', 'admin-audit', 'admin-settings', 'admin-about', 'admin-changelog',
++  it('管理员能看到系统设置分组下的全部子项（含审计）', () => {
++    const settings = visibleNav(true).find((node) => node.key === 'settings') as NavGroup
++    expect(settings.children.map((child) => child.key)).toEqual([
++      'settings-platform', 'settings-users', 'settings-audit', 'settings-about', 'settings-changelog',
+     ])
+   })
+ 
+@@ -95,7 +94,7 @@ describe('v2.0 六域 IA 与能力驱动过滤（NAV-01 / FR-v2.0-07、08）', (
+   it('一级恰好 6 域，层级不超过 2', () => {
+     expect(NAVIGATION).toHaveLength(6)
+     expect(NAVIGATION.map((node) => node.key)).toEqual([
+-      'overview', 'assets', 'cases', 'runs', 'reports', 'admin',
++      'overview', 'assets', 'cases', 'runs', 'reports', 'settings',
+     ])
+     for (const node of NAVIGATION) {
+       if (isGroup(node)) {
+@@ -104,6 +103,13 @@ describe('v2.0 六域 IA 与能力驱动过滤（NAV-01 / FR-v2.0-07、08）', (
+     }
+   })
+ 
++  it('W0.8：系统设置独立成一级菜单，平台设置页在它下面', () => {
++    const settings = NAVIGATION.find((node) => node.key === 'settings') as NavGroup
++    expect(isGroup(settings)).toBe(true)
++    expect(settings.children.some((child) => child.path === '/settings')).toBe(true)
++    expect(NAVIGATION.some((node) => node.key === 'admin')).toBe(false)
++  })
++
+   it('四角色菜单快照：权限只减不增，未知角色按最小权限', () => {
+     const viewer = navKeysForRole('viewer')
+     const pm = navKeysForRole('pm')
+@@ -111,13 +117,13 @@ describe('v2.0 六域 IA 与能力驱动过滤（NAV-01 / FR-v2.0-07、08）', (
+     const admin = navKeysForRole('admin')
+ 
+     expect(viewer).not.toContain('runs')            // execution:read
+-    expect(viewer).not.toContain('admin-audit')    // audit:read
+-    expect(viewer).not.toContain('admin-settings') // settings:read
++    expect(viewer).not.toContain('settings-audit')    // audit:read
++    expect(viewer).not.toContain('settings-platform') // settings:read
+     expect(engineer).toContain('runs')
+-    expect(engineer).not.toContain('admin-settings')
+-    expect(pm).toContain('admin-settings')
+-    expect(pm).not.toContain('admin-audit')
+-    expect(admin).toContain('admin-audit')
++    expect(engineer).not.toContain('settings-platform')
++    expect(pm).toContain('settings-platform')
++    expect(pm).not.toContain('settings-audit')
++    expect(admin).toContain('settings-audit')
+     expect(admin.length).toBeGreaterThanOrEqual(pm.length)
+     expect(roleFromCodes(['something-new'])).toBe('viewer')
+     expect(roleFromCodes(null)).toBe('viewer')
+@@ -128,8 +134,8 @@ describe('v2.0 六域 IA 与能力驱动过滤（NAV-01 / FR-v2.0-07、08）', (
+       isGroup(node) ? [node.key, ...node.children.map((child) => child.key)] : [node.key],
+     )
+     expect(keys).toContain('overview')
+-    expect(keys).not.toContain('admin-audit')
+-    expect(keys).not.toContain('admin-settings')
++    expect(keys).not.toContain('settings-audit')
++    expect(keys).not.toContain('settings-platform')
+     expect(keys).not.toContain('runs')
+   })
+ })
+@@ -162,10 +168,12 @@ describe('选中判定', () => {
+     expect(isLeafActive(reports, { path: '/reportsX' })).toBe(false)
+   })
+ 
+-  it('编辑器与只读查看器点亮「用例」', () => {
+-    const cases = NAVIGATION.find((node) => node.key === 'cases') as NavLeaf
+-    expect(isLeafActive(cases, { path: '/editor/12' })).toBe(true)
+-    expect(isLeafActive(cases, { path: '/viewer/12' })).toBe(true)
++  it('编辑器与只读查看器点亮「用例库」并展开「用例」分组', () => {
++    const casesGroup = groups().find((group) => group.key === 'cases') as NavGroup
++    const casesList = casesGroup.children.find((child) => child.key === 'cases-list') as NavLeaf
++    expect(isLeafActive(casesList, { path: '/editor/12' })).toBe(true)
++    expect(isLeafActive(casesList, { path: '/viewer/12' })).toBe(true)
++    expect(isGroupActive(casesGroup, { path: '/editor/12' })).toBe(true)
+   })
+ 
+   it('分组在有子项选中时算选中，并成为自动展开目标', () => {
+diff --git a/frontend/src/config/navigation.ts b/frontend/src/config/navigation.ts
+index 2a4b8f3..8feb3db 100644
+--- a/frontend/src/config/navigation.ts
++++ b/frontend/src/config/navigation.ts
+@@ -1,8 +1,11 @@
+ /**
+  * 侧边栏导航（两级菜单）—— 唯一真源。
+  *
+- * v2.0 / NAV-01（FR-v2.0-07、08）：一级固定 6 域（工作台 / 资产 / 用例 / 执行 / 报告 / 管理），
+- * 层级 ≤ 2，命名统一；过滤从「只有 adminOnly」升级为**能力驱动**（`resource:action`）。
++ * v2.0 / NAV-01（FR-v2.0-07、08）：一级 6 域，层级 ≤ 2，过滤为能力驱动（`resource:action`）。
++ * v2.0 / W0.8（2026-11-07 大师新需求）：按实际使用重新划分：
++ * - 「资产 / 用例」各自独立一级，二级项全部显式声明（不再用 tab 伪分组）；
++ * - 「管理」拆解——平台设置 / 用户 / 审计 / 关于 / 版本迭代归入**独立的「系统设置」一级菜单**；
++ * - 「执行」补齐「执行节点」，失败聚类与计划组/依赖图通过 alsoMatch 保持父项点亮。
+  *
+  * 三条约定：
+  * 1. **分组不承载页面**。有多个子页的才立分组；单页模块直接做叶子。
+@@ -85,8 +88,21 @@ export const NAVIGATION: NavNode[] = [
+     key: 'cases',
+     labelKey: 'menu.cases',
+     icon: 'cases',
+-    path: '/cases',
+-    alsoMatch: ['/editor', '/viewer'],
++    children: [
++      {
++        key: 'cases-list',
++        labelKey: 'menu.casesList',
++        icon: 'cases',
++        path: '/cases',
++        alsoMatch: ['/editor', '/viewer'],
++      },
++      {
++        key: 'cases-sets',
++        labelKey: 'menu.casesSets',
++        icon: 'cases',
++        path: '/cases/sets',
++      },
++    ],
+   },
+   {
+     key: 'runs',
+@@ -99,12 +115,20 @@ export const NAVIGATION: NavNode[] = [
+         labelKey: 'menu.runsList',
+         icon: 'runs',
+         path: '/runs',
++        alsoMatch: ['/runs/failure-clusters'],
+       },
+       {
+         key: 'runs-plans',
+         labelKey: 'plans.title',
+         icon: 'cases',
+         path: '/plans',
++        alsoMatch: ['/plans/groups', '/plans/graph'],
++      },
++      {
++        key: 'runs-nodes',
++        labelKey: 'menu.runsNodes',
++        icon: 'admin',
++        path: '/nodes',
+       },
+     ],
+   },
+@@ -116,19 +140,26 @@ export const NAVIGATION: NavNode[] = [
+     alsoMatch: ['/reports', '/test-reports'],
+   },
+   {
+-    key: 'admin',
+-    labelKey: 'menu.admin',
++    key: 'settings',
++    labelKey: 'menu.settings',
+     icon: 'admin',
+-    // 分组不设 adminOnly：项目成员要用「项目成员」页，整组隐藏会连带藏掉它。
++    // 「系统设置」独立成一级（W0.8）：平台配置 + 用户/审计 + 关于/版本迭代。
+     children: [
+       {
+-        key: 'admin-users',
++        key: 'settings-platform',
++        labelKey: 'menu.settingsPlatform',
++        icon: 'admin',
++        path: '/settings',
++        capability: 'settings:read',
++      },
++      {
++        key: 'settings-users',
+         labelKey: 'menu.adminUsers',
+         icon: 'users',
+         path: '/admin',
+       },
+       {
+-        key: 'admin-audit',
++        key: 'settings-audit',
+         labelKey: 'audit.title',
+         icon: 'audit',
+         path: '/admin/audit',
+@@ -136,20 +167,13 @@ export const NAVIGATION: NavNode[] = [
+         capability: 'audit:read',
+       },
+       {
+-        key: 'admin-settings',
+-        labelKey: 'menu.settings',
+-        icon: 'admin',
+-        path: '/settings',
+-        capability: 'settings:read',
+-      },
+-      {
+-        key: 'admin-about',
++        key: 'settings-about',
+         labelKey: 'menu.about',
+         icon: 'help',
+         path: '/about',
+       },
+       {
+-        key: 'admin-changelog',
++        key: 'settings-changelog',
+         labelKey: 'menu.changelog',
+         icon: 'reports',
+         path: '/changelog',
+diff --git a/frontend/src/locales/en-US.ts b/frontend/src/locales/en-US.ts
+index f1da000..86468f5 100644
+--- a/frontend/src/locales/en-US.ts
++++ b/frontend/src/locales/en-US.ts
+@@ -124,14 +124,18 @@ export default {
+     overview: 'Overview',
+     assets: 'Assets',
+     cases: 'Test Cases',
++    casesList: 'Case library',
++    casesSets: 'Case sets',
+     runs: 'Runs',
+     runsList: 'Run history',
++    runsNodes: 'Execution nodes',
+     reports: 'Reports',
+     admin: 'Admin',
+     adminUsers: 'Users & projects',
+-    // v2.0 / NAV-01: six top-level domains; system pages live under Admin
++    // W0.8: system pages now live under the top-level Settings menu
+     workspace: 'Workspace',
+     settings: 'Settings',
++    settingsPlatform: 'Platform settings',
+     about: 'About',
+     changelog: 'Changelog',
+   },
+@@ -379,6 +383,11 @@ export default {
+     precondition: 'Precondition',
+     expected: 'Expected result',
+     description: 'Description',
++    detailLoading: 'Loading case detail…',
++    detailNoSteps: 'No steps defined for this case',
++    stepNo: '#',
++    stepAction: 'Action',
++    stepExpectation: 'Expectation',
+     requiredCodeTitle: 'Case code and title are required',
+     submit: 'Submit for review',
+     approve: 'Approve',
+@@ -502,6 +511,15 @@ export default {
+     levelError: 'Errors',
+     levelWarn: 'Warnings',
+     levelInfo: 'Info',
++    phaseQueued: 'Queued',
++    phasePreparing: 'Preparing',
++    phaseRunning: 'Running',
++    phaseReporting: 'Collecting report',
++    phaseDone: 'Done',
++    progressCountsKnown: '{completed} / {total} completed',
++    progressCountsUnknown: '{completed} completed (total unknown)',
++    progressElapsed: '{seconds}s elapsed',
++    progressLast: 'Last finished: {test} ({verdict})',
+     deviceScope: 'Device scope',
+     allDevices: 'All devices (no exclusion)',
+     deviceScopeLine: 'Device scope: {scope}',
+diff --git a/frontend/src/locales/zh-CN.ts b/frontend/src/locales/zh-CN.ts
+index 0c5e1be..ad160ed 100644
+--- a/frontend/src/locales/zh-CN.ts
++++ b/frontend/src/locales/zh-CN.ts
+@@ -129,14 +129,18 @@ export default {
+     overview: '总览',
+     assets: '资产',
+     cases: '用例',
++    casesList: '用例库',
++    casesSets: '用例集',
+     runs: '执行',
+     runsList: '运行记录',
++    runsNodes: '执行节点',
+     reports: '报告',
+     admin: '管理',
+     adminUsers: '用户与项目',
+-    // v2.0 / NAV-01：一级 6 域统一命名；系统页归「管理」域，不新增一级项
++    // W0.8：系统页独立为「系统设置」一级菜单（原「管理」组已拆解）
+     workspace: '工作台',
+     settings: '系统设置',
++    settingsPlatform: '平台设置',
+     about: '关于',
+     changelog: '版本迭代',
+   },
+@@ -388,6 +392,11 @@ export default {
+     precondition: '前置条件',
+     expected: '预期结果',
+     description: '描述',
++    detailLoading: '正在加载用例详情…',
++    detailNoSteps: '该用例尚未定义步骤',
++    stepNo: '序号',
++    stepAction: '动作',
++    stepExpectation: '预期',
+     requiredCodeTitle: '用例编号与名称必填',
+     submit: '提交评审',
+     approve: '通过',
+@@ -509,6 +518,17 @@ export default {
+     levelError: '错误',
+     levelWarn: '警告',
+     levelInfo: '信息',
++    /** 执行进度（N15）：phase 由后端进度快照给出，界面只做文案映射。 */
++    phaseQueued: '排队中',
++    phasePreparing: '准备环境',
++    phaseRunning: '执行中',
++    phaseReporting: '汇总报告',
++    phaseDone: '已结束',
++    progressCountsKnown: '已完成 {completed} / {total}',
++    progressCountsUnknown: '已完成 {completed}（总数未知）',
++    progressElapsed: '耗时 {seconds} 秒',
++    /** 只有用例结束才有结果行，因此文案是「最近完成」而不是「当前执行」。 */
++    progressLast: '最近完成：{test}（{verdict}）',
+     deviceScope: '设备范围',
+     allDevices: '全部设备（不互斥）',
+     deviceScopeLine: '设备范围：{scope}',
+diff --git a/frontend/src/views/AdminView.vue b/frontend/src/views/AdminView.vue
+index a0980fb..b39dcfd 100644
+--- a/frontend/src/views/AdminView.vue
++++ b/frontend/src/views/AdminView.vue
+@@ -506,7 +506,7 @@ async function removeMember(member: ProjectMember): Promise<void> {
+ 
+ <template>
+   <div class="page">
+-    <h1 class="page-title">{{ t('menu.admin') }}</h1>
++    <h1 class="page-title">{{ t('menu.adminUsers') }}</h1>
+ 
+     <ErrorLineView v-if="error" :error="error" />
+     <p v-if="message" class="text-ok">{{ message }}</p>
+diff --git a/frontend/src/views/CasesView.vue b/frontend/src/views/CasesView.vue
+index 031582e..38a5824 100644
+--- a/frontend/src/views/CasesView.vue
++++ b/frontend/src/views/CasesView.vue
+@@ -24,6 +24,7 @@ import {
+ import { useAuthStore } from '@/stores/auth'
+ import { executionApi, type BlockedCase, type SafetyPrecheck } from '@/api/execution'
+ import DataTable from '@/components/DataTable.vue'
++import CaseDetailPanel from '@/components/CaseDetailPanel.vue'
+ import SelectionBar from '@/components/SelectionBar.vue'
+ import ErrorLineView from '@/components/ErrorLine.vue'
+ import StatusTag from '@/components/StatusTag.vue'
+@@ -170,6 +171,13 @@ const blockedCodes = computed(() =>
+  * 表头半选态也照旧从 `pageIndeterminate` 派生。
+  */
+ const columns = computed<DataTableColumns<TestCase>>(() => [
++  {
++    // W0.8 / N14：行内展开详情（前置条件/步骤/预期），按需拉 GET /cases/{id}。
++    type: 'expand',
++    width: 32,
++    renderExpand: (row) =>
++      h(CaseDetailPanel, { projectId: projectId.value, caseId: row.id }),
++  },
+   {
+     key: 'selection',
+     width: 36,
+diff --git a/frontend/src/views/RunsView.vue b/frontend/src/views/RunsView.vue
+index 600966b..4e0e688 100644
+--- a/frontend/src/views/RunsView.vue
++++ b/frontend/src/views/RunsView.vue
+@@ -12,7 +12,7 @@ import {
+   NSelect,
+   type DataTableColumns,
+ } from 'naive-ui'
+-import { executionApi, runLogSocketUrl, type ExecutionRun, type LeaseWait, type PendingActivity, type RunLogLine, type RunRetryOrigin } from '@/api/execution'
++import { executionApi, runLogSocketUrl, type ExecutionRun, type LeaseWait, type PendingActivity, type RunLogLine, type RunProgress, type RunRetryOrigin } from '@/api/execution'
+ import { caseSetApi, type TestSet } from '@/api/cases'
+ import { deviceApi, type Device } from '@/api/asset'
+ import { useAuthStore } from '@/stores/auth'
+@@ -45,6 +45,12 @@ const leaseWait = ref<LeaseWait | null>(null)
+ const leaseWaitSeconds = computed(() => Math.floor((leaseWait.value?.elapsedMs ?? 0) / 1000))
+ /** 上一次尝试（EXEC-13 残余 / FR-v0.4-29）：只有重试记录才有值。 */
+ const retryOrigin = ref<RunRetryOrigin | null>(null)
++/**
++ * 执行进度（N15）：与实时日志同源，但日志只有「行」没有「总量」，进度另走 3 秒轮询。
++ * `total = 0` 表示后端还没拿到 RF 汇总行，此时按不确定进度渲染，不伪造百分比。
++ */
++const progress = ref<RunProgress | null>(null)
++let progressTimer: number | undefined
+ let pendingTimer: number | undefined
+ const socketState = ref<'idle' | 'connecting' | 'open' | 'closed'>('idle')
+ const logPanel = ref<HTMLElement | null>(null)
+@@ -52,6 +58,22 @@ const logPanel = ref<HTMLElement | null>(null)
+ const projectId = computed(() => auth.projectId ?? 0)
+ const pageCount = computed(() => Math.max(1, Math.ceil(total.value / size)))
+ 
++const PHASE_KEYS: Record<string, string> = {
++  queued: 'execution.phaseQueued',
++  preparing: 'execution.phasePreparing',
++  running: 'execution.phaseRunning',
++  reporting: 'execution.phaseReporting',
++  done: 'execution.phaseDone',
++}
++const progressPhase = computed(() => t(PHASE_KEYS[progress.value?.phase ?? 'running'] ?? 'execution.phaseRunning'))
++/** 总数未知 → 不确定进度；有总数才给百分比，且夹在 0–100 之间。 */
++const progressPercent = computed(() => {
++  const snapshot = progress.value
++  if (!snapshot || snapshot.total <= 0) return 0
++  return Math.min(100, Math.max(0, Math.round((snapshot.completed / snapshot.total) * 100)))
++})
++const progressIndeterminate = computed(() => !progress.value || progress.value.total <= 0)
++
+ /* ---------- EXEC-01 手动执行表单 ---------- */
+ 
+ const manualOpen = ref(false)
+@@ -319,12 +341,15 @@ async function selectRun(run: ExecutionRun): Promise<void> {
+   pending.value = null
+   leaseWait.value = null
+   retryOrigin.value = null
+-  await Promise.all([loadRecentLog(), loadRetryOrigin(run)])
++  progress.value = null
++  stopProgressPoll()
++  await Promise.all([loadRecentLog(), loadRetryOrigin(run), loadProgress()])
+   if (run.state === 'QUEUED' || run.state === 'PREPARING') {
+     await loadPending()
+     // 5 秒一轮：位次会随前面的 run 结束而前进；等设备租约时也能看到「等待资源」到自动消失
+     pendingTimer = window.setInterval(() => void loadPending(), 5000)
+   }
++  startProgressPoll()
+   connect()
+ }
+ 
+@@ -374,6 +399,40 @@ async function loadRetryOrigin(run: ExecutionRun): Promise<void> {
+   }
+ }
+ 
++/**
++ * 执行进度（N15）。辅助信息：失败不弹错、不挡日志面板；`total = 0` 时前端按不确定进度渲染。
++ * 终态（phase=done 或 run 已结束）自动停表，避免空转长轮询。
++ */
++async function loadProgress(): Promise<void> {
++  const run = selected.value
++  if (!run || !projectId.value) {
++    progress.value = null
++    return
++  }
++  try {
++    progress.value = await executionApi.progress(projectId.value, run.runId)
++    if (progress.value.phase === 'done' || isTerminal(progress.value.state)) {
++      stopProgressPoll()
++    }
++  } catch {
++    progress.value = null
++  }
++}
++
++function startProgressPoll(): void {
++  stopProgressPoll()
++  if (!selected.value || isTerminal(selected.value.state)) return
++  // 3 秒一轮：比日志 WS 慢，但足以让进度条与耗时持续前进
++  progressTimer = window.setInterval(() => void loadProgress(), 3000)
++}
++
++function stopProgressPoll(): void {
++  if (progressTimer) {
++    window.clearInterval(progressTimer)
++    progressTimer = undefined
++  }
++}
++
+ async function loadRecentLog(): Promise<void> {
+   if (!selected.value) return
+   try {
+@@ -403,7 +462,12 @@ function connect(): void {
+     try {
+       const payload = JSON.parse(String(event.data)) as { type: string; lines: RunLogLine[] }
+       if (payload.type !== 'log' || !Array.isArray(payload.lines)) return
+-      logLines.value = [...logLines.value, ...payload.lines].slice(-2000)
++      // G-B2-2：REST 预取的 200 行与 WS 连上后的补发是同一条历史，按 seq 水位去重，
++      // 否则首屏会出现两份（实测 52 行 vs 应有 26 行）。
++      const lastSeq = logLines.value.reduce((max, line) => Math.max(max, line.seq), 0)
++      const fresh = payload.lines.filter((line) => line.seq > lastSeq)
++      if (fresh.length === 0) return
++      logLines.value = [...logLines.value, ...fresh].slice(-2000)
+       scrollToBottom()
+     } catch {
+       // 非法帧忽略，不影响已展示内容
+@@ -526,8 +590,10 @@ watch([projectId], () => {
+   manualOpen.value = false
+   disconnect()
+   stopPendingPoll()
++  stopProgressPoll()
+   pending.value = null
+   leaseWait.value = null
++  progress.value = null
+   logLines.value = []
+   void load()
+ }, { immediate: true })
+@@ -540,6 +606,7 @@ watch([stateFilter], () => {
+ onBeforeUnmount(() => {
+   disconnect()
+   stopPendingPoll()
++  stopProgressPoll()
+ })
+ </script>
+ 
+@@ -740,6 +807,40 @@ onBeforeUnmount(() => {
+           {{ t('execution.downloadLog') }}
+         </NButton>
+       </div>
++      <!--
++        执行进度（N15）：数据来自后端对同一批控制台行的解析（不是另开通道）。
++        总数未知时走不确定进度条 —— 宁可显示「已完成 N」也不伪造百分比。
++      -->
++      <div v-if="progress" class="run-progress" data-testid="run-progress">
++        <div class="progress-meta">
++          <span class="progress-phase">{{ progressPhase }}</span>
++          <span class="muted">
++            {{
++              progress.total > 0
++                ? t('execution.progressCountsKnown', { completed: progress.completed, total: progress.total })
++                : t('execution.progressCountsUnknown', { completed: progress.completed })
++            }}
++          </span>
++          <span class="muted">{{ t('execution.progressElapsed', { seconds: progress.elapsedSeconds }) }}</span>
++          <!-- RF 只在用例结束时打印结果行，所以这里说「最近完成」而不是「当前执行」 -->
++          <span v-if="progress.lastTest" class="muted progress-last">
++            {{ t('execution.progressLast', { test: progress.lastTest, verdict: progress.lastVerdict ?? '' }) }}
++          </span>
++        </div>
++        <div
++          class="progress-track"
++          :class="{ indeterminate: progressIndeterminate, failed: progress.failed > 0 }"
++          role="progressbar"
++          :aria-valuenow="progressIndeterminate ? undefined : progressPercent"
++          aria-valuemin="0"
++          aria-valuemax="100"
++        >
++          <div
++            class="progress-fill"
++            :style="progressIndeterminate ? undefined : { width: `${progressPercent}%` }"
++          />
++        </div>
++      </div>
+       <pre v-if="visibleLines.length" ref="logPanel" class="log-lines">
+ <span
+   v-for="line in visibleLines"
+@@ -800,6 +901,62 @@ onBeforeUnmount(() => {
+   margin-left: auto;
+ }
+ 
++.run-progress {
++  padding: 10px 0 12px;
++}
++
++.progress-meta {
++  display: flex;
++  flex-wrap: wrap;
++  align-items: center;
++  gap: var(--space-3);
++  font-size: 12px;
++}
++
++.progress-phase {
++  font-weight: 600;
++  color: var(--accent);
++}
++
++.progress-last {
++  max-width: 46%;
++  overflow: hidden;
++  text-overflow: ellipsis;
++  white-space: nowrap;
++}
++
++.progress-track {
++  position: relative;
++  overflow: hidden;
++  height: 6px;
++  margin-top: 6px;
++  border-radius: 3px;
++  background: var(--surface-2);
++}
++
++.progress-fill {
++  height: 100%;
++  width: 0;
++  border-radius: 3px;
++  background: var(--accent);
++  transition: width 0.4s ease;
++}
++
++/* 总数未知：只做前后扫动，不假装知道还剩多少 */
++.progress-track.indeterminate .progress-fill {
++  width: 30%;
++  animation: progress-sweep 1.4s ease-in-out infinite;
++}
++
++.progress-track.failed .progress-fill {
++  background: var(--fail);
++}
++
++@keyframes progress-sweep {
++  0% { transform: translateX(-100%); }
++  100% { transform: translateX(340%); }
++}
++
+ .log-lines {
+   max-height: 420px;
+   overflow: auto;

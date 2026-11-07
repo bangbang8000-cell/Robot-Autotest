@@ -78,13 +78,19 @@ class CompareBaselineIT {
             List<CompareService.BaselineCandidate> candidates = service.candidates(projectId, current);
 
             assertThat(candidates.stream().map(CompareService.BaselineCandidate::runId).toList())
-                    .as("只保留同项目同环境 finished，排除本轮，开始时间倒序，NULL 排最后")
+                    .as("N4：同项目同环境优先（开始时间倒序、NULL 最后），跨环境候选随后，排除本轮/未完成/跨项目")
                     .containsExactly(
                             "IT-CMP-NEAR-" + stamp,
                             "IT-CMP-OLD-" + stamp,
-                            "IT-CMP-NULL-" + stamp);
+                            "IT-CMP-NULL-" + stamp,
+                            "IT-CMP-LNK-" + stamp,
+                            "IT-CMP-DUT-" + stamp);
             assertThat(candidates.get(0).startedAt()).isNotNull();
             assertThat(candidates.get(2).startedAt()).as("未记录开始时间的运行按 null 返回").isNull();
+            assertThat(candidates.get(0).crossEnvironment()).isFalse();
+            assertThat(candidates.get(2).crossEnvironment()).isFalse();
+            assertThat(candidates.get(3).crossEnvironment()).as("跨 LINK 候选要标记").isTrue();
+            assertThat(candidates.get(4).crossEnvironment()).as("跨 DUT 候选要标记").isTrue();
 
             // 上限：仓储层按传入 limit 截断
             List<com.qa.autotest.domain.report.RunSnapshot> limited =

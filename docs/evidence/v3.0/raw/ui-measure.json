@@ -1,0 +1,53 @@
+{
+  "capturedAt": "2026-11-07T13:02:17.217Z",
+  "app": "http://localhost:8001",
+  "projectId": "29",
+  "runId": "RUN-20261107174224-510000",
+  "checks": [
+    {
+      "id": "runs-row-clicked",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "timeline-mounted",
+      "ok": true,
+      "detail": "items=3 empty=false"
+    },
+    {
+      "id": "timeline-content",
+      "ok": true,
+      "detail": "items=3"
+    },
+    {
+      "id": "runs-no-hscroll",
+      "ok": true,
+      "detail": "scrollWidth=1440 viewport=1440"
+    },
+    {
+      "id": "runs-no-js-error",
+      "ok": true,
+      "detail": "0 exception"
+    },
+    {
+      "id": "node-health-mounted",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "node-health-content",
+      "ok": true,
+      "detail": "节点在线率 | 0% | 0 / 9 在线 | 队列深度 | 0 | 排队 0，准备中 0 | 失败率 | 58.5% | 失败 24 / 终态 17 | 重派次数 | 0 | 待重派分片 0 | 失败率 58.5% 已到阈值 30.0% | 节点在线率 0.0% 低于阈值 50.0%"
+    },
+    {
+      "id": "nodes-no-hscroll",
+      "ok": true,
+      "detail": "scrollWidth=1440 viewport=1440"
+    },
+    {
+      "id": "nodes-no-js-error",
+      "ok": true,
+      "detail": "0 exception"
+    }
+  ]
+}

@@ -312,6 +312,20 @@ public class RunRepositoryJdbc implements RunRepository {
         return jdbc.query(sql, RETRY_ORIGIN_MAPPER, projectId, runId).stream().findFirst();
     }
 
+    /** 项目内 run 按状态计数（W4 指标）。 */
+    @Override
+    public java.util.Map<String, Integer> countByStatus(long projectId) {
+        String sql = """
+                SELECT run_status, COUNT(*) AS n FROM run WHERE project_id = ? GROUP BY run_status
+                """;
+        TenantGuard.requireProjectScope(sql, "run");
+        java.util.Map<String, Integer> counts = new java.util.LinkedHashMap<>();
+        jdbc.query(sql, rs -> {
+            counts.put(rs.getString("run_status"), rs.getInt("n"));
+        }, projectId);
+        return counts;
+    }
+
     private static Integer valueOrZero(Object value) {
         return value == null ? 0 : ((Number) value).intValue();
     }

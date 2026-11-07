@@ -138,6 +138,20 @@ public class AssetVersionService {
     public List<ReferenceView> references(long projectId, long platformSetId) {
         access.bindProject(projectId);
         access.require(PermissionResource.CASE, PermissionAction.READ);
+        return platformReferences(platformSetId);
+    }
+
+    /**
+     * 平台用例集的版本读数（平台库页面用）：调用方已校验管理员，这里不做项目绑定。
+     * 平台集的 {@code project_id} 是 0（版本行）或 NULL（用例集行），都走同一个 viewOf。
+     */
+    public VersionView platformVersion(long setAssetId) {
+        return viewOf(AssetVersion.PLATFORM_PROJECT_ID, setAssetId,
+                versions.find(AssetVersion.PLATFORM_PROJECT_ID, AssetVersion.TYPE_TESTSET, setAssetId));
+    }
+
+    /** 平台用例集的引用方（平台库只读页用，不做项目绑定）。 */
+    public List<ReferenceView> platformReferences(long platformSetId) {
         AssetVersion platform = versions.find(AssetVersion.PLATFORM_PROJECT_ID,
                         AssetVersion.TYPE_TESTSET, platformSetId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND,
@@ -214,11 +228,34 @@ public class AssetVersionService {
     }
 
     /**
+     * 同步策略（N9）：FULL 整体覆盖（默认）；ADD_ONLY 只补平台新增，不动副本已有内容与顺序。
+     */
+    public enum SyncStrategy {
+        FULL, ADD_ONLY
+    }
+
+    public static SyncStrategy parseStrategy(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return SyncStrategy.FULL;
+        }
+        try {
+            return SyncStrategy.valueOf(raw.trim().toUpperCase(java.util.Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "不支持的同步策略: " + raw);
+        }
+    }
+
+    /**
      * 同步：副本内容对齐平台库（缺的用例按 case_code 导入本项目、条目按平台顺序整体重建），
      * 并把 synced 读数推到平台当前版本、fork_state 回 SYNCED。
      */
     @Transactional
     public VersionView sync(long projectId, long copySetId) {
+        return sync(projectId, copySetId, SyncStrategy.FULL);
+    }
+
+    @Transactional
+    public VersionView sync(long projectId, long copySetId, SyncStrategy strategy) {
         access.bindProject(projectId);
         access.require(PermissionResource.CASE, PermissionAction.UPDATE);
         AssetVersion copy = requireBound(projectId, copySetId);
@@ -226,6 +263,13 @@ public class AssetVersionService {
                         AssetVersion.TYPE_TESTSET, copy.sourceAssetId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND,
                         "平台用例集未登记版本信息: " + copy.sourceAssetId()));
+        return strategy == SyncStrategy.ADD_ONLY
+                ? syncAddOnly(projectId, copySetId, copy, platform)
+                : syncFull(projectId, copySetId, copy, platform);
+    }
+
+    private VersionView syncFull(long projectId, long copySetId, AssetVersion copy,
+                                 AssetVersion platform) {
         Long userId = TenantContext.userId();
         List<AssetVersion.ContentRow> platformRows =
                 versions.content(AssetVersion.PLATFORM_PROJECT_ID, copy.sourceAssetId());
@@ -254,6 +298,55 @@ public class AssetVersionService {
                         + "; toVersion=" + platform.assetVersion()
                         + "; imported=" + imported + "; updated=" + updated
                         + "; rows=" + orderedCaseIds.size());
+        return viewOf(projectId, copySetId,
+                versions.find(projectId, AssetVersion.TYPE_TESTSET, copySetId));
+    }
+
+    /**
+     * ADD_ONLY（N9，可选「不覆盖」同步）：只把平台新增的用例补到副本末尾。
+     *
+     * <p>已有条目的标题/优先级/顺序一律不动，平台已删的本地条目也不删。
+     * synced 读数仍推进到平台当前版本（表示「平台最新内容已看过并已吸收新增」），
+     * 但 fork_state 由「同步后内容是否真的一致」决定：还有差异就是 DIVERGED，
+     * 这样「我保留了本地改写」这件事在 UI 上是显式的，而不是假装已经对齐。
+     */
+    private VersionView syncAddOnly(long projectId, long copySetId, AssetVersion copy,
+                                    AssetVersion platform) {
+        Long userId = TenantContext.userId();
+        List<AssetVersion.ContentRow> platformRows =
+                versions.content(AssetVersion.PLATFORM_PROJECT_ID, copy.sourceAssetId());
+        Map<String, AssetVersion.ContentRow> copyByCode =
+                byCode(versions.content(projectId, copySetId));
+        List<Long> appended = new ArrayList<>();
+        int imported = 0;
+        int reused = 0;
+        for (AssetVersion.ContentRow row : platformRows) {
+            if (copyByCode.containsKey(row.caseCode())) {
+                continue;
+            }
+            Long caseId = versions.findCaseIdByCode(projectId, row.caseCode()).orElse(null);
+            if (caseId == null) {
+                caseId = versions.insertCase(projectId, row.caseCode(), row.title(),
+                        row.priority(), userId);
+                imported++;
+            } else {
+                reused++;
+            }
+            appended.add(caseId);
+        }
+        if (!appended.isEmpty()) {
+            versions.appendItems(projectId, copySetId, appended, userId);
+        }
+        AssetVersion recomputed = recomputeRow(projectId, copySetId);
+        String forkState = recomputed.contentHash().equals(platform.contentHash())
+                ? AssetVersion.SYNCED : AssetVersion.DIVERGED;
+        versions.updateSync(projectId, AssetVersion.TYPE_TESTSET, copySetId,
+                platform.assetVersion(), platform.contentHash(), forkState, userId);
+        audit.record("ASSET_SYNC", "asset_version", String.valueOf(copySetId),
+                "project=" + projectId + "; platform=" + copy.sourceAssetId()
+                        + "; strategy=ADD_ONLY; toVersion=" + platform.assetVersion()
+                        + "; imported=" + imported + "; reused=" + reused
+                        + "; appended=" + appended.size() + "; fork=" + forkState);
         return viewOf(projectId, copySetId,
                 versions.find(projectId, AssetVersion.TYPE_TESTSET, copySetId));
     }

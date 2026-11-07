@@ -6,6 +6,8 @@ import com.qa.autotest.common.BusinessException;
 import com.qa.autotest.common.ErrorCode;
 import com.qa.autotest.domain.execution.FailureClass;
 import com.qa.autotest.domain.execution.FailureClusterKey;
+import com.qa.autotest.domain.execution.RunRecord;
+import com.qa.autotest.domain.execution.RunState;
 import com.qa.autotest.domain.iam.PermissionAction;
 import com.qa.autotest.domain.iam.PermissionResource;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,14 +34,17 @@ class FailureClusterServiceTest {
     private static final String RUN_ID = "RUN-20261106-001";
 
     private FakeResults results;
+    private InMemoryRunRepository runs;
+    private StubCaseRuns caseRuns;
     private FailureClusterService service;
 
     @BeforeEach
     void setUp() {
         results = new FakeResults();
+        runs = new InMemoryRunRepository();
+        caseRuns = new StubCaseRuns();
         service = new FailureClusterService(results,
-                new FailureClassifier(null), new PermissiveAccess(),
-                new CaseRunService(null, null, null, null));
+                new FailureClassifier(null), new PermissiveAccess(), caseRuns, runs);
     }
 
     @Test
@@ -201,24 +206,122 @@ class FailureClusterServiceTest {
         assertEquals(1, view.classes().get(0).clusters().size());
     }
 
+    @Test
+    @DisplayName("N8：簇重跑回填 attempt_no（原运行 +1）与 retry_of_run_id")
+    void 重跑回填重试来源() {
+        results.add(line("CASE-1", "Connection refused"));
+
+        RunRecord source = run(1L, RUN_ID, 1);
+        runs.seed(source);
+        caseRuns.next = run(2L, "RUN-NEXT", 1);
+        runs.seed(caseRuns.next);
+
+        RunRecord created = service.rerun(PROJECT, RUN_ID, "Connection refused");
+
+        assertEquals("RUN-NEXT", created.runId());
+        assertEquals(2, created.attemptNo(), "原 attempt_no=1，重跑应为 2");
+        assertEquals(RUN_ID, runs.retryOf("RUN-NEXT").orElseThrow());
+    }
+
+    @Test
+    @DisplayName("N8：原运行 attempt_no 为 0（历史数据）时按 1 处理，重跑记 2")
+    void 重跑兼容零attempt() {
+        results.add(line("CASE-2", "boom"));
+        runs.seed(run(1L, RUN_ID, 0));
+        caseRuns.next = run(2L, "RUN-NEXT-2", 0);
+        runs.seed(caseRuns.next);
+
+        RunRecord created = service.rerun(PROJECT, RUN_ID, "boom");
+
+        assertEquals(2, created.attemptNo());
+        assertEquals(RUN_ID, runs.retryOf("RUN-NEXT-2").orElseThrow());
+    }
+
+    @Test
+    @DisplayName("跨 run：最近 2 轮里同归一化簇合并计数，作用域标记为 recent:N")
+    void 跨run合并() {
+        runs.seed(run(1L, "RUN-A", 1));
+        runs.seed(run(2L, "RUN-B", 1));
+        results.add("RUN-A", line("CASE-1", "AssertionError: 3 != 5"));
+        results.add("RUN-B", line("CASE-2", "AssertionError: 3 != 7"));
+        results.add("RUN-B", line("CASE-3", "Connection refused to 10.0.0.1:22"));
+
+        FailureClusterView view = service.clusterRecent(PROJECT, 2);
+
+        assertEquals("recent:2", view.runId());
+        assertEquals(3, view.total());
+        FailureClusterView.Cluster merged = view.classes().stream()
+                .flatMap(group -> group.clusters().stream())
+                .filter(cluster -> cluster.key().equals("AssertionError: <n> != <n>"))
+                .findFirst().orElseThrow();
+        assertEquals(2, merged.count(), "两轮各一条，合并后应为 2");
+    }
+
+    @Test
+    @DisplayName("跨 run：runs 越界（0 / 21）在入口拒绝")
+    void 跨run越界拒绝() {
+        for (int bad : new int[]{0, 21}) {
+            BusinessException error = assertThrows(BusinessException.class,
+                    () -> service.clusterRecent(PROJECT, bad));
+            assertEquals(ErrorCode.INVALID_ARGUMENT, error.errorCode());
+        }
+    }
+
+    @Test
+    @DisplayName("跨 run：没有任何运行时返回空视图，不抛错")
+    void 跨run空数据() {
+        FailureClusterView view = service.clusterRecent(PROJECT, 5);
+
+        assertEquals("recent:5", view.runId());
+        assertEquals(0, view.total());
+        assertTrue(view.classes().isEmpty());
+    }
+
+    private static RunRecord run(long id, String runId, int attemptNo) {
+        return new RunRecord(id, runId, PROJECT, null, RunState.FAILED, 0, 1, attemptNo,
+                3, 1, 2, "assert", "reason", "message", null, null, null, null, null);
+    }
+
+    /** CaseRunService 桩：只回一个预置运行记录，不真的起执行。 */
+    static final class StubCaseRuns extends CaseRunService {
+
+        RunRecord next;
+
+        StubCaseRuns() {
+            super(null, null, null, null);
+        }
+
+        @Override
+        public RunRecord run(CaseRunCommand command) {
+            return next;
+        }
+    }
+
+
     private static FailureResultRepository.FailureRow line(String caseCode, String failureMsg) {
         return new FailureResultRepository.FailureRow(
                 System.nanoTime(), caseCode == null ? null : (long) caseCode.hashCode(),
                 caseCode, "title", "FAIL", failureMsg);
     }
 
-    /** 内存失败行仓储。 */
+    /** 内存失败行仓储：默认行用于单轮用例，按 runId 登记的行用于跨轮用例。 */
     static final class FakeResults implements FailureResultRepository {
 
         private final List<FailureRow> rows = new ArrayList<>();
+        private final java.util.Map<String, List<FailureRow>> byRun = new java.util.HashMap<>();
 
         void add(FailureRow row) {
             rows.add(row);
         }
 
+        void add(String runId, FailureRow row) {
+            byRun.computeIfAbsent(runId, ignored -> new ArrayList<>()).add(row);
+        }
+
         @Override
         public List<FailureRow> failedRows(long projectId, String runId) {
-            return List.copyOf(rows);
+            List<FailureRow> scoped = byRun.get(runId);
+            return scoped != null ? List.copyOf(scoped) : List.copyOf(rows);
         }
 
         @Override

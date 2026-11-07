@@ -8,6 +8,7 @@ import com.qa.autotest.application.execution.QuickRunService;
 import com.qa.autotest.application.execution.RunDispatcher;
 import com.qa.autotest.application.execution.RunLogFileService;
 import com.qa.autotest.application.execution.RunLogService;
+import com.qa.autotest.application.execution.RunProgressRegistry;
 import com.qa.autotest.application.execution.RunService;
 import com.qa.autotest.application.execution.RunService.CreateRunCommand;
 import com.qa.autotest.application.execution.TestSetRunService;
@@ -73,7 +74,7 @@ class RunControllerTest {
         leaseWaits = mock(LeaseWaitRegistry.class);
         RunController controller = new RunController(runs, mock(CancelService.class),
                 mock(RunLogService.class), new ExecutionProperties(), quickRuns, testSetRuns,
-                caseRuns, logFiles, dispatcher, leaseWaits);
+                caseRuns, logFiles, dispatcher, leaseWaits, mock(RunProgressRegistry.class));
         mvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();

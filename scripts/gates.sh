@@ -7,8 +7,10 @@
 #   14 报告敏感扫描（EXTERNAL 导出件；无样本时只跑扫描器自校验）
 #   15 CSS 变量引用体检（v2.1 ORCH-02）
 #   16 四格式字段一致性（v2.1 TPLX-03，依赖 05 产物）
+#   17 只读接口性能基线（W4/v3.0：P95 劣化 >10% 且 >30ms 即红）
+#   18 结构自检（原第 17 步，编号顺延）
 #
-# 结构自检：若步骤 13 / 14 被删除，脚本末尾的 check_structure 必须变红（`--selfcheck` 会实证这一点）。
+# 结构自检：若步骤 13 / 14 / 17 被删除，脚本末尾的 check_structure 必须变红（`--selfcheck` 会实证 13/14）。
 #
 # 用法：
 #   bash scripts/gates.sh              # 全量门禁，0 = 全 PASS
@@ -46,6 +48,7 @@ check_structure() {
   local file="$1" bad=0
   grep -qE '^run 13 browser_regression ' "$file" || { echo "STRUCT_FAIL 缺少步骤 13 browser_regression"; bad=1; }
   grep -qE '^run 14 report_sensitive ' "$file" || { echo "STRUCT_FAIL 缺少步骤 14 report_sensitive"; bad=1; }
+  grep -qE '^run 17 perf_baseline ' "$file" || { echo "STRUCT_FAIL 缺少步骤 17 perf_baseline"; bad=1; }
   return "$bad"
 }
 
@@ -120,12 +123,17 @@ run 16 report_consistency "python3 tools/check_report_consistency.py \
   backend/target/evidence/four-formats/report.docx \
   backend/target/evidence/four-formats/report.xlsx \
   backend/target/evidence/four-formats/report.pdf"
+# 只读接口性能基线（W4/v3.0）。五条 GET：审计列表 / 报告列表 / 报告详情 / 趋势 / 失败聚类。
+# 与 docs/evidence/perf-baseline.json 的 P95 比对；劣化 >10% 且绝对增量 >30ms 才判红
+# （30ms 是这台 WSL 宿主机的调度噪声下限）。基线缺失时本步写入基线并 PASS。
+# 依赖 :8001 可用（与 13 同源）；报告数据为空时会明确报错，不会静默放行。
+run 17 perf_baseline "python3 tools/perf_baseline.py"
 
-# 结构自检放在最后：步骤 13 / 14 被删掉时，本检查是唯一会红的环节。
+# 结构自检放在最后：步骤 13 / 14 / 17 被删掉时，本检查是唯一会红的环节。
 if check_structure "$SELF"; then
-  printf '  PASS  17 structure_selfcheck\n'
+  printf '  PASS  18 structure_selfcheck\n'
 else
-  printf '  FAIL  17 structure_selfcheck\n'
+  printf '  FAIL  18 structure_selfcheck\n'
   FAILS=$((FAILS + 1))
 fi
 

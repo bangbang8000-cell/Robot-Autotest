@@ -1,0 +1,6 @@
+$ npx vitest run   # 2026-11-07 (frontend)
+(exit code = 0)
+   ✓ ReportDetailView 对比 > 两轮都 FAIL 显示「持续失败」，不能落成「无变化」  874ms
+ Test Files  42 passed (42)
+      Tests  277 passed (277)
+   Duration  22.66s (transform 10.97s, setup 1.16s, collect 85.77s, tests 95.47s, environment 46.93s, prepare 13.76s)

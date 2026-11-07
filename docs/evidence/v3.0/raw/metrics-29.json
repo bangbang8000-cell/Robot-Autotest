@@ -1,0 +1,51 @@
+{
+  "code": 0,
+  "codeName": "OK",
+  "message": "OK",
+  "data": {
+    "projectId": 29,
+    "generatedAt": "2026-11-07T13:02:14.142933149Z",
+    "runs": {
+      "total": 51,
+      "finished": 17,
+      "failed": 24,
+      "running": 0,
+      "failureRate": 0.5854
+    },
+    "queue": {
+      "queued": 0,
+      "preparing": 0,
+      "depth": 0
+    },
+    "nodes": {
+      "total": 9,
+      "online": 0,
+      "offline": 3,
+      "disabled": 2,
+      "onlineRate": 0
+    },
+    "shards": {
+      "total": 0,
+      "leased": 0,
+      "lost": 0,
+      "recoveredAttempts": 0
+    },
+    "alerts": [
+      {
+        "key": "failureRate",
+        "level": "WARN",
+        "value": 0.5854,
+        "threshold": 0.3,
+        "message": "失败率 58.5% 已到阈值 30.0%"
+      },
+      {
+        "key": "onlineRate",
+        "level": "WARN",
+        "value": 0,
+        "threshold": 0.5,
+        "message": "节点在线率 0.0% 低于阈值 50.0%"
+      }
+    ]
+  },
+  "success": true
+}

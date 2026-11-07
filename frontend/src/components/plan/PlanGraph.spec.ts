@@ -16,14 +16,14 @@ import type { PlanGraphView } from '@/api/planGraph'
 const view: PlanGraphView = {
   projectId: 1,
   nodes: [
-    { id: 1, name: 'A', status: 'enabled', timeoutSeconds: 100, layer: 0, isolated: false, onCriticalPath: true },
-    { id: 2, name: 'B', status: 'enabled', timeoutSeconds: 200, layer: 1, isolated: false, onCriticalPath: true },
-    { id: 3, name: 'C', status: 'paused', timeoutSeconds: 900, layer: 1, isolated: false, onCriticalPath: false },
-    { id: 4, name: 'D', status: 'enabled', timeoutSeconds: 50, layer: 0, isolated: true, onCriticalPath: false },
+    { id: 1, name: 'A', status: 'enabled', timeoutSeconds: 100, estimatedSeconds: 600, layer: 0, isolated: false, onCriticalPath: true },
+    { id: 2, name: 'B', status: 'enabled', timeoutSeconds: 200, estimatedSeconds: null, layer: 1, isolated: false, onCriticalPath: true },
+    { id: 3, name: 'C', status: 'paused', timeoutSeconds: 900, estimatedSeconds: 900, layer: 1, isolated: false, onCriticalPath: false },
+    { id: 4, name: 'D', status: 'enabled', timeoutSeconds: 50, estimatedSeconds: null, layer: 0, isolated: true, onCriticalPath: false },
   ],
   edges: [
-    { from: 1, to: 2 },
-    { from: 1, to: 3 },
+    { from: 1, to: 2, source: 'GROUP' },
+    { from: 1, to: 3, source: 'MANUAL' },
   ],
   criticalPath: [1, 2],
   criticalSeconds: 300,
@@ -75,7 +75,35 @@ describe('PlanGraph', () => {
     const paused = [...root.querySelectorAll('[data-testid="node"]')].find((node) =>
       node.textContent?.includes('C'),
     )
-    expect(paused?.textContent).toContain('paused')
+    expect(paused?.getAttribute('data-status')).toBe('paused')
+  })
+
+  it('预计时长优先显示历史 P50，无历史才显示超时值（N8）', async () => {
+    const root = await mount()
+    const nodeOf = (name: string) =>
+      [...root.querySelectorAll('[data-testid="node"]')].find((node) =>
+        node.querySelector('text.name')?.textContent === name,
+      )!
+    // A：P50 600s → 10m；超时 100s 不能出现在第二行（P50 优先）
+    expect(nodeOf('A').getAttribute('data-estimated')).toBe('p50')
+    expect(nodeOf('A').querySelector('text.meta')?.textContent).toContain('10m')
+    // B：无历史 → 回落超时 200s → 3m20s
+    expect(nodeOf('B').getAttribute('data-estimated')).toBe('none')
+    expect(nodeOf('B').querySelector('text.meta')?.textContent).toContain('3m20s')
+  })
+
+  it('组推边虚线标识，手工边不标（N8）', async () => {
+    const root = await mount()
+    const edges = [...root.querySelectorAll('[data-testid="edge"]')]
+    const group = edges.find((edge) => edge.getAttribute('data-source') === 'GROUP')!
+    const manual = edges.find((edge) => edge.getAttribute('data-source') === 'MANUAL')!
+
+    expect(group.getAttribute('class')).toContain('edge-group')
+    expect(manual.getAttribute('class')).not.toContain('edge-group')
+  })
+
+  it('大图出现缩略导航，小图不出现（N8）', async () => {
+    expect((await mount()).querySelector('[data-testid="plan-graph-minimap"]')).toBeNull()
   })
 
   it('颜色走 CSS 类，不写 SVG 表现属性（写 var() 会回落成黑块）', async () => {
@@ -118,6 +146,7 @@ describe('PlanGraph', () => {
         name: `plan-${index + 1}`,
         status: 'enabled',
         timeoutSeconds: 60,
+        estimatedSeconds: null,
         layer: index % 5,
         isolated: false,
         onCriticalPath: false,
@@ -133,5 +162,7 @@ describe('PlanGraph', () => {
     const svg = root.querySelector('svg')!
     // 高度 = 内边距×2 + 最多一层的行数×行高（每层最多 10 个）
     expect(Number(svg.getAttribute('height'))).toBeGreaterThan(10 * 64)
+    // 5 列 × 190px 已超出一屏，缩略导航必须出现
+    expect(root.querySelector('[data-testid="plan-graph-minimap"]')).not.toBeNull()
   })
 })

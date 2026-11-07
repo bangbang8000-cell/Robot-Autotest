@@ -506,7 +506,7 @@ async function removeMember(member: ProjectMember): Promise<void> {
 
 <template>
   <div class="page">
-    <h1 class="page-title">{{ t('menu.admin') }}</h1>
+    <h1 class="page-title">{{ t('menu.adminUsers') }}</h1>
 
     <ErrorLineView v-if="error" :error="error" />
     <p v-if="message" class="text-ok">{{ message }}</p>

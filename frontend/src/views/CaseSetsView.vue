@@ -9,8 +9,9 @@
 import { computed, h, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, NInput, NSelect, type DataTableColumns } from 'naive-ui'
-import { caseApi, caseSetApi, assetVersionApi, type TestCase, type TestSet,
-         type AssetVersionView, type AssetDiffRow } from '@/api/cases'
+import { caseApi, caseSetApi, assetVersionApi, platformCaseSetApi,
+         type TestCase, type TestSet, type AssetVersionView, type AssetDiffRow,
+         type PlatformCaseSetRow, type SyncStrategy } from '@/api/cases'
 import { executionApi } from '@/api/execution'
 import { useAuthStore } from '@/stores/auth'
 import DataTable from '@/components/DataTable.vue'
@@ -52,6 +53,24 @@ const assetLoading = ref(false)
 const assetBusy = ref(false)
 const assetError = ref<ErrorLine | null>(null)
 const assetMessage = ref('')
+/** N9：FULL 整体覆盖；ADD_ONLY 只补平台新增，保留本地修改与顺序。 */
+const syncStrategy = ref<SyncStrategy>('FULL')
+
+const syncStrategyOptions = computed(() => [
+  { label: t('caseSets.assetStrategyFull'), value: 'FULL' },
+  { label: t('caseSets.assetStrategyAddOnly'), value: 'ADD_ONLY' },
+])
+
+// ---------------------------------------------------------------- 平台用例集库（N9，只读）
+
+const isAdmin = computed(() => auth.isAdmin)
+const platformKeyword = ref('')
+const platformSets = ref<PlatformCaseSetRow[]>([])
+const platformLoading = ref(false)
+const platformError = ref<ErrorLine | null>(null)
+const platformOpenId = ref<number | null>(null)
+const platformItems = ref<TestCase[]>([])
+const platformItemsLoading = ref(false)
 
 const canSubmit = computed(
   () =>
@@ -354,7 +373,11 @@ async function syncAsset(): Promise<void> {
   assetError.value = null
   assetMessage.value = ''
   try {
-    assetView.value = await assetVersionApi.sync(projectId.value, activeSet.value.id)
+    assetView.value = await assetVersionApi.sync(
+      projectId.value,
+      activeSet.value.id,
+      syncStrategy.value,
+    )
     assetDiff.value = []
     assetMessage.value = t('caseSets.assetSynced', { version: assetView.value.assetVersion })
     await loadItems()
@@ -380,6 +403,53 @@ async function divergeAsset(): Promise<void> {
     assetBusy.value = false
   }
 }
+
+// ---------------------------------------------------------------- 平台用例集库（N9，只读）
+
+async function loadPlatform(): Promise<void> {
+  platformError.value = null
+  platformLoading.value = true
+  try {
+    const page = await platformCaseSetApi.page({
+      keyword: platformKeyword.value.trim() || undefined,
+      page: 1,
+      size: 100,
+    })
+    platformSets.value = page.items
+  } catch (e) {
+    platformError.value = localizeError(e)
+  } finally {
+    platformLoading.value = false
+  }
+}
+
+/** 只读展开：同一行再点一次即收起，切换行时重新拉该集成员。 */
+async function togglePlatformItems(row: PlatformCaseSetRow): Promise<void> {
+  if (platformOpenId.value === row.id) {
+    platformOpenId.value = null
+    platformItems.value = []
+    return
+  }
+  platformOpenId.value = row.id
+  platformItems.value = []
+  platformItemsLoading.value = true
+  platformError.value = null
+  try {
+    platformItems.value = await platformCaseSetApi.items(row.id)
+  } catch (e) {
+    platformError.value = localizeError(e)
+  } finally {
+    platformItemsLoading.value = false
+  }
+}
+
+watch(
+  isAdmin,
+  (admin) => {
+    if (admin) void loadPlatform()
+  },
+  { immediate: true },
+)
 
 const isBound = computed(() => assetView.value?.sourceAssetId !== null)
 
@@ -553,6 +623,13 @@ void load()
         </p>
 
         <div v-if="isBound" class="toolbar">
+          <NSelect
+            v-model:value="syncStrategy"
+            style="width: 180px"
+            :options="syncStrategyOptions"
+            :aria-label="t('caseSets.assetStrategy')"
+            data-testid="asset-strategy"
+          />
           <NButton size="small" :disabled="assetBusy" data-testid="asset-diff" @click="checkDiff">
             {{ t('caseSets.assetCheckDiff') }}
           </NButton>
@@ -585,6 +662,75 @@ void load()
         <p v-else-if="assetDiff !== null" class="muted small" data-testid="diff-empty">
           {{ t('caseSets.assetDiffEmpty') }}
         </p>
+      </div>
+    </div>
+
+    <div v-if="isAdmin" class="card platform-card" data-testid="platform-case-sets">
+      <div class="items-head">
+        <h2 class="card-title">{{ t('caseSets.platformTitle') }}</h2>
+        <span class="muted small">{{ t('caseSets.platformHint') }}</span>
+      </div>
+
+      <div class="toolbar">
+        <NInput
+          v-model:value="platformKeyword"
+          clearable
+          style="width: 200px"
+          :placeholder="t('common.searchPlaceholder')"
+          :aria-label="t('common.searchPlaceholder')"
+          @keyup.enter="loadPlatform"
+        />
+        <NButton quaternary :loading="platformLoading" @click="loadPlatform">
+          {{ t('common.refresh') }}
+        </NButton>
+      </div>
+
+      <ErrorLineView v-if="platformError" :error="platformError" />
+      <p v-if="platformLoading" class="muted">{{ t('common.loading') }}</p>
+      <p v-else-if="platformSets.length === 0" class="muted">{{ t('caseSets.platformEmpty') }}</p>
+      <ul v-else class="platform-sets">
+        <li
+          v-for="row in platformSets"
+          :key="row.id"
+          class="platform-set"
+          data-testid="platform-set-row"
+        >
+          <span class="set-item-code">{{ row.setCode }}</span>
+          <span class="set-item-title">{{ row.name }}</span>
+          <span class="muted small">
+            {{ t('caseSets.platformMembers', { count: row.itemCount }) }}
+          </span>
+          <span class="muted small">
+            {{ t('caseSets.platformVersion', { version: row.assetVersion }) }}
+          </span>
+          <span class="muted small">
+            {{ t('caseSets.platformRefs', { count: row.referenceCount }) }}
+          </span>
+          <NButton text size="small" @click="togglePlatformItems(row)">
+            {{
+              platformOpenId === row.id
+                ? t('caseSets.closeItems')
+                : t('caseSets.platformViewMembers')
+            }}
+          </NButton>
+        </li>
+      </ul>
+
+      <div v-if="platformOpenId !== null" class="platform-items" data-testid="platform-items">
+        <p v-if="platformItemsLoading" class="muted">{{ t('common.loading') }}</p>
+        <p v-else-if="platformItems.length === 0" class="muted">{{ t('caseSets.noItems') }}</p>
+        <ul v-else class="set-items">
+          <li
+            v-for="(item, index) in platformItems"
+            :key="item.id"
+            class="set-item set-item-readonly"
+          >
+            <span class="set-item-order">{{ index + 1 }}</span>
+            <span class="set-item-code">{{ item.caseCode }}</span>
+            <span class="set-item-title">{{ item.title }}</span>
+            <span class="muted small">{{ item.priority }}</span>
+          </li>
+        </ul>
       </div>
     </div>
   </div>
@@ -740,5 +886,44 @@ void load()
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ---- 平台用例集库（N9，只读） ---- */
+.platform-card {
+  margin-top: var(--space-5);
+}
+
+.platform-sets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.platform-set {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr) auto auto auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+}
+
+.platform-set:hover {
+  background: var(--surface-hover);
+}
+
+.platform-items {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--border);
+}
+
+.set-item-readonly {
+  background: var(--panel);
 }
 </style>

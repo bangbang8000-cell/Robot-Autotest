@@ -85,4 +85,51 @@ class PytestKernelTest {
         int at = argv.indexOf("-n");
         assertTrue(at > 0 && "4".equals(argv.get(at + 1)), "并行应带 -n 4: " + argv);
     }
+
+    // ---- N3：pytest metadata 落 metadata 字段并过 MetadataGate ----
+
+    @Test
+    void jsonReportMetadataPassesGate(@TempDir Path dir) throws Exception {
+        String json = """
+                {"metadata":{
+                  "case_id":"PY-B2-001","qa_project":"robot-autotest","dut":"GPU-01",
+                  "link":"GPU-01 eth0 -> SW-01","sw_build":"Ubuntu 24.04 / pytest 8.2",
+                  "baseline":"< 5 min","operator":"大师","started_at":"2026-11-07T02:00:00Z",
+                  "case_kind":"pytest-regression","Python":"3.10.12","Platform":"linux"
+                },"tests":[{"nodeid":"t.py::test_ok","outcome":"passed"}]}""";
+        Files.writeString(dir.resolve("pytest-report.json"), json);
+        NormalizedRun run = kernel.normalize(dir, "RUN-PY-1");
+        assertTrue(run.exportable(), "十项齐全应可导出: " + run.metadataGate());
+        assertEquals("PY-B2-001", run.metadata().get("CASE_ID"));
+        assertEquals("RUN-PY-1", run.metadata().get("RUN_ID"));
+        assertEquals(10, run.metadata().size(), "非门禁键应被丢弃: " + run.metadata());
+    }
+
+    @Test
+    void jsonReportMissingDutIsNotExportable(@TempDir Path dir) throws Exception {
+        String json = """
+                {"metadata":{"case_id":"PY-B2-002","qa_project":"robot-autotest"},
+                 "tests":[{"nodeid":"t.py::test_ok","outcome":"passed"}]}""";
+        Files.writeString(dir.resolve("pytest-report.json"), json);
+        NormalizedRun run = kernel.normalize(dir, "RUN-PY-2");
+        assertTrue(!run.exportable());
+        assertTrue(run.metadataGate().missing().contains("DUT"));
+        assertEquals("RUN-PY-2", run.metadata().get("RUN_ID"), "RUN_ID 由内核补齐");
+    }
+
+    @Test
+    void junitPropertiesCarryMetadata(@TempDir Path dir) throws Exception {
+        String xml = """
+                <testsuite name="s" tests="1">
+                  <properties>
+                    <property name="case_id" value="PY-B2-003"/>
+                    <property name="qa_project" value="robot-autotest"/>
+                  </properties>
+                  <testcase classname="t" name="ok" time="0.1"/>
+                </testsuite>""";
+        Files.writeString(dir.resolve("junit.xml"), xml);
+        NormalizedRun run = kernel.normalize(dir, "RUN-PY-3");
+        assertEquals("PY-B2-003", run.metadata().get("CASE_ID"));
+        assertTrue(!run.exportable());
+    }
 }

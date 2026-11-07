@@ -28,14 +28,23 @@ public class PabotOrchestrator {
     private final ProcessRegistry registry;
     private final RunLogService logs;
     private final Clock clock;
+    private final RunProgressRegistry progress;
 
     public PabotOrchestrator(ProcessLauncher launcher, ArtifactVerifier verifier,
                              ProcessRegistry registry, RunLogService logs, Clock clock) {
+        this(launcher, verifier, registry, logs, clock, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public PabotOrchestrator(ProcessLauncher launcher, ArtifactVerifier verifier,
+                             ProcessRegistry registry, RunLogService logs, Clock clock,
+                             RunProgressRegistry progress) {
         this.launcher = launcher;
         this.verifier = verifier;
         this.registry = registry;
         this.logs = logs;
         this.clock = clock;
+        this.progress = progress;
     }
 
     public ShardResult runShard(String runId,
@@ -67,7 +76,16 @@ public class PabotOrchestrator {
 
         emit(runId, runLog, logSink, "[system] 开始执行 pabot: " + String.join(" ", command.argv()));
         registry.register(runId, handle.process());
+        if (progress != null) {
+            progress.begin(runId);
+            progress.phase(runId, "running");
+        }
         Instant started = clock.instant();
+        // G-B2-1：worker 的 Log To Console 只写 pabot_results/<n>/robot_stdout.out，
+        // 单靠 pabot 主进程 stdout 会漏掉全部用例输出，这里并行跟踪并合入同一频道。
+        WorkerLogTailer workerTail = new WorkerLogTailer(outputDir,
+                line -> emit(runId, runLog, logSink, line));
+        workerTail.start();
         Thread outThread = pump(runId, runLog, handle.stdout(), stdoutFile, "stdout", logSink);
         Thread errThread = pump(runId, runLog, handle.stderr(), stderrFile, "stderr", logSink);
         int exitCode = handle.waitFor(timeout);
@@ -80,9 +98,13 @@ public class PabotOrchestrator {
         }
         join(outThread);
         join(errThread);
+        workerTail.close();
         emit(runId, runLog, logSink, "[system] 进程退出码=" + exitCode
                 + "，耗时=" + Duration.between(started, clock.instant()));
 
+        if (progress != null) {
+            progress.phase(runId, "reporting");
+        }
         Path outputXml = outputDir.resolve("output.xml");
         ArtifactVerifier.VerifyResult verified = verifier.verify(outputXml);
         // 分片完整性：被杀分片的 output.xml 是 0 字节，合并后的 totalTests 只会变小、
@@ -109,6 +131,9 @@ public class PabotOrchestrator {
             emit(runId, runLog, logSink,
                     "[system] 产物校验失败: reason=" + reason + ", exit=" + exitCode);
             diagnose(outputDir, runId, runLog, logSink);
+        }
+        if (progress != null) {
+            progress.phase(runId, "done");
         }
         return new ShardResult(success, reason, verified.totalTests(), exitCode, outputXml);
     }
@@ -157,8 +182,11 @@ public class PabotOrchestrator {
         }
     }
 
-    /** 一条日志三处落点：实时频道、run.log 全量、调用方 sink。 */
+    /** 一条日志三处落点：实时频道、run.log 全量、调用方 sink；顺带喂进度解析。 */
     private void emit(String runId, Path runLog, Consumer<String> logSink, String line) {
+        if (progress != null) {
+            progress.onLine(runId, line);
+        }
         if (logs != null) {
             logs.publish(runId, "pabot", line);
         }

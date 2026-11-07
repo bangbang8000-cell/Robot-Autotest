@@ -46,7 +46,7 @@ class FailureClusterPerfTest {
         FakeResults results = new FakeResults(rows);
         FailureClusterService service = new FailureClusterService(results,
                 new FailureClassifier(null), new FailureClusterServiceTest.PermissiveAccess(),
-                new CaseRunService(null, null, null, null));
+                new CaseRunService(null, null, null, null), new InMemoryRunRepository());
 
         long start = System.nanoTime();
         FailureClusterView view = service.cluster(PROJECT, RUN_ID);

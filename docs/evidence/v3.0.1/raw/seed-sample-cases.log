@@ -1,0 +1,9 @@
+SEED_BASE http://127.0.0.1:8001 project=29 dryRun=False
+path                               action   version   bytes
+examples/01_quick_check.robot      skip           1     713
+examples/02_list_ops.robot         skip           2     700
+examples/03_math.robot             skip           1     540
+examples/04_string_ops.robot       skip           2     551
+examples/05_dict_ops.robot         skip           2     655
+examples/06_timing.robot           skip           1     495
+SEED_RESULT PASS written=0 skipped=6 total=6

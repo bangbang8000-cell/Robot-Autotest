@@ -4,12 +4,14 @@ import com.qa.autotest.application.execution.ExecutionProperties;
 import com.qa.autotest.application.execution.RunDispatcher;
 import com.qa.autotest.application.execution.RunService;
 import com.qa.autotest.application.iam.AuditService;
+import com.qa.autotest.application.repository.PlanGroupRepository;
 import com.qa.autotest.application.repository.PlanRepository;
 import com.qa.autotest.domain.common.PageResult;
 import com.qa.autotest.domain.execution.RunOrigin;
 import com.qa.autotest.domain.execution.RunRecord;
 import com.qa.autotest.domain.execution.RunState;
 import com.qa.autotest.domain.plan.OverlapPolicy;
+import com.qa.autotest.domain.plan.PlanGroup;
 import com.qa.autotest.domain.plan.PlanLastRun;
 import com.qa.autotest.domain.plan.PlanRecord;
 import com.qa.autotest.domain.plan.PlanStatus;
@@ -55,12 +57,18 @@ final class PlanTestSupport {
 
         final Map<Long, PlanRecord> store = new LinkedHashMap<>();
         final Map<Long, List<Long>> edges = new LinkedHashMap<>();
+        final Map<Long, Long> medians = new LinkedHashMap<>();
         boolean activeRunForPlan;
         int activeScheduledRuns;
         int lockDueCalls;
 
         void put(PlanRecord plan) {
             store.put(plan.id(), plan);
+        }
+
+        /** 设置某计划的历史运行时长 P50（秒），用于依赖图的预计时长断言。 */
+        void median(long planId, long seconds) {
+            medians.put(planId, seconds);
         }
 
         void depend(long planId, Long... dependsOn) {
@@ -184,6 +192,78 @@ final class PlanTestSupport {
         @Override
         public Optional<PlanLastRun> latestRun(long projectId, long planId) {
             return Optional.empty();
+        }
+
+        @Override
+        public Map<Long, Long> medianDurationSeconds(long projectId) {
+            return new LinkedHashMap<>(medians);
+        }
+    }
+
+    /** 只读组仓储：只支撑依赖图的「组内链式边」来源判定。 */
+    static final class StubGroupRepository implements PlanGroupRepository {
+
+        final List<PlanGroup> groups = new ArrayList<>();
+
+        /** 声明一个链式组：成员按传入顺序即 sort_order 升序。 */
+        void chain(long groupId, Long... planIds) {
+            List<PlanGroup.PlanGroupItem> items = new ArrayList<>();
+            for (int i = 0; i < planIds.length; i++) {
+                items.add(new PlanGroup.PlanGroupItem(planIds[i], "plan-" + planIds[i], i));
+            }
+            groups.add(new PlanGroup(groupId, PROJECT, "group-" + groupId, null, items,
+                    OPERATOR, CLOCK.instant()));
+        }
+
+        @Override
+        public List<PlanGroup> listByProject(long projectId) {
+            return new ArrayList<>(groups);
+        }
+
+        @Override
+        public Optional<PlanGroup> find(long projectId, long id) {
+            return groups.stream().filter(group -> group.id() == id).findFirst();
+        }
+
+        @Override
+        public Optional<PlanGroup> findByName(long projectId, String name) {
+            return groups.stream().filter(group -> group.name().equals(name)).findFirst();
+        }
+
+        @Override
+        public long insert(PlanGroup draft, Long operatorId) {
+            throw new UnsupportedOperationException("StubGroupRepository 只读");
+        }
+
+        @Override
+        public void update(long projectId, long id, String name, String description,
+                            Long operatorId) {
+            throw new UnsupportedOperationException("StubGroupRepository 只读");
+        }
+
+        @Override
+        public void delete(long projectId, long id) {
+            throw new UnsupportedOperationException("StubGroupRepository 只读");
+        }
+
+        @Override
+        public int appendItems(long projectId, long groupId, List<Long> planIds, Long operatorId) {
+            throw new UnsupportedOperationException("StubGroupRepository 只读");
+        }
+
+        @Override
+        public void removeItem(long projectId, long groupId, long planId) {
+            throw new UnsupportedOperationException("StubGroupRepository 只读");
+        }
+
+        @Override
+        public void reorder(long projectId, long groupId, List<Long> planIds, Long operatorId) {
+            throw new UnsupportedOperationException("StubGroupRepository 只读");
+        }
+
+        @Override
+        public boolean existsInOtherProject(long projectId, long planId) {
+            return false;
         }
     }
 

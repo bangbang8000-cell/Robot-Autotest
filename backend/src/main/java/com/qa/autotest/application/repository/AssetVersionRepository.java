@@ -51,4 +51,7 @@ public interface AssetVersionRepository {
 
     /** 整体重建用例集条目（按给定顺序，seq 从 1 起）；旧条目全部删除。 */
     void replaceItems(long projectId, long setId, List<Long> orderedCaseIds, Long operatorId);
+
+    /** 追加条目（ADD_ONLY 同步用）：只往末尾插入给定用例，不动已有条目的内容与顺序。 */
+    void appendItems(long projectId, long setId, List<Long> caseIds, Long operatorId);
 }

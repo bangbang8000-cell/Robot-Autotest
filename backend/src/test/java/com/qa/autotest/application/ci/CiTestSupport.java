@@ -163,6 +163,11 @@ final class CiTestSupport {
         public Optional<PlanLastRun> latestRun(long projectId, long planId) {
             return Optional.empty();
         }
+
+        @Override
+        public Map<Long, Long> medianDurationSeconds(long projectId) {
+            return Map.of();
+        }
     }
 
     /** 只记录调用，不建 run、不派发执行。 */

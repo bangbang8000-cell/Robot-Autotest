@@ -1,0 +1,12 @@
+ ✓ src/views/FailureClustersView.spec.ts (7 tests) 510ms
+ ✓ src/views/PlansView.spec.ts (14 tests) 3086ms
+   ✓ PlansView 列表 > 双行单元格两行都在：名称 + 套件路径、Cron + 时区  316ms
+   ✓ PlansView 编排冲突（W5） > 全选后批量暂停：多条冲突里的计划去重后一次性提交  316ms
+   ✓ PlansView 依赖跳过事件（PLN-02） > 无权限时不给空表格，明确提示仅管理员或项目所有者可看  330ms
+   ✓ PlansView 依赖跳过事件（PLN-02） > 超过一页时给翻页器，翻页带页码重新拉（PLN-02 残余）  308ms
+
+ Test Files  2 passed (2)
+      Tests  21 passed (21)
+   Start at  21:27:14
+   Duration  6.02s (transform 1.07s, setup 43ms, collect 3.93s, tests 3.60s, environment 532ms, prepare 329ms)
+

@@ -1,0 +1,10 @@
+[INFO] Running com.qa.autotest.api.execution.FailureClusterControllerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.932 s -- in com.qa.autotest.api.execution.FailureClusterControllerTest
+[INFO] Running com.qa.autotest.application.plan.PlanConflictServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.592 s -- in com.qa.autotest.application.plan.PlanConflictServiceTest
+[INFO] Running com.qa.autotest.application.plan.PlanServiceBatchTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.476 s -- in com.qa.autotest.application.plan.PlanServiceBatchTest
+[INFO] Running com.qa.autotest.application.execution.FailureClusterServiceTest
+[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.220 s -- in com.qa.autotest.application.execution.FailureClusterServiceTest
+[INFO] Tests run: 28, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS

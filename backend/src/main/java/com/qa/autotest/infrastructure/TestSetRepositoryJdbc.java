@@ -61,6 +61,35 @@ public class TestSetRepositoryJdbc implements TestSetRepository {
     }
 
     @Override
+    public PageResult<TestSet> platformPage(String keyword, int page, int size) {
+        // 平台用例集的 project_id 是 NULL（与项目私有集区分），所以这里的租户条件是 IS NULL。
+        StringBuilder where = new StringBuilder(" WHERE s.project_id IS NULL");
+        List<Object> args = new ArrayList<>();
+        if (keyword != null && !keyword.isBlank()) {
+            where.append(" AND (s.set_code LIKE ? OR s.name LIKE ?)");
+            String like = "%" + keyword.trim() + "%";
+            args.add(like);
+            args.add(like);
+        }
+        String countSql = "SELECT COUNT(*) FROM test_set s" + where;
+        TenantGuard.requireProjectScope(countSql, "test_set");
+        Long total = jdbc.queryForObject(countSql, Long.class, args.toArray());
+        args.add(size);
+        args.add((page - 1) * size);
+        String listSql = SELECT + where + " ORDER BY s.id DESC LIMIT ? OFFSET ?";
+        TenantGuard.requireProjectScope(listSql, "test_set");
+        List<TestSet> rows = jdbc.query(listSql, MAPPER, args.toArray());
+        return new PageResult<>(rows, total == null ? 0 : total, page, size);
+    }
+
+    @Override
+    public Optional<TestSet> findPlatform(long id) {
+        String sql = SELECT + " WHERE s.project_id IS NULL AND s.id = ?";
+        TenantGuard.requireProjectScope(sql, "test_set");
+        return JdbcSupport.first(jdbc.query(sql, MAPPER, id));
+    }
+
+    @Override
     public Optional<TestSet> find(long projectId, long id) {
         String sql = SELECT + " WHERE s.project_id = ? AND s.id = ?";
         TenantGuard.requireProjectScope(sql, "test_set");
@@ -132,6 +161,27 @@ public class TestSetRepositoryJdbc implements TestSetRepository {
                 rs.getString("precondition"), rs.getString("expected"), rs.getString("domain_tag"),
                 rs.getString("review_status"), rs.getString("source"), rs.getString("capability"),
                 rs.getString("description"), rs.getString("safety_level")), projectId, testSetId);
+    }
+
+    @Override
+    public List<TestCase> platformItems(long testSetId) {
+        String sql = """
+                SELECT c.id, c.project_id, c.case_code, c.title, c.case_kind, c.priority,
+                       c.precondition, c.expected, c.domain_tag, c.review_status, c.source,
+                       c.capability, c.description, c.safety_level
+                  FROM test_set_item i
+                  JOIN test_case c ON c.id = i.test_case_id
+                  JOIN test_set s ON s.id = i.test_set_id
+                 WHERE s.project_id IS NULL AND i.test_set_id = ?
+                 ORDER BY i.seq_no
+                """;
+        TenantGuard.requireProjectScope(sql, "test_set_item");
+        return jdbc.query(sql, (rs, rowNum) -> new TestCase(
+                rs.getLong("id"), rs.getLong("project_id"), rs.getString("case_code"),
+                rs.getString("title"), rs.getString("case_kind"), rs.getString("priority"),
+                rs.getString("precondition"), rs.getString("expected"), rs.getString("domain_tag"),
+                rs.getString("review_status"), rs.getString("source"), rs.getString("capability"),
+                rs.getString("description"), rs.getString("safety_level")), testSetId);
     }
 
     @Override

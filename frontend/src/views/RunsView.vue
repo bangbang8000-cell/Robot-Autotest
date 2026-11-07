@@ -12,7 +12,7 @@ import {
   NSelect,
   type DataTableColumns,
 } from 'naive-ui'
-import { executionApi, runLogSocketUrl, type ExecutionRun, type LeaseWait, type PendingActivity, type RunLogLine, type RunRetryOrigin } from '@/api/execution'
+import { executionApi, runLogSocketUrl, type ExecutionRun, type LeaseWait, type PendingActivity, type RunLogLine, type RunProgress, type RunRetryOrigin } from '@/api/execution'
 import { caseSetApi, type TestSet } from '@/api/cases'
 import { deviceApi, type Device } from '@/api/asset'
 import { useAuthStore } from '@/stores/auth'
@@ -20,6 +20,8 @@ import DataTable from '@/components/DataTable.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import FormField from '@/components/FormField.vue'
 import StatusTag from '@/components/StatusTag.vue'
+import ShardBoard from '@/components/ShardBoard.vue'
+import RunTimeline from '@/components/RunTimeline.vue'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { EMPTY, formatDateTime } from '@/utils/format'
 import { RUN_STATUSES, runStatusLabel, runStatusTone } from '@/utils/statusLabels'
@@ -45,12 +47,34 @@ const leaseWait = ref<LeaseWait | null>(null)
 const leaseWaitSeconds = computed(() => Math.floor((leaseWait.value?.elapsedMs ?? 0) / 1000))
 /** 上一次尝试（EXEC-13 残余 / FR-v0.4-29）：只有重试记录才有值。 */
 const retryOrigin = ref<RunRetryOrigin | null>(null)
+/**
+ * 执行进度（N15）：与实时日志同源，但日志只有「行」没有「总量」，进度另走 3 秒轮询。
+ * `total = 0` 表示后端还没拿到 RF 汇总行，此时按不确定进度渲染，不伪造百分比。
+ */
+const progress = ref<RunProgress | null>(null)
+let progressTimer: number | undefined
 let pendingTimer: number | undefined
 const socketState = ref<'idle' | 'connecting' | 'open' | 'closed'>('idle')
 const logPanel = ref<HTMLElement | null>(null)
 
 const projectId = computed(() => auth.projectId ?? 0)
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / size)))
+
+const PHASE_KEYS: Record<string, string> = {
+  queued: 'execution.phaseQueued',
+  preparing: 'execution.phasePreparing',
+  running: 'execution.phaseRunning',
+  reporting: 'execution.phaseReporting',
+  done: 'execution.phaseDone',
+}
+const progressPhase = computed(() => t(PHASE_KEYS[progress.value?.phase ?? 'running'] ?? 'execution.phaseRunning'))
+/** 总数未知 → 不确定进度；有总数才给百分比，且夹在 0–100 之间。 */
+const progressPercent = computed(() => {
+  const snapshot = progress.value
+  if (!snapshot || snapshot.total <= 0) return 0
+  return Math.min(100, Math.max(0, Math.round((snapshot.completed / snapshot.total) * 100)))
+})
+const progressIndeterminate = computed(() => !progress.value || progress.value.total <= 0)
 
 /* ---------- EXEC-01 手动执行表单 ---------- */
 
@@ -319,12 +343,15 @@ async function selectRun(run: ExecutionRun): Promise<void> {
   pending.value = null
   leaseWait.value = null
   retryOrigin.value = null
-  await Promise.all([loadRecentLog(), loadRetryOrigin(run)])
+  progress.value = null
+  stopProgressPoll()
+  await Promise.all([loadRecentLog(), loadRetryOrigin(run), loadProgress()])
   if (run.state === 'QUEUED' || run.state === 'PREPARING') {
     await loadPending()
     // 5 秒一轮：位次会随前面的 run 结束而前进；等设备租约时也能看到「等待资源」到自动消失
     pendingTimer = window.setInterval(() => void loadPending(), 5000)
   }
+  startProgressPoll()
   connect()
 }
 
@@ -374,6 +401,40 @@ async function loadRetryOrigin(run: ExecutionRun): Promise<void> {
   }
 }
 
+/**
+ * 执行进度（N15）。辅助信息：失败不弹错、不挡日志面板；`total = 0` 时前端按不确定进度渲染。
+ * 终态（phase=done 或 run 已结束）自动停表，避免空转长轮询。
+ */
+async function loadProgress(): Promise<void> {
+  const run = selected.value
+  if (!run || !projectId.value) {
+    progress.value = null
+    return
+  }
+  try {
+    progress.value = await executionApi.progress(projectId.value, run.runId)
+    if (progress.value.phase === 'done' || isTerminal(progress.value.state)) {
+      stopProgressPoll()
+    }
+  } catch {
+    progress.value = null
+  }
+}
+
+function startProgressPoll(): void {
+  stopProgressPoll()
+  if (!selected.value || isTerminal(selected.value.state)) return
+  // 3 秒一轮：比日志 WS 慢，但足以让进度条与耗时持续前进
+  progressTimer = window.setInterval(() => void loadProgress(), 3000)
+}
+
+function stopProgressPoll(): void {
+  if (progressTimer) {
+    window.clearInterval(progressTimer)
+    progressTimer = undefined
+  }
+}
+
 async function loadRecentLog(): Promise<void> {
   if (!selected.value) return
   try {
@@ -403,7 +464,12 @@ function connect(): void {
     try {
       const payload = JSON.parse(String(event.data)) as { type: string; lines: RunLogLine[] }
       if (payload.type !== 'log' || !Array.isArray(payload.lines)) return
-      logLines.value = [...logLines.value, ...payload.lines].slice(-2000)
+      // G-B2-2：REST 预取的 200 行与 WS 连上后的补发是同一条历史，按 seq 水位去重，
+      // 否则首屏会出现两份（实测 52 行 vs 应有 26 行）。
+      const lastSeq = logLines.value.reduce((max, line) => Math.max(max, line.seq), 0)
+      const fresh = payload.lines.filter((line) => line.seq > lastSeq)
+      if (fresh.length === 0) return
+      logLines.value = [...logLines.value, ...fresh].slice(-2000)
       scrollToBottom()
     } catch {
       // 非法帧忽略，不影响已展示内容
@@ -498,6 +564,20 @@ function scrollToBottom(): void {
   })
 }
 
+/**
+ * 分片规划/聚合会改 run 的计数与状态：静默刷新当前 run 与列表，不打断日志面板。
+ * 辅助刷新失败不弹错（分片看板自己已经展示过错误）。
+ */
+async function refreshAfterShardChange(): Promise<void> {
+  if (!selected.value || !projectId.value) return
+  try {
+    selected.value = await executionApi.get(projectId.value, selected.value.runId)
+    await load()
+  } catch {
+    // 忽略：分片看板内部会显示错误
+  }
+}
+
 async function cancelRun(run: ExecutionRun): Promise<void> {
   error.value = null
   message.value = ''
@@ -526,8 +606,10 @@ watch([projectId], () => {
   manualOpen.value = false
   disconnect()
   stopPendingPoll()
+  stopProgressPoll()
   pending.value = null
   leaseWait.value = null
+  progress.value = null
   logLines.value = []
   void load()
 }, { immediate: true })
@@ -540,6 +622,7 @@ watch([stateFilter], () => {
 onBeforeUnmount(() => {
   disconnect()
   stopPendingPoll()
+  stopProgressPoll()
 })
 </script>
 
@@ -740,6 +823,47 @@ onBeforeUnmount(() => {
           {{ t('execution.downloadLog') }}
         </NButton>
       </div>
+      <!--
+        执行进度（N15）：数据来自后端对同一批控制台行的解析（不是另开通道）。
+        总数未知时走不确定进度条 —— 宁可显示「已完成 N」也不伪造百分比。
+      -->
+      <div v-if="progress" class="run-progress" data-testid="run-progress">
+        <div class="progress-meta">
+          <span class="progress-phase">{{ progressPhase }}</span>
+          <span class="muted">
+            {{
+              progress.total > 0
+                ? t('execution.progressCountsKnown', { completed: progress.completed, total: progress.total })
+                : t('execution.progressCountsUnknown', { completed: progress.completed })
+            }}
+          </span>
+          <span class="muted">{{ t('execution.progressElapsed', { seconds: progress.elapsedSeconds }) }}</span>
+          <!-- RF 只在用例结束时打印结果行，所以这里说「最近完成」而不是「当前执行」 -->
+          <span v-if="progress.lastTest" class="muted progress-last">
+            {{ t('execution.progressLast', { test: progress.lastTest, verdict: progress.lastVerdict ?? '' }) }}
+          </span>
+        </div>
+        <div
+          class="progress-track"
+          :class="{ indeterminate: progressIndeterminate, failed: progress.failed > 0 }"
+          role="progressbar"
+          :aria-valuenow="progressIndeterminate ? undefined : progressPercent"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          <div
+            class="progress-fill"
+            :style="progressIndeterminate ? undefined : { width: `${progressPercent}%` }"
+          />
+        </div>
+      </div>
+      <ShardBoard
+        :run-id="selected.runId"
+        :project-id="projectId"
+        @changed="refreshAfterShardChange"
+      />
+      <!-- 执行过程时间线（W4）：run / 分片的全部时间点合并成一条事件流 -->
+      <RunTimeline :run-id="selected.runId" :project-id="projectId" />
       <pre v-if="visibleLines.length" ref="logPanel" class="log-lines">
 <span
   v-for="line in visibleLines"
@@ -798,6 +922,62 @@ onBeforeUnmount(() => {
 
 .only-fail {
   margin-left: auto;
+}
+
+.run-progress {
+  padding: 10px 0 12px;
+}
+
+.progress-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 12px;
+}
+
+.progress-phase {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.progress-last {
+  max-width: 46%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progress-track {
+  position: relative;
+  overflow: hidden;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+/* 总数未知：只做前后扫动，不假装知道还剩多少 */
+.progress-track.indeterminate .progress-fill {
+  width: 30%;
+  animation: progress-sweep 1.4s ease-in-out infinite;
+}
+
+.progress-track.failed .progress-fill {
+  background: var(--fail);
+}
+
+@keyframes progress-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(340%); }
 }
 
 .log-lines {

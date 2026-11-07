@@ -1,0 +1,7 @@
+target/surefire-reports/com.qa.autotest.api.execution.ShardControllerTest.txt:Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.103 s -- in com.qa.autotest.api.execution.ShardControllerTest
+target/surefire-reports/com.qa.autotest.api.node.NodeShardEndpointTest.txt:Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.127 s -- in com.qa.autotest.api.node.NodeShardEndpointTest
+target/surefire-reports/com.qa.autotest.application.execution.ShardFailoverServiceTest.txt:Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.141 s -- in com.qa.autotest.application.execution.ShardFailoverServiceTest
+target/surefire-reports/com.qa.autotest.application.execution.ShardFailoverTest.txt:Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.044 s -- in com.qa.autotest.application.execution.ShardFailoverTest
+target/surefire-reports/com.qa.autotest.application.execution.ShardPolicyTest.txt:Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 s -- in com.qa.autotest.application.execution.ShardPolicyTest
+target/surefire-reports/com.qa.autotest.application.execution.ShardServiceTest.txt:Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.056 s -- in com.qa.autotest.application.execution.ShardServiceTest
+target/surefire-reports/com.qa.autotest.application.execution.ShardTwoNodeEquivalenceTest.txt:Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.030 s -- in com.qa.autotest.application.execution.ShardTwoNodeEquivalenceTest

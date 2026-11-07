@@ -11,6 +11,12 @@ public interface TestSetRepository {
 
     PageResult<TestSet> page(long projectId, String keyword, int page, int size);
 
+    /** 平台用例集（test_set.project_id IS NULL）分页：平台库只读视图用。 */
+    PageResult<TestSet> platformPage(String keyword, int page, int size);
+
+    /** 平台用例集按 id 查（project_id IS NULL）。 */
+    Optional<TestSet> findPlatform(long id);
+
     Optional<TestSet> find(long projectId, long id);
 
     long insert(TestSet testSet, Long operatorId);
@@ -20,6 +26,9 @@ public interface TestSetRepository {
     void delete(long projectId, long id);
 
     List<TestCase> items(long projectId, long testSetId);
+
+    /** 平台用例集成员（只读视图用；平台集的 project_id 为 NULL）。 */
+    List<TestCase> platformItems(long testSetId);
 
     void addItem(long projectId, long testSetId, long testCaseId, int seqNo, Long operatorId);
 

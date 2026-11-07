@@ -146,7 +146,13 @@ public class PlanGroupService {
         return PlanGroupView.of(load(projectId, groupId));
     }
 
-    /** 全量重排：{@code planIds} 的顺序即新顺序。列表外的现有成员会被移除（前端拖拽后的整体提交）。 */
+    /**
+     * 全量重排：{@code planIds} 的顺序即新顺序。列表外的现有成员会被移除（前端拖拽后的整体提交）。
+     *
+     * <p>N8：重排后**自动应用**链式依赖——顺序变了但边没变的组，调度器仍按旧顺序跑，
+     * 前端图上看到的顺序与实际执行顺序不一致。应用与重排同事务：成环时整体回滚，
+     * 不会留下「顺序已改、边还是旧的」的中间态。单成员组没有边可建，跳过应用。
+     */
     @Transactional
     public PlanGroupView reorder(long projectId, long groupId, List<Long> planIds) {
         access.bindProject(projectId);
@@ -165,6 +171,12 @@ public class PlanGroupService {
         groups.reorder(projectId, groupId, normalized, TenantContext.userId());
         audit.record("PLAN_GROUP_REORDER", "plan_group", String.valueOf(groupId),
                 "size=" + normalized.size());
+
+        if (normalized.size() >= PlanGroup.MIN_CHAIN_SIZE) {
+            PlanGroupView.ApplyResult applied = applyChainInternal(projectId, groupId, true);
+            audit.record("PLAN_GROUP_REORDER_APPLY", "plan_group", String.valueOf(groupId),
+                    "created=" + applied.created() + ", skipped=" + applied.skipped());
+        }
         return PlanGroupView.of(load(projectId, groupId));
     }
 
@@ -184,6 +196,20 @@ public class PlanGroupService {
     public PlanGroupView.ApplyResult applyChain(long projectId, long groupId) {
         access.bindProject(projectId);
         access.require(PermissionResource.EXECUTION, PermissionAction.UPDATE);
+        return applyChainInternal(projectId, groupId, false);
+    }
+
+    /**
+     * 应用链式依赖的实现体（不做权限/绑定校验）。{@link #reorder} 与 {@link #applyChain}
+     * 共用：前者重排后立刻应用，权限已在方法入口校验过一次，不重复走一遍。
+     *
+     * @param resetReverse 为 true 时先拆掉组内「与新顺序反向」的旧边——只有 <b>重排</b> 才该这么做：
+     *                     用户明确改了顺序，上次应用留下的链式边在新顺序下必然反向，
+     *                     不拆就永成环。显式 applyChain 时保持严格语义：与既有手工作边成环就报错，
+     *                     不能静默删掉用户手工配置的依赖。
+     */
+    private PlanGroupView.ApplyResult applyChainInternal(long projectId, long groupId,
+                                                          boolean resetReverse) {
         PlanGroup group = load(projectId, groupId);
         List<PlanGroup.PlanGroupItem> items = group.items();
         if (items.size() < PlanGroup.MIN_CHAIN_SIZE) {
@@ -193,6 +219,40 @@ public class PlanGroupService {
 
         Map<Long, List<Long>> edges = new LinkedHashMap<>(plans.allDependencies(projectId));
         Map<Long, List<Long>> touched = new LinkedHashMap<>();
+        Map<Long, Integer> position = new LinkedHashMap<>();
+        for (int i = 0; i < items.size(); i++) {
+            position.put(items.get(i).planId(), i);
+        }
+
+        // 先把组内「与本次新顺序反向」的旧边拆掉（上次应用留下的链式边在新顺序下必然是反向边）。
+        // 不拆的话：组 [A,B,C] 应用过一次，再重排成 [C,B,A]，新增的 B<-C、A<-B 会与旧边成环，
+        // reorder 永远失败。组外依赖（端点在组外）原样保留。
+        int removed = 0;
+        if (resetReverse) {
+            for (PlanGroup.PlanGroupItem item : items) {
+                List<Long> current = edges.get(item.planId());
+                if (current == null || current.isEmpty()) {
+                    continue;
+                }
+                int pos = position.get(item.planId());
+                List<Long> kept = new ArrayList<>(current.size());
+                boolean changed = false;
+                for (Long dep : current) {
+                    Integer depPos = position.get(dep);
+                    if (depPos != null && depPos > pos) {
+                        changed = true;
+                        removed++;
+                        continue;
+                    }
+                    kept.add(dep);
+                }
+                if (changed) {
+                    edges.put(item.planId(), kept);
+                    touched.put(item.planId(), kept);
+                }
+            }
+        }
+
         int created = 0;
         int skipped = 0;
         for (int i = 1; i < items.size(); i++) {
@@ -209,12 +269,14 @@ public class PlanGroupService {
             created++;
         }
 
-        if (created > 0) {
-            assertAcyclic(projectId, edges);
+        if (created > 0 || removed > 0) {
+            if (created > 0) {
+                assertAcyclic(projectId, edges);
+            }
             Long operator = TenantContext.userId();
             touched.forEach((planId, deps) -> plans.replaceDependencies(projectId, planId, deps, operator));
             audit.record("PLAN_GROUP_APPLY", "plan_group", String.valueOf(groupId),
-                    "created=" + created + ", skipped=" + skipped);
+                    "created=" + created + ", skipped=" + skipped + ", removed=" + removed);
         }
         return new PlanGroupView.ApplyResult(groupId, created, skipped,
                 PlanGroupView.of(load(projectId, groupId)));

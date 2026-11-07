@@ -1,8 +1,11 @@
 /**
  * 侧边栏导航（两级菜单）—— 唯一真源。
  *
- * v2.0 / NAV-01（FR-v2.0-07、08）：一级固定 6 域（工作台 / 资产 / 用例 / 执行 / 报告 / 管理），
- * 层级 ≤ 2，命名统一；过滤从「只有 adminOnly」升级为**能力驱动**（`resource:action`）。
+ * v2.0 / NAV-01（FR-v2.0-07、08）：一级 6 域，层级 ≤ 2，过滤为能力驱动（`resource:action`）。
+ * v2.0 / W0.8（2026-11-07 大师新需求）：按实际使用重新划分：
+ * - 「资产 / 用例」各自独立一级，二级项全部显式声明（不再用 tab 伪分组）；
+ * - 「管理」拆解——平台设置 / 用户 / 审计 / 关于 / 版本迭代归入**独立的「系统设置」一级菜单**；
+ * - 「执行」补齐「执行节点」，失败聚类与计划组/依赖图通过 alsoMatch 保持父项点亮。
  *
  * 三条约定：
  * 1. **分组不承载页面**。有多个子页的才立分组；单页模块直接做叶子。
@@ -85,8 +88,21 @@ export const NAVIGATION: NavNode[] = [
     key: 'cases',
     labelKey: 'menu.cases',
     icon: 'cases',
-    path: '/cases',
-    alsoMatch: ['/editor', '/viewer'],
+    children: [
+      {
+        key: 'cases-list',
+        labelKey: 'menu.casesList',
+        icon: 'cases',
+        path: '/cases',
+        alsoMatch: ['/editor', '/viewer'],
+      },
+      {
+        key: 'cases-sets',
+        labelKey: 'menu.casesSets',
+        icon: 'cases',
+        path: '/cases/sets',
+      },
+    ],
   },
   {
     key: 'runs',
@@ -99,12 +115,20 @@ export const NAVIGATION: NavNode[] = [
         labelKey: 'menu.runsList',
         icon: 'runs',
         path: '/runs',
+        alsoMatch: ['/runs/failure-clusters'],
       },
       {
         key: 'runs-plans',
         labelKey: 'plans.title',
         icon: 'cases',
         path: '/plans',
+        alsoMatch: ['/plans/groups', '/plans/graph'],
+      },
+      {
+        key: 'runs-nodes',
+        labelKey: 'menu.runsNodes',
+        icon: 'admin',
+        path: '/nodes',
       },
     ],
   },
@@ -116,19 +140,26 @@ export const NAVIGATION: NavNode[] = [
     alsoMatch: ['/reports', '/test-reports'],
   },
   {
-    key: 'admin',
-    labelKey: 'menu.admin',
+    key: 'settings',
+    labelKey: 'menu.settings',
     icon: 'admin',
-    // 分组不设 adminOnly：项目成员要用「项目成员」页，整组隐藏会连带藏掉它。
+    // 「系统设置」独立成一级（W0.8）：平台配置 + 用户/审计 + 关于/版本迭代。
     children: [
       {
-        key: 'admin-users',
+        key: 'settings-platform',
+        labelKey: 'menu.settingsPlatform',
+        icon: 'admin',
+        path: '/settings',
+        capability: 'settings:read',
+      },
+      {
+        key: 'settings-users',
         labelKey: 'menu.adminUsers',
         icon: 'users',
         path: '/admin',
       },
       {
-        key: 'admin-audit',
+        key: 'settings-audit',
         labelKey: 'audit.title',
         icon: 'audit',
         path: '/admin/audit',
@@ -136,20 +167,13 @@ export const NAVIGATION: NavNode[] = [
         capability: 'audit:read',
       },
       {
-        key: 'admin-settings',
-        labelKey: 'menu.settings',
-        icon: 'admin',
-        path: '/settings',
-        capability: 'settings:read',
-      },
-      {
-        key: 'admin-about',
+        key: 'settings-about',
         labelKey: 'menu.about',
         icon: 'help',
         path: '/about',
       },
       {
-        key: 'admin-changelog',
+        key: 'settings-changelog',
         labelKey: 'menu.changelog',
         icon: 'reports',
         path: '/changelog',

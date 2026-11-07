@@ -1,0 +1,11 @@
+# W1 定向后端单测（surefire 汇总，2026-11-07）
+AssetVersionServiceTest: Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.056 s -- in com.qa.autotest.application.caseasset.AssetVersionServiceTest
+AssetUpgradeServiceTest: Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.079 s -- in com.qa.autotest.application.caseasset.AssetUpgradeServiceTest
+TestSetPlatformServiceTest: Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.739 s -- in com.qa.autotest.application.caseasset.TestSetPlatformServiceTest
+PlatformCaseSetControllerTest: Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.717 s -- in com.qa.autotest.api.caseasset.PlatformCaseSetControllerTest
+ExecutionNodeServiceTest: Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.229 s -- in com.qa.autotest.application.node.ExecutionNodeServiceTest
+PlanGraphServiceTest: 未运行
+FailureClusterKeyTest: Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 s -- in com.qa.autotest.domain.execution.FailureClusterKeyTest
+
+# 门禁结果
+GATES_RESULT FAILS=0（2026-11-07，17 步全 PASS；原始日志 docs/evidence/gates/logs/）

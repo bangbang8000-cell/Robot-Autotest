@@ -7,11 +7,15 @@ import com.qa.autotest.domain.kernel.ExecutionKernel;
 import com.qa.autotest.domain.kernel.KernelRequest;
 import com.qa.autotest.domain.kernel.NormalizedCaseResult;
 import com.qa.autotest.domain.kernel.NormalizedRun;
+import com.qa.autotest.domain.report.MetadataGate;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
@@ -87,7 +91,10 @@ public class PytestKernel implements ExecutionKernel {
                 cases.add(new NormalizedCaseResult(nodeId, nodeId,
                         CaseStatus.fromPytest(outcome), duration, outcome));
             }
-            return new NormalizedRun(NAME, runId, cases);
+            // N3：pytest-metadata 由 --metadata / pytest.ini 写入 json-report 的 metadata 节点。
+            // 只保留十项门禁键，其余（Python/Platform/Packages 等）不污染 run_metadata。
+            Map<String, String> metadata = canonicalMetadata(root.path("metadata"));
+            return new NormalizedRun(NAME, runId, cases, withRunId(metadata, runId));
         } catch (Exception e) {
             throw new IllegalStateException("pytest json-report 解析失败: " + path, e);
         }
@@ -118,7 +125,8 @@ public class PytestKernel implements ExecutionKernel {
                 cases.add(new NormalizedCaseResult(nodeId, name, status,
                         parseDouble(node.getAttribute("time")), status.name()));
             }
-            return new NormalizedRun(NAME, runId, cases);
+            Map<String, String> metadata = canonicalMetadata(doc);
+            return new NormalizedRun(NAME, runId, cases, withRunId(metadata, runId));
         } catch (Exception e) {
             throw new IllegalStateException("junit.xml 解析失败: " + path, e);
         }
@@ -130,5 +138,60 @@ public class PytestKernel implements ExecutionKernel {
         } catch (NumberFormatException e) {
             return 0.0;
         }
+    }
+
+    /** json-report 的 metadata 节点：只收标量值，键名大小写不敏感。 */
+    private static Map<String, String> canonicalMetadata(JsonNode node) {
+        Map<String, String> raw = new LinkedHashMap<>();
+        if (node != null && node.isObject()) {
+            node.fields().forEachRemaining(entry -> {
+                JsonNode value = entry.getValue();
+                if (value.isValueNode() && !value.isNull()) {
+                    raw.put(entry.getKey(), value.asText());
+                }
+            });
+        }
+        return canonical(raw);
+    }
+
+    /** junit.xml 的 <properties><property name value/>：pytest 侧同样可携带 metadata。 */
+    private static Map<String, String> canonicalMetadata(Document doc) {
+        Map<String, String> raw = new LinkedHashMap<>();
+        NodeList properties = doc.getElementsByTagName("property");
+        for (int i = 0; i < properties.getLength(); i++) {
+            Element property = (Element) properties.item(i);
+            raw.put(property.getAttribute("name"), property.getAttribute("value"));
+        }
+        return canonical(raw);
+    }
+
+    /**
+     * 键名统一大写，只保留十项门禁键。
+     *
+     * <p>刻意丢弃 pytest-metadata 自带的 Python / Platform / Packages 等键：
+     * 它们既不能回答「谁、在哪台设备、什么版本」，还会把 run_metadata 撑大。
+     */
+    private static Map<String, String> canonical(Map<String, String> raw) {
+        Map<String, String> result = new LinkedHashMap<>();
+        raw.forEach((key, value) -> {
+            if (key == null || key.isBlank() || value == null) {
+                return;
+            }
+            String canonicalKey = key.trim().toUpperCase(Locale.ROOT);
+            if (MetadataGate.REQUIRED.contains(canonicalKey)) {
+                result.put(canonicalKey, value.trim());
+            }
+        });
+        return result;
+    }
+
+    /** RUN_ID 是三方关联键，内核必须自己补齐，不能依赖调用方另外传一遍。 */
+    private static Map<String, String> withRunId(Map<String, String> metadata, String runId) {
+        if (runId == null || runId.isBlank() || metadata.containsKey("RUN_ID")) {
+            return metadata;
+        }
+        Map<String, String> merged = new LinkedHashMap<>(metadata);
+        merged.put("RUN_ID", runId);
+        return merged;
     }
 }

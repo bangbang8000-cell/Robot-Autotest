@@ -55,19 +55,18 @@ describe('navigation 结构', () => {
 })
 
 describe('权限过滤', () => {
-  it('非管理员看不到审计子项，但「管理」分组仍在（项目成员归 PM/所有者用）', () => {
-    const admin = visibleNav(false).find((node) => node.key === 'admin') as NavGroup
-    expect(admin).toBeTruthy()
-    // W1 起管理域新增系统设置 / 关于 / 版本迭代三个系统页（不新增一级菜单）
-    expect(admin.children.map((child) => child.key)).toEqual([
-      'admin-users', 'admin-settings', 'admin-about', 'admin-changelog',
+  it('非管理员看不到审计子项，但「系统设置」分组仍在（设置是高频入口）', () => {
+    const settings = visibleNav(false).find((node) => node.key === 'settings') as NavGroup
+    expect(settings).toBeTruthy()
+    expect(settings.children.map((child) => child.key)).toEqual([
+      'settings-platform', 'settings-users', 'settings-about', 'settings-changelog',
     ])
   })
 
-  it('管理员能看到管理分组下的全部子项（含审计）', () => {
-    const admin = visibleNav(true).find((node) => node.key === 'admin') as NavGroup
-    expect(admin.children.map((child) => child.key)).toEqual([
-      'admin-users', 'admin-audit', 'admin-settings', 'admin-about', 'admin-changelog',
+  it('管理员能看到系统设置分组下的全部子项（含审计）', () => {
+    const settings = visibleNav(true).find((node) => node.key === 'settings') as NavGroup
+    expect(settings.children.map((child) => child.key)).toEqual([
+      'settings-platform', 'settings-users', 'settings-audit', 'settings-about', 'settings-changelog',
     ])
   })
 
@@ -95,13 +94,20 @@ describe('v2.0 六域 IA 与能力驱动过滤（NAV-01 / FR-v2.0-07、08）', (
   it('一级恰好 6 域，层级不超过 2', () => {
     expect(NAVIGATION).toHaveLength(6)
     expect(NAVIGATION.map((node) => node.key)).toEqual([
-      'overview', 'assets', 'cases', 'runs', 'reports', 'admin',
+      'overview', 'assets', 'cases', 'runs', 'reports', 'settings',
     ])
     for (const node of NAVIGATION) {
       if (isGroup(node)) {
         for (const child of node.children) expect('children' in child).toBe(false)
       }
     }
+  })
+
+  it('W0.8：系统设置独立成一级菜单，平台设置页在它下面', () => {
+    const settings = NAVIGATION.find((node) => node.key === 'settings') as NavGroup
+    expect(isGroup(settings)).toBe(true)
+    expect(settings.children.some((child) => child.path === '/settings')).toBe(true)
+    expect(NAVIGATION.some((node) => node.key === 'admin')).toBe(false)
   })
 
   it('四角色菜单快照：权限只减不增，未知角色按最小权限', () => {
@@ -111,13 +117,13 @@ describe('v2.0 六域 IA 与能力驱动过滤（NAV-01 / FR-v2.0-07、08）', (
     const admin = navKeysForRole('admin')
 
     expect(viewer).not.toContain('runs')            // execution:read
-    expect(viewer).not.toContain('admin-audit')    // audit:read
-    expect(viewer).not.toContain('admin-settings') // settings:read
+    expect(viewer).not.toContain('settings-audit')    // audit:read
+    expect(viewer).not.toContain('settings-platform') // settings:read
     expect(engineer).toContain('runs')
-    expect(engineer).not.toContain('admin-settings')
-    expect(pm).toContain('admin-settings')
-    expect(pm).not.toContain('admin-audit')
-    expect(admin).toContain('admin-audit')
+    expect(engineer).not.toContain('settings-platform')
+    expect(pm).toContain('settings-platform')
+    expect(pm).not.toContain('settings-audit')
+    expect(admin).toContain('settings-audit')
     expect(admin.length).toBeGreaterThanOrEqual(pm.length)
     expect(roleFromCodes(['something-new'])).toBe('viewer')
     expect(roleFromCodes(null)).toBe('viewer')
@@ -128,8 +134,8 @@ describe('v2.0 六域 IA 与能力驱动过滤（NAV-01 / FR-v2.0-07、08）', (
       isGroup(node) ? [node.key, ...node.children.map((child) => child.key)] : [node.key],
     )
     expect(keys).toContain('overview')
-    expect(keys).not.toContain('admin-audit')
-    expect(keys).not.toContain('admin-settings')
+    expect(keys).not.toContain('settings-audit')
+    expect(keys).not.toContain('settings-platform')
     expect(keys).not.toContain('runs')
   })
 })
@@ -162,10 +168,12 @@ describe('选中判定', () => {
     expect(isLeafActive(reports, { path: '/reportsX' })).toBe(false)
   })
 
-  it('编辑器与只读查看器点亮「用例」', () => {
-    const cases = NAVIGATION.find((node) => node.key === 'cases') as NavLeaf
-    expect(isLeafActive(cases, { path: '/editor/12' })).toBe(true)
-    expect(isLeafActive(cases, { path: '/viewer/12' })).toBe(true)
+  it('编辑器与只读查看器点亮「用例库」并展开「用例」分组', () => {
+    const casesGroup = groups().find((group) => group.key === 'cases') as NavGroup
+    const casesList = casesGroup.children.find((child) => child.key === 'cases-list') as NavLeaf
+    expect(isLeafActive(casesList, { path: '/editor/12' })).toBe(true)
+    expect(isLeafActive(casesList, { path: '/viewer/12' })).toBe(true)
+    expect(isGroupActive(casesGroup, { path: '/editor/12' })).toBe(true)
   })
 
   it('分组在有子项选中时算选中，并成为自动展开目标', () => {

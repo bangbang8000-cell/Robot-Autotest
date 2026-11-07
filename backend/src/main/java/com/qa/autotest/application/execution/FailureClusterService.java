@@ -2,6 +2,7 @@ package com.qa.autotest.application.execution;
 
 import com.qa.autotest.application.iam.AccessControlService;
 import com.qa.autotest.application.repository.FailureResultRepository;
+import com.qa.autotest.application.repository.RunRepository;
 import com.qa.autotest.common.BusinessException;
 import com.qa.autotest.common.ErrorCode;
 import com.qa.autotest.domain.execution.FailureClass;
@@ -42,15 +43,18 @@ public class FailureClusterService {
     private final FailureClassifier classifier;
     private final AccessControlService access;
     private final CaseRunService caseRuns;
+    private final RunRepository runs;
 
     public FailureClusterService(FailureResultRepository results,
                                  FailureClassifier classifier,
                                  AccessControlService access,
-                                 CaseRunService caseRuns) {
+                                 CaseRunService caseRuns,
+                                 RunRepository runs) {
         this.results = results;
         this.classifier = classifier;
         this.access = access;
         this.caseRuns = caseRuns;
+        this.runs = runs;
     }
 
     /**
@@ -68,7 +72,43 @@ public class FailureClusterService {
         List<FailureResultRepository.FailureRow> rows = results.failedRows(projectId, runId);
         FailureResultRepository.RunFailureContext context = results.runContext(projectId, runId);
 
-        // 类别 → 簇键 → 行。TreeMap 保证簇键有序，EnumMap 保证类别按声明序。
+        return new FailureClusterView(runId, rows.size(),
+                context == null ? null : context.runStatus(),
+                context == null ? null : context.failureClass(),
+                classGroups(rows));
+    }
+
+    /**
+     * 跨 run 聚类：取最近 N 轮里所有失败用例，按同一套归一化规则合并。
+     *
+     * <p>为什么按「最近 N 轮」而不是时间窗：时间窗（如 7 天）在低频项目里会只剩 1~2 轮，
+     * 在压测期又会挤进上百轮，样本量不可控；按轮数取，用户能直接判断「连续 3 轮都栽在同一处」。
+     *
+     * <p>返回的 {@code runId} 是作用域标记 {@code recent:N}——它不是真实运行 ID，
+     * 不能被拿去调用按簇重跑（重跑仍要求单轮 runId）。这是故意的：跨轮簇合并了多轮用例，
+     * 单独重跑某一轮会破坏统计口径。
+     *
+     * @param runs 最近几轮，1..20；只统计已结束的 run（page 默认按创建时间倒序）
+     */
+    public FailureClusterView clusterRecent(long projectId, int runs) {
+        access.bindProject(projectId);
+        access.require(PermissionResource.EXECUTION, PermissionAction.READ);
+        if (runs < 1 || runs > 20) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "runs 取值范围 1..20");
+        }
+
+        List<RunRecord> recent = this.runs.page(projectId, null, 1, runs).items();
+        List<FailureResultRepository.FailureRow> merged = new ArrayList<>();
+        for (RunRecord run : recent) {
+            merged.addAll(results.failedRows(projectId, run.runId()));
+        }
+        return new FailureClusterView("recent:" + runs, merged.size(), null, null,
+                classGroups(merged));
+    }
+
+    /** 把失败行按「类别 → 簇键」归组并排序；单轮与跨轮共用，避免两套统计口径。 */
+    private List<FailureClusterView.ClassGroup> classGroups(
+            List<FailureResultRepository.FailureRow> rows) {
         Map<FailureClass, Map<String, List<FailureResultRepository.FailureRow>>> grouped =
                 new EnumMap<>(FailureClass.class);
         final int total = rows.size();
@@ -82,8 +122,7 @@ public class FailureClusterService {
 
         List<FailureClusterView.ClassGroup> classGroups = new ArrayList<>();
         for (FailureClass failureClass : FailureClass.values()) {
-            Map<String, List<FailureResultRepository.FailureRow>> clusters =
-                    grouped.get(failureClass);
+            Map<String, List<FailureResultRepository.FailureRow>> clusters = grouped.get(failureClass);
             if (clusters == null || clusters.isEmpty()) {
                 continue;
             }
@@ -95,11 +134,7 @@ public class FailureClusterService {
             classGroups.add(new FailureClusterView.ClassGroup(failureClass.name(), classCount,
                     ratio(classCount, total), views));
         }
-
-        return new FailureClusterView(runId, total,
-                context == null ? null : context.runStatus(),
-                context == null ? null : context.failureClass(),
-                classGroups);
+        return classGroups;
     }
 
     /**
@@ -109,6 +144,9 @@ public class FailureClusterService {
     public RunRecord rerun(long projectId, String runId, String clusterKey) {
         access.bindProject(projectId);
         access.require(PermissionResource.EXECUTION, PermissionAction.EXECUTE);
+        RunRecord source = runs.findByRunId(projectId, runId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND,
+                        "运行不存在: " + runId));
         FailureClusterView view = cluster(projectId, runId);
         for (FailureClusterView.ClassGroup group : view.classes()) {
             for (FailureClusterView.Cluster cluster : group.clusters()) {
@@ -117,8 +155,14 @@ public class FailureClusterService {
                         throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
                                 "该簇没有关联用例，无法重跑: " + clusterKey);
                     }
-                    return caseRuns.run(new CaseRunService.CaseRunCommand(projectId,
+                    RunRecord created = caseRuns.run(new CaseRunService.CaseRunCommand(projectId,
                             cluster.caseIds(), null, List.of(), null, null, null, null, null));
+                    // N8：把「重跑自哪一轮」写回 DB，attempt_no 在原运行基础上 +1。
+                    // 不写的话，运行详情里 retryOfRunId 永远是空，簇重跑看起来像一次全新运行，
+                    // 「同一簇连试三轮仍失败」这种判断就失去依据。
+                    int attemptNo = Math.max(source.attemptNo(), 1) + 1;
+                    runs.markAttempt(created.runId(), attemptNo, runId);
+                    return runs.findByRunId(projectId, created.runId()).orElse(created);
                 }
             }
         }

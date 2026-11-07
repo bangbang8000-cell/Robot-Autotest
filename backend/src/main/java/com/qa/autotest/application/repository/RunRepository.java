@@ -100,4 +100,9 @@ public interface RunRepository {
     default Optional<RunRetryOrigin> findRetryOrigin(long projectId, String runId) {
         return Optional.empty();
     }
+
+    /** 项目内 run 按状态计数（W4 指标）；默认空实现，避免改动既有假仓储。 */
+    default java.util.Map<String, Integer> countByStatus(long projectId) {
+        return java.util.Map.of();
+    }
 }

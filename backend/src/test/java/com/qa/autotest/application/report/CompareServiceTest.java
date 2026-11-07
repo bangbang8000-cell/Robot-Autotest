@@ -108,26 +108,40 @@ class CompareServiceTest {
     }
 
     @Test
-    @DisplayName("手动基线跨环境：400 中文原因")
-    void 手动基线跨环境拒绝() {
+    @DisplayName("手动基线跨环境：N4 放行并显式标记 crossEnvironment=true")
+    void 手动基线跨环境放行并标记() {
         read.addRun(PROJECT, CURRENT, "GPU-01", "mlx5_0", T2);
         read.addRun(PROJECT, "DIFF-DUT", "GPU-02", "mlx5_0", T1);
         read.addRun(PROJECT, "DIFF-LINK", "GPU-01", "mlx5_1", T1);
 
-        BusinessException ex = assertThrows(BusinessException.class,
-                () -> service.compare(PROJECT, CURRENT, "DIFF-DUT"));
-        assertEquals(ErrorCode.INVALID_ARGUMENT, ex.errorCode());
-        assertTrue(ex.getMessage().contains("环境不一致"));
+        CompareService.CompareResult result = service.compare(PROJECT, CURRENT, "DIFF-DUT");
 
-        BusinessException link = assertThrows(BusinessException.class,
-                () -> service.compare(PROJECT, CURRENT, "DIFF-LINK"));
-        assertEquals(ErrorCode.INVALID_ARGUMENT, link.errorCode());
-        assertTrue(link.getMessage().contains("LINK"));
+        assertEquals("DIFF-DUT", result.baseline().runId());
+        assertTrue(result.crossEnvironment(), "跨环境必须显式标记，不能静默当同环境");
+        assertTrue(result.baseline().crossEnvironment());
+        assertEquals("GPU-02", result.baseline().dut());
+        assertEquals(0, read.baselineCalls, "手动模式不应再调用自动基线查询");
+
+        CompareService.CompareResult linkDiff = service.compare(PROJECT, CURRENT, "DIFF-LINK");
+        assertEquals("mlx5_1", linkDiff.baseline().link());
+        assertTrue(linkDiff.crossEnvironment());
     }
 
     @Test
-    @DisplayName("手动基线候选：同项目同环境的 finished 按开始时间倒序，排除本轮与异环境")
-    void 手动基线候选按时间倒序() {
+    @DisplayName("自动基线永远是同环境：crossEnvironment=false")
+    void 自动基线不跨环境() {
+        read.addRun(PROJECT, CURRENT, "GPU-01", "mlx5_0", T2);
+        read.addRun(PROJECT, "NEAR", "GPU-01", "mlx5_0", T1);
+
+        CompareService.CompareResult result = service.compare(PROJECT, CURRENT, null);
+
+        assertFalse(result.crossEnvironment());
+        assertFalse(result.baseline().crossEnvironment());
+    }
+
+    @Test
+    @DisplayName("手动基线候选：同环境优先，跨环境随后且逐条标记")
+    void 手动基线候选含跨环境() {
         read.addRun(PROJECT, CURRENT, "GPU-01", "mlx5_0", T2);
         read.addRun(PROJECT, "OLD", "GPU-01", "mlx5_0", T0);
         read.addRun(PROJECT, "NEAR", "GPU-01", "mlx5_0", T1);
@@ -137,9 +151,14 @@ class CompareServiceTest {
 
         List<CompareService.BaselineCandidate> candidates = service.candidates(PROJECT, CURRENT);
 
-        assertEquals(List.of("NEAR", "OLD"),
+        // 排序：同环境优先 → started_at DESC → id DESC。两条跨环境候选 started_at 同为 T1，
+        // 按 id DESC 即插入倒序，所以 OTHER-LINK 在 OTHER-DUT 之前。
+        assertEquals(List.of("NEAR", "OLD", "OTHER-LINK", "OTHER-DUT"),
                 candidates.stream().map(CompareService.BaselineCandidate::runId).toList());
         assertEquals(T1, candidates.get(0).startedAt());
+        assertFalse(candidates.get(0).crossEnvironment());
+        assertTrue(candidates.get(2).crossEnvironment(), "跨 DUT 候选要带标记");
+        assertTrue(candidates.get(3).crossEnvironment(), "跨 LINK 候选要带标记");
     }
 
     @Test
@@ -375,29 +394,33 @@ class CompareServiceTest {
                 if (!"finished".equals(run.state())) {
                     continue;
                 }
-                if (!Objects.equals(dut == null ? "" : dut, run.dut() == null ? "" : run.dut())) {
-                    continue;
-                }
-                if (!Objects.equals(link == null ? "" : link, run.link() == null ? "" : run.link())) {
-                    continue;
-                }
                 if (Objects.equals(run.runId(), excludeRunId)) {
                     continue;
                 }
                 matched.add(run);
             }
-            return matched.stream()
-                    .sorted((left, right) -> {
-                        if (left.startedAt() == null) {
-                            return 1;
-                        }
-                        if (right.startedAt() == null) {
-                            return -1;
-                        }
-                        return right.startedAt().compareTo(left.startedAt());
-                    })
-                    .limit(limit)
-                    .toList();
+            // 与 SQL 对齐：同 DUT/LINK 优先，其次 started_at DESC，最后 id DESC（用插入顺序倒序模拟）。
+            List<RunSnapshot> ordered = new ArrayList<>(matched);
+            ordered.sort((left, right) -> {
+                boolean sameLeft = sameEnv(dut, link, left);
+                boolean sameRight = sameEnv(dut, link, right);
+                if (sameLeft != sameRight) {
+                    return sameLeft ? -1 : 1;
+                }
+                if (left.startedAt() == null || right.startedAt() == null) {
+                    return left.startedAt() == null ? 1 : -1;
+                }
+                if (!left.startedAt().equals(right.startedAt())) {
+                    return right.startedAt().compareTo(left.startedAt());
+                }
+                return Integer.compare(matched.indexOf(right), matched.indexOf(left));
+            });
+            return ordered.stream().limit(limit).toList();
+        }
+
+        private static boolean sameEnv(String dut, String link, RunSnapshot run) {
+            return Objects.equals(dut == null ? "" : dut, run.dut() == null ? "" : run.dut())
+                    && Objects.equals(link == null ? "" : link, run.link() == null ? "" : run.link());
         }
 
         @Override

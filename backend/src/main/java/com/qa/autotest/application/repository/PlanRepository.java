@@ -55,4 +55,13 @@ public interface PlanRepository {
 
     /** 最近一次由该计划触发的运行（列表展示「最近结果」）。 */
     Optional<PlanLastRun> latestRun(long projectId, long planId);
+
+    /**
+     * 每个计划的历史运行时长 P50（秒），键为计划 id；无历史运行的计划不出现在结果里。
+     *
+     * <p>N8：依赖图上的「预计时长」不再只拿超时上限当权重——超时是**熔断值**，不是预期耗时。
+     * 只用 passed/failed 的 finished 运行，取消/超时（无 finished_at）不计入样本。
+     * 中位数口径：样本数为偶数时取中间两个的均值（MySQL 窗口函数里已算好）。
+     */
+    Map<Long, Long> medianDurationSeconds(long projectId);
 }

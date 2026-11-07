@@ -1,0 +1,19 @@
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/home/evergreen/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.19/byte-buddy-agent-1.14.19.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+19:40:03.777 [main] INFO com.qa.autotest.application.execution.ShardService -- run RUN-W2-EQ 规划 2 个分片（nodeCount=2）
+[two-node] plan: nodeCount=2 shards=2 suites=8
+19:40:04.141 [main] INFO com.qa.autotest.application.execution.ShardService -- 节点 node-11 领取 run RUN-W2-EQ 分片 0（attempt=1，fencing=1）
+19:40:04.145 [main] INFO com.qa.autotest.application.execution.ShardService -- 节点 node-12 领取 run RUN-W2-EQ 分片 1（attempt=1，fencing=1）
+[two-node] node claimed shard 0 paths=[suites/s01.robot, suites/s02.robot, suites/s03.robot, suites/s04.robot] token=1 attempt=1
+[two-node] node claimed shard 1 paths=[suites/s05.robot, suites/s06.robot, suites/s07.robot, suites/s08.robot] token=1 attempt=1
+[two-node] coverage: executed=8 distinct=8 duplicates=0 missing=0
+[two-node] aggregate: complete=true tests=8 fails=0 state=DONE
+19:40:04.332 [main] INFO com.qa.autotest.application.execution.ShardService -- run RUN-W2-EQ 规划 2 个分片（nodeCount=2）
+[two-node] balance: shard sizes=[4, 4]
+19:40:04.363 [main] INFO com.qa.autotest.application.execution.ShardService -- run RUN-W2-EQ 规划 2 个分片（nodeCount=2）
+19:40:04.365 [main] INFO com.qa.autotest.application.execution.ShardService -- 节点 node-11 领取 run RUN-W2-EQ 分片 0（attempt=1，fencing=1）
+19:40:04.367 [main] INFO com.qa.autotest.application.execution.ShardService -- 节点 node-12 领取 run RUN-W2-EQ 分片 1（attempt=1，fencing=1）
+[two-node] failure-in-one-shard: tests=8 fails=1 state=FAILED

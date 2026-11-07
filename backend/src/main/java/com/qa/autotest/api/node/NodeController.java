@@ -1,5 +1,6 @@
 package com.qa.autotest.api.node;
 
+import com.qa.autotest.application.execution.ShardService;
 import com.qa.autotest.application.node.ExecutionNodeService;
 import com.qa.autotest.common.ApiResponse;
 import java.util.List;
@@ -22,9 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class NodeController {
 
     private final ExecutionNodeService nodes;
+    private final ShardService shards;
 
-    public NodeController(ExecutionNodeService nodes) {
+    public NodeController(ExecutionNodeService nodes, ShardService shards) {
         this.nodes = nodes;
+        this.shards = shards;
     }
 
     public record RegisterRequest(String name, Boolean rfAvailable, Boolean pytestAvailable,
@@ -71,5 +74,36 @@ public class NodeController {
     @PostMapping("/{id}/enable")
     public ApiResponse<ExecutionNodeService.NodeView> enable(@PathVariable long id) {
         return ApiResponse.ok(nodes.enable(id));
+    }
+
+    // ---------------------------------------------------------------- 分片（W2）
+
+    /** agent 领取分片：无分片可领时 data 为 null（不是错误）。 */
+    public record ShardClaimRequest(long projectId, String runId, Integer leaseSeconds) {
+    }
+
+    /** agent 回写分片：必须带 claim 时拿到的 fencingToken。 */
+    public record ShardCompleteRequest(long projectId, String runId, int shardIndex,
+                                       long fencingToken, boolean success,
+                                       int testCount, int failCount) {
+    }
+
+    @PostMapping("/{id}/shards/claim")
+    public ApiResponse<ShardService.ClaimResult> claimShard(
+            @PathVariable long id,
+            @RequestHeader(value = "X-Node-Token", required = false) String token,
+            @RequestBody ShardClaimRequest request) {
+        return ApiResponse.ok(shards.claim(id, token, request.projectId(), request.runId(),
+                request.leaseSeconds() == null ? 300 : request.leaseSeconds()));
+    }
+
+    @PostMapping("/{id}/shards/complete")
+    public ApiResponse<ShardService.RunShardsView> completeShard(
+            @PathVariable long id,
+            @RequestHeader(value = "X-Node-Token", required = false) String token,
+            @RequestBody ShardCompleteRequest request) {
+        return ApiResponse.ok(shards.complete(id, token, request.projectId(), request.runId(),
+                request.shardIndex(), request.fencingToken(), request.success(),
+                request.testCount(), request.failCount()));
     }
 }

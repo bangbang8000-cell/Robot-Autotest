@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  *   <li>绝对路径 → {@code <path>}：`/a/b/x.py` 与 `/c/d/y.py` 是同一处代码的不同副本；</li>
  *   <li>IP（含端口）→ {@code <ip>}：环境不同不该分成不同簇；</li>
  *   <li>数字 → {@code <n>}：`3 != 5` 与 `3 != 7` 是同一类断言失败；</li>
- *   <li>折叠空白、截断 40 字符：簇名要能在一行里显示完。</li>
+ *   <li>折叠空白、超长时截断为「33 字符前缀 + … + 4 位哈希」，总长 ≤ 40（见 {@link #shorten}）。</li>
  * </ol>
  *
  * <p>先替换路径再替换数字很重要：反过来会把路径里的 `v2.1` 之类先打成 {@code <n>}，
@@ -28,6 +28,9 @@ public final class FailureClusterKey {
 
     /** 簇键最大长度：与 metadata 单值上限同口径，便于在表格一列里显示。 */
     public static final int MAX_KEY_LENGTH = 40;
+
+    /** 超长截断时保留的前缀长度；33 + 1（省略号）+ 4（哈希）= 38 ≤ {@link #MAX_KEY_LENGTH}。 */
+    private static final int PREFIX_LENGTH = MAX_KEY_LENGTH - 7;
 
     private static final Pattern UNIX_PATH = Pattern.compile("(?:/[A-Za-z0-9_.-]+){2,}/?");
     private static final Pattern WINDOWS_PATH = Pattern.compile("[A-Za-z]:\\\\[^\\s]+");
@@ -60,9 +63,22 @@ public final class FailureClusterKey {
         if (normalized.isEmpty()) {
             return UNCLASSIFIED;
         }
-        return normalized.length() > MAX_KEY_LENGTH
-                ? normalized.substring(0, MAX_KEY_LENGTH)
-                : normalized;
+        if (normalized.length() <= MAX_KEY_LENGTH) {
+            return normalized;
+        }
+        return shorten(normalized);
+    }
+
+    /**
+     * 超长截断：保留前 {@value #PREFIX_LENGTH} 字符 + {@code …} + 4 位确定性哈希。
+     *
+     * <p>不能直接 {@code substring(0, 40)}：前缀相同的长失败文本（例如同一句断言后面
+     * 跟着不同的实际值）会被截成同一个键，把不同的失败错误地并簇。加哈希后缀后，
+     * 前 33 字符相同也能区分；总长 38，仍在 {@value #MAX_KEY_LENGTH} 以内。
+     */
+    private static String shorten(String normalized) {
+        String hash = String.format("%08x", normalized.hashCode());
+        return normalized.substring(0, PREFIX_LENGTH) + "…" + hash.substring(4);
     }
 
     /** 簇键的稳定比较：先按字符序，避免依赖 HashMap 迭代序。 */

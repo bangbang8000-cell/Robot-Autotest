@@ -149,6 +149,45 @@ class PlanGroupServiceTest {
     }
 
     @Test
+    @DisplayName("N8：重排后自动应用链式依赖，边跟着新顺序走")
+    void 重排后自动应用() {
+        PlanGroupView group = service.addMembers(PROJECT,
+                service.create(command("reorder-apply")).id(), List.of(1L, 2L, 3L));
+
+        service.reorder(PROJECT, group.id(), List.of(3L, 1L, 2L));
+
+        assertEquals(List.of(3L), plans.dependencies(PROJECT, 1L));
+        assertEquals(List.of(1L), plans.dependencies(PROJECT, 2L));
+        assertTrue(plans.dependencies(PROJECT, 3L).isEmpty(), "新顺序的首个成员不应有组内前置");
+    }
+
+    @Test
+    @DisplayName("N8：二次重排先拆反向旧边，不会因上次应用留下的边成环")
+    void 重排可反复执行() {
+        PlanGroupView group = service.addMembers(PROJECT,
+                service.create(command("reorder-twice")).id(), List.of(1L, 2L, 3L));
+
+        service.applyChain(PROJECT, group.id());          // 2<-1、3<-2
+        service.reorder(PROJECT, group.id(), List.of(3L, 2L, 1L));
+
+        // 新顺序 3 -> 2 -> 1：1 依赖 2、2 依赖 3；旧的两条反向边必须被拆掉
+        assertEquals(List.of(3L), plans.dependencies(PROJECT, 2L));
+        assertEquals(List.of(2L), plans.dependencies(PROJECT, 1L));
+        assertTrue(plans.dependencies(PROJECT, 3L).isEmpty());
+    }
+
+    @Test
+    @DisplayName("N8：单成员组重排不建边也不报错")
+    void 单成员重排跳过应用() {
+        PlanGroupView group = service.addMembers(PROJECT,
+                service.create(command("single-reorder")).id(), List.of(1L));
+
+        service.reorder(PROJECT, group.id(), List.of(1L));
+
+        assertTrue(plans.dependencies(PROJECT, 1L).isEmpty());
+    }
+
+    @Test
     @DisplayName("单个成员的组没有边可建，直接拒绝而不是静默成功")
     void 单成员拒绝建边() {
         PlanGroupView group = service.addMembers(PROJECT,

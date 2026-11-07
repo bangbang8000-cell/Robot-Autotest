@@ -1,0 +1,27 @@
+ M backend/src/main/java/com/qa/autotest/api/execution/RunController.java
+ M backend/src/main/java/com/qa/autotest/application/execution/PabotOrchestrator.java
+ M backend/src/main/java/com/qa/autotest/infrastructure/ReportRepositoryJdbc.java
+ M backend/src/test/java/com/qa/autotest/api/execution/RunControllerTest.java
+ M backend/src/test/java/com/qa/autotest/api/iam/AuthorizationBoundaryTest.java
+ M docs/evidence/gates/browser/report-RUN-20261107151146-000000.png
+ M frontend/src/api/execution.ts
+ M frontend/src/assets/fonts/noto-sans-sc-ui.woff2
+ M frontend/src/config/navigation.spec.ts
+ M frontend/src/config/navigation.ts
+ M frontend/src/locales/en-US.ts
+ M frontend/src/locales/zh-CN.ts
+ M frontend/src/views/AdminView.vue
+ M frontend/src/views/CasesView.vue
+ M frontend/src/views/RunsView.vue
+?? backend/src/main/java/com/qa/autotest/application/execution/RunProgressRegistry.java
+?? backend/src/main/java/com/qa/autotest/application/execution/WorkerLogTailer.java
+?? backend/src/test/java/com/qa/autotest/application/execution/RunProgressRegistryTest.java
+?? backend/src/test/java/com/qa/autotest/application/execution/WorkerLogTailerTest.java
+?? backend/src/test/java/com/qa/autotest/infrastructure/ReportRepositoryCaseKeyTest.java
+?? db/down/V10_2__case_key_strip_run_root.down.sql
+?? db/migration/V10_2__case_key_strip_run_root.sql
+?? docs/evidence/v2.0/w0-1-case-key/
+?? docs/evidence/v2.0/w0-2-worker-log/
+?? docs/evidence/v2.0/w0-8-ux/
+?? "docs/plan/\344\270\255\346\234\237\345\274\200\345\217\221\345\212\237\350\203\275\350\247\204\345\210\222-20261107.md"
+?? frontend/src/components/CaseDetailPanel.vue

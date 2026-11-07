@@ -1,0 +1,39 @@
+{
+  "code": 0,
+  "codeName": "OK",
+  "message": "OK",
+  "data": {
+    "runId": "recent:5",
+    "total": 2,
+    "runStatus": null,
+    "runFailureClass": null,
+    "classes": [
+      {
+        "failureClass": "ASSERT",
+        "count": 2,
+        "ratio": 1,
+        "clusters": [
+          {
+            "key": "missing",
+            "count": 2,
+            "ratio": 1,
+            "samples": [
+              {
+                "caseId": null,
+                "caseCode": null,
+                "caseTitle": null
+              },
+              {
+                "caseId": null,
+                "caseCode": null,
+                "caseTitle": null
+              }
+            ],
+            "caseIds": []
+          }
+        ]
+      }
+    ]
+  },
+  "success": true
+}

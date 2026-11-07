@@ -1,0 +1,45 @@
+{
+  "code": 0,
+  "codeName": "OK",
+  "message": "OK",
+  "data": {
+    "runId": "RUN-20261107174224-510000",
+    "state": "CANCELED",
+    "enqueuedAt": "2026-11-07T09:42:24.624Z",
+    "startedAt": "2026-11-07T09:42:25.037Z",
+    "finishedAt": "2026-11-07T09:42:53.716Z",
+    "events": [
+      {
+        "at": "2026-11-07T09:42:24.624Z",
+        "type": "RUN_ENQUEUED",
+        "shardIndex": -1,
+        "nodeId": null,
+        "attempt": 0,
+        "fencingToken": 0,
+        "testCount": 0,
+        "failCount": 0
+      },
+      {
+        "at": "2026-11-07T09:42:25.037Z",
+        "type": "RUN_STARTED",
+        "shardIndex": -1,
+        "nodeId": null,
+        "attempt": 0,
+        "fencingToken": 0,
+        "testCount": 0,
+        "failCount": 0
+      },
+      {
+        "at": "2026-11-07T09:42:53.716Z",
+        "type": "RUN_FINISHED",
+        "shardIndex": -1,
+        "nodeId": null,
+        "attempt": 0,
+        "fencingToken": 0,
+        "testCount": 0,
+        "failCount": 0
+      }
+    ]
+  },
+  "success": true
+}

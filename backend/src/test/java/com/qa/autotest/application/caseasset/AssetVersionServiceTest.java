@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -247,6 +248,87 @@ class AssetVersionServiceTest {
         assertEquals(latest.assetVersion(), refs.get(0).latestAssetVersion());
     }
 
+    // ---------- N9：同步策略 ----------
+
+    @Test
+    @DisplayName("ADD_ONLY：只补平台新增，副本已有内容不覆盖，剩余差异显式为 DIVERGED")
+    void addOnly只补新增() {
+        repo.contentRows.put(setKey(AssetVersion.PLATFORM_PROJECT_ID, PLATFORM_SET), List.of(
+                new AssetVersion.ContentRow(1, 1L, "TC-001", "登录", "P1"),
+                new AssetVersion.ContentRow(2, 2L, "TC-002", "登出", "P2"),
+                new AssetVersion.ContentRow(3, 3L, "TC-003", "改密", "P1")));
+        service.refresh(AssetVersion.PLATFORM_PROJECT_ID, PLATFORM_SET);
+        repo.contentRows.put(setKey(PROJECT, COPY_SET), List.of(
+                new AssetVersion.ContentRow(1, 1L, "TC-001", "登录（本地改写）", "P1"),
+                new AssetVersion.ContentRow(2, 2L, "TC-002", "登出", "P2")));
+        service.refresh(PROJECT, COPY_SET);
+        service.bindCopy(PROJECT, COPY_SET, PLATFORM_SET);
+
+        VersionView view = service.sync(PROJECT, COPY_SET, AssetVersionService.SyncStrategy.ADD_ONLY);
+        assertEquals(1, repo.appendedItems.size(), "只追加一轮");
+        assertEquals(1, repo.appendedItems.get(0).size(), "只补 TC-003 一条");
+        assertTrue(repo.replacedItems.isEmpty(), "ADD_ONLY 不允许整体重建条目");
+        assertFalse(view.hasNewVersion(), "synced 已推进到平台当前版本");
+        assertEquals(AssetVersion.DIVERGED, view.forkState(), "本地改写没被覆盖，必须显式分叉");
+    }
+
+    @Test
+    @DisplayName("ADD_ONLY：补齐后内容一致 → SYNCED，且重复同步不重复追加")
+    void addOnly补齐即对齐() {
+        repo.contentRows.put(setKey(AssetVersion.PLATFORM_PROJECT_ID, PLATFORM_SET), List.of(
+                new AssetVersion.ContentRow(1, 1L, "TC-001", "登录", "P1"),
+                new AssetVersion.ContentRow(2, 2L, "TC-002", "登出", "P2")));
+        service.refresh(AssetVersion.PLATFORM_PROJECT_ID, PLATFORM_SET);
+        repo.contentRows.put(setKey(PROJECT, COPY_SET), List.of(
+                new AssetVersion.ContentRow(1, 1L, "TC-001", "登录", "P1")));
+        service.refresh(PROJECT, COPY_SET);
+        service.bindCopy(PROJECT, COPY_SET, PLATFORM_SET);
+
+        VersionView view = service.sync(PROJECT, COPY_SET, AssetVersionService.SyncStrategy.ADD_ONLY);
+        assertEquals(AssetVersion.SYNCED, view.forkState());
+        assertFalse(view.hasNewVersion());
+        assertEquals(1, repo.appendedItems.get(0).size());
+
+        VersionView again = service.sync(PROJECT, COPY_SET, AssetVersionService.SyncStrategy.ADD_ONLY);
+        assertEquals(1, repo.appendedItems.size(), "第二次没有新增，不应再追加");
+        assertEquals(AssetVersion.SYNCED, again.forkState());
+    }
+
+    @Test
+    @DisplayName("FULL：按平台顺序整体重建，synced 推到平台当前版本")
+    void full整体覆盖() {
+        repo.contentRows.put(setKey(AssetVersion.PLATFORM_PROJECT_ID, PLATFORM_SET), List.of(
+                new AssetVersion.ContentRow(1, 1L, "TC-001", "登录", "P1"),
+                new AssetVersion.ContentRow(2, 2L, "TC-002", "登出", "P2")));
+        service.refresh(AssetVersion.PLATFORM_PROJECT_ID, PLATFORM_SET);
+        repo.casesByCode.put(PROJECT + ":TC-001", 1L);
+        repo.contentRows.put(setKey(PROJECT, COPY_SET), List.of(
+                new AssetVersion.ContentRow(1, 1L, "TC-001", "登录（旧）", "P2"),
+                new AssetVersion.ContentRow(2, 99L, "TC-009", "本地专属", "P3")));
+        service.refresh(PROJECT, COPY_SET);
+        service.bindCopy(PROJECT, COPY_SET, PLATFORM_SET);
+
+        VersionView view = service.sync(PROJECT, COPY_SET);
+        assertEquals(1, repo.replacedItems.size());
+        assertEquals(2, repo.replacedItems.get(0).size(), "副本变成平台的两条");
+        assertTrue(repo.importedCases.containsKey(PROJECT + ":TC-002"), "缺的用例按 case_code 导入");
+        assertFalse(view.hasNewVersion());
+        assertEquals(AssetVersion.PLATFORM_PROJECT_ID, repo.rows
+                .get("0:" + AssetVersion.TYPE_TESTSET + ":" + PLATFORM_SET).projectId());
+    }
+
+    @Test
+    @DisplayName("策略解析：缺省 FULL，大小写不敏感，非法值 400")
+    void 策略解析() {
+        assertEquals(AssetVersionService.SyncStrategy.FULL,
+                AssetVersionService.parseStrategy(null));
+        assertEquals(AssetVersionService.SyncStrategy.ADD_ONLY,
+                AssetVersionService.parseStrategy(" add_only "));
+        BusinessException bad = assertThrows(BusinessException.class,
+                () -> AssetVersionService.parseStrategy("MERGE"));
+        assertEquals(ErrorCode.INVALID_ARGUMENT, bad.errorCode());
+    }
+
     // ---------- 桩 ----------
 
     private static List<AssetVersion.ContentRow> sampleRows() {
@@ -385,6 +467,26 @@ class AssetVersionServiceTest {
         public void replaceItems(long projectId, long setId, List<Long> orderedCaseIds,
                                  Long operatorId) {
             replacedItems.add(new ArrayList<>(orderedCaseIds));
+        }
+
+        final List<List<Long>> appendedItems = new ArrayList<>();
+
+        @Override
+        public void appendItems(long projectId, long setId, List<Long> caseIds, Long operatorId) {
+            appendedItems.add(new ArrayList<>(caseIds));
+            // 真实仓储落库后 recomputeRow 才能看到新条目，这里同步影子数据
+            List<AssetVersion.ContentRow> rows = new ArrayList<>(
+                    contentRows.getOrDefault(setKey(projectId, setId), List.of()));
+            int seq = rows.size() + 1;
+            for (Long caseId : caseIds) {
+                AssetVersion.ContentRow def = importedCases.values().stream()
+                        .filter(row -> row.caseId() == caseId)
+                        .findFirst()
+                        .orElse(new AssetVersion.ContentRow(0, caseId, "TC-" + caseId, "新增", "P2"));
+                rows.add(new AssetVersion.ContentRow(seq++, caseId, def.caseCode(),
+                        def.title(), def.priority()));
+            }
+            contentRows.put(setKey(projectId, setId), rows);
         }
 
         private static String setKey2(long projectId, String assetType, long assetId) {

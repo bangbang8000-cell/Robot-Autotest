@@ -24,9 +24,9 @@ check() {
 # ai_cli_probe），实测 60（2026-11-06，V8_5 只加列不加表）。
 # v2.1 的 V9_1 加 2 张（plan_group / plan_group_item），V9_2 再加 2 张
 # （report_template / report_template_field），V9_3 加 1 张（asset_version），
-# V9_4 加 1 张（execution_node），实测 66。
+# V9_4 加 1 张（execution_node），V9_6 加 1 张（execution_shard），实测 67。
 # 此处期望值随迁移演进而更新，不是「表越多越好」的口径。
-check "业务表数 = 66" "66" \
+check "业务表数 = 67" "67" \
     "SELECT COUNT(*) FROM information_schema.tables
      WHERE table_schema='$DB_NAME' AND table_name<>'flyway_schema_history';"
 

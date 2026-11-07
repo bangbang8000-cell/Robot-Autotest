@@ -100,19 +100,21 @@ public class ReportReadRepositoryJdbc implements ReportReadRepository {
     @Override
     public List<RunSnapshot> listBaselineCandidates(long projectId, String dut, String link,
                                                     String excludeRunId, int limit) {
+        // N4：不再按 DUT/LINK 过滤——跨环境手动基线在 v2.1 里是允许的（响应带 crossEnvironment 标记），
+        // 但仍把同环境排在前面，避免跨环境候选挤掉用户最可能选的那几条。
         String sql = RUN_SNAPSHOT + """
                  WHERE project_id = ?
                    AND run_status = 'finished'
-                   AND COALESCE(`dut`, '') = ?
-                   AND COALESCE(`link`, '') = ?
                    AND run_id <> ?
-                 ORDER BY started_at DESC, id DESC
+                 ORDER BY CASE WHEN COALESCE(`dut`, '') = ? AND COALESCE(`link`, '') = ?
+                               THEN 0 ELSE 1 END,
+                          started_at DESC, id DESC
                  LIMIT ?
                 """;
         TenantGuard.requireProjectScope(sql, "run");
         return jdbc.query(sql, (rs, rowNum) -> mapRun(rs),
-                projectId, dut == null ? "" : dut, link == null ? "" : link,
-                excludeRunId == null ? "" : excludeRunId, limit);
+                projectId, excludeRunId == null ? "" : excludeRunId,
+                dut == null ? "" : dut, link == null ? "" : link, limit);
     }
 
     @Override

@@ -1,0 +1,118 @@
+diff --git a/backend/src/main/java/com/qa/autotest/api/execution/RunController.java b/backend/src/main/java/com/qa/autotest/api/execution/RunController.java
+index 43919d7..5bd4bf1 100644
+--- a/backend/src/main/java/com/qa/autotest/api/execution/RunController.java
++++ b/backend/src/main/java/com/qa/autotest/api/execution/RunController.java
+@@ -8,6 +8,7 @@ import com.qa.autotest.application.execution.QuickRunService;
+ import com.qa.autotest.application.execution.RunDispatcher;
+ import com.qa.autotest.application.execution.RunLogFileService;
+ import com.qa.autotest.application.execution.RunLogService;
++import com.qa.autotest.application.execution.RunProgressRegistry;
+ import com.qa.autotest.application.execution.RunService;
+ import com.qa.autotest.application.execution.RunService.CreateRunCommand;
+ import com.qa.autotest.application.execution.TestSetRunService;
+@@ -31,6 +32,8 @@ import org.springframework.web.bind.annotation.RequestParam;
+ import org.springframework.web.bind.annotation.RestController;
+ 
+ import java.nio.charset.StandardCharsets;
++import java.time.Duration;
++import java.time.Instant;
+ import java.util.List;
+ 
+ /**
+@@ -59,12 +62,13 @@ public class RunController {
+     private final CaseRunService caseRuns;
+     private final RunDispatcher dispatcher;
+     private final LeaseWaitRegistry leaseWaits;
++    private final RunProgressRegistry progresses;
+ 
+     public RunController(RunService runs, CancelService cancels, RunLogService logs,
+                          ExecutionProperties props, QuickRunService quickRuns,
+                          TestSetRunService testSetRuns, CaseRunService caseRuns,
+                          RunLogFileService logFiles, RunDispatcher dispatcher,
+-                         LeaseWaitRegistry leaseWaits) {
++                         LeaseWaitRegistry leaseWaits, RunProgressRegistry progresses) {
+         this.runs = runs;
+         this.cancels = cancels;
+         this.logs = logs;
+@@ -75,6 +79,7 @@ public class RunController {
+         this.logFiles = logFiles;
+         this.dispatcher = dispatcher;
+         this.leaseWaits = leaseWaits;
++        this.progresses = progresses;
+     }
+ 
+     /** 页面手动执行（EXEC-01 / FR-v0.2-59~60）。 */
+@@ -174,6 +179,45 @@ public class RunController {
+         return ApiResponse.ok(runs.page(projectId, filter, page, Math.min(size, 100)));
+     }
+ 
++    /**
++     * 进度快照（N15）：数据来自执行期控制台行解析（{@link RunProgressRegistry}），
++     * 未跟踪或进程重启后按 run 状态推断阶段；计数器终态回落 DB 落库值。
++     */
++    @GetMapping("/runs/{runId}/progress")
++    public ApiResponse<RunProgress> progress(@RequestParam long projectId,
++                                             @PathVariable String runId) {
++        RunRecord run = runs.get(projectId, runId);
++        RunProgressRegistry.Progress tracked = progresses.snapshot(runId);
++        int total = tracked != null && tracked.total() > 0 ? tracked.total() : run.totalTests();
++        int passed = Math.max(tracked == null ? 0 : tracked.passed(), run.passedTests());
++        int failed = Math.max(tracked == null ? 0 : tracked.failed(), run.failedTests());
++        int completed = Math.max(tracked == null ? 0 : tracked.completed(), passed + failed);
++        int skipped = tracked == null ? 0 : tracked.skipped();
++        String phase = tracked != null ? tracked.phase() : phaseOf(run.state());
++        return ApiResponse.ok(new RunProgress(runId, run.state().name(), phase, total,
++                completed, passed, failed, skipped,
++                tracked == null ? null : tracked.lastTest(),
++                tracked == null ? null : tracked.lastVerdict(), elapsedSeconds(run, tracked)));
++    }
++
++    private static String phaseOf(RunState state) {
++        return switch (state) {
++            case QUEUED -> "queued";
++            case PREPARING -> "preparing";
++            case RUNNING -> "running";
++            default -> "done";
++        };
++    }
++
++    private static long elapsedSeconds(RunRecord run, RunProgressRegistry.Progress tracked) {
++        if (run.startedAt() == null) {
++            return 0;
++        }
++        Instant end = run.finishedAt() != null ? run.finishedAt() : Instant.now();
++        long seconds = Math.max(0, Duration.between(run.startedAt(), end).toSeconds());
++        return seconds > 0 || tracked == null ? seconds : Math.max(0, tracked.elapsedSeconds());
++    }
++
+     @GetMapping("/runs/{runId}/log")
+     public ApiResponse<List<RunLogService.LogLine>> log(@RequestParam long projectId,
+                                                         @PathVariable String runId,
+@@ -266,6 +310,27 @@ public class RunController {
+                 elapsedMs, totalMs));
+     }
+ 
++    /**
++     * 进度快照（N15）。
++     *
++     * <p>字段口径：{@code phase} 是执行阶段（queued / preparing / running / reporting / done）；
++     * {@code total} 为 0 表示总数未知（前端按不确定进度渲染，不伪造百分比）；
++     * {@code lastTest}/{@code lastVerdict} 是最近一条完成用例的读数，不是「此刻正在跑哪一条」
++     * ——RF 控制台只在用例结束时打印结果行，因此界面文案按「最近完成」表述。
++     */
++    public record RunProgress(String runId,
++                              String state,
++                              String phase,
++                              int total,
++                              int completed,
++                              int passed,
++                              int failed,
++                              int skipped,
++                              String lastTest,
++                              String lastVerdict,
++                              long elapsedSeconds) {
++    }
++
+     public record CancelRequest(String reason) {
+     }
+ 

@@ -1,0 +1,116 @@
+[2026-11-07 19:38:55] === TC-v2.1-32 迁移往返开始 ===
+[2026-11-07 19:38:55] 库：robot@127.0.0.1:3306/robot_it_local；证据目录：/home/evergreen/robot-autotest/docs/evidence/v2.1/TC32-MIG
+[2026-11-07 19:38:55] --- 1. 首次 up：空库 → V9_6 ---
+[2026-11-07 19:38:55] mvn flyway:migrate -Dflyway.target=9.6（DB_NAME=robot_it_local）
+[2026-11-07 19:39:10] flyway migrate 退出码 0；history max=9.6；业务表=67
+  OK    V9_6 业务表数（67）
+  OK    flyway history 最大版本（9.6）
+  OK    execution_node 已建（1）
+  OK    run.node_id 已加（1）
+  OK    execution_node.agent_base_url 已加（1）
+  OK    execution_shard 已建（1）
+  OK    execution_shard 唯一键已建（1）
+  OK    report_template 已建（1）
+  OK    asset_version 已建（1）
+  OK    plan_group 已建（1）
+[2026-11-07 19:39:11] --- 2. 写入夹具数据（V1 项目 + V8_1 报表 + V9_1 计划组）---
+  OK    夹具 project 行数（1）
+  OK    夹具 test_report 行数（V8_1 数据）（2）
+  OK    夹具 plan_group 行数（1）
+[2026-11-07 19:39:11] 首次 up 后表清单快照：32-tables-after-up.txt（67 行）
+[2026-11-07 19:39:11] --- 3. 备份（up 后状态，供恢复比对）---
+  备份 32-backup-after-up.sql：105975 字节
+[2026-11-07 19:39:13] --- 4. down：V9_6 → V9_5 → V9_4 → V9_3 → V9_2 → V9_1 ---
+[2026-11-07 19:39:13] -- 4.0 down V9_6（execution_shard）--
+[2026-11-07 19:39:13] down 9.6：执行 db/down/V9_6__execution_shard.down.sql
+[2026-11-07 19:39:14] down 9.6 完成；history max=9.5；业务表=66
+  OK    down 后 execution_shard 表消失（0）
+  OK    down V9_6 后业务表数（回到 V9_5）（66）
+  OK    down V9_6 后 test_report 行数不变（2）
+  OK    down V9_6 后 project 行数不变（1）
+[2026-11-07 19:39:14] -- 4.1 down V9_5（execution_node.agent_base_url）--
+[2026-11-07 19:39:14] down 9.5：执行 db/down/V9_5__node_agent.down.sql
+[2026-11-07 19:39:14] down 9.5 完成；history max=9.4；业务表=66
+  OK    down 后 execution_node.agent_base_url 列消失（0）
+  OK    down V9_5 后业务表数（表未删）（66）
+  OK    down V9_5 后 test_report 行数不变（2）
+  OK    down V9_5 后 project 行数不变（1）
+[2026-11-07 19:39:14] -- 4.2 down V9_4（execution_node）--
+[2026-11-07 19:39:14] down 9.4：执行 db/down/V9_4__execution_node.down.sql
+[2026-11-07 19:39:15] down 9.4 完成；history max=9.3；业务表=65
+  OK    down 后 execution_node 表消失（0）
+  OK    down 后 run.node_id 列消失（0）
+  OK    down 后 idx_run_node 索引消失（0）
+  OK    down V9_4 后业务表数（65）
+  OK    down V9_4 后 test_report 行数不变（2）
+  OK    down V9_4 后 project 行数不变（1）
+[2026-11-07 19:39:15] -- 4.3 down V9_3（case_source_version）--
+[2026-11-07 19:39:15] down 9.3：执行 db/down/V9_3__case_source_version.down.sql
+[2026-11-07 19:39:15] down 9.3 完成；history max=9.2；业务表=64
+  OK    down 后 asset_version 表消失（0）
+  OK    down 后 test_set.owner_scope 消失（0）
+  OK    down 后 test_set.source_asset_id 消失（0）
+  OK    down 后 test_set.scope_project_id 消失（0）
+  OK    down 后 uk_test_set_scope_code 索引消失（0）
+  OK    down 后 idx_test_set_source 索引消失（0）
+  OK    down 后 test_set.project_id 恢复 NOT NULL（NO）
+  OK    down 后 uk_test_set_project_code 索引恢复（1）
+  OK    down V9_3 后业务表数（64）
+  OK    down V9_3 后 test_report 行数不变（2）
+  OK    down V9_3 后 project 行数不变（1）
+[2026-11-07 19:39:16] -- 4.4 down V9_2（report_template）--
+[2026-11-07 19:39:16] down 9.2：执行 db/down/V9_2__report_template.down.sql
+[2026-11-07 19:39:16] down 9.2 完成；history max=9.1；业务表=62
+  OK    down 后 report_template 表消失（0）
+  OK    down 后 report_template_field 表消失（0）
+  OK    down V9_2 后业务表数（62）
+  OK    down V9_2 后 test_report 行数不变（2）
+  OK    down V9_2 后 project 行数不变（1）
+[2026-11-07 19:39:16] -- 4.5 down V9_1（plan_group）--
+[2026-11-07 19:39:16] down 9.1：执行 db/down/V9_1__plan_group.down.sql
+[2026-11-07 19:39:16] down 9.1 完成；history max=8.6；业务表=60
+  OK    down 后 plan_group 表消失（0）
+  OK    down 后 plan_group_item 表消失（0）
+  OK    down V9_1 后业务表数（回到 V8_6）（60）
+  OK    down 全部完成后 flyway history 最大版本（8.6）
+  OK    down 全部完成后 test_report 行数不变（2）
+  OK    down 全部完成后 project 行数不变（1）
+[2026-11-07 19:39:17] --- 5. 再次 up：V8_6 → V9_6 ---
+[2026-11-07 19:39:17] mvn flyway:migrate -Dflyway.target=9.6（DB_NAME=robot_it_local）
+[2026-11-07 19:39:23] flyway migrate 退出码 0；history max=9.6；业务表=67
+  OK    重放后业务表数（67）
+  OK    重放后 flyway history 最大版本（9.6）
+  OK    重放后 execution_node 表恢复（1）
+  OK    重放后 run.node_id 列恢复（1）
+  OK    重放后 execution_node.agent_base_url 列恢复（1）
+  OK    重放后 execution_shard 表恢复（1）
+  OK    重放后 report_template 表恢复（1）
+  OK    重放后 asset_version 表恢复（1）
+  OK    重放后 plan_group 表恢复（1）
+  OK    重放后 test_report 行数不变（2）
+  OK    重放后 project 行数不变（1）
+  OK    重放后表清单与首次 up 逐行一致（67 行）
+  （diff 空输出，见 32-tables-diff.log）
+[2026-11-07 19:39:24] --- 6. 备份恢复：DROP + CREATE + 导入 32-backup-after-up.sql ---
+[2026-11-07 19:39:29] 导入完成；业务表=67；history max=9.6
+  OK    备份时 project 行数（1）
+  OK    备份时 test_report 行数（2）
+  OK    备份时 plan_group 行数（1）
+  OK    备份时业务表数（67）
+  OK    恢复后表清单与备份时一致
+[2026-11-07 19:39:29] --- 7. 恢复后 db-audit（7 项）---
+[db-audit] robot@127.0.0.1:3306/robot_it_local
+  OK    业务表数 = 67（67）
+  OK    缺审计四列的表的数量 = 0（0）
+  OK    append-only 历史表都有 created_at（5）
+  OK    主键不是单列 id 的表数量 = 0（0）
+  OK    缺主键的表数量 = 0（0）
+  OK    时间列不是 datetime(3) 的表数量 = 0（0）
+  OK    非 utf8mb4 的表数量 = 0（0）
+--------------------------------------------------------------
+db-audit: PASS
+  OK    db-audit PASS（7 项）
+[2026-11-07 19:39:30] --- 8. 收尾 ---
+[2026-11-07 19:39:31] 已 DROP scratch 库 robot_it_local（未触碰 robot_it / robot_dev）
+--------------------------------------------------------------
+TC-v2.1-32: PASS（up → down → up + 备份恢复全部符合判据）

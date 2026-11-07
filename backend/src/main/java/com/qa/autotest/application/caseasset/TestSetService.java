@@ -13,6 +13,7 @@ import com.qa.autotest.domain.caseasset.TestSet;
 import com.qa.autotest.domain.common.PageResult;
 import com.qa.autotest.domain.iam.PermissionAction;
 import com.qa.autotest.domain.iam.PermissionResource;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -125,5 +126,48 @@ public class TestSetService {
         // 顺序算内容：改顺序必须涨版本，否则引用方永远收不到「平台库换序了」的提示
         assetVersions.onChanged(projectId, setId);
         audit.record("set.reorder", "test_set", String.valueOf(setId), "size=" + caseIds.size());
+    }
+
+    // ---------------------------------------------------------------- N9 平台用例集库
+
+    /** 平台库一行：集信息 + 版本读数 + 引用方（只读，不含任何写字段）。 */
+    public record PlatformSetRow(long id, String setCode, String name, String description,
+                                 int itemCount, int assetVersion, String contentHash,
+                                 boolean hasNewVersion, int referenceCount,
+                                 List<AssetVersionService.ReferenceView> references) {
+    }
+
+    /**
+     * 平台用例集列表（N9）：跨项目可见的只读视图，仅管理员可看。
+     * 不 bindProject —— 平台集不属于任何项目，绑定会把「跨项目」变成「越权」。
+     */
+    public PageResult<PlatformSetRow> platformPage(String keyword, int page, int size) {
+        requirePlatformAdmin();
+        PageResult<TestSet> pageSets = sets.platformPage(keyword, page, size);
+        List<PlatformSetRow> rows = new ArrayList<>();
+        for (TestSet set : pageSets.items()) {
+            AssetVersionService.VersionView version = assetVersions.platformVersion(set.id());
+            List<AssetVersionService.ReferenceView> refs =
+                    assetVersions.platformReferences(set.id());
+            rows.add(new PlatformSetRow(set.id(), set.setCode(), set.name(), set.description(),
+                    set.itemCount(), version.assetVersion(), version.contentHash(),
+                    version.hasNewVersion(), refs.size(), refs));
+        }
+        return new PageResult<>(rows, pageSets.total(), pageSets.page(), pageSets.size());
+    }
+
+    /** 平台用例集成员（只读）。空集是合法状态，但集合行必须存在。 */
+    public List<TestCase> platformItems(long setId) {
+        requirePlatformAdmin();
+        sets.findPlatform(setId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND,
+                        "平台用例集不存在: " + setId));
+        return sets.platformItems(setId);
+    }
+
+    private void requirePlatformAdmin() {
+        if (!access.isAdmin()) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "平台用例集库只对管理员开放");
+        }
     }
 }

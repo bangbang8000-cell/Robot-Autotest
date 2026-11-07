@@ -33,6 +33,13 @@ public class FailureClusterController {
         return ApiResponse.ok(clusters.cluster(projectId, runId));
     }
 
+    /** 跨 run 聚类（W5）：最近 N 轮失败合并统计，scope 标记为 {@code recent:N}。 */
+    @GetMapping("/recent")
+    public ApiResponse<FailureClusterView> recent(@RequestParam long projectId,
+                                                  @RequestParam(defaultValue = "5") int runs) {
+        return ApiResponse.ok(clusters.clusterRecent(projectId, runs));
+    }
+
     /** 按簇重跑：安全级拦截沿用 CaseRunService，不在本接口另判一遍。 */
     @PostMapping("/rerun")
     public ApiResponse<RunRecord> rerun(@RequestBody RerunRequest request) {

@@ -204,6 +204,32 @@ public class AssetVersionRepositoryJdbc implements AssetVersionRepository {
         }
     }
 
+    @Override
+    public void appendItems(long projectId, long setId, List<Long> caseIds, Long operatorId) {
+        if (caseIds.isEmpty()) {
+            return;
+        }
+        String maxSeq = """
+                SELECT COALESCE(MAX(i.seq_no), 0) FROM test_set_item i
+                 WHERE i.test_set_id IN (SELECT id FROM test_set WHERE project_id = ? AND id = ?)
+                """;
+        TenantGuard.requireProjectScope(maxSeq, "test_set_item");
+        Integer current = jdbc.queryForObject(maxSeq, Integer.class, projectId, setId);
+        // INSERT ... SELECT：沿用 replaceItems 的写法，落行前再验一次集合归属
+        String insert = """
+                INSERT INTO test_set_item (test_set_id, test_case_id, seq_no, item_source, created_by)
+                SELECT ?, ?, ?, 'PLATFORM_ADD', ?
+                  FROM test_set
+                 WHERE project_id = ? AND id = ?
+                """;
+        TenantGuard.requireProjectScope(insert, "test_set_item");
+        int seq = (current == null ? 0 : current) + 1;
+        for (Long caseId : caseIds) {
+            jdbc.update(insert, setId, caseId, seq, operatorId, projectId, setId);
+            seq++;
+        }
+    }
+
     private static AssetVersion map(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
         return new AssetVersion(rs.getLong("id"), rs.getLong("project_id"),
                 rs.getString("asset_type"), rs.getLong("asset_id"), rs.getInt("asset_version"),

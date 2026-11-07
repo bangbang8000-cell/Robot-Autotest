@@ -7,6 +7,7 @@ import com.qa.autotest.common.ErrorCode;
 import com.qa.autotest.domain.iam.PermissionAction;
 import com.qa.autotest.domain.iam.PermissionResource;
 import com.qa.autotest.domain.plan.PlanGraph;
+import com.qa.autotest.domain.plan.PlanGroup;
 import com.qa.autotest.domain.plan.PlanStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +18,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -138,13 +140,15 @@ class PlanGraphTest {
                 List.of("c.robot")));
         plans.depend(2L, 1L);
 
-        PlanGraphService service = new PlanGraphService(plans, new PermissiveAccess());
+        PlanGraphService service = new PlanGraphService(plans,
+                new PlanTestSupport.StubGroupRepository(), new PermissiveAccess());
         PlanGraphView view = service.graph(PlanTestSupport.PROJECT);
 
         assertEquals(3, view.nodes().size());
         assertEquals(1, view.edges().size());
         assertEquals(1L, view.edges().get(0).from());
         assertEquals(2L, view.edges().get(0).to());
+        assertEquals(PlanGraphView.SOURCE_MANUAL, view.edges().get(0).source());
         assertEquals(List.of(1L, 2L), view.criticalPath());
         assertEquals(1, view.maxLayer());
 
@@ -159,9 +163,84 @@ class PlanGraphTest {
     @DisplayName("服务层：projectId 非法直接拒绝")
     void 服务层非法项目() {
         PlanGraphService service = new PlanGraphService(new PlanTestSupport.FakePlanRepository(),
-                new PermissiveAccess());
+                new PlanTestSupport.StubGroupRepository(), new PermissiveAccess());
         BusinessException error = assertThrows(BusinessException.class, () -> service.graph(0L));
         assertEquals(ErrorCode.INVALID_ARGUMENT, error.errorCode());
+    }
+
+    @Test
+    @DisplayName("N8：关键路径优先用历史 P50，无历史才回落超时秒数")
+    void 预计时长用P50() {
+        PlanTestSupport.FakePlanRepository plans = new PlanTestSupport.FakePlanRepository();
+        // 超时 3600 但历史 P50 只有 600：权重必须取 600，否则 30 分钟的计划会被 1 小时的计划压过
+        plans.put(PlanTestSupport.plan(1L, PlanStatus.ENABLED, null, null, "0 0 3 * * *",
+                List.of("a.robot")));
+        plans.put(PlanTestSupport.plan(2L, PlanStatus.ENABLED, null, null, "0 0 3 * * *",
+                List.of("b.robot")));
+        plans.depend(2L, 1L);
+        plans.median(1L, 600L);
+
+        PlanGraphService service = new PlanGraphService(plans,
+                new PlanTestSupport.StubGroupRepository(), new PermissiveAccess());
+        PlanGraphView view = service.graph(PlanTestSupport.PROJECT);
+
+        PlanGraphView.Node first = view.nodes().stream().filter(node -> node.id() == 1L)
+                .findFirst().orElseThrow();
+        assertEquals(600L, first.estimatedSeconds());
+        assertEquals(3600, first.timeoutSeconds());
+        PlanGraphView.Node second = view.nodes().stream().filter(node -> node.id() == 2L)
+                .findFirst().orElseThrow();
+        assertNull(second.estimatedSeconds(), "无历史样本时 estimatedSeconds 必须为 null");
+        // 1 取 P50 600 + 2 回落超时 3600 = 4200；若 1 也误用超时则是 7200
+        assertEquals(4200, view.criticalSeconds());
+    }
+
+    @Test
+    @DisplayName("N8：组内链式边标记为 GROUP，手工边标记为 MANUAL")
+    void 边来源标记() {
+        PlanTestSupport.FakePlanRepository plans = new PlanTestSupport.FakePlanRepository();
+        for (long id = 1; id <= 4; id++) {
+            plans.put(PlanTestSupport.plan(id, PlanStatus.ENABLED, null, null, "0 0 3 * * *",
+                    List.of("p" + id + ".robot")));
+        }
+        plans.depend(2L, 1L);          // 组 10 的链 1 -> 2
+        plans.depend(3L, 2L);          // 组 10 的链 2 -> 3
+        plans.depend(4L, 1L);          // 手工边 1 -> 4
+
+        PlanTestSupport.StubGroupRepository groups = new PlanTestSupport.StubGroupRepository();
+        groups.chain(10L, 1L, 2L, 3L);
+
+        PlanGraphService service = new PlanGraphService(plans, groups, new PermissiveAccess());
+        PlanGraphView view = service.graph(PlanTestSupport.PROJECT);
+
+        assertEquals(3, view.edges().size());
+        view.edges().forEach(edge -> {
+            String expected = edge.to() == 4L ? PlanGraphView.SOURCE_MANUAL
+                    : PlanGraphView.SOURCE_GROUP;
+            assertEquals(expected, edge.source(), edge.from() + "->" + edge.to());
+        });
+    }
+
+    @Test
+    @DisplayName("N8：组内顺序来自 sortOrder，乱序 items 也能推出正确的边")
+    void 组内边按sortOrder推导() {
+        PlanTestSupport.FakePlanRepository plans = new PlanTestSupport.FakePlanRepository();
+        plans.put(PlanTestSupport.plan(1L, PlanStatus.ENABLED, null, null, "0 0 3 * * *",
+                List.of("a.robot")));
+        plans.put(PlanTestSupport.plan(2L, PlanStatus.ENABLED, null, null, "0 0 3 * * *",
+                List.of("b.robot")));
+        plans.depend(2L, 1L);
+
+        PlanTestSupport.StubGroupRepository groups = new PlanTestSupport.StubGroupRepository();
+        groups.groups.add(new PlanGroup(11L, PlanTestSupport.PROJECT, "g", null,
+                List.of(new PlanGroup.PlanGroupItem(2L, "plan-2", 1),
+                        new PlanGroup.PlanGroupItem(1L, "plan-1", 0)),
+                PlanTestSupport.OPERATOR, PlanTestSupport.CLOCK.instant()));
+
+        PlanGraphService service = new PlanGraphService(plans, groups, new PermissiveAccess());
+        PlanGraphView view = service.graph(PlanTestSupport.PROJECT);
+
+        assertEquals(PlanGraphView.SOURCE_GROUP, view.edges().get(0).source());
     }
 
     /** 权限桩。 */

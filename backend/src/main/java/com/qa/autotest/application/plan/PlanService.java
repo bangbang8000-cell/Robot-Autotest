@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -172,6 +173,69 @@ public class PlanService {
                 existing.cron(), existing.timezone(), PlanStatus.PAUSED, existing.overlapPolicy(),
                 existing.lastFireAt(), null, existing.createdBy(), existing.createdAt()),
                 plans.dependencies(projectId, id));
+    }
+
+    /** 批量启停（W5）：对多条计划应用同一状态，逐条返回结果，单条失败不影响其余。 */
+    @Audited(action = "schedule:batch", resource = "execution_plan")
+    @Transactional
+    public List<BatchPlanResult> batchStatus(long projectId, List<Long> ids, String status) {
+        if (projectId <= 0) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "projectId 非法");
+        }
+        access.bindProject(projectId);
+        access.require(PermissionResource.EXECUTION, PermissionAction.UPDATE);
+        if (ids == null || ids.isEmpty() || ids.size() > 100) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "planIds 数量必须在 1..100");
+        }
+        PlanStatus target;
+        try {
+            target = PlanStatus.valueOf(status == null ? "" : status.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "status 只支持 ENABLED / PAUSED");
+        }
+        if (target != PlanStatus.ENABLED && target != PlanStatus.PAUSED) {
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "status 只支持 ENABLED / PAUSED");
+        }
+
+        Instant now = clock.instant();
+        List<BatchPlanResult> results = new ArrayList<>();
+        for (Long id : new LinkedHashSet<>(ids)) {
+            if (id == null) {
+                continue;
+            }
+            PlanRecord existing;
+            try {
+                existing = load(projectId, id);
+            } catch (BusinessException ex) {
+                results.add(new BatchPlanResult(id, false, status, "计划不存在或不属于当前项目"));
+                continue;
+            }
+            if (existing.status() == target) {
+                results.add(new BatchPlanResult(id, false, target.name(), "已处于目标状态"));
+                continue;
+            }
+            Instant nextFire = null;
+            Instant lastFire = existing.lastFireAt();
+            if (target == PlanStatus.ENABLED) {
+                nextFire = CronSchedule.parse(existing.cron(), existing.timezone()).nextAfter(now);
+                lastFire = now;
+            }
+            plans.updateStatus(projectId, id, target);
+            plans.updateSchedule(projectId, id, lastFire, nextFire);
+            audit.record(target == PlanStatus.PAUSED ? "PLAN_BATCH_PAUSE" : "PLAN_BATCH_ENABLE",
+                    "execution_plan", String.valueOf(id), "batch");
+            results.add(new BatchPlanResult(id, true, target.name(), "已更新"));
+        }
+        return results;
+    }
+
+    /**
+     * 批量启停的单条结果。
+     *
+     * @param changed 是否真的改了库（已处于目标状态时为 false，便于前端区分）
+     * @param message 中文原因；单条失败不抛异常，避免一条脏 id 让整批回滚
+     */
+    public record BatchPlanResult(long planId, boolean changed, String status, String message) {
     }
 
     /**

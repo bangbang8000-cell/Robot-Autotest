@@ -286,6 +286,37 @@ public class PlanRepositoryJdbc implements PlanRepository {
                 projectId, planId));
     }
 
+    @Override
+    public Map<Long, Long> medianDurationSeconds(long projectId) {
+        // N8：P50 = 偶数样本取中间两个均值；窗口函数在 MySQL 8 上可用，
+        // 比在 Java 里拉全量时长再排序少一次大结果集传输。
+        String sql = """
+                SELECT plan_id, ROUND(AVG(duration_seconds)) AS p50_seconds
+                  FROM (SELECT plan_id,
+                               TIMESTAMPDIFF(SECOND, started_at, finished_at) AS duration_seconds,
+                               ROW_NUMBER() OVER (PARTITION BY plan_id ORDER BY started_at DESC) AS rn,
+                               COUNT(*) OVER (PARTITION BY plan_id) AS cnt
+                          FROM run
+                         WHERE project_id = ?
+                           AND plan_id IS NOT NULL
+                           AND started_at IS NOT NULL
+                           AND finished_at IS NOT NULL
+                           AND run_status IN ('passed', 'failed')) t
+                 WHERE rn IN ((cnt + 1) / 2, (cnt + 2) / 2)
+                 GROUP BY plan_id
+                """;
+        TenantGuard.requireProjectScope(sql, "run");
+        Map<Long, Long> result = new LinkedHashMap<>();
+        for (Map<String, Object> row : jdbc.queryForList(sql, projectId)) {
+            Number planId = (Number) row.get("plan_id");
+            Number seconds = (Number) row.get("p50_seconds");
+            if (planId != null && seconds != null) {
+                result.put(planId.longValue(), seconds.longValue());
+            }
+        }
+        return result;
+    }
+
     private static List<String> suites(String json) {
         if (json == null || json.isBlank()) {
             return List.of();

@@ -1,0 +1,9 @@
+== backend/target/surefire-reports/com.qa.autotest.infrastructure.ReportRepositoryCaseKeyTest.txt
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.028 s -- in com.qa.autotest.infrastructure.ReportRepositoryCaseKeyTest
+== backend/target/surefire-reports/com.qa.autotest.application.execution.WorkerLogTailerTest.txt
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.684 s -- in com.qa.autotest.application.execution.WorkerLogTailerTest
+== backend/target/surefire-reports/com.qa.autotest.application.execution.RunProgressRegistryTest.txt
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.225 s -- in com.qa.autotest.application.execution.RunProgressRegistryTest

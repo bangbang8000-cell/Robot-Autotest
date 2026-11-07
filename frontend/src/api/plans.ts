@@ -33,6 +33,26 @@ export interface ExecutionPlan {
   createdAt: string | null
 }
 
+/**
+ * 编排冲突（W5）：后端只报四类可确定判定的问题。
+ * severity FAIL = 计划永远不触发/等不到；WARN = 会重复执行或撞点。
+ */
+export interface PlanConflict {
+  type: 'INVALID_CRON' | 'DUPLICATE_TARGET' | 'SAME_SLOT' | 'DISABLED_DEPENDENCY' | string
+  severity: 'FAIL' | 'WARN' | string
+  /** 涉及的计划 id，升序 */
+  planIds: number[]
+  detail: string
+}
+
+/** 批量启停的单条结果：changed=false 表示已处于目标状态或该条不存在。 */
+export interface PlanBatchResult {
+  planId: number
+  changed: boolean
+  status: string
+  message: string
+}
+
 export interface PlanPayload {
   projectId: number
   name: string
@@ -92,6 +112,23 @@ export const planApi = {
     return request<string[]>('/plans/preview', {
       method: 'POST',
       body: JSON.stringify({ projectId, cron, timezone }),
+    })
+  },
+
+  /** 只读检测：不自动改计划，用户看清冲突后再决定批量启停哪几条。 */
+  conflicts(projectId: number): Promise<PlanConflict[]> {
+    return request<PlanConflict[]>(`/plans/conflicts${toQuery({ projectId })}`)
+  },
+
+  /** 批量启停：单条失败只体现在返回值里，不会让整批回滚。 */
+  batch(
+    projectId: number,
+    planIds: number[],
+    status: 'ENABLED' | 'PAUSED',
+  ): Promise<PlanBatchResult[]> {
+    return request<PlanBatchResult[]>('/plans/batch', {
+      method: 'POST',
+      body: JSON.stringify({ projectId, planIds, status }),
     })
   },
 }

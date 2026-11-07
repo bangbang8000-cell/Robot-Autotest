@@ -18,12 +18,16 @@ import { NButton, NCheckbox, NInput, NInputNumber, NModal, type DataTableColumns
 import DataTable from '@/components/DataTable.vue'
 import ErrorLineView from '@/components/ErrorLine.vue'
 import { nodeApi, type ExecutionNodeView, type NodeStatus } from '@/api/nodes'
+import { metricsApi, type MetricsView } from '@/api/observability'
+import { useAuthStore } from '@/stores/auth'
 import { localizeError, type ErrorLine } from '@/utils/errors'
 import { EMPTY } from '@/utils/format'
 
 const { t, te } = useI18n()
+const auth = useAuthStore()
 
 const nodes = ref<ExecutionNodeView[]>([])
+const metrics = ref<MetricsView | null>(null)
 const loading = ref(false)
 const error = ref<ErrorLine | null>(null)
 const message = ref('')
@@ -49,6 +53,26 @@ async function load(): Promise<void> {
   } finally {
     loading.value = false
   }
+  // 节点健康读数（W4）：失败不挡节点列表——辅助指标不该让整页报错
+  await loadMetrics()
+}
+
+async function loadMetrics(): Promise<void> {
+  const projectId = auth.projectId ?? 0
+  if (!projectId) {
+    metrics.value = null
+    return
+  }
+  try {
+    metrics.value = await metricsApi.view(projectId)
+  } catch {
+    metrics.value = null
+  }
+}
+
+/** 0–1 比例 → 百分比文本；后端已四舍五入到 4 位小数，这里只做展示。 */
+function rateText(value: number): string {
+  return `${Math.round(value * 1000) / 10}%`
 }
 
 function openCreate(): void {
@@ -222,6 +246,41 @@ onMounted(() => {
 
     <p class="muted">{{ t('nodesView.subtitle') }}</p>
 
+    <!-- 节点健康（W4）：在线率 / 队列深度 / 失败率 / 分片恢复，超阈值直接列告警 -->
+    <section v-if="metrics" class="health-strip" data-testid="node-health">
+      <div class="health-item">
+        <span class="health-label">{{ t('nodesView.healthOnlineRate') }}</span>
+        <strong>{{ rateText(metrics.nodes.onlineRate) }}</strong>
+        <span class="muted">
+          {{ t('nodesView.healthOnlineDetail', { online: metrics.nodes.online, total: metrics.nodes.total }) }}
+        </span>
+      </div>
+      <div class="health-item">
+        <span class="health-label">{{ t('nodesView.healthQueueDepth') }}</span>
+        <strong>{{ metrics.queue.depth }}</strong>
+        <span class="muted">
+          {{ t('nodesView.healthQueueDetail', { queued: metrics.queue.queued, preparing: metrics.queue.preparing }) }}
+        </span>
+      </div>
+      <div class="health-item">
+        <span class="health-label">{{ t('nodesView.healthFailureRate') }}</span>
+        <strong>{{ rateText(metrics.runs.failureRate) }}</strong>
+        <span class="muted">
+          {{ t('nodesView.healthFailureDetail', { failed: metrics.runs.failed, finished: metrics.runs.finished }) }}
+        </span>
+      </div>
+      <div class="health-item">
+        <span class="health-label">{{ t('nodesView.healthRecovered') }}</span>
+        <strong>{{ metrics.shards.recoveredAttempts }}</strong>
+        <span class="muted">{{ t('nodesView.healthRecoveredDetail', { lost: metrics.shards.lost }) }}</span>
+      </div>
+      <ul v-if="metrics.alerts.length" class="health-alerts">
+        <li v-for="alert in metrics.alerts" :key="alert.key" class="health-alert">
+          {{ alert.message }}
+        </li>
+      </ul>
+    </section>
+
     <ErrorLineView v-if="error" :error="error" />
     <p v-if="message" class="text-ok">{{ message }}</p>
 
@@ -285,6 +344,42 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.health-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: var(--space-3) 0;
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+}
+
+.health-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 140px;
+}
+
+.health-label {
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.health-item strong {
+  font-size: var(--font-size-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+.health-alerts {
+  flex-basis: 100%;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--warn);
+  font-size: var(--font-size-xs);
+}
+
 .form-card {
   margin-bottom: var(--space-4);
 }

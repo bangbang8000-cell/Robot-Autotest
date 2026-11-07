@@ -80,7 +80,7 @@ vi.mock('@/api/reports', async (importOriginal) => {
         ],
       })),
       compare: vi.fn(async () => ({
-        baseline: { runId: 'RUN-OLD', startedAt: '2026-11-04T07:00:00+08:00' },
+        baseline: { runId: 'RUN-OLD', startedAt: '2026-11-04T07:00:00+08:00', crossEnvironment: false, dut: 'DUT-A', link: 'LINK-AB' },
         rows: [
           { caseKey: 'TC-001', history: { verdict: 'PASS', durationMs: 1100 }, current: { verdict: 'PASS', durationMs: 1200 }, change: 'SAME' },
           { caseKey: 'TC-002', history: { verdict: 'FAIL', durationMs: 7000 }, current: { verdict: 'FAIL', durationMs: 8000 }, change: 'SAME' },
@@ -88,10 +88,11 @@ vi.mock('@/api/reports', async (importOriginal) => {
           { caseKey: 'TC-004', history: { verdict: 'FAIL', durationMs: 500 }, current: { verdict: 'PASS', durationMs: 480 }, change: 'FAIL_TO_PASS' },
         ],
         summary: { newFail: 1, newPass: 1, bothFail: 1, notRun: 0 },
+        crossEnvironment: false,
       })),
       baselineCandidates: vi.fn(async () => [
-        { runId: 'RUN-OLD', startedAt: '2026-11-04T07:00:00+08:00' },
-        { runId: 'RUN-OLDER', startedAt: null },
+        { runId: 'RUN-OLD', startedAt: '2026-11-04T07:00:00+08:00', crossEnvironment: false, dut: 'DUT-A', link: 'LINK-AB' },
+        { runId: 'RUN-OLDER', startedAt: null, crossEnvironment: true, dut: 'DUT-B', link: 'LINK-AB' },
       ]),
       trend: vi.fn(async () => ({
         caseKey: 'TC-001',

@@ -1,0 +1,99 @@
+{
+  "capturedAt": "2026-11-07T13:26:37.708Z",
+  "app": "http://localhost:8001",
+  "projectId": "29",
+  "recentRuns": 5,
+  "conflictCount": 2,
+  "checks": [
+    {
+      "id": "conflicts-api-200",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "id": "conflicts-api-nonempty",
+      "ok": true,
+      "detail": "count=2"
+    },
+    {
+      "id": "conflicts-api-has-duplicate",
+      "ok": true,
+      "detail": "DUPLICATE_TARGET,SAME_SLOT"
+    },
+    {
+      "id": "recent-api-200",
+      "ok": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "id": "recent-api-scope",
+      "ok": true,
+      "detail": "recent:5"
+    },
+    {
+      "id": "plans-panel-mounted",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "plans-conflict-rows-match-api",
+      "ok": true,
+      "detail": "ui=2 api=2"
+    },
+    {
+      "id": "plans-conflict-has-label",
+      "ok": true,
+      "detail": "编排冲突 | 只报四类可确定的问题：cron 解析失败、目标重复、同一时刻触发、依赖已暂停 | 重新检测 |   | 全选 |   | 目标重复 | orch01-chain-a、orch01-chain-b、orch01-chain-c、orcho2-p01、orcho2-p02、orcho2-p03、orcho2-"
+    },
+    {
+      "id": "plans-select-all-shows-count",
+      "ok": true,
+      "detail": "已选 55 条计划"
+    },
+    {
+      "id": "plans-no-hscroll",
+      "ok": true,
+      "detail": "scrollWidth=1440 viewport=1440"
+    },
+    {
+      "id": "plans-no-js-error",
+      "ok": true,
+      "detail": "0 exception"
+    },
+    {
+      "id": "clusters-mode-switch",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "clusters-recent-loaded",
+      "ok": true,
+      "detail": "最近 5 轮共 2 条失败，合并成 1 个类别"
+    },
+    {
+      "id": "clusters-recent-no-run-input",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "clusters-recent-scope-text",
+      "ok": true,
+      "detail": "最近 5 轮共 2 条失败，合并成 1 个类别"
+    },
+    {
+      "id": "clusters-recent-rerun-disabled",
+      "ok": true,
+      "detail": "rerun=1 disabled=1"
+    },
+    {
+      "id": "clusters-no-hscroll",
+      "ok": true,
+      "detail": "scrollWidth=1440 viewport=1440"
+    },
+    {
+      "id": "clusters-no-js-error",
+      "ok": true,
+      "detail": "0 exception"
+    }
+  ]
+}

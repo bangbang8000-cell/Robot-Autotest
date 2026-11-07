@@ -1,0 +1,49 @@
+diff --git a/backend/src/main/java/com/qa/autotest/infrastructure/ReportRepositoryJdbc.java b/backend/src/main/java/com/qa/autotest/infrastructure/ReportRepositoryJdbc.java
+index 811efc0..d297f9c 100644
+--- a/backend/src/main/java/com/qa/autotest/infrastructure/ReportRepositoryJdbc.java
++++ b/backend/src/main/java/com/qa/autotest/infrastructure/ReportRepositoryJdbc.java
+@@ -118,7 +118,8 @@ public class ReportRepositoryJdbc implements ReportRepository {
+         jdbc.update("DELETE FROM keyword_result WHERE run_id = ?", runDbId);
+         SuiteNode root = parsed.root();
+         if (root != null) {
+-            insertSuite(runDbId, root, "");
++            String runId = jdbc.queryForObject("SELECT run_id FROM run WHERE id = ?", String.class, runDbId);
++            insertSuite(runDbId, root, rootBasePath(root.name(), runId));
+         }
+     }
+ 
+@@ -151,16 +152,30 @@ public class ReportRepositoryJdbc implements ReportRepository {
+         return new PageResult<>(rows, totalValue, page, size);
+     }
+ 
+-    private void insertSuite(long runDbId, SuiteNode suite, String parentPath) {
+-        String path = parentPath.isEmpty() ? suite.name() : parentPath + "/" + suite.name();
++    /**
++     * 根套件名由执行侧设为 {@code run-<runId>}（用于 RF 报告标题），但它不是用例路径的一部分。
++     * 若把它拼进 {@code case_key}，同一条用例每次运行的 key 都不同，趋势/对比/覆盖率全部失效（G-B8-1）。
++     * 这里剥离根套件，只保留「套件路径.用例名」，使 case_key 跨 run 稳定。
++     */
++    private void insertSuite(long runDbId, SuiteNode suite, String path) {
+         for (CaseNode test : suite.cases()) {
+-            insertCase(runDbId, path + "." + test.name(), test);
++            insertCase(runDbId, path.isEmpty() ? test.name() : path + "." + test.name(), test);
+         }
+         for (SuiteNode child : suite.suites()) {
+-            insertSuite(runDbId, child, path);
++            insertSuite(runDbId, child, path.isEmpty() ? child.name() : path + "/" + child.name());
+         }
+     }
+ 
++    static String rootBasePath(String rootName, String runId) {
++        if (rootName == null) {
++            return "";
++        }
++        if (runId != null && !runId.isBlank() && rootName.equals("run-" + runId)) {
++            return "";
++        }
++        return rootName;
++    }
++
+     private void insertCase(long runDbId, String caseKey, CaseNode test) {
+         KeyHolder keyHolder = new GeneratedKeyHolder();
+         jdbc.update(connection -> {

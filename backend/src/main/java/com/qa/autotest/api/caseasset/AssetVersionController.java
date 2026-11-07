@@ -62,11 +62,18 @@ public class AssetVersionController {
         return ApiResponse.ok(versions.diff(projectId, setId));
     }
 
-    /** 同步：副本内容对齐平台库（缺的用例按 case_code 导入），synced 推到平台当前版本。 */
+    /**
+     * 同步：副本内容对齐平台库（缺的用例按 case_code 导入），synced 推到平台当前版本。
+     *
+     * <p>{@code strategy=FULL}（默认）整体覆盖；{@code ADD_ONLY} 只补平台新增，
+     * 副本已有内容与顺序一律保留（N9「可选覆盖」）。
+     */
     @PostMapping("/sync")
-    public ApiResponse<AssetVersionService.VersionView> sync(@PathVariable long setId,
-                                                             @RequestParam long projectId) {
-        return ApiResponse.ok(versions.sync(projectId, setId));
+    public ApiResponse<AssetVersionService.VersionView> sync(
+            @PathVariable long setId, @RequestParam long projectId,
+            @RequestParam(defaultValue = "FULL") String strategy) {
+        return ApiResponse.ok(versions.sync(projectId, setId,
+                AssetVersionService.parseStrategy(strategy)));
     }
 
     /** 保持分叉：只置 fork_state=DIVERGED，内容与 synced 读数原样保留。 */

@@ -45,17 +45,20 @@ public class CompareService {
     }
 
     /** 基线信息；无基线时为 null。 */
-    public record CompareBaseline(String runId, Instant startedAt) {
+    public record CompareBaseline(String runId, Instant startedAt,
+                                  boolean crossEnvironment, String dut, String link) {
     }
 
     /**
      * 对比结果。
      *
-     * @param baseline 本次使用的基线（null 表示没有可用基线）
-     * @param rows     按 caseKey 排序的并集
-     * @param summary  四类计数
+     * @param baseline         本次使用的基线（null 表示没有可用基线）
+     * @param rows             按 caseKey 排序的并集
+     * @param summary          四类计数
+     * @param crossEnvironment 基线是否与本轮不同 DUT/LINK（N4：跨环境对比允许，但要显式标记）
      */
-    public record CompareResult(CompareBaseline baseline, List<CompareRow> rows, CompareSummary summary) {
+    public record CompareResult(CompareBaseline baseline, List<CompareRow> rows,
+                                CompareSummary summary, boolean crossEnvironment) {
     }
 
     static final String CHANGE_PASS_TO_FAIL = "PASS_TO_FAIL";
@@ -72,11 +75,14 @@ public class CompareService {
     }
 
     /**
-     * 手动基线候选（RPT-03 补口）：同项目同环境的 finished 运行，按开始时间倒序。
+     * 手动基线候选（RPT-03 补口）：同项目 finished 运行，同环境优先、其余按开始时间倒序。
+     *
+     * <p>N4：跨环境候选不再排除，逐条带 {@code crossEnvironment} 标记，前端可加「跨环境」角标。
      *
      * @param startedAt 可能为 null（run 未记录开始时间），前端按「未知时间」渲染
      */
-    public record BaselineCandidate(String runId, Instant startedAt) {
+    public record BaselineCandidate(String runId, Instant startedAt, String dut, String link,
+                                    boolean crossEnvironment) {
     }
 
     /** 候选上限：下拉框只需要近期的几条，不把项目全部历史拉进页面。 */
@@ -94,7 +100,8 @@ public class CompareService {
 
         RunSnapshot current = read.findRun(projectId, runId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "运行不存在: " + runId));
-        Optional<RunSnapshot> baseline = resolveBaseline(projectId, current, baselineRunId);
+        BaselineResolution resolution = resolveBaseline(projectId, current, baselineRunId);
+        Optional<RunSnapshot> baseline = resolution.run();
 
         Map<String, CaseVerdict> currentCases = index(read.listCaseVerdicts(projectId, runId));
         Map<String, CaseVerdict> historyCases = baseline
@@ -132,17 +139,18 @@ public class CompareService {
                     change));
         }
         CompareBaseline baselineView = baseline
-                .map(run -> new CompareBaseline(run.runId(), run.startedAt()))
+                .map(run -> new CompareBaseline(run.runId(), run.startedAt(),
+                        resolution.crossEnvironment(), run.dut(), run.link()))
                 .orElse(null);
-        return new CompareResult(baselineView, rows, new CompareSummary(newFail, newPass, bothFail, notRun));
+        return new CompareResult(baselineView, rows, new CompareSummary(newFail, newPass, bothFail, notRun),
+                resolution.crossEnvironment());
     }
 
     /**
      * 手动基线下拉的数据源（RPT-03 补口）。
      *
-     * <p>只返回与本轮同项目同环境的 finished 运行：跨项目/跨环境的运行在前端就不该出现，
-     * 否则用户选完只会收到一条 400。空环境（DUT/LINK 都为 null）不做特殊放行 ——
-     * 与 {@link #resolveBaseline} 的校验口径保持一致。
+     * <p>N4：同项目内跨 DUT/LINK 的运行也可作为手动基线，逐条带 {@code crossEnvironment}；
+     * 跨项目仍然不出现（服务端只能读本项目）。空环境（DUT/LINK 都为 null）视为与空环境同环境。
      */
     public List<BaselineCandidate> candidates(long projectId, String runId) {
         if (projectId <= 0) {
@@ -159,27 +167,38 @@ public class CompareService {
         return read.listBaselineCandidates(projectId, current.dut(), current.link(), current.runId(),
                         MAX_BASELINE_CANDIDATES)
                 .stream()
-                .map(run -> new BaselineCandidate(run.runId(), run.startedAt()))
+                .map(run -> new BaselineCandidate(run.runId(), run.startedAt(), run.dut(), run.link(),
+                        crossEnvironment(current, run)))
                 .toList();
     }
 
-    private Optional<RunSnapshot> resolveBaseline(long projectId, RunSnapshot current, String baselineRunId) {
+    /** 基线解析结果：可能为空（自动基线找不到）+ 是否跨环境。 */
+    private record BaselineResolution(Optional<RunSnapshot> run, boolean crossEnvironment) {
+    }
+
+    private BaselineResolution resolveBaseline(long projectId, RunSnapshot current, String baselineRunId) {
         if (baselineRunId != null && !baselineRunId.isBlank()) {
             RunSnapshot manual = read.findRun(projectId, baselineRunId)
                     .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_ARGUMENT,
                             "手动基线运行不存在或不属于当前项目: " + baselineRunId));
-            if (!Objects.equals(current.dut(), manual.dut())
-                    || !Objects.equals(current.link(), manual.link())) {
-                throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
-                        "手动基线与本轮环境不一致：本轮 DUT=" + display(current.dut())
-                                + " LINK=" + display(current.link())
-                                + "；基线 DUT=" + display(manual.dut())
-                                + " LINK=" + display(manual.link()));
-            }
-            return Optional.of(manual);
+            // N4：跨环境手动基线放行，但必须显式标记——不静默当作同环境对比。
+            return new BaselineResolution(Optional.of(manual), crossEnvironment(current, manual));
         }
-        return read.findBaseline(projectId, current.dut(), current.link(),
-                current.startedAt(), current.runId());
+        return new BaselineResolution(read.findBaseline(projectId, current.dut(), current.link(),
+                current.startedAt(), current.runId()), false);
+    }
+
+    private static boolean crossEnvironment(RunSnapshot current, RunSnapshot baseline) {
+        return !sameEnvironment(current, baseline);
+    }
+
+    private static boolean sameEnvironment(RunSnapshot left, RunSnapshot right) {
+        return Objects.equals(blankToEmpty(left.dut()), blankToEmpty(right.dut()))
+                && Objects.equals(blankToEmpty(left.link()), blankToEmpty(right.link()));
+    }
+
+    private static String blankToEmpty(String value) {
+        return value == null ? "" : value;
     }
 
     private static String changeOf(CaseVerdict history, CaseVerdict current) {
@@ -204,9 +223,5 @@ public class CompareService {
             indexed.put(row.caseKey(), row);
         }
         return indexed;
-    }
-
-    private static String display(String value) {
-        return value == null || value.isBlank() ? "（空）" : value;
     }
 }

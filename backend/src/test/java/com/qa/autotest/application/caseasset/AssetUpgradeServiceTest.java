@@ -348,6 +348,21 @@ class AssetUpgradeServiceTest {
             replacedItems.add(new ArrayList<>(orderedCaseIds));
         }
 
+        @Override
+        public void appendItems(long projectId, long setId, List<Long> caseIds, Long operatorId) {
+            // 升级场景不走 ADD_ONLY，这里保持契约完整即可
+            List<AssetVersion.ContentRow> rows = new ArrayList<>(
+                    contentRows.getOrDefault(setKey(projectId, setId), List.of()));
+            int seqNo = rows.size() + 1;
+            for (Long caseId : caseIds) {
+                AssetVersion.ContentRow found = casesByCode.values().stream()
+                        .filter(row -> row.caseId() == caseId).findFirst().orElseThrow();
+                rows.add(new AssetVersion.ContentRow(seqNo++, found.caseId(), found.caseCode(),
+                        found.title(), found.priority()));
+            }
+            contentRows.put(setKey(projectId, setId), rows);
+        }
+
         private static String setKey2(long projectId, String assetType, long assetId) {
             return projectId + ":" + assetType + ":" + assetId;
         }

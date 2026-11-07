@@ -107,6 +107,32 @@ class ExecutionNodeServiceTest {
     }
 
     @Test
+    @DisplayName("N10 心跳限流：窗口内重复心跳只回应不写库，窗口外恢复写入")
+    void 心跳限流() {
+        Instant start = Instant.parse("2026-11-07T00:00:00Z");
+        repo.now = start;
+        MutableClock clock = new MutableClock(start);
+        ExecutionNodeService throttled = new ExecutionNodeService(repo, new AdminAccess(), audit,
+                30, 5, clock);
+        ExecutionNodeService.RegisterResult result = throttled.register("node-a", true, false, 1, null);
+
+        throttled.heartbeat(result.nodeId(), result.token(), true, false);
+        assertEquals(1, repo.heartbeatWrites);
+
+        clock.set(start.plusSeconds(4));
+        ExecutionNodeService.NodeView skipped =
+                throttled.heartbeat(result.nodeId(), result.token(), false, true);
+        assertEquals(1, repo.heartbeatWrites, "4 秒内第二条心跳不应再 UPDATE");
+        assertTrue(skipped.rfAvailable(), "被限流时返回最后一次写入的能力值");
+        assertEquals(start.toString(), skipped.lastHeartbeatAt());
+
+        clock.set(start.plusSeconds(6));
+        throttled.heartbeat(result.nodeId(), result.token(), false, true);
+        assertEquals(2, repo.heartbeatWrites, "窗口外必须真的写库");
+        assertFalse(repo.nodes.get(result.nodeId()).rfAvailable());
+    }
+
+    @Test
     @DisplayName("DISABLED 节点心跳 → 403（停用不能靠心跳复活）")
     void 停用拒绝心跳() {
         ExecutionNodeService.RegisterResult result = service.register("node-a", true, false, 1, null);
@@ -152,11 +178,41 @@ class ExecutionNodeServiceTest {
 
     // ---------- 桩 ----------
 
+    /** 可拨的时钟：心跳限流必须能被单测精确推进，不能靠 sleep。 */
+    static final class MutableClock extends java.time.Clock {
+        private Instant instant;
+
+        MutableClock(Instant instant) {
+            this.instant = instant;
+        }
+
+        void set(Instant next) {
+            this.instant = next;
+        }
+
+        @Override
+        public java.time.ZoneId getZone() {
+            return java.time.ZoneOffset.UTC;
+        }
+
+        @Override
+        public java.time.Clock withZone(java.time.ZoneId zone) {
+            return this;
+        }
+
+        @Override
+        public Instant instant() {
+            return instant;
+        }
+    }
+
     static final class FakeNodeRepository implements ExecutionNodeRepository {
 
         final Map<Long, ExecutionNode> nodes = new HashMap<>();
         final List<Instant> staleSweeps = new ArrayList<>();
         final AtomicLong seq = new AtomicLong();
+        Instant now = Instant.now();
+        int heartbeatWrites;
 
         @Override
         public List<Long> findStaleOnlineIds(Instant staleBefore) {
@@ -221,10 +277,11 @@ class ExecutionNodeServiceTest {
 
         @Override
         public void heartbeat(long id, boolean rfAvailable, boolean pytestAvailable) {
+            heartbeatWrites++;
             ExecutionNode node = nodes.get(id);
             nodes.put(id, new ExecutionNode(node.id(), node.name(), node.tokenHash(),
                     ExecutionNode.ONLINE, rfAvailable, pytestAvailable, node.maxConcurrency(),
-                    Instant.now(), node.registeredAt(), null));
+                    now, node.registeredAt(), null));
         }
 
         @Override

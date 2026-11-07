@@ -1,6 +1,7 @@
 package com.qa.autotest.application.plan;
 
 import com.qa.autotest.application.iam.AccessControlService;
+import com.qa.autotest.application.repository.PlanGroupRepository;
 import com.qa.autotest.application.repository.PlanRepository;
 import com.qa.autotest.common.BusinessException;
 import com.qa.autotest.common.ErrorCode;
@@ -8,10 +9,12 @@ import com.qa.autotest.domain.common.PageResult;
 import com.qa.autotest.domain.iam.PermissionAction;
 import com.qa.autotest.domain.iam.PermissionResource;
 import com.qa.autotest.domain.plan.PlanGraph;
+import com.qa.autotest.domain.plan.PlanGroup;
 import com.qa.autotest.domain.plan.PlanRecord;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -28,6 +31,13 @@ import java.util.Set;
  * 一条 SQL 多表聚合反而要把「前置名」「状态」都摊平再在 Java 里重组；
  * 分页拉取复用了 `PlanRepository.page` 的租户守卫，不需要新增 SQL 面。
  * 上限 {@value #MAX_PLANS} 条，超过直接拒绝——上万条计划的图在浏览器里也没法看。
+ *
+ * <p>N8 三项增强：
+ * <ol>
+ *   <li>关键路径权重优先用历史运行时长 P50，没有历史才回落为超时秒数（超时是熔断值，不是预期耗时）；</li>
+ *   <li>每条边标记来源（组内链式 GROUP / 手工配置 MANUAL），前端用虚线区分；</li>
+ *   <li>节点同时带出 P50，前端可显示「预计 X 分 / 超时 Y 分」。</li>
+ * </ol>
  */
 @Service
 public class PlanGraphService {
@@ -37,10 +47,13 @@ public class PlanGraphService {
     private static final int PAGE_SIZE = 100;
 
     private final PlanRepository plans;
+    private final PlanGroupRepository groups;
     private final AccessControlService access;
 
-    public PlanGraphService(PlanRepository plans, AccessControlService access) {
+    public PlanGraphService(PlanRepository plans, PlanGroupRepository groups,
+                            AccessControlService access) {
         this.plans = plans;
+        this.groups = groups;
         this.access = access;
     }
 
@@ -52,11 +65,13 @@ public class PlanGraphService {
         }
 
         List<PlanRecord> all = loadAll(projectId);
+        Map<Long, Long> medians = plans.medianDurationSeconds(projectId);
         Map<Long, PlanRecord> byId = new LinkedHashMap<>();
         Map<Long, Long> weights = new LinkedHashMap<>();
         for (PlanRecord plan : all) {
             byId.put(plan.id(), plan);
-            weights.put(plan.id(), (long) plan.timeoutSeconds());
+            Long estimated = medians.get(plan.id());
+            weights.put(plan.id(), estimated != null ? estimated : (long) plan.timeoutSeconds());
         }
 
         Map<Long, List<Long>> edges = plans.allDependencies(projectId);
@@ -65,11 +80,13 @@ public class PlanGraphService {
         Set<Long> critical = new LinkedHashSet<>(criticalPath);
         Map<Long, Integer> layers = graph.layers();
         Set<Long> isolated = graph.isolatedNodes();
+        Set<String> groupEdges = groupEdgeKeys(projectId);
 
         List<PlanGraphView.Node> nodes = new ArrayList<>(all.size());
         for (PlanRecord plan : all) {
             nodes.add(new PlanGraphView.Node(plan.id(), plan.name(), plan.status().dbValue(),
-                    plan.timeoutSeconds(), layers.getOrDefault(plan.id(), 0),
+                    plan.timeoutSeconds(), medians.get(plan.id()),
+                    layers.getOrDefault(plan.id(), 0),
                     isolated.contains(plan.id()), critical.contains(plan.id())));
         }
 
@@ -82,7 +99,9 @@ public class PlanGraphService {
             }
             for (Long dep : deps) {
                 if (byId.containsKey(dep)) {
-                    edgesView.add(new PlanGraphView.Edge(dep, plan));
+                    String source = groupEdges.contains(dep + "->" + plan)
+                            ? PlanGraphView.SOURCE_GROUP : PlanGraphView.SOURCE_MANUAL;
+                    edgesView.add(new PlanGraphView.Edge(dep, plan, source));
                 }
             }
         });
@@ -92,6 +111,26 @@ public class PlanGraphService {
                 .sum();
         int maxLayer = layers.values().stream().mapToInt(Integer::intValue).max().orElse(0);
         return new PlanGraphView(projectId, nodes, edgesView, criticalPath, criticalSeconds, maxLayer);
+    }
+
+    /**
+     * 组内相邻成员对推导出来的边键（"from->to"）。
+     *
+     * <p>不做 DB 迁移：组只存「成员 + 顺序」，链式边在建边时已落进
+     * `execution_plan_dependency`，这里按顺序反推即可。同一条边即使既在组内又手工配过，
+     * 也按 GROUP 展示——来源只是视觉提示，不影响可执行语义。
+     */
+    private Set<String> groupEdgeKeys(long projectId) {
+        Set<String> keys = new HashSet<>();
+        for (PlanGroup group : groups.listByProject(projectId)) {
+            List<PlanGroup.PlanGroupItem> items = group.items().stream()
+                    .sorted(java.util.Comparator.comparingInt(PlanGroup.PlanGroupItem::sortOrder))
+                    .toList();
+            for (int i = 0; i + 1 < items.size(); i++) {
+                keys.add(items.get(i).planId() + "->" + items.get(i + 1).planId());
+            }
+        }
+        return keys;
     }
 
     /** 分页取全量；超过上限直接拒绝，不截断（截断后的图会漏边，比不画更误导）。 */
