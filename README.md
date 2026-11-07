@@ -5,9 +5,12 @@
 
 面向 GPU、智能网卡与基础设施的一体化自动化测试平台：把「设备台账 → 用例编写 → 并发执行 → 报告交付 → 定时/CI 自动化」收在同一个系统里，并用 metadata 门禁保证每一份对外报告都能追溯。
 
-> 当前阶段（2026-11-07）：**v1.0 功能面铺满，v2.0 平台化 W1–W7 全部落库，v2.1 十三个开发包全部开发完成**。
+> 当前阶段（2026-11-07）：**v3.0.1 平台化 W1–W5 全部落库**，门禁 **18 步** `FAILS=0`。
+> W2 分布式分片（DB 租约 + fencing）、W3 故障转移（心跳判死 / LOST 重派 / 主控重启恢复）、
+> W4 容量与可观测（`/api/metrics`、run 时间线、性能基线进门禁、备份恢复演练）、
+> W5 覆盖扩量（示例用例入库、计划编排冲突检测、跨 run 失败聚类）均已交付，
+> 证据在 `docs/evidence/v2.2/`、`v2.2.1/`、`v3.0/`、`v3.0.1/`。
 > 130 个任务包：**已完成 124 / 待验 0 / 待现场 6 / 未开始 0 / 进行中 0**。
-> v2.1 新增 13 包（SMPL×1、ORCH×3、TPLX×3、PUBX×2、NODX×4）已全部完成：每包一提交，带真实链路证据（`docs/evidence/v2.1/`）、DEV-PLAN 回写与 14 步门禁 `FAILS=0`。
 > 余下 6 个 `待现场` 缺的是**外部条件**（GitHub runner、真实 pabot 子进程树与日志样本、真机 DUT），不是代码。
 > **G4 / G5 / G7 / G8 门禁尚未判过，不得对外称「已发版」**。
 > 开发期遵守 [ADR-0013](docs/adr/ADR-0013-执行安全分级与开发期禁跑令.md)：不在真实 DUT / 交换机执行台账用例。
@@ -20,9 +23,9 @@
 | 用例管理 | 台账 + 脚本双模；用例/用例集 CRUD、批量导入、能力索引；三视图编辑器（代码 / 可视化 / 流程）内容不漂移 |
 | 导入与预检 | 压缩包导入沙箱：解压前校验条目数 / 总体积 / 单文件体积 / 嵌套深度并防 zip slip；只落只读副本，预检只跑 `--collect-only` / `--dryrun`，不执行用例 |
 | 执行引擎 | 状态机、项目 / 设备维度调度、资源租约与强制释放、4 并发不打架；实时日志、取消与超时、失败分类与重试；pabot 编排、工作区落盘、全量日志下载 |
-| 执行节点与分布式执行 | 节点注册 / 心跳 / 四态（NEW·ONLINE·OFFLINE·DISABLED），令牌只存哈希；指定节点发起执行，按节点独立并发分道；**非 ONLINE 一律当场拒绝——不排队、不重投、不回落本机**；节点 agent 与主控同 jar 双角色（`--spring.profiles.active=node`），复用同一命令构造器保证**同参数命令等价**，产物经 HTTP 回传；节点崩溃（心跳停止）自动判失败并清理在跑 run，不留悬挂 |
+| 执行节点与分布式执行 | 节点注册 / 心跳 / 四态（NEW·ONLINE·OFFLINE·DISABLED），令牌只存哈希；指定节点发起执行，按节点独立并发分道；**非 ONLINE 一律当场拒绝——不排队、不重投、不回落本机**；节点 agent 与主控同 jar 双角色（`--spring.profiles.active=node`），复用同一命令构造器保证**同参数命令等价**，产物经 HTTP 回传；节点崩溃（心跳停止）自动判失败并清理在跑 run，不留悬挂；**分片执行**按用例套件贪心分配，DB 租约 + CAS fencing 防双跑，节点失联分片自动重派（`attempt+1`，上限 3 次），主控重启后幂等回收（W2 / W3） |
 | 双测试内核 | `ExecutionKernel` SPI 统一抽象：Robot Framework（pabot 编排，复用同一命令构造器）与 pytest（主 `pytest-json-report`、兜底 `junitxml`）；按用例集自动选核，同一作业不混跑两套内核 |
-| 计划组与依赖图 | 计划组实体与批量建边；依赖图视图与关键路径；失败聚类与重跑清单（v2.1） |
+| 计划组与依赖图 | 计划组实体与批量建边；依赖图视图与关键路径；**编排冲突四类只读检测**（cron 无效 / 目标重复 / 同刻触发 / 依赖已暂停）与**批量启停**（审计 + 事务，单条失败不中断）；失败聚类与重跑清单，支持**最近 N 轮跨 run 聚类**（W5） |
 | 报告中心 | 解析 `output.xml`，递归采集 metadata；十项门禁；用例树、原始日志分页、跨运行对比、趋势与通过率；PDF / Word / CSV 导出、一次性打印链接与打印页 |
 | 报告模板 | 模板实体与字段白名单、按模板冻结 + xlsx 导出、四格式一致性校验（v2.1） |
 | 报告双实体 | 报告与运行解耦：`DRAFT → FROZEN → REVOKED / ARCHIVED` 状态机，快照（JSON / HTML / hash）自包含；**冻结后渲染只读快照，不回查运行**，运行数据变更不影响已交付报告 |
@@ -32,7 +35,8 @@
 | AI 辅助面板 | 可拖拽抽屉：只探测本地 CLI **不代调模型**；打包上下文复用对外脱敏逻辑；发起执行需二次确认；全动作落审计、可一键终止进程树；无 CLI 时降级为 L1 静态建议并标注 `DEGRADED` |
 | 体验与主题 | 中文 / English 双语切换、亮暗主题 + 强调色、表格密度两档；**主题 / 强调色 / 密度按用户跟随（服务端偏好，登出回默认，换账号互不串）**；登录页支持记住账号名 / 记住密码并自动登录（自动登录失败即清密码防锁号）；首帧主题不闪，暗色对比度经门禁实测；1280 视口无横向滚动 |
 | 导航与入口 | 6 域菜单 IA（工作台 / 资产 / 用例 / 执行 / 报告 / 管理）、能力驱动过滤、命令面板 `Ctrl/Cmd+K`、项目选择器常驻顶栏、统一入口 `:8001`（静态托管 + 深链接回退 + `/api`·`/ws` 反代） |
-| 自动化 | 执行计划（cron + 时区固定）、依赖 DAG（环检测 / 前置失败阻断）、CI 触发（幂等 + 限流 + 状态回写） |
+| 自动化 | 执行计划（cron + 时区固定）、依赖 DAG（环检测 / 前置失败阻断）、CI 触发（幂等 + 限流 + 状态回写）；计划编排冲突检测与批量启停（W5） |
+| 可观测性 | `GET /api/metrics`（在线率 / 队列深度 / 失败率 / 重派次数）与告警阈值；run 时间线（入队 → 租约 → 分片完成/失败/丢失 → 终态，带 `fencingToken` / `attempt`）；节点页健康条；5 条只读 GET 性能基线进门禁，劣化超阈值即红；`scripts/backup-drill.sh` 备份恢复演练（W4） |
 | 安全与治理 | 登录与令牌、RBAC 权限矩阵、项目级租户隔离、审计日志（只增不改、脱敏）、产物保留策略 |
 
 ## 适用场景
@@ -47,7 +51,7 @@
 ## 技术架构
 
 - **后端**：Spring Boot 3 + Java 21，分层 `api / application / domain / infrastructure / common`，ArchUnit 约束依赖方向。
-- **数据库**：MySQL 8.0，Flyway 版本化迁移（当前 **36 个迁移至 `V10_1`，66 张业务表**），手写 down 脚本；dev / it 双库（`robot_dev` / `robot_it`）。每张表须带「代理主键 `id` + 审计四列」，`scripts/db-audit.sh` 可单独体检，且已纳入提交门禁。
+- **数据库**：MySQL 8.0，Flyway 版本化迁移（当前 **38 个迁移至 `V10_2`，67 张业务表**），手写 down 脚本；dev / it 双库（`robot_dev` / `robot_it`）。每张表须带「代理主键 `id` + 审计四列」，`scripts/db-audit.sh` 可单独体检，且已纳入提交门禁。
 - **前端**：Vue 3 + Vite + TypeScript + Pinia + vue-i18n + naive-ui，Vitest 单测；主题走「localStorage + 服务端偏好（按用户）+ `data-theme/data-accent/data-density`」三层，naive-ui 主题由语义 token 单向派生。
 - **编辑器**：独立子包 `packages/editor`（CodeMirror 6），有自己的 vitest 工程与 dist 产物，**构建先于前端**。
 - **测试内核**：Robot Framework 7.5（pabot 并发、robotdashboard 看板）+ pytest（`pytest-json-report` / `junitxml`），经 `ExecutionKernel` SPI 接入。
@@ -80,9 +84,11 @@ cd frontend && npm ci && npm run dev
 门禁与集成测试（在仓库根目录）：
 
 ```bash
-bash scripts/lint.sh        # 密钥扫描 + eslint + 后端编译 + 颜色/对比度/i18n/token/体积/WBS 一致性等检查
+bash scripts/gates.sh       # 一键全量门禁（18 步：字体子集 / 前端测试与构建 / 后端测试 / 各类 lint / 库审计 / 浏览器回归 / 性能基线 / 结构自检）
+bash scripts/lint.sh        # 单跑静态检查：密钥扫描 + eslint + 后端编译 + 颜色/对比度/i18n/token/体积/WBS 一致性等
 bash artifacts/run_it.sh    # 集成测试，连 robot_it 库（内部读取 ~/.config/robot-autotest/env）
 bash scripts/db-audit.sh    # 库结构体检：表数、审计四列、主键、时间列精度、字符集
+bash scripts/backup-drill.sh # 备份恢复演练（dump → 覆盖导入 robot_it → 行数与关键列核对 → 自动还原）
 ```
 
 打开 `http://localhost:5173`（开发）或 `http://localhost:8001`（统一入口），使用内置管理员账号登录；**生产部署前必须修改默认口令**。
@@ -112,6 +118,9 @@ docs/             设计、计划、版本、证据文档
 | [docs/release/README.md](docs/release/README.md) | 版本地图与每版交付口径 |
 | [docs/release/v2.1-platform/](docs/release/v2.1-platform/) | v2.1 的 PRD / 开发计划（DEV-PLAN）/ 测试计划（TEST-PLAN） |
 | [docs/evidence/v2.1/](docs/evidence/v2.1/) | v2.1 各包验收证据（真实 HTTP 链路脚本、run.log、截图，可复跑） |
+| [docs/plan/W5-总结报告-20261107.md](docs/plan/W5-总结报告-20261107.md) | W5（v3.0.1）总结：做了什么、为什么做、验收读数、已知边界 |
+| [docs/plan/最终交付报告-W0-W5-20261107.md](docs/plan/最终交付报告-W0-W5-20261107.md) | W0–W5 最终交付报告：六波清单、验收读数、修掉的真实缺陷、风险 |
+| [docs/evidence/v3.0.1/](docs/evidence/v3.0.1/) | W5 验收证据（示例用例播种、冲突接口 JSON、跨轮聚类、浏览器截图） |
 | [docs/process/版本开发流程.md](docs/process/版本开发流程.md) | 七道版本流程与准入门槛 |
 | [docs/design/美术体系-开发与测试计划-20261104.md](docs/design/美术体系-开发与测试计划-20261104.md) | 设计 token、双语 / 密度 / 暗色判据与实测 |
 | [docs/evidence/](docs/evidence/) | 各包验收证据（门禁日志、真实链路脚本与读数、截图） |
