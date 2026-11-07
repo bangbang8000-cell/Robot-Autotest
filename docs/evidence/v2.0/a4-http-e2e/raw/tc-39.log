@@ -1,0 +1,4 @@
+## TC-39 项目移除资产引用：只解引用不动全局资产
+## verdict: PASS
+## numbers: 引用 7->6->7；全局 device 3->3；DELETE 200/恢复 200
+## detail: 目标 DEVICE/3（alias=-）；项目引用 7->6->7；全局 device 3->3；DELETE=200 恢复 POST=200

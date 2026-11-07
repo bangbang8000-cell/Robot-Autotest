@@ -1,0 +1,450 @@
+{
+  "tc59": {
+    "pages": {
+      "overview": {
+        "size": [
+          1440,
+          900
+        ],
+        "blocks": 1260,
+        "whiteBlocks": 0,
+        "ratioPct": 0.0,
+        "samples": []
+      },
+      "assets": {
+        "size": [
+          1440,
+          900
+        ],
+        "blocks": 1260,
+        "whiteBlocks": 0,
+        "ratioPct": 0.0,
+        "samples": []
+      },
+      "cases": {
+        "size": [
+          1440,
+          900
+        ],
+        "blocks": 1260,
+        "whiteBlocks": 120,
+        "ratioPct": 9.524,
+        "samples": [
+          [
+            352,
+            224
+          ],
+          [
+            384,
+            224
+          ],
+          [
+            416,
+            224
+          ],
+          [
+            448,
+            224
+          ],
+          [
+            480,
+            224
+          ]
+        ]
+      },
+      "runs": {
+        "size": [
+          1440,
+          900
+        ],
+        "blocks": 1260,
+        "whiteBlocks": 178,
+        "ratioPct": 14.127,
+        "samples": [
+          [
+            384,
+            224
+          ],
+          [
+            480,
+            224
+          ],
+          [
+            672,
+            224
+          ],
+          [
+            704,
+            224
+          ],
+          [
+            768,
+            224
+          ]
+        ]
+      },
+      "reports": {
+        "size": [
+          1440,
+          900
+        ],
+        "blocks": 1260,
+        "whiteBlocks": 414,
+        "ratioPct": 32.857,
+        "samples": [
+          [
+            384,
+            256
+          ],
+          [
+            512,
+            256
+          ],
+          [
+            1088,
+            256
+          ],
+          [
+            1120,
+            256
+          ],
+          [
+            1152,
+            256
+          ]
+        ]
+      },
+      "groups": {
+        "size": [
+          1440,
+          900
+        ],
+        "blocks": 1260,
+        "whiteBlocks": 0,
+        "ratioPct": 0.0,
+        "samples": []
+      },
+      "imports": {
+        "size": [
+          1440,
+          900
+        ],
+        "blocks": 1260,
+        "whiteBlocks": 0,
+        "ratioPct": 0.0,
+        "samples": []
+      },
+      "test-reports": {
+        "size": [
+          1440,
+          900
+        ],
+        "blocks": 1260,
+        "whiteBlocks": 0,
+        "ratioPct": 0.0,
+        "samples": []
+      }
+    },
+    "gapPages": [
+      "cases",
+      "runs",
+      "reports"
+    ]
+  },
+  "tc64": {
+    "pairs": {
+      "overview-light-1440.png": {
+        "size": [
+          1440,
+          900
+        ],
+        "changedPixels": 217849,
+        "ratioPct": 16.809,
+        "bbox": [
+          8,
+          5,
+          1440,
+          900
+        ],
+        "baseline": true,
+        "current": true,
+        "verdict": "有差异（bbox 可定位）"
+      },
+      "assets-light-1440.png": {
+        "size": [
+          1440,
+          900
+        ],
+        "changedPixels": 51764,
+        "ratioPct": 3.994,
+        "bbox": [
+          12,
+          16,
+          1420,
+          665
+        ],
+        "baseline": true,
+        "current": true,
+        "verdict": "有差异（bbox 可定位）"
+      },
+      "cases-light-1440.png": {
+        "size": [
+          1440,
+          900
+        ],
+        "changedPixels": 129168,
+        "ratioPct": 9.967,
+        "bbox": [
+          8,
+          16,
+          1420,
+          665
+        ],
+        "baseline": true,
+        "current": true,
+        "verdict": "有差异（bbox 可定位）"
+      },
+      "runs-light-1440.png": {
+        "size": [
+          1440,
+          900
+        ],
+        "changedPixels": 578135,
+        "ratioPct": 44.609,
+        "bbox": [
+          12,
+          16,
+          1420,
+          674
+        ],
+        "baseline": true,
+        "current": true,
+        "verdict": "有差异（bbox 可定位）"
+      },
+      "reports-light-1440.png": {
+        "size": [
+          1440,
+          900
+        ],
+        "changedPixels": 723053,
+        "ratioPct": 55.791,
+        "bbox": [
+          8,
+          16,
+          1420,
+          837
+        ],
+        "baseline": true,
+        "current": true,
+        "verdict": "有差异（bbox 可定位）"
+      },
+      "groups-light-1440.png": {
+        "size": [
+          1440,
+          900
+        ],
+        "changedPixels": 36238,
+        "ratioPct": 2.796,
+        "bbox": [
+          12,
+          16,
+          950,
+          665
+        ],
+        "baseline": true,
+        "current": true,
+        "verdict": "有差异（bbox 可定位）"
+      },
+      "imports-light-1440.png": {
+        "size": [
+          1440,
+          900
+        ],
+        "changedPixels": 27580,
+        "ratioPct": 2.128,
+        "bbox": [
+          12,
+          16,
+          950,
+          665
+        ],
+        "baseline": true,
+        "current": true,
+        "verdict": "有差异（bbox 可定位）"
+      },
+      "test-reports-light-1440.png": {
+        "size": [
+          1440,
+          900
+        ],
+        "changedPixels": 43766,
+        "ratioPct": 3.377,
+        "bbox": [
+          8,
+          16,
+          1142,
+          665
+        ],
+        "baseline": true,
+        "current": true,
+        "verdict": "有差异（bbox 可定位）"
+      },
+      "overview-dark-1440.png": {
+        "size": [
+          1440,
+          900
+        ],
+        "changedPixels": 264219,
+        "ratioPct": 20.387,
+        "bbox": [
+          8,
+          0,
+          1440,
+          900
+        ],
+        "baseline": true,
+        "current": true,
+        "verdict": "有差异（bbox 可定位）"
+      },
+      "assets-dark-1440.png": {
+        "size": [
+          1440,
+          900
+        ],
+        "changedPixels": 108197,
+        "ratioPct": 8.349,
+        "bbox": [
+          12,
+          16,
+          1420,
+          665
+        ],
+        "baseline": true,
+        "current": true,
+        "verdict": "有差异（bbox 可定位）"
+      },
+      "cases-dark-1440.png": {
+        "size": [
+          1440,
+          900
+        ],
+        "changedPixels": 415060,
+        "ratioPct": 32.026,
+        "bbox": [
+          8,
+          16,
+          1420,
+          665
+        ],
+        "baseline": true,
+        "current": true,
+        "verdict": "有差异（bbox 可定位）"
+      },
+      "runs-dark-1440.png": {
+        "size": [
+          1440,
+          900
+        ],
+        "changedPixels": 677002,
+        "ratioPct": 52.238,
+        "bbox": [
+          12,
+          16,
+          1420,
+          674
+        ],
+        "baseline": true,
+        "current": true,
+        "verdict": "有差异（bbox 可定位）"
+      },
+      "reports-dark-1440.png": {
+        "size": [
+          1440,
+          900
+        ],
+        "changedPixels": 839524,
+        "ratioPct": 64.778,
+        "bbox": [
+          8,
+          16,
+          1420,
+          837
+        ],
+        "baseline": true,
+        "current": true,
+        "verdict": "有差异（bbox 可定位）"
+      },
+      "groups-dark-1440.png": {
+        "size": [
+          1440,
+          900
+        ],
+        "changedPixels": 86226,
+        "ratioPct": 6.653,
+        "bbox": [
+          12,
+          16,
+          1392,
+          665
+        ],
+        "baseline": true,
+        "current": true,
+        "verdict": "有差异（bbox 可定位）"
+      },
+      "imports-dark-1440.png": {
+        "size": [
+          1440,
+          900
+        ],
+        "changedPixels": 25764,
+        "ratioPct": 1.988,
+        "bbox": [
+          12,
+          16,
+          1114,
+          665
+        ],
+        "baseline": true,
+        "current": true,
+        "verdict": "有差异（bbox 可定位）"
+      },
+      "test-reports-dark-1440.png": {
+        "size": [
+          1440,
+          900
+        ],
+        "changedPixels": 92884,
+        "ratioPct": 7.167,
+        "bbox": [
+          8,
+          16,
+          1392,
+          665
+        ],
+        "baseline": true,
+        "current": true,
+        "verdict": "有差异（bbox 可定位）"
+      }
+    },
+    "baselineCount": 16,
+    "currentCount": 16,
+    "changedPairs": [
+      "overview-light-1440.png",
+      "assets-light-1440.png",
+      "cases-light-1440.png",
+      "runs-light-1440.png",
+      "reports-light-1440.png",
+      "groups-light-1440.png",
+      "imports-light-1440.png",
+      "test-reports-light-1440.png",
+      "overview-dark-1440.png",
+      "assets-dark-1440.png",
+      "cases-dark-1440.png",
+      "runs-dark-1440.png",
+      "reports-dark-1440.png",
+      "groups-dark-1440.png",
+      "imports-dark-1440.png",
+      "test-reports-dark-1440.png"
+    ]
+  }
+}

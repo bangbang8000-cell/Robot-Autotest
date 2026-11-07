@@ -1,0 +1,1 @@
+{"code":0,"codeName":"OK","message":"OK","data":{"robot":false,"pabot":false,"pytest":false,"python3":true,"kernels":["pytest","robot"],"timeoutSeconds":1800,"maxRetries":2,"sameRunMixedKernels":false},"success":true}

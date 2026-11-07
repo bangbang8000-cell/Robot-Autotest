@@ -1,0 +1,7 @@
+# 取证时发现的环境既有遗留（非本次 run 产生），记录后清理
+# captured_at 2026-11-07 13:40:31
+1513757       1 1513756   40960 S    /init
+1513981 1513757 1513981   40936 Ss   /home/evergreen/rf-stack/.venv/bin/python -m pabot.pabotlib  127.0.0.1 47322
+# 清理后复查
+# captured_at 2026-11-07 13:40:33
+# 剩余 pabotlib 行数: 0

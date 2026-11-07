@@ -1,0 +1,4 @@
+## TC-48 归档项目应只读且拒建 run
+## verdict: GAP
+## numbers: 归档端点 POST 404 / PUT archived 500；归档后建 run 200（未拒绝）
+## detail: project 表无 archived 列（列=['id', 'code', 'name', 'description', 'status', 'created_at', 'created_by', 'updated_at']）；FR-37 的归档是项目态，代码仅有 project_template.archived

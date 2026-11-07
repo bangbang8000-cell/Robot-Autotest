@@ -1,0 +1,4 @@
+## TC-46 跨项目 URL 直连：超管全通、非成员全拒
+## verdict: PASS
+## numbers: admin 5/5 200；engineer 非成员 4/4 403
+## detail: ids=[61, 44, 29, 2, 1] admin=[200, 200, 200, 200, 200] engineer_others=[403, 403, 403, 403]

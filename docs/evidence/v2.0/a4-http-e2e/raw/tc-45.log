@@ -1,0 +1,4 @@
+## TC-45 全局视图仅超管；统计口径与项目总数一致
+## verdict: PASS
+## numbers: admin 200 projects=5 groups=3 reports=0；非管理员 403 4/4
+## detail: detail=[('engineer', 403), ('pm', 403), ('viewer', 403), ('nobody', 403)]

@@ -1,0 +1,46 @@
+{
+  "runId": "RUN-20261107121600-e80000",
+  "status": "queued",
+  "report": {
+    "code": 0,
+    "codeName": "OK",
+    "message": "OK",
+    "data": {
+      "runId": "RUN-20261107121600-e80000",
+      "projectId": 29,
+      "state": "finished",
+      "exportable": false,
+      "metadataMissing": [],
+      "metadata": {},
+      "counts": {
+        "pass": 0,
+        "fail": 0,
+        "skip": 0
+      },
+      "startedAt": "2026-11-07T04:16:00.504Z",
+      "finishedAt": "2026-11-07T04:16:02.443Z"
+    },
+    "success": true
+  },
+  "tree": {
+    "code": 0,
+    "codeName": "OK",
+    "message": "OK",
+    "data": {
+      "name": "RUN-20261107121600-e80000",
+      "status": "PASS",
+      "suites": [],
+      "cases": [
+        {
+          "caseKey": "",
+          "name": "",
+          "verdict": "PASS",
+          "durationMs": 0,
+          "failureMsg": null,
+          "keywords": []
+        }
+      ]
+    },
+    "success": true
+  }
+}

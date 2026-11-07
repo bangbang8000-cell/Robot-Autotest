@@ -1,0 +1,5 @@
+collect-only nodeid 数 : 254
+json-report nodeid 数  : 254
+仅 collect 有         : 0
+仅 执行报告有         : 0
+RESULT: IDENTICAL

@@ -32,7 +32,7 @@
 | 统一入口实测 | `bash scripts/verify-entry.sh` | 12 / 12 PASS | PASS |
 | WBS 自洽 | `python3 tools/check_wbs_consistency.py` | 130 包 / 87 已完成，五数自洽 | PASS |
 
-> 原始日志由 `docs/evidence/v1.0/policy-20261106/gates.sh` 复跑重建（logs/ 被 .gitignore 忽略）。
+> 原始日志由 `scripts/gates.sh` 复跑重建（logs/ 被 .gitignore 忽略）。
 
 ## 3. 历史证据清单
 

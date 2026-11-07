@@ -1,0 +1,20 @@
+[PASS] TC-06 403 计 3/3；nobody 可见项目 0
+[PASS] TC-13 默认键 5；403/400/200 = [403, 400, 200]；实库 0->1；审计 +1
+[PASS] TC-14 项目键 3；平台键 5；交集 0；平台键未变 True；项目库落值 pytest
+[GAP] TC-28 选择接口 200（未拦截）；混合提交 200（期望 400）；终态 canceled
+[GAP] TC-29 默认内核切换 robot→pytest 1/1；run.kernel 列 0；run_metadata kernel 键 0
+[GAP] TC-31 可见性/公开列 0；跨项目共享校验和 0；读取端点 404/200
+[PASS] TC-39 引用 7->6->7；全局 device 3->3；DELETE 200/恢复 200
+[PARTIAL] TC-41 建组 200/加成员 200/重复加成员 200/授权 200/改名 404/删组 404/移除成员 404；成员行 1/1；用户数 9→9
+[GAP] TC-42 授权 0/3；三项目可见 0/3；未授权项目 403/403
+[GAP] TC-44 加成员 200/200；移除成员端点 404/200；移除前后项目访问 [403,403]；组成员行 1
+[PASS] TC-45 admin 200 projects=5 groups=3 reports=0；非管理员 403 4/4
+[PASS] TC-46 admin 5/5 200；engineer 非成员 4/4 403
+[GAP] TC-48 归档端点 POST 404 / PUT archived 500；归档后建 run 200（未拒绝）
+[GAP] TC-49 存储顺序与入参一致 1/1（'3,1,2'）；执行端点 404；复制端点 404
+[GAP] TC-50 动作 4 个 → audit_log 新增 0 行（id 394513→394513）；前后值列 0/1
+[GAP] TC-52 探测端点 404；state 布尔位 4；三态字段 0；ai_cli_probe 行 0
+[GAP] TC-57 未确认 execute 403（403 必须二次确认）；进程树端点 404；ai_action 行 0；cwd/env 列 0
+
+== 17 条：PASS 6 / PARTIAL 1 / GAP 10 / FAIL 0 ==
+清理后计数: {'test_report': '0', 'test_scenario': '0', 'user_group': '0', 'project_group_role': '0', 'user_group_member': '0'}

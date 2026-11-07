@@ -1,0 +1,13 @@
+# ---- 命令: pytest --collect-only -q --continue-on-collection-errors <前 200 个 test_*.py>
+# ---- 退出码: 1  耗时: 43s
+# ---- 收集到: 552 条 nodeid
+# ---- 收集错误: 247 行含 ERROR
+# ---- 尾部 ----
+ERROR tests/agent/test_cascading_interrupt.py
+ERROR tests/agent/test_chat_completion_helpers_provider_sort.py
+ERROR tests/agent/test_chat_sdk_transform_bypass.py
+ERROR tests/agent/test_cjk_token_estimation.py
+ERROR tests/agent/test_claude_code_version_path.py
+ERROR tests/agent/test_close_interrupted_tool_sequence.py
+ERROR tests/agent/test_codex_app_server_compaction.py
+552 tests collected, 123 errors in 40.59s

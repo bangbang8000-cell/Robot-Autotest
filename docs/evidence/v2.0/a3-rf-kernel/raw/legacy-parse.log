@@ -1,0 +1,21 @@
+kernel=robot
+total=17
+failures=0
+  PASS	TN-IMP-014 网卡信息检查	PASS
+  PASS	TN-IMP-020 LLDP 功能测试	PASS
+  PASS	TN-IMP-025 光模块数字诊断指标验证	PASS
+  PASS	TN-IMP-057 GRO功能关闭多次抓包测试（MTU1500）	PASS
+  PASS	TN-IMP-069 TSO功能关闭多次抓包测试（MTU1500）	PASS
+  PASS	TN-IMP-089 校验和卸载功能验证	PASS
+  PASS	TN-IMP-095 RSS 流量分发验证	PASS
+  PASS	TN-IMP-096 中断聚合功能测试01	PASS
+  PASS	TN-IMP-101 多队列收发包测试01	PASS
+  PASS	TN-IMP-118 ip link逻辑UP/DOWN循环100次	PASS
+  PASS	TN-IMP-119 大文件传输	PASS
+  PASS	TN-IMP-123 MTU9000 收发包测试	PASS
+  PASS	TN-IMP-136 测试Vlan模式下网卡的连通性	PASS
+  PASS	TN-IMP-142 VXLAN开关checksum offload测试	PASS
+  PASS	TN-IMP-159 RDMA 功能测试 - PFC 优先级流控测试	PASS
+  PASS	TN-IMP-167 iperf打流测试-单口单向TCP性能测试	PASS
+  PASS	TN-IMP-176 perftest 读延时测试	PASS
+passed=17

@@ -1,0 +1,64 @@
+1 0 1 339375 Ss /sbin/init
+2 1 0 339375 Sl /init
+9 2 0 339374 Sl plan9 --control-socket 7 --log-level 4 --server-fd 8 --pipe-fd 10 --log-truncate
+51 1 51 339374 S<s /usr/lib/systemd/systemd-journald
+106 1 106 339374 Ss /usr/lib/systemd/systemd-udevd
+145 1 145 339374 S<s ovsdb-server /etc/openvswitch/conf.db -vconsole:emer -vsyslog:err -vfile:info --remote=punix:/var/run/openvswitch/db.sock --private-key=db:Open_vSwitch,SSL,private_key --certificate=db:Open_vSwitch,SSL,certificate --bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert --no-chdir --log-file=/var/log/openvswitch/ovsdb-server.log --pidfile=/var/run/openvswitch/ovsdb-server.pid --detach
+149 1 149 339374 Ss /sbin/rpcbind -f -w
+150 1 150 339374 Ss /usr/lib/systemd/systemd-resolved
+152 1 152 339374 Ssl /usr/lib/systemd/systemd-timesyncd
+160 1 160 339374 Ss /usr/sbin/nfsdcld
+164 1 164 339374 Ss /usr/sbin/blkmapd
+292 1 292 339373 Ss /usr/sbin/rpc.idmapd
+294 1 294 339373 Ss /usr/sbin/rpc.statd
+414 1 414 339373 Ss /usr/sbin/cron -f -P
+415 1 415 339373 Ss @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+418 1 418 339373 Ss /usr/sbin/fsidd
+422 1 422 339373 Ssl /data/jueyun/exporter/node_exporter
+424 1 424 339373 Ssl /data/jueyun/prometheus/prometheus --config.file=/data/jueyun/prometheus/prometheus.yml --storage.tsdb.path=/data/jueyun/data/prometheus --web.enable-lifecycle --web.listen-address=0.0.0.0:19090
+428 1 428 339373 Ssl /usr/bin/redis-server 127.0.0.1:6379
+434 1 434 339373 Ss /usr/lib/systemd/systemd-logind
+441 1 441 339373 Ssl /data/jueyun/exporter/tunic-exporter
+462 1 462 339373 Ssl /usr/sbin/rsyslogd -n -iNONE
+470 1 470 339373 Ss+ /sbin/agetty -o -p -- \u --noclear --keep-baud - 115200,38400,9600 vt220
+510 1 510 339373 Ss+ /sbin/agetty -o -p -- \u --noclear - linux
+514 1 514 339373 Ssl /usr/bin/containerd
+565 1 565 339373 Ssl /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+573 1 573 339372 Ssl /usr/sbin/mysqld
+639 1 639 339372 Ss /usr/sbin/rpc.mountd
+647 2 647 339372 Ss /bin/login -f
+673 1 673 339372 Ssl /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+759 1 759 339372 Ss /usr/lib/systemd/systemd --user
+760 759 759 339372 S (sd-pam)
+806 647 806 339371 S+ -bash
+829 1 829 339371 Ssl /data/jueyun/jdk/bin/java -Xms512m -Xmx2g -jar /data/jueyun/backend/ras-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod --spring.config.additional-location=file:/data/jueyun/config/application-prod.yaml
+1810 1 1810 338782 Ssl /usr/lib/polkit-1/polkitd --no-debug
+4011 2 4011 332464 Ss /init
+4012 4011 4011 332464 S /init
+4014 4012 4014 332464 Ss+ -bash
+8564 4012 8564 331005 Ssl /opt/node24/bin/node --import tsx/esm /home/evergreen/deepseek-harness/apps/cli/src/bin.ts web
+106810 759 106810 242873 Ssl node /home/evergreen/robot-autotest/frontend/node_modules/.bin/vite --host 127.0.0.1 --port 5273 --strictPort
+106843 106810 106810 242873 Sl /home/evergreen/robot-autotest/frontend/node_modules/@esbuild/linux-x64/bin/esbuild --service=0.25.12 --ping
+632250 1 632249 129907 S /init
+632266 632250 632266 129906 Ssl npm exec vite --port 5173 --host 0.0.0.0
+632280 632266 632266 129905 S sh -c 'vite' --port 5173 --host 0.0.0.0
+632281 632280 632266 129905 Sl node /home/evergreen/robot-autotest/frontend/node_modules/.bin/vite --port 5173 --host 0.0.0.0
+632292 632281 632266 129904 Sl /home/evergreen/robot-autotest/frontend/node_modules/@esbuild/linux-x64/bin/esbuild --service=0.25.12 --ping
+1730265 759 1730265 1597 Ssl /home/evergreen/.local/bin/node /home/evergreen/robot-autotest/scripts/serve-entry.mjs
+1730324 759 1730324 1594 Ssl /usr/bin/java -jar /home/evergreen/robot-autotest/backend/target/robot-autotest-backend-0.1.0-SNAPSHOT.jar --planning.scheduler-enabled=true
+1735931 1 1735931 44 Ssl /usr/libexec/wsl-pro-service
+1736018 106 106 1 S (udev-worker)
+1736019 106 106 1 S (udev-worker)
+1736020 106 106 1 S (udev-worker)
+1736021 106 106 1 S (udev-worker)
+1736022 106 106 1 S (udev-worker)
+1736023 2 1736023 1 Ss /init
+1736024 1736023 1736023 1 S /init
+1736025 1736024 1736025 1 Ss+ bash -lc cd ~/robot-autotest/docs/evidence/v2.0/a7-process-tree && python3 probe.py 2>&1 | tail -20
+1736031 1736025 1736025 1 S+ python3 probe.py
+1736032 1736025 1736025 1 S+ tail -20
+1736040 1730324 1730324 0 Sl /home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/pabot --outputdir /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0 --processes 2 --name run-RUN-20261107134042-eb0000 suites/e2e-nodx03/demo-slow.robot suites/a7/slow-b.robot
+1736044 1736040 1736044 0 Ss /home/evergreen/rf-stack/.venv/bin/python -m pabot.pabotlib  127.0.0.1 8270
+1736052 1736040 1736052 0 Rs /home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0/pabot_results/0/robot_argfile.txt
+1736056 1736040 1736056 0 Rs /home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0/pabot_results/1/robot_argfile.txt
+1736064 1736031 1736025 0 R+ ps -ww -eo pid,ppid,pgid,etimes,stat,args

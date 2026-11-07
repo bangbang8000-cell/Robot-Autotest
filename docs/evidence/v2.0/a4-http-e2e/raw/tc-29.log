@@ -1,0 +1,4 @@
+## TC-29 历史 run 内核归属不变、新 run 用新内核
+## verdict: GAP
+## numbers: 默认内核切换 robot→pytest 1/1；run.kernel 列 0；run_metadata kernel 键 0
+## detail: select 前={'kernel': 'robot', 'source': 'PROJECT_DEFAULT', 'overridden': False}；select 后={'kernel': 'pytest', 'source': 'PROJECT_DEFAULT', 'overridden': False}；run 列=['run_id', 'run_request_id', 'id', 'project_id', 'test_set_id', 'trigger_type', 'plan_id', 'triggered_by_plan_at']...；metadata 键=['CASE_KIND', 'DUT', 'LINK', 'QA_PROJECT', 'SW_BUILD']。run 侧无任何 kernel 承载列/元数据，历史 run 的内核归属不可查，故判 GAP

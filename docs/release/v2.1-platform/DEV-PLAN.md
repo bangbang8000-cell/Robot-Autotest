@@ -52,7 +52,7 @@
 | 波次 | 内容 | 包 | 进入条件 | 出口判据 |
 |---|---|---|---|---|
 | **W8** | 示例用例集 + 计划组 + 依赖图 + 失败聚类 | SMPL-01, ORCH-01..03 | 无（SMPL-01 可立即开工；ORCH 需 F1/F2 实体已在） | 五态示例用例可跑；组内顺序与自动建边正确；同一输入两次聚类结果一致 |
-| **W9** | 报告模板 + XLSX + 四格式一致性 | TPLX-01..03 | **层 A 的 A8（报告真实链路抽样）完成**（避免同一批 `ExportService` 文件打架） | 模板选中字段可导出 xlsx；EXTERNAL 四格式扫描 0 命中；改模板不影响已冻结报告 |
+| **W9** | 报告模板 + XLSX + 四格式一致性 | TPLX-01..03 | ~~A8（报告真实链路抽样）完成~~ → **已偏离：2026-11-07 已先行落地**（见下方偏离记录） | 模板选中字段可导出 xlsx；EXTERNAL 四格式扫描 0 命中；改模板不影响已冻结报告 |
 | **W10** | 公用资产升级闭环 | PUBX-01..02 | W9 出口（同属对外呈现面，顺序排开减少回归面） | 内容未变不误报；三类差异正确；同步与分叉两态可辨 |
 | **W11** | 第二执行节点 | NODX-01..04 | W8 出口 + `ENVX-02` 部署脚本可用 + **C 类人工主导**（节点通信方案由大师确认） | 注册/心跳/指定执行/回收端到端 1 条；离线拒绝 1 条；命令 diff 为空 |
 
@@ -61,6 +61,12 @@
 1. **SMPL-01 排第一**：它是 W8–W11 的回归底座，且本机零依赖（pytest 那份随 A1）。
 2. **W9 让开 A8**：`ExportService` 是两边都要改的文件，同一时间改必然冲突。
 3. **W11 排最后**：唯一 C 类包，且需要第二台真机才能验收；开发期用本机第二端口模拟。
+
+**偏离记录（2026-11-07）：W9 未等 A8 先落地**
+
+- **事实**：TPLX-01..03 已实现并交付（13 个包同日落地，见 §10 实测结论），A8（报告真实链路抽样）仍在 v2.0 收口清单里未完成。
+- **为什么不阻塞**：W9 与 A8 共同触及 `ExportService`，但本次 W9 的改动是**新增模板/ xlsx 分支**，A8 是对既有导出路径的抽样验证；先落地可以并行推进 v2.1 的界面与接口取证，避免整版等一个现场依赖项。
+- **管制口径**：A8 完成前，TPLX 的**导出类 TC（TC-v2.1-15/16/18）只能记「已实现待验」，不得判 PASS**；W10 仍按原进入条件（W9 出口）执行。A8 完成后必须补跑导出抽样并把结论回写到 §10。
 
 ---
 
@@ -222,7 +228,7 @@
 ### 10.0 通用约定
 
 - **证据根目录**：`docs/evidence/v2.1/<包>/README.md`。v2.0 的历史证据散在 `docs/evidence/v1.0/w2-report…w7-design`，本轮起**按版本分根**，旧件不搬迁（搬了会断掉既有引用）。
-- **门禁**：`bash docs/evidence/v1.0/policy-20261106/gates.sh`（14 步）；B4 收敛后改跑 `bash scripts/gates.sh`。
+- **门禁**：`bash scripts/gates.sh`（16 步，B4 已于 2026-11-07 收敛为单份，含 13 浏览器回归 / 14 报告敏感扫描）。
 - **单跑一条测试**：后端 `cd backend && mvn -o -B test -Dtest=<类名>`；前端 `cd frontend && npx vitest run <路径>`；editor 单独 `cd packages/editor && npx vitest run`。
 - **迁移三件套**：`bash scripts/db-migrate.sh`（正向）、`bash scripts/db-undo.sh`（回退）、`bash scripts/db-audit.sh`（审计）。
 - **界面取图**：优先复用 `node docs/evidence/v1.0/w7-design/capture.mjs`（逐页截图基线）。
@@ -281,7 +287,7 @@
 
 ### 10.7 TPLX-03 · 四格式一致性校验
 
-- **改**：新增 `tools/check_report_consistency.py`；B4 收敛后往 `scripts/gates.sh` 加一步（第 14 步位置）
+- **改**：新增 `tools/check_report_consistency.py`；B4 收敛后已接入 `scripts/gates.sh`（**第 16 步**，紧跟 05 生成的样本之后）
 - **做**：① 解析 HTML / DOCX（POI 或 python-docx）/ XLSX（openpyxl）/ PDF（ASCII 文本层）的字段表头；② 比对字段集合；③ 不一致时列出缺失字段并退出 1
 - **跑**：`python3 tools/check_report_consistency.py <html> <docx> <xlsx> <pdf>`
 - **判**：一致 → 0；人为从 xlsx 删一列 → 必须非 0 并指出缺哪列（负向自检）

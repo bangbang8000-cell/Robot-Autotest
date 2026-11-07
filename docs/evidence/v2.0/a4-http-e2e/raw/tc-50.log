@@ -1,0 +1,4 @@
+## TC-50 组四动作逐一写审计（含前后值）
+## verdict: GAP
+## numbers: 动作 4 个 → audit_log 新增 0 行（id 394513→394513）；前后值列 0/1
+## detail: 新增行=[]；auth_log 只有 detail/summary，无 before/after 独立列；归档动作 404

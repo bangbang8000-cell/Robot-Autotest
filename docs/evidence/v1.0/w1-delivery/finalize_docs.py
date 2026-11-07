@@ -149,7 +149,7 @@ W2/W3 仍受 G5/G4 与 C2/C3/C5 约束未开工，`G-授权` 与 ADR-0013 禁跑
     append("docs/plan/决策纪要-20261106.md", "§11 最终机器门读数", """
 ## 11. 最终机器门读数（2026-11-06，开发收口）
 
-`bash docs/evidence/v1.0/policy-20261106/gates.sh` 第四次复跑：
+`bash scripts/gates.sh` 第四次复跑：
 **10 步全 PASS，`GATES_RESULT FAILS=0`**（01 字体 / 02 前端测试 / 03 类型 / 04 前端构建 /
 05 后端测试 / 06 lint / 07 版本文档 / 08 WBS 自洽 / 09 Markdown 表格 / 10 diff check）。
 `bash scripts/verify-entry.sh` 复验 **12 / 12 PASS**（8001 入口、双探针、深链接、缓存策略、API 反代）。

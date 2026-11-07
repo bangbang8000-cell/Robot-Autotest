@@ -1,0 +1,131 @@
+{
+  "run_id": "A4-HTTP-20261107_115740",
+  "results": [
+    {
+      "tc": "TC-06",
+      "title": "非成员/跨项目访问服务端 403 与项目列表不泄露",
+      "verdict": "PASS",
+      "numbers": "403 计 3/3；nobody 可见项目 0",
+      "detail": "状态序列=[403, 403, 403]"
+    },
+    {
+      "tc": "TC-13",
+      "title": "平台设置：默认值/非管理员 403/非法值 400/实库写入+审计",
+      "verdict": "PASS",
+      "numbers": "默认键 5；403/400/200 = [403, 400, 200]；实库 0->1；审计 +1",
+      "detail": "GET=200 keys=['ai.enabled', 'report.retentionDays', 'execution.defaultTimeoutSeconds', 'execution.maxParallel', 'entry.port']; viewer PUT=403; 非法值 PUT=400 msg='设置值必须是整数：execution.maxParallel=abc'; 合法写入=200; system_setting 0->1; audit_log 1201->1202"
+    },
+    {
+      "tc": "TC-14",
+      "title": "项目级设置与平台级设置隔离",
+      "verdict": "PASS",
+      "numbers": "项目键 3；平台键 5；交集 0；平台键未变 True；项目库落值 pytest",
+      "detail": "项目键=['execution.timeoutSeconds', 'case.tagSet', 'kernel.default']；平台键=['ai.enabled', 'report.retentionDays', 'execution.defaultTimeoutSeconds', 'execution.maxParallel', 'entry.port']；写项目设置=200"
+    },
+    {
+      "tc": "TC-28",
+      "title": "同 run 混合内核应 400 拒绝",
+      "verdict": "GAP",
+      "numbers": "选择接口 200（未拦截）；混合提交 200（期望 400）；终态 canceled",
+      "detail": "select robot+pytest => 200 kernel=pytest source=CASE_OVERRIDE; 强行混合提交 => 200 runId=RUN-20261107115742-e80000 终态=canceled; 能力位 sameRunMixedKernels=False 仅常量，无 400 分支"
+    },
+    {
+      "tc": "TC-29",
+      "title": "历史 run 内核归属不变、新 run 用新内核",
+      "verdict": "GAP",
+      "numbers": "默认内核切换 robot→pytest 1/1；run.kernel 列 0；run_metadata kernel 键 0",
+      "detail": "select 前={'kernel': 'robot', 'source': 'PROJECT_DEFAULT', 'overridden': False}；select 后={'kernel': 'pytest', 'source': 'PROJECT_DEFAULT', 'overridden': False}；run 列=['run_id', 'run_request_id', 'id', 'project_id', 'test_set_id', 'trigger_type', 'plan_id', 'triggered_by_plan_at']...；metadata 键=['CASE_KIND', 'DUT', 'LINK', 'QA_PROJECT', 'SW_BUILD']。run 侧无任何 kernel 承载列/元数据，历史 run 的内核归属不可查，故判 GAP"
+    },
+    {
+      "tc": "TC-31",
+      "title": "平台 PUBLIC 用例被 2 个项目引用",
+      "verdict": "GAP",
+      "numbers": "可见性/公开列 0；跨项目共享校验和 0；读取端点 404/200",
+      "detail": "case_source 列=['id', 'project_id', 'batch_id', 'rel_path', 'kind', 'node_id', 'checksum', 'created_at', 'created_by', 'updated_at', 'updated_by']；行数=0；跨项目同校验和=0；GET /api/case-sources => 404 {'code': 40400, 'codeName': 'NOT_FOUND', 'message': '路径不存在：api/case-sources', 'data': None, 'success': False}。case_source 按 project_id 分行存储，无可见性字段，也无用例源读取端点，因此“仅 1 份存储 + 两项目可见 + 副本独立演进”无法成立"
+    },
+    {
+      "tc": "TC-39",
+      "title": "项目移除资产引用：只解引用不动全局资产",
+      "verdict": "PASS",
+      "numbers": "引用 7->6->7；全局 device 3->3；DELETE 200/恢复 200",
+      "detail": "目标 DEVICE/3（alias=-）；项目引用 7->6->7；全局 device 3->3；DELETE=200 恢复 POST=200"
+    },
+    {
+      "tc": "TC-41",
+      "title": "建组/加成员/授权/改名/删组/移除成员 六动作",
+      "verdict": "PARTIAL",
+      "numbers": "建组 200/加成员 200/重复加成员 200/授权 200/改名 404/删组 404/移除成员 404；成员行 1/1；用户数 9→9",
+      "detail": "FR-32 要求六动作齐备；实测仅建组/加成员/授权存在（组 id=9），改名与删组均为路径不存在；成员重复加入后仍 1 行，用户账号数不变"
+    },
+    {
+      "tc": "TC-42",
+      "title": "组授权 3 个项目后组成员可见",
+      "verdict": "GAP",
+      "numbers": "授权 0/3；三项目可见 0/3；未授权项目 403/403",
+      "detail": "授权码=[500, 500, 500]；三项目码=[403, 403, 403]；未授权项目 2=403"
+    },
+    {
+      "tc": "TC-44",
+      "title": "移除组成员后下一次请求立即 403",
+      "verdict": "GAP",
+      "numbers": "加成员 200/200；移除成员端点 404/200；移除前后项目访问 [403,403]；组成员行 1",
+      "detail": "FR-34 要求有“移除组成员”动作；实测 GroupController 只有 POST /groups/member，无 /groups/member/remove（404），移除动作无法通过 HTTP 完成，故无法验证 403 翻转。另：项目访问只查 project_member（AccessControlService.requireProjectAccess），组成员关系本就不影响项目访问，访问恒为 403"
+    },
+    {
+      "tc": "TC-45",
+      "title": "全局视图仅超管；统计口径与项目总数一致",
+      "verdict": "PASS",
+      "numbers": "admin 200 projects=5 groups=3 reports=0；非管理员 403 4/4",
+      "detail": "detail=[('engineer', 403), ('pm', 403), ('viewer', 403), ('nobody', 403)]"
+    },
+    {
+      "tc": "TC-46",
+      "title": "跨项目 URL 直连：超管全通、非成员全拒",
+      "verdict": "PASS",
+      "numbers": "admin 5/5 200；engineer 非成员 4/4 403",
+      "detail": "ids=[61, 44, 29, 2, 1] admin=[200, 200, 200, 200, 200] engineer_others=[403, 403, 403, 403]"
+    },
+    {
+      "tc": "TC-48",
+      "title": "归档项目应只读且拒建 run",
+      "verdict": "GAP",
+      "numbers": "归档端点 POST 404 / PUT archived 500；归档后建 run 200（未拒绝）",
+      "detail": "project 表无 archived 列（列=['id', 'code', 'name', 'description', 'status', 'created_at', 'created_by', 'updated_at']）；FR-37 的归档是项目态，代码仅有 project_template.archived"
+    },
+    {
+      "tc": "TC-49",
+      "title": "场景有序步骤 + 可执行 + 可复制",
+      "verdict": "GAP",
+      "numbers": "存储顺序与入参一致 1/1（'3,1,2'）；执行端点 404；复制端点 404",
+      "detail": "FR-38 要求有序步骤/引用用例集/产出 run/可调序/可复制；实测只有 case_set_ids 逗号串"
+    },
+    {
+      "tc": "TC-50",
+      "title": "组四动作逐一写审计（含前后值）",
+      "verdict": "GAP",
+      "numbers": "动作 4 个 → audit_log 新增 0 行（id 394513→394513）；前后值列 0/1",
+      "detail": "新增行=[]；auth_log 只有 detail/summary，无 before/after 独立列；归档动作 404"
+    },
+    {
+      "tc": "TC-52",
+      "title": "CLI 探测端点：0/1/2 可用组合与三态显示",
+      "verdict": "GAP",
+      "numbers": "探测端点 404；state 布尔位 4；三态字段 0；ai_cli_probe 行 0",
+      "detail": "FR-41 要求 claude/codex/hermes/pi/deepseek + 可用/未安装/未登录 + 可保存参数；实测仅 ['claude', 'codex', 'gemini', 'aider']，探测端点不存在（404），表 0 行"
+    },
+    {
+      "tc": "TC-57",
+      "title": "AI 执行进程：二次确认、进程树、cwd/env",
+      "verdict": "GAP",
+      "numbers": "未确认 execute 403（403 必须二次确认）；进程树端点 404；ai_action 行 0；cwd/env 列 0",
+      "detail": "AiProcessManager 只拼 argv，无 ProcessBuilder.directory/env；ai_action 列=['id', 'session_id', 'action', 'level', 'confirmed', 'result', 'summary', 'created_at']"
+    }
+  ],
+  "cleanup": {
+    "test_report": "0",
+    "test_scenario": "0",
+    "user_group": "0",
+    "project_group_role": "0",
+    "user_group_member": "0"
+  }
+}

@@ -1,0 +1,13 @@
+serial-r1 total=254 passed=245 failed=None skipped=9 nodes=254 unique=254 dups=0
+xdist-r1  total=254 passed=245 failed=None skipped=9 nodes=254 unique=254 dups=0
+serial-r2 total=254 passed=245 failed=None skipped=9 nodes=254 unique=254 dups=0
+xdist-r2  total=254 passed=245 failed=None skipped=9 nodes=254 unique=254 dups=0
+xdist-r1  vs serial-r1: identical_set=True lost=0 extra=0
+serial-r2 vs serial-r1: identical_set=True lost=0 extra=0
+xdist-r2  vs serial-r1: identical_set=True lost=0 extra=0
+wall serial-r1 = 31378 ms
+wall xdist-r1  = 26783 ms
+wall serial-r2 = 31038 ms
+wall xdist-r2  = 27352 ms
+avg serial=31208 ms  avg xdist(-n 4)=27068 ms  speedup=1.15x
+RESULT: PASS (不重复不丢)

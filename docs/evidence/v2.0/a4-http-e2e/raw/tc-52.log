@@ -1,0 +1,4 @@
+## TC-52 CLI 探测端点：0/1/2 可用组合与三态显示
+## verdict: GAP
+## numbers: 探测端点 404；state 布尔位 4；三态字段 0；ai_cli_probe 行 0
+## detail: FR-41 要求 claude/codex/hermes/pi/deepseek + 可用/未安装/未登录 + 可保存参数；实测仅 ['claude', 'codex', 'gemini', 'aider']，探测端点不存在（404），表 0 行

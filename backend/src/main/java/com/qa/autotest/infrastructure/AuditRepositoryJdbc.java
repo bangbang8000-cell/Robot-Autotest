@@ -70,12 +70,27 @@ public class AuditRepositoryJdbc implements AuditRepository {
         String where = where(q, args);
         long total = jdbc.queryForObject("SELECT COUNT(*) FROM audit_log" + where,
                 Long.class, args.toArray());
-        args.add(q.size());
-        args.add((q.page() - 1) * q.size());
-        List<AuditEntry> items = jdbc.query(
-                "SELECT * FROM audit_log" + where
-                        + " ORDER BY occurred_at DESC, id DESC LIMIT ? OFFSET ?",
-                ROW, args.toArray());
+        List<AuditEntry> items;
+        if (q.keyset()) {
+            // keyset：只扫「游标之后」的一段，深翻耗时与页号无关。
+            // 必须写成 OR 展开式：同样的语义用行构造器 (occurred_at, id) < (?, ?) 时
+            // MySQL 8.0.46 不走 range（实测 1144ms vs 46ms，见 B5 证据）。
+            args.add(Timestamp.from(q.cursorAt()));
+            args.add(Timestamp.from(q.cursorAt()));
+            args.add(q.cursorId());
+            args.add(q.size());
+            items = jdbc.query("SELECT * FROM audit_log" + where
+                            + (where.isEmpty() ? " WHERE " : " AND ")
+                            + "(occurred_at < ? OR (occurred_at = ? AND id < ?))"
+                            + " ORDER BY occurred_at DESC, id DESC LIMIT ?",
+                    ROW, args.toArray());
+        } else {
+            args.add(q.size());
+            args.add((q.page() - 1) * q.size());
+            items = jdbc.query("SELECT * FROM audit_log" + where
+                            + " ORDER BY occurred_at DESC, id DESC LIMIT ? OFFSET ?",
+                    ROW, args.toArray());
+        }
         return new PageResult<>(items, total, q.page(), q.size());
     }
 

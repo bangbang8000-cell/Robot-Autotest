@@ -75,14 +75,14 @@ SECTION3_NEW = """- 本文件在每次 Wave 完成后更新对应行（结果 / 
 
 | 门 | 命令 | 结果 |
 |---|---|---|
-| 八步门禁 | `bash docs/evidence/v1.0/policy-20261106/gates.sh` | 10 步全 PASS，`GATES_RESULT FAILS=0` |
+| 八步门禁 | `bash scripts/gates.sh` | 10 步全 PASS，`GATES_RESULT FAILS=0` |
 | 统一入口实测 | `bash scripts/verify-entry.sh` | 12 / 12 PASS |
 | 版本流程机检 | `python3 tools/check_release_docs.py` | FAIL 0 项（v2.0 PASS） |
 | 后端单测 | `mvn -B test` | 通过（含 W1 新增 3 个测试类 + V7 回填守门） |
 | 前端单测 | `npm run test` | 通过（含 navigation / commandPalette / changelog 三套新用例） |
 | 数据回填 | `bash scripts/db-migrate.sh` | V7_7 / V7_8 应用后 3 项断言均为 0 |
 
-> 门禁原始日志落在 `docs/evidence/v1.0/policy-20261106/logs/`（被 `.gitignore` 忽略，可由 gates.sh 复跑重建）。
+> 门禁原始日志落在 `docs/evidence/gates/logs/`（被 `.gitignore` 忽略，可由 gates.sh 复跑重建）。
 > 逐项修复与证据见 `docs/evidence/v1.0/w1-delivery/README.md`。"""
 
 REV_OLD = """| 2026-11-06 | v1.0 | 初版：67 条 TC 计划态台账，全部 NOT-RUN | 版本流程要求六份产物齐全，本版尚未开工 |"""

@@ -1,0 +1,13 @@
+# B2 raw: RUN-20261107151924-000000 @ 2026-11-07
+# marker = 'B2 log line payload'（夹具里 10000 行 Log To Console 的唯一标识）
+file                                                      bytes      lines   marker
+run.log                                                    1651         26        0
+shard-0/stdout.log                                         1087         22        0
+shard-0/pabot_results/0/robot_stdout.out                 329580      10009    10000
+shard-0/output.xml                                      3420164      90034    10000
+
+# /log?limit=20000（raw/log-20000.json）
+lines: 26
+sources: ['pabot']
+seq range: 1 -> 26
+marker lines: 0

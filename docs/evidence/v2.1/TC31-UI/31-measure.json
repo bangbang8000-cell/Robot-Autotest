@@ -1,0 +1,580 @@
+{
+  "generatedAt": "2026-11-07T03:05:24.352Z",
+  "app": "http://localhost:8001",
+  "cdp": "Chrome/159.0.8130.0",
+  "viewports": [
+    1440,
+    1280
+  ],
+  "dataRunId": "RUN-RPT05EXT-20261106-101647",
+  "projectForData": "1",
+  "projectForTemplates": "44",
+  "states": [
+    "loading",
+    "empty",
+    "error",
+    "data"
+  ],
+  "records": [
+    {
+      "page": "templates",
+      "state": "loading",
+      "snap": {
+        "listItems": 0,
+        "hasNewButton": true,
+        "loadingText": true,
+        "errorText": "",
+        "platformTag": false
+      },
+      "at1440": {
+        "viewport": 1440,
+        "content": 1240,
+        "utilization": 0.8611,
+        "scrollWidth": 1440,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      },
+      "at1280": {
+        "viewport": 1280,
+        "content": 1080,
+        "utilization": 0.8438,
+        "scrollWidth": 1280,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      }
+    },
+    {
+      "page": "templates",
+      "state": "empty",
+      "snap": {
+        "listItems": 0,
+        "hasNewButton": true,
+        "loadingText": false,
+        "errorText": "",
+        "platformTag": false
+      },
+      "at1440": {
+        "viewport": 1440,
+        "content": 1240,
+        "utilization": 0.8611,
+        "scrollWidth": 1440,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      },
+      "at1280": {
+        "viewport": 1280,
+        "content": 1080,
+        "utilization": 0.8438,
+        "scrollWidth": 1280,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      }
+    },
+    {
+      "page": "templates",
+      "state": "error",
+      "snap": {
+        "listItems": 0,
+        "hasNewButton": true,
+        "loadingText": false,
+        "errorText": "TC-31 注入错误（仅取证）",
+        "platformTag": false
+      },
+      "at1440": {
+        "viewport": 1440,
+        "content": 1240,
+        "utilization": 0.8611,
+        "scrollWidth": 1440,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      },
+      "at1280": {
+        "viewport": 1280,
+        "content": 1080,
+        "utilization": 0.8438,
+        "scrollWidth": 1280,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      }
+    },
+    {
+      "page": "templates",
+      "state": "data",
+      "snap": {
+        "listItems": 1,
+        "hasNewButton": true,
+        "loadingText": false,
+        "errorText": "",
+        "platformTag": true
+      },
+      "at1440": {
+        "viewport": 1440,
+        "content": 1240,
+        "utilization": 0.8611,
+        "scrollWidth": 1440,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      },
+      "at1280": {
+        "viewport": 1280,
+        "content": 1080,
+        "utilization": 0.8438,
+        "scrollWidth": 1280,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      }
+    },
+    {
+      "page": "nodes",
+      "state": "loading",
+      "snap": {
+        "bars": 48,
+        "busy": "true",
+        "emptyText": false,
+        "errorText": "",
+        "statuses": []
+      },
+      "at1440": {
+        "viewport": 1440,
+        "content": 1240,
+        "utilization": 0.8611,
+        "scrollWidth": 1440,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      },
+      "at1280": {
+        "viewport": 1280,
+        "content": 1080,
+        "utilization": 0.8438,
+        "scrollWidth": 1280,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      }
+    },
+    {
+      "page": "nodes",
+      "state": "empty",
+      "snap": {
+        "bars": 0,
+        "busy": "false",
+        "emptyText": true,
+        "errorText": "",
+        "statuses": []
+      },
+      "at1440": {
+        "viewport": 1440,
+        "content": 1240,
+        "utilization": 0.8611,
+        "scrollWidth": 1440,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      },
+      "at1280": {
+        "viewport": 1280,
+        "content": 1080,
+        "utilization": 0.8438,
+        "scrollWidth": 1280,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      }
+    },
+    {
+      "page": "nodes",
+      "state": "error",
+      "snap": {
+        "bars": 0,
+        "busy": "false",
+        "emptyText": false,
+        "errorText": "TC-31 注入错误（仅取证）\n技术详情",
+        "statuses": []
+      },
+      "at1440": {
+        "viewport": 1440,
+        "content": 1240,
+        "utilization": 0.8611,
+        "scrollWidth": 1440,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      },
+      "at1280": {
+        "viewport": 1280,
+        "content": 1080,
+        "utilization": 0.8438,
+        "scrollWidth": 1280,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      }
+    },
+    {
+      "page": "nodes",
+      "state": "data",
+      "snap": {
+        "bars": 0,
+        "busy": "false",
+        "emptyText": false,
+        "errorText": "",
+        "statuses": [
+          "已停用",
+          "离线",
+          "待心跳",
+          "离线",
+          "离线",
+          "已停用",
+          "待心跳",
+          "待心跳",
+          "待心跳"
+        ]
+      },
+      "at1440": {
+        "viewport": 1440,
+        "content": 1240,
+        "utilization": 0.8611,
+        "scrollWidth": 1440,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      },
+      "at1280": {
+        "viewport": 1280,
+        "content": 1080,
+        "utilization": 0.8438,
+        "scrollWidth": 1280,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      }
+    },
+    {
+      "page": "clusters",
+      "state": "loading",
+      "snap": {
+        "submitDisabled": true,
+        "summary": "",
+        "noFailure": false,
+        "errorText": "",
+        "groups": 0,
+        "clusterRows": 0
+      },
+      "at1440": {
+        "viewport": 1440,
+        "content": 1240,
+        "utilization": 0.8611,
+        "scrollWidth": 1440,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      },
+      "at1280": {
+        "viewport": 1280,
+        "content": 1080,
+        "utilization": 0.8438,
+        "scrollWidth": 1280,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      }
+    },
+    {
+      "page": "clusters",
+      "state": "empty",
+      "snap": {
+        "submitDisabled": false,
+        "summary": "共 0 条失败，分成 0 个类别",
+        "noFailure": true,
+        "errorText": "",
+        "groups": 0,
+        "clusterRows": 0
+      },
+      "at1440": {
+        "viewport": 1440,
+        "content": 1240,
+        "utilization": 0.8611,
+        "scrollWidth": 1440,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      },
+      "at1280": {
+        "viewport": 1280,
+        "content": 1080,
+        "utilization": 0.8438,
+        "scrollWidth": 1280,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      }
+    },
+    {
+      "page": "clusters",
+      "state": "error",
+      "snap": {
+        "submitDisabled": false,
+        "summary": "",
+        "noFailure": false,
+        "errorText": "TC-31 注入错误（仅取证）",
+        "groups": 0,
+        "clusterRows": 0
+      },
+      "at1440": {
+        "viewport": 1440,
+        "content": 1240,
+        "utilization": 0.8611,
+        "scrollWidth": 1440,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      },
+      "at1280": {
+        "viewport": 1280,
+        "content": 1080,
+        "utilization": 0.8438,
+        "scrollWidth": 1280,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      }
+    },
+    {
+      "page": "clusters",
+      "state": "data",
+      "snap": {
+        "submitDisabled": false,
+        "summary": "共 1 条失败，分成 1 个类别",
+        "noFailure": false,
+        "errorText": "",
+        "groups": 1,
+        "clusterRows": 1
+      },
+      "at1440": {
+        "viewport": 1440,
+        "content": 1240,
+        "utilization": 0.8611,
+        "scrollWidth": 1440,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      },
+      "at1280": {
+        "viewport": 1280,
+        "content": 1080,
+        "utilization": 0.8438,
+        "scrollWidth": 1280,
+        "overflowX": false,
+        "title": "AIDC自动化测试"
+      }
+    }
+  ],
+  "checks": [
+    {
+      "id": "TC31-templates-loading-state",
+      "title": "templates loading 态可判",
+      "ok": true,
+      "detail": "{\"listItems\":0,\"hasNewButton\":true,\"loadingText\":true,\"errorText\":\"\",\"platformTag\":false}"
+    },
+    {
+      "id": "TC31-templates-loading-util",
+      "title": "templates loading 1440 利用率 ≥ 78%",
+      "ok": true,
+      "detail": "86.1%"
+    },
+    {
+      "id": "TC31-templates-loading-narrow",
+      "title": "templates loading 1280 无横滚",
+      "ok": true,
+      "detail": "scrollWidth=1280, viewport=1280"
+    },
+    {
+      "id": "TC31-templates-empty-state",
+      "title": "templates empty 态可判",
+      "ok": true,
+      "detail": "{\"listItems\":0,\"hasNewButton\":true,\"loadingText\":false,\"errorText\":\"\",\"platformTag\":false}"
+    },
+    {
+      "id": "TC31-templates-empty-util",
+      "title": "templates empty 1440 利用率 ≥ 78%",
+      "ok": true,
+      "detail": "86.1%"
+    },
+    {
+      "id": "TC31-templates-empty-narrow",
+      "title": "templates empty 1280 无横滚",
+      "ok": true,
+      "detail": "scrollWidth=1280, viewport=1280"
+    },
+    {
+      "id": "TC31-templates-error-state",
+      "title": "templates error 态可判",
+      "ok": true,
+      "detail": "{\"listItems\":0,\"hasNewButton\":true,\"loadingText\":false,\"errorText\":\"TC-31 注入错误（仅取证）\",\"platformTag\":false}"
+    },
+    {
+      "id": "TC31-templates-error-util",
+      "title": "templates error 1440 利用率 ≥ 78%",
+      "ok": true,
+      "detail": "86.1%"
+    },
+    {
+      "id": "TC31-templates-error-narrow",
+      "title": "templates error 1280 无横滚",
+      "ok": true,
+      "detail": "scrollWidth=1280, viewport=1280"
+    },
+    {
+      "id": "TC31-templates-data-state",
+      "title": "templates data 态可判",
+      "ok": true,
+      "detail": "{\"listItems\":1,\"hasNewButton\":true,\"loadingText\":false,\"errorText\":\"\",\"platformTag\":true}"
+    },
+    {
+      "id": "TC31-templates-data-util",
+      "title": "templates data 1440 利用率 ≥ 78%",
+      "ok": true,
+      "detail": "86.1%"
+    },
+    {
+      "id": "TC31-templates-data-narrow",
+      "title": "templates data 1280 无横滚",
+      "ok": true,
+      "detail": "scrollWidth=1280, viewport=1280"
+    },
+    {
+      "id": "TC31-nodes-loading-state",
+      "title": "nodes loading 态可判",
+      "ok": true,
+      "detail": "{\"bars\":48,\"busy\":\"true\",\"emptyText\":false,\"errorText\":\"\",\"statuses\":[]}"
+    },
+    {
+      "id": "TC31-nodes-loading-util",
+      "title": "nodes loading 1440 利用率 ≥ 78%",
+      "ok": true,
+      "detail": "86.1%"
+    },
+    {
+      "id": "TC31-nodes-loading-narrow",
+      "title": "nodes loading 1280 无横滚",
+      "ok": true,
+      "detail": "scrollWidth=1280, viewport=1280"
+    },
+    {
+      "id": "TC31-nodes-empty-state",
+      "title": "nodes empty 态可判",
+      "ok": true,
+      "detail": "{\"bars\":0,\"busy\":\"false\",\"emptyText\":true,\"errorText\":\"\",\"statuses\":[]}"
+    },
+    {
+      "id": "TC31-nodes-empty-util",
+      "title": "nodes empty 1440 利用率 ≥ 78%",
+      "ok": true,
+      "detail": "86.1%"
+    },
+    {
+      "id": "TC31-nodes-empty-narrow",
+      "title": "nodes empty 1280 无横滚",
+      "ok": true,
+      "detail": "scrollWidth=1280, viewport=1280"
+    },
+    {
+      "id": "TC31-nodes-error-state",
+      "title": "nodes error 态可判",
+      "ok": true,
+      "detail": "{\"bars\":0,\"busy\":\"false\",\"emptyText\":false,\"errorText\":\"TC-31 注入错误（仅取证）\\n技术详情\",\"statuses\":[]}"
+    },
+    {
+      "id": "TC31-nodes-error-util",
+      "title": "nodes error 1440 利用率 ≥ 78%",
+      "ok": true,
+      "detail": "86.1%"
+    },
+    {
+      "id": "TC31-nodes-error-narrow",
+      "title": "nodes error 1280 无横滚",
+      "ok": true,
+      "detail": "scrollWidth=1280, viewport=1280"
+    },
+    {
+      "id": "TC31-nodes-data-state",
+      "title": "nodes data 态可判",
+      "ok": true,
+      "detail": "{\"bars\":0,\"busy\":\"false\",\"emptyText\":false,\"errorText\":\"\",\"statuses\":[\"已停用\",\"离线\",\"待心跳\",\"离线\",\"离线\",\"已停用\",\"待心跳\",\"待心跳\",\"待心跳\"]}"
+    },
+    {
+      "id": "TC31-nodes-data-util",
+      "title": "nodes data 1440 利用率 ≥ 78%",
+      "ok": true,
+      "detail": "86.1%"
+    },
+    {
+      "id": "TC31-nodes-data-narrow",
+      "title": "nodes data 1280 无横滚",
+      "ok": true,
+      "detail": "scrollWidth=1280, viewport=1280"
+    },
+    {
+      "id": "TC31-clusters-loading-state",
+      "title": "clusters loading 态可判",
+      "ok": true,
+      "detail": "{\"submitDisabled\":true,\"summary\":\"\",\"noFailure\":false,\"errorText\":\"\",\"groups\":0,\"clusterRows\":0}"
+    },
+    {
+      "id": "TC31-clusters-loading-util",
+      "title": "clusters loading 1440 利用率 ≥ 78%",
+      "ok": true,
+      "detail": "86.1%"
+    },
+    {
+      "id": "TC31-clusters-loading-narrow",
+      "title": "clusters loading 1280 无横滚",
+      "ok": true,
+      "detail": "scrollWidth=1280, viewport=1280"
+    },
+    {
+      "id": "TC31-clusters-empty-state",
+      "title": "clusters empty 态可判",
+      "ok": true,
+      "detail": "{\"submitDisabled\":false,\"summary\":\"共 0 条失败，分成 0 个类别\",\"noFailure\":true,\"errorText\":\"\",\"groups\":0,\"clusterRows\":0}"
+    },
+    {
+      "id": "TC31-clusters-empty-util",
+      "title": "clusters empty 1440 利用率 ≥ 78%",
+      "ok": true,
+      "detail": "86.1%"
+    },
+    {
+      "id": "TC31-clusters-empty-narrow",
+      "title": "clusters empty 1280 无横滚",
+      "ok": true,
+      "detail": "scrollWidth=1280, viewport=1280"
+    },
+    {
+      "id": "TC31-clusters-error-state",
+      "title": "clusters error 态可判",
+      "ok": true,
+      "detail": "{\"submitDisabled\":false,\"summary\":\"\",\"noFailure\":false,\"errorText\":\"TC-31 注入错误（仅取证）\",\"groups\":0,\"clusterRows\":0}"
+    },
+    {
+      "id": "TC31-clusters-error-util",
+      "title": "clusters error 1440 利用率 ≥ 78%",
+      "ok": true,
+      "detail": "86.1%"
+    },
+    {
+      "id": "TC31-clusters-error-narrow",
+      "title": "clusters error 1280 无横滚",
+      "ok": true,
+      "detail": "scrollWidth=1280, viewport=1280"
+    },
+    {
+      "id": "TC31-clusters-data-state",
+      "title": "clusters data 态可判",
+      "ok": true,
+      "detail": "{\"submitDisabled\":false,\"summary\":\"共 1 条失败，分成 1 个类别\",\"noFailure\":false,\"errorText\":\"\",\"groups\":1,\"clusterRows\":1}"
+    },
+    {
+      "id": "TC31-clusters-data-util",
+      "title": "clusters data 1440 利用率 ≥ 78%",
+      "ok": true,
+      "detail": "86.1%"
+    },
+    {
+      "id": "TC31-clusters-data-narrow",
+      "title": "clusters data 1280 无横滚",
+      "ok": true,
+      "detail": "scrollWidth=1280, viewport=1280"
+    }
+  ],
+  "summary": {
+    "total": 36,
+    "failed": 0
+  }
+}

@@ -1,0 +1,4 @@
+# ---- 命令: timeout 480 pytest --collect-only -q --continue-on-collection-errors
+# ---- 退出码: 124  耗时: 504s
+# ---- 结论: 480s 内未完成（超时被杀），不产出条数结论，不伪造
+# ---- 尾部 30 行 ----

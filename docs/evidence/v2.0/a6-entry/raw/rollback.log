@@ -1,0 +1,33 @@
+$ bash scripts/rollback.sh --to a6-baseline --yes --service robot-autotest-backend.service --jar /home/evergreen/robot-autotest/backend/target/robot-autotest-backend-0.1.0-SNAPSHOT.jar --dist /home/evergreen/robot-autotest/frontend/dist --base-url http://127.0.0.1:8001
+[rollback] 目标版本：a6-baseline
+[rollback] 模式：真实执行
+[rollback] schema：keep
+[rollback] 应用目录：/home/evergreen/robot-autotest
+[rollback] 发布包：/home/evergreen/robot-autotest/releases/a6-baseline/robot-autotest-backend.jar
+[rollback] 前端产物：/home/evergreen/robot-autotest/releases/a6-baseline/dist
+[rollback] 服务：robot-autotest-backend.service  健康检查：http://127.0.0.1:8001/api/_ping
+
+[rollback] ① 备份当前状态
+  备份目录：/home/evergreen/robot-autotest/backups/rollback-20261107_131406
+  - DB 全量：db.sql.gz
+mysqldump: Error: 'Access denied; you need (at least one of) the PROCESS privilege(s) for this operation' when trying to dump tablespaces
+  已生成并校验 db.sql.gz（144K）
+  - 产物清单：artifacts-manifest.tsv
+  产物文件数：19
+  - 当前应用包：current-jar.jar + current-dist.tar.gz
+  当前包已备份（供回退本次回滚用）
+
+[rollback] ② 停服 → 部署上一版 → 可选 down 迁移
+
+[rollback] ③ 起服 → 健康检查 → 抽样
+  健康检查通过：http://127.0.0.1:8001/api/_ping → 200
+
+[rollback] 抽样验证清单（必须人工完成并记录）：
+  [ ] 登录：浏览器打开 http://127.0.0.1:8001 ，用管理员账号登录
+  [ ] 看一个历史报告：/reports/<runId> 能打开，metadata 十项齐全
+  [ ] 跑一条用例：选轻量用例集执行，状态到 passed/failed（不是卡在 running）
+  [ ] 记录：备份目录 /home/evergreen/robot-autotest/backups/rollback-20261107_131406
+[rollback] 回滚动作完成。RTO 需从执行第一秒计到抽样最后一项通过；记录表见 docs/ROLLBACK.md
+[rollback] 备份目录：/home/evergreen/robot-autotest/backups/rollback-20261107_131406
+
+exit=0 wall=8.2s

@@ -1,0 +1,48 @@
+{
+  "id": "TC-02",
+  "title": "含 FOR/IF 的执行报告：关键字树 + 日志 + 下载",
+  "verdict": "PARTIAL",
+  "facts": {
+    "tree": {
+      "kwNodes": 9,
+      "kwChildren": 0,
+      "hasFor": false,
+      "hasIf": false,
+      "first12": [
+        "Log To Console",
+        "Log",
+        "Log To Console",
+        "Log",
+        "Log To Console",
+        "Log",
+        "Log To Console",
+        "Log",
+        "Log"
+      ],
+      "caseBlocks": 1
+    },
+    "metadataRows": 0,
+    "logs": {
+      "lines": [
+        "0 [Log] A5-STEP-0",
+        "1 [Log] A5-STEP-1",
+        "2 [Log] A5-STEP-2",
+        "3 [Log] A5-BRANCH-NO"
+      ],
+      "rawText": "0 [Log] A5-STEP-0\n\n1 [Log] A5-STEP-1\n\n2 [Log] A5-STEP-2\n\n3 [Log] A5-BRANCH-NO\n"
+    },
+    "download": {
+      "status": 200,
+      "contentDisposition": "attachment; filename=\"=?UTF-8?Q?run-RUN-20261107121600-e80000.log?=\"; filename*=UTF-8''run-RUN-20261107121600-e80000.log",
+      "bytes": 1548,
+      "hasCommand": true,
+      "hasStdout": true
+    }
+  },
+  "shots": [
+    "shots/tc-02-tree.png",
+    "shots/tc-02-logs.png"
+  ],
+  "ms": 7853,
+  "oneLiner": "kw 节点 9 / children 0 / FOR false / IF false；循环内 3 轮消息可见 ✓；下载 200 1548B（命令+stdout ✓）→ 结构未嵌套，判 PARTIAL"
+}

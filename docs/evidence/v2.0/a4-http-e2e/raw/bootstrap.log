@@ -1,0 +1,25 @@
+{
+  "run_id": "A4-HTTP-20261107_115740",
+  "fixture_tag": "A4-fce641",
+  "base": "http://127.0.0.1:8001",
+  "projects": {
+    "qa-e2e-platform-fixture": 61,
+    "qa-e2e-orch02": 44,
+    "qa-e2e-fixture": 29,
+    "AST05-B": 2,
+    "demo": 1
+  },
+  "users": {
+    "admin": 1,
+    "ast05": 4,
+    "prj01-demo": 3,
+    "qa-e2e-admin": 17,
+    "qa-e2e-engineer": 15,
+    "qa-e2e-nobody": 18,
+    "qa-e2e-pm": 16,
+    "qa-e2e-viewer": 14,
+    "qa-ui": 2
+  },
+  "reports_before": "0",
+  "audit_before": "1201"
+}

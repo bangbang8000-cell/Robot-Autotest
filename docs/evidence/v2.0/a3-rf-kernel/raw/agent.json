@@ -1,0 +1,16 @@
+{
+  "runId": "A3-RF-20261107_112631",
+  "argv": [
+    "/home/evergreen/rf-stack/.venv/bin/pabot",
+    "--outputdir",
+    "/home/evergreen/robot-autotest/docs/evidence/v2.0/a3-rf-kernel/raw/artifacts/shard-1",
+    "--processes",
+    "2",
+    "--name",
+    "a3-kernel",
+    "fixtures/bench/4suite-2cases/suite1.robot",
+    "fixtures/bench/4suite-2cases/suite2.robot",
+    "fixtures/bench/4suite-2cases/suite3.robot",
+    "fixtures/bench/4suite-2cases/suite4.robot"
+  ]
+}

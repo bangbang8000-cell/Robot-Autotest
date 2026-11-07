@@ -1,0 +1,17 @@
+# 全门禁复核 · 2026-11-07 · HEAD 7a6a604
+# 命令：bash docs/evidence/v1.0/policy-20261106/gates.sh
+  PASS  01-subset_font (6s)
+  PASS  02-frontend_test (18s)
+  PASS  03-type_check (18s)
+  PASS  04-frontend_build (11s)
+  PASS  05-backend_test (54s)
+  PASS  06-lint (23s)
+  PASS  07-release_docs (1s)
+  PASS  08-wbs_consistency (0s)
+  PASS  09-md_tables (0s)
+  PASS  10-diff_check (0s)
+  PASS  11-editor_test (12s)
+  PASS  12-db_audit (1s)
+  PASS  13-css_vars (0s)
+  PASS  14-report_consistency (0s)
+GATES_RESULT FAILS=0

@@ -1,0 +1,623 @@
+[
+  {
+    "id": "TC-01",
+    "title": "两路由互不跳转 + 测试报告创建入口",
+    "verdict": "PASS",
+    "facts": {
+      "reportDetail": {
+        "path": "/reports/RUN-20261107121600-e80000",
+        "testReportLinks": 0,
+        "hasTree": true,
+        "head": "← 返回报告列表\nRUN-20261107121600-e80000"
+      },
+      "testReports": {
+        "path": "/test-reports",
+        "inputPlaceholder": "输入 RUN_ID 创建草稿",
+        "buttons": [
+          "资产",
+          "执行",
+          "管理",
+          "退出登录",
+          "创建草稿",
+          "刷新"
+        ],
+        "hasCreate": true
+      }
+    },
+    "shots": [
+      "shots/tc-01-report-detail.png",
+      "shots/tc-01-test-reports.png"
+    ],
+    "ms": 6892,
+    "oneLiner": "detail 路由未跳 ✓；detail 内 /test-reports 链接 0 个；test-reports 路由未跳 ✓；创建入口 ✓"
+  },
+  {
+    "id": "TC-02",
+    "title": "含 FOR/IF 的执行报告：关键字树 + 日志 + 下载",
+    "verdict": "PARTIAL",
+    "facts": {
+      "tree": {
+        "kwNodes": 9,
+        "kwChildren": 0,
+        "hasFor": false,
+        "hasIf": false,
+        "first12": [
+          "Log To Console",
+          "Log",
+          "Log To Console",
+          "Log",
+          "Log To Console",
+          "Log",
+          "Log To Console",
+          "Log",
+          "Log"
+        ],
+        "caseBlocks": 1
+      },
+      "metadataRows": 0,
+      "logs": {
+        "lines": [
+          "0 [Log] A5-STEP-0",
+          "1 [Log] A5-STEP-1",
+          "2 [Log] A5-STEP-2",
+          "3 [Log] A5-BRANCH-NO"
+        ],
+        "rawText": "0 [Log] A5-STEP-0\n\n1 [Log] A5-STEP-1\n\n2 [Log] A5-STEP-2\n\n3 [Log] A5-BRANCH-NO\n"
+      },
+      "download": {
+        "status": 200,
+        "contentDisposition": "attachment; filename=\"=?UTF-8?Q?run-RUN-20261107121600-e80000.log?=\"; filename*=UTF-8''run-RUN-20261107121600-e80000.log",
+        "bytes": 1548,
+        "hasCommand": true,
+        "hasStdout": true
+      }
+    },
+    "shots": [
+      "shots/tc-02-tree.png",
+      "shots/tc-02-logs.png"
+    ],
+    "ms": 7853,
+    "oneLiner": "kw 节点 9 / children 0 / FOR false / IF false；循环内 3 轮消息可见 ✓；下载 200 1548B（命令+stdout ✓）→ 结构未嵌套，判 PARTIAL"
+  },
+  {
+    "id": "TC-11",
+    "title": "4 角色菜单矩阵 + 直达 403 不闪现",
+    "verdict": "FAIL",
+    "facts": {
+      "roles": [
+        {
+          "user": "qa-e2e-admin",
+          "leaves": 13,
+          "expected": 13,
+          "ok": true,
+          "labels": [
+            "工作台",
+            "设备",
+            "链路",
+            "凭据",
+            "用例",
+            "运行记录",
+            "执行计划",
+            "报告",
+            "用户与项目",
+            "审计日志",
+            "系统设置",
+            "关于",
+            "版本迭代"
+          ],
+          "apiRoles": [
+            "admin"
+          ]
+        },
+        {
+          "user": "qa-e2e-pm",
+          "leaves": 9,
+          "expected": 12,
+          "ok": false,
+          "labels": [
+            "工作台",
+            "设备",
+            "链路",
+            "凭据",
+            "用例",
+            "报告",
+            "用户与项目",
+            "关于",
+            "版本迭代"
+          ],
+          "apiRoles": []
+        },
+        {
+          "user": "qa-e2e-engineer",
+          "leaves": 9,
+          "expected": 11,
+          "ok": false,
+          "labels": [
+            "工作台",
+            "设备",
+            "链路",
+            "凭据",
+            "用例",
+            "报告",
+            "用户与项目",
+            "关于",
+            "版本迭代"
+          ],
+          "apiRoles": [],
+          "forbiddenRoute": {
+            "finalPath": "/settings",
+            "sawSettings": true,
+            "sawForbidden": false,
+            "samples": 14
+          }
+        },
+        {
+          "user": "qa-e2e-viewer",
+          "leaves": 9,
+          "expected": 9,
+          "ok": true,
+          "labels": [
+            "工作台",
+            "设备",
+            "链路",
+            "凭据",
+            "用例",
+            "报告",
+            "用户与项目",
+            "关于",
+            "版本迭代"
+          ],
+          "apiRoles": [],
+          "forbiddenRoute": {
+            "finalPath": "/settings",
+            "sawSettings": true,
+            "sawForbidden": false,
+            "samples": 14
+          }
+        }
+      ]
+    },
+    "shots": [
+      "shots/tc-11-viewer-nav.png",
+      "shots/tc-11-viewer-403.png"
+    ],
+    "ms": 27834,
+    "oneLiner": "菜单叶子 admin=13 / pm=9≠12 / engineer=9≠11 / viewer=9；/api/auth/me.roles admin=[admin] / pm=[空] / engineer=[空] / viewer=[空]；直达 /settings → engineer=/settings / viewer=/settings；闪现 有"
+  },
+  {
+    "id": "TC-12",
+    "title": "Ctrl+K 搜索/键盘/跳转/最近 5 条",
+    "verdict": "PASS",
+    "facts": {
+      "opened": {
+        "open": true,
+        "focused": "palette-input"
+      },
+      "cn": {
+        "rows": 1,
+        "labels": [
+          "用例"
+        ]
+      },
+      "before": "/overview",
+      "jumped": {
+        "path": "/cases",
+        "url": "http://localhost:8001/cases"
+      },
+      "empty": {
+        "rows": 0,
+        "emptyText": "没有匹配的条目"
+      },
+      "recent": [
+        "cases"
+      ]
+    },
+    "shots": [
+      "shots/tc-12-palette-empty.png",
+      "shots/tc-12-palette.png"
+    ],
+    "ms": 9148,
+    "oneLiner": "Ctrl+K 打开 ✓（焦点 palette-input）；「用例」1 条（≤20 ✓）；↓+Enter /overview → /cases；「roce」0 条空态 ✓；最近 1 条（≤5 ✓）"
+  },
+  {
+    "id": "TC-15",
+    "title": "关于页与构建产物逐字段一致",
+    "verdict": "PASS",
+    "facts": {
+      "api": {
+        "status": 200,
+        "version": "0.1.0-SNAPSHOT",
+        "gitCommit": "61c49dd",
+        "buildTime": "2026-11-06T11:01:08Z",
+        "license": "Apache-2.0（见仓库 LICENSE / NOTICE）",
+        "deps": 23,
+        "selfCheck": {
+          "database": "OK",
+          "executor": "NOT_INSTALLED",
+          "kernel": "NOT_INSTALLED",
+          "aiCli": "OK"
+        },
+        "source": "build"
+      },
+      "page": {
+        "chips": [
+          "数据库：正常",
+          "执行器：未安装",
+          "测试内核：未安装",
+          "AI 命令行：正常"
+        ],
+        "depRows": 24,
+        "head": "AIDC自动化测试\n工作台\n资产\n用例\n执行\n运行记录\n执行计划\n报告\n管理\n用户与项目\n审计日志\n系统设置\n关于\n版本迭代\nAIDC 硬件与网络自动化测试平台\n暂无项目\n验收夹具·平台属主\n验收夹具·HTTP 全链路\nNODX-03 fixture\nAST-05 共享演示\n演示项目\nHTTP E2E admin\n中文\nEnglish\n退出登录\n关于本平台\n\nAIDC 硬件与网络自动化测试平台\n\n版本\n版本\n0.1.0-SNAPSHOT\n构建提交\n61c49dd\n构建时间\n2026-11-06T11:01:08Z\n信息来源\n构建产物\n许可证\nApache-2.0（见仓库 LICENSE / NOTICE）\n端口矩阵\n统一入口\n8001\n后端 API\n8081\n开发服务\n5173\n环境自检\n数据库：正常\n执行器：未安装\n测试内核：未安装\nAI 命令行：正常\n依赖清单（23）\n组件\n\t\n版本\n"
+      },
+      "gitHead": "7a6a604afb0fcd5073f279320d44aab5c12162d5",
+      "gitHeadMatches": false,
+      "checks": {
+        "version": true,
+        "gitCommit": true,
+        "buildTime": true,
+        "license": true,
+        "deps": true,
+        "selfCheck4": true
+      }
+    },
+    "shots": [
+      "shots/tc-15-about.png"
+    ],
+    "ms": 5058,
+    "oneLiner": "页面对 API 逐字段 version=✓ gitCommit=✓ buildTime=✓ license=✓ deps=✓ selfCheck4=✓；自检 4 项；依赖 23 条；git HEAD 7a6a604a vs build 61c49dd（不一致（构建产物早于 HEAD））"
+  },
+  {
+    "id": "TC-17",
+    "title": "折叠/收藏/切项目持久化",
+    "verdict": "PASS",
+    "facts": {
+      "collapsed": {
+        "classCollapsed": true,
+        "stored": "true"
+      },
+      "persisted": {
+        "path": "/cases",
+        "classCollapsed": true
+      },
+      "navToggle": {
+        "ok": true,
+        "groups": 3,
+        "before": "true"
+      },
+      "navAfter": {
+        "expanded": "{\"assets\":false}",
+        "groups": [
+          "false",
+          "true",
+          "true"
+        ],
+        "firstChildrenVisible": false
+      },
+      "navReload": {
+        "expanded": "{\"assets\":false}",
+        "groups": [
+          "false",
+          "true",
+          "true"
+        ],
+        "firstChildrenVisible": false
+      },
+      "favBefore": {
+        "key": "用例",
+        "favs": [
+          "overview"
+        ]
+      },
+      "favAfterReload": {
+        "favs": [
+          "overview"
+        ]
+      },
+      "before": {
+        "project": "29",
+        "rows": [
+          "运行号 状态 PASS / FAIL / SKIP 开始时间 可对外",
+          "RUN-20261107121600-e80000 已完成 undefined / undefined / undefined 2026-11-07T04:16:00.504Z 缺项BASELINE, OPERATOR, STARTED_AT, CASE_KIND",
+          "RUN-20261107115743-e80000 已完成 undefined / undefined / undefined 2026-11-07T03:57:43.692Z 缺项"
+        ],
+        "path": "/reports"
+      },
+      "after": {
+        "project": "1",
+        "selectedText": "演示项目",
+        "rows": [
+          "运行号 状态 PASS / FAIL / SKIP 开始时间 可对外",
+          "RUN-RPT05EXT-20261106-101647 已完成 undefined / undefined / undefined 2026-11-06T02:16:48Z 可对外",
+          "RUN-20261104155814-952426 已完成 undefined / undefined / undefined 2026-11-04T07:58:15.046Z 缺项CASE_ID, RUN_ID, QA_PROJECT, DUT, LINK, SW_BUILD, BASELINE, OPERATOR, STARTED_AT, CASE_KIND"
+        ],
+        "path": "/reports"
+      },
+      "back": {
+        "project": "29",
+        "path": "/reports",
+        "rows": 11
+      },
+      "beforeData": [
+        "RUN-20261107121600-e80000 已完成 undefined / undefined / undefined 2026-11-07T04:16:00.504Z 缺项BASELINE, OPERATOR, STARTED_AT, CASE_KIND",
+        "RUN-20261107115743-e80000 已完成 undefined / undefined / undefined 2026-11-07T03:57:43.692Z 缺项"
+      ],
+      "afterData": [
+        "RUN-RPT05EXT-20261106-101647 已完成 undefined / undefined / undefined 2026-11-06T02:16:48Z 可对外",
+        "RUN-20261104155814-952426 已完成 undefined / undefined / undefined 2026-11-04T07:58:15.046Z 缺项CASE_ID, RUN_ID, QA_PROJECT, DUT, LINK, SW_BUILD, BASELINE, OPERATOR, STARTED_AT, CASE_KIND"
+      ]
+    },
+    "shots": [
+      "shots/tc-17-side-collapsed.png"
+    ],
+    "ms": 17560,
+    "oneLiner": "侧栏折叠 ✓（刷新//cases 保持 ✓）；分组折叠 true→false、刷新后 aria=false/true/true 子项可见=false；收藏 用例 刷新后 1 条；切项目 29→1 路由 /reports→/reports，首条数据「RUN-20261107121600-e80」→「RUN-RPT05EXT-20261106-」"
+  },
+  {
+    "id": "TC-47",
+    "title": "切项目后数据无残留",
+    "verdict": "PASS",
+    "facts": {
+      "p29": {
+        "path": "/reports",
+        "project": "29",
+        "rows": [
+          "运行号 状态 PASS / FAIL / SKIP 开始时间 可对外",
+          "RUN-20261107121600-e80000 已完成 undefined / undefined / undefined 2026-11-07T04:16:00.504Z 缺项BASELINE, OPERATOR, STARTED_AT, CASE_KIND",
+          "RUN-20261107115743-e80000 已完成 undefined / undefined / undefined 2026-11-07T03:57:43.692Z 缺项",
+          "RUN-20261107115648-e80000 已完成 undefined / undefined / undefined 2026-11-07T03:56:48.371Z 缺项",
+          "RUN-20261107115049-e80000 已取消 undefined / undefined / undefined 2026-11-07T03:50:49.447Z 缺项",
+          "RUN-20261107115047-e80000 失败 undefined / undefined / undefined 2026-11-07T03:50:47.581Z 缺项",
+          "RUN-20261107114420-e80000 失败 undefined / undefined / undefined 2026-11-07T03:44:20.402Z 缺项",
+          "RUN-20261107030039-e80000 失败 undefined / undefined / undefined 2026-11-06T19:00:40.038Z 缺项",
+          "RUN-20261107030006-e80000 失败 undefined / undefined / undefined 2026-11-06T19:00:08.539Z 缺项",
+          "RUN-20261107030007-e80000 失败 undefined / undefined / undefined 2026-11-06T19:00:08.508Z 缺项",
+          "RUN-20261107014329-910000 失败 undefined / undefined / undefined 2026-11-06T17:43:29.293Z 缺项"
+        ],
+        "breadcrumbs": 0
+      },
+      "p1": {
+        "path": "/reports",
+        "project": "1",
+        "selectedText": "演示项目",
+        "rows": [
+          "运行号 状态 PASS / FAIL / SKIP 开始时间 可对外",
+          "RUN-RPT05EXT-20261106-101647 已完成 undefined / undefined / undefined 2026-11-06T02:16:48Z 可对外",
+          "RUN-20261104155814-952426 已完成 undefined / undefined / undefined 2026-11-04T07:58:15.046Z 缺项CASE_ID, RUN_ID, QA_PROJECT, DUT, LINK, SW_BUILD, BASELINE, OPERATOR, STARTED_AT, CASE_KIND"
+        ],
+        "breadcrumbs": 0
+      },
+      "runs1": {
+        "project": "1",
+        "rows": [
+          "运行号 状态 通过/总数 设备范围 失败原因 开始时间 结束时间 操作",
+          "RUN-RPT05EXT-20261106-101647 已完成 2 / 3 全部设备（不互斥） — 2026/11/06 10:16:48 2026/11/06 10:16:48 查看日志",
+          "RUN-20261104155814-952426 已完成 2 / 2 全部设备（不互斥） — 2026/11/04 15:58:15 2026/11/04 15:58:28 查看日志"
+        ]
+      }
+    },
+    "shots": [
+      "shots/tc-47-p1-reports.png"
+    ],
+    "ms": 8410,
+    "oneLiner": "项目 29→1；29 的 10 个 runId 残留 0 个；新列表 3 行含 RUN-RPT05EXT ✓；面包屑元素 0 个（组件缺失 → 子项 GAP）",
+    "note": "TC-47 的「面包屑为新项目」子项因全局无面包屑组件判 GAP；数据侧已实测通过。"
+  },
+  {
+    "id": "TC-51",
+    "title": "AI 抽屉开合/调宽/刷新",
+    "verdict": "FAIL",
+    "facts": {
+      "opened": {
+        "open": true,
+        "drawerWidth": 340,
+        "mainWidth": 1044,
+        "overlap": false,
+        "hint": "NORMAL",
+        "stored": null
+      },
+      "widen": true,
+      "afterWiden": {
+        "stored": "360",
+        "hint": "NORMAL",
+        "width": 340
+      },
+      "afterReload": {
+        "open": true,
+        "stored": "true",
+        "width": "360"
+      },
+      "closed": {
+        "drawers": 0,
+        "stored": "true",
+        "floating": 0
+      },
+      "afterCloseReload": {
+        "open": true,
+        "stored": "true"
+      }
+    },
+    "shots": [
+      "shots/tc-51-drawer.png"
+    ],
+    "ms": 10875,
+    "oneLiner": "开 ✓（抽屉 340px / 主区 1044px，重叠 无）；调宽 null→360（实际 340→340px，未生效：CSS 栅格固定 340px）；刷新后开 ✓、宽 360；关闭后残留 0 个、stored=true，再刷新 ✗ 又弹开"
+  },
+  {
+    "id": "TC-59",
+    "title": "双主题 8 页截图 + token/颜色扫描",
+    "verdict": "PARTIAL",
+    "facts": {
+      "pageShots": 16,
+      "themeApplied": 16,
+      "tokensCode": 0,
+      "colorsCode": 0,
+      "tokensTail": [
+        "扫描 52 个文件：108 个 token 定义，352 处不同引用",
+        "[PASS] var 引用 0 悬空；px 字面量 708 处全部在白名单内（39 个取值）"
+      ],
+      "colorsTail": [
+        "[PASS] 146 个文件无硬编码色值"
+      ],
+      "codeWhiteBlocks": {
+        "overview": 0,
+        "assets": 0,
+        "cases": 120,
+        "runs": 178,
+        "reports": 414,
+        "groups": 0,
+        "imports": 0,
+        "test-reports": 0
+      },
+      "changedPairs": 16
+    },
+    "shots": [
+      "shots/pages/overview-light-1440.png",
+      "shots/pages/assets-light-1440.png",
+      "shots/pages/cases-light-1440.png",
+      "shots/pages/runs-light-1440.png",
+      "shots/pages/reports-light-1440.png",
+      "shots/pages/test-reports-light-1440.png",
+      "shots/pages/imports-light-1440.png",
+      "shots/pages/groups-light-1440.png",
+      "shots/pages/overview-dark-1440.png",
+      "shots/pages/assets-dark-1440.png",
+      "shots/pages/cases-dark-1440.png",
+      "shots/pages/runs-dark-1440.png",
+      "shots/pages/reports-dark-1440.png",
+      "shots/pages/test-reports-dark-1440.png",
+      "shots/pages/imports-dark-1440.png",
+      "shots/pages/groups-dark-1440.png"
+    ],
+    "ms": 38881,
+    "oneLiner": "16 张 ✓，主题生效 16/16；check_tokens exit=0；check_colors exit=0；深色白块 ✗ cases/runs/reports（120/178/414 块）"
+  },
+  {
+    "id": "TC-60",
+    "title": "1440×900 三栏 + 抽屉利用率/首屏行数",
+    "verdict": "FAIL",
+    "facts": {
+      "vw": 1440,
+      "main": 1044,
+      "side": 200,
+      "drawer": 340,
+      "utilizationUsable": 0.9490909090909091,
+      "utilizationViewport": 0.725,
+      "overflowX": false,
+      "visibleRows": 10,
+      "totalRows": 11,
+      "columns": "56px 1044px 340px"
+    },
+    "shots": [
+      "shots/tc-60-1440-drawer.png"
+    ],
+    "ms": 8412,
+    "oneLiner": "1440×(侧栏 200+主区 1044+抽屉 340)；利用率(主区/(视口-抽屉)) 94.9%（≥78 ✓；按整视口 72.5%）；横滚 无；首屏行 10/11（≥12 ✗）"
+  },
+  {
+    "id": "TC-62",
+    "title": "1280×720 无横滚/侧栏折叠/可达",
+    "verdict": "PARTIAL",
+    "facts": {
+      "runs": {
+        "vw": 1280,
+        "vh": 720,
+        "overflowX": false,
+        "scrollWidth": 1280,
+        "sideCollapsed": false,
+        "sideWidth": 200,
+        "navCount": 13,
+        "rows": 11,
+        "firstRow": "运行号 状态 通过/总数 设备范围 失败原因 开始时间 结束时间 操作"
+      },
+      "cases": {
+        "path": "/cases",
+        "tableRows": 6,
+        "overflowX": false
+      }
+    },
+    "shots": [
+      "shots/tc-62-1280-runs.png",
+      "shots/tc-62-1280-cases.png"
+    ],
+    "ms": 8964,
+    "oneLiner": "1280×720 横滚 无（scrollWidth 1280 / vw 1280）；侧栏自动折叠 ✗（媒体查询阈值 999px），宽 200px；菜单 13 项；用例页 /cases 行 6 横滚 无"
+  },
+  {
+    "id": "TC-63",
+    "title": "Tab 顺序/焦点可见/Esc 归还",
+    "verdict": "PARTIAL",
+    "facts": {
+      "openedBy": {
+        "focusedBefore": "BUTTON",
+        "label": "命令面板"
+      },
+      "inPalette": {
+        "open": true,
+        "focusInPalette": true,
+        "focusClass": "palette-input"
+      },
+      "traps": [
+        {
+          "inPalette": true,
+          "tag": "BUTTON",
+          "label": "palette-entry"
+        },
+        {
+          "inPalette": true,
+          "tag": "BUTTON",
+          "label": "palette-star"
+        },
+        {
+          "inPalette": true,
+          "tag": "BUTTON",
+          "label": "palette-entry"
+        },
+        {
+          "inPalette": true,
+          "tag": "BUTTON",
+          "label": "palette-star"
+        },
+        {
+          "inPalette": true,
+          "tag": "BUTTON",
+          "label": "palette-entry"
+        },
+        {
+          "inPalette": true,
+          "tag": "BUTTON",
+          "label": "palette-star"
+        }
+      ],
+      "closedFromInput": {
+        "open": false,
+        "activeTag": "BODY",
+        "activeLabel": ""
+      },
+      "closedFromButton": {
+        "open": true,
+        "activeTag": "BUTTON",
+        "activeClass": "palette-entry"
+      }
+    },
+    "shots": [
+      "shots/tc-63-focus.png",
+      "shots/tc-63-esc-close.png"
+    ],
+    "ms": 11750,
+    "oneLiner": "Tab 12 步中可见焦点 12 步；打开面板焦点入内 ✓；Tab 6 步跑出弹层 0 次；Esc(输入框) 关闭 ✓，焦点归还 ✗（落在 BODY）；Esc(结果按钮) 关闭 ✗"
+  },
+  {
+    "id": "TC-64",
+    "title": "16 张基线存在 + diff 可定位",
+    "verdict": "PASS",
+    "facts": {
+      "baseline": 16,
+      "current": 16,
+      "baselineDir": "baseline/",
+      "currentDir": "shots/pages/"
+    },
+    "shots": [],
+    "ms": 6,
+    "oneLiner": "基线 16/16（复制自 v1.0 w7-design）；当前 16/16；逐像素 diff 见 analyze.py（raw/tc-64-diff.json）"
+  }
+]

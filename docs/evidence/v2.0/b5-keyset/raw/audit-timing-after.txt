@@ -1,0 +1,16 @@
+# B5 audit_log SQL 迁移后 @ 2026-11-07T16:16:55+08:00 rows=1001566
+P-OFFSET-0                                                     45 ms
+P-OFFSET-200k                                                 634 ms
+P-OFFSET-500k                                                1122 ms
+P-OFFSET-900k                                                3931 ms
+P-KEYSET 500k (OR form)                                        44 ms
+P-KEYSET 500k (row-ctor, 反例)                             1319 ms
+G-OFFSET-500k                                                1437 ms
+G-KEYSET 500k (OR form)                                        45 ms
+
+## EXPLAIN P-KEYSET
+id	select_type	table	partitions	type	possible_keys	key	key_len	ref	rows	filtered	Extra
+1	SIMPLE	audit_log	NULL	range	PRIMARY,idx_audit_log_project_time,idx_audit_project_actor,idx_audit_time_id	idx_audit_log_project_time	24	NULL	497641	100.00	Using index condition; Backward index scan
+## EXPLAIN G-KEYSET
+id	select_type	table	partitions	type	possible_keys	key	key_len	ref	rows	filtered	Extra
+1	SIMPLE	audit_log	NULL	range	PRIMARY,idx_audit_time_id	idx_audit_time_id	15	NULL	497641	100.00	Using index condition; Backward index scan

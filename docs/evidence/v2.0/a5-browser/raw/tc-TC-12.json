@@ -1,0 +1,35 @@
+{
+  "id": "TC-12",
+  "title": "Ctrl+K 搜索/键盘/跳转/最近 5 条",
+  "verdict": "PASS",
+  "facts": {
+    "opened": {
+      "open": true,
+      "focused": "palette-input"
+    },
+    "cn": {
+      "rows": 1,
+      "labels": [
+        "用例"
+      ]
+    },
+    "before": "/overview",
+    "jumped": {
+      "path": "/cases",
+      "url": "http://localhost:8001/cases"
+    },
+    "empty": {
+      "rows": 0,
+      "emptyText": "没有匹配的条目"
+    },
+    "recent": [
+      "cases"
+    ]
+  },
+  "shots": [
+    "shots/tc-12-palette-empty.png",
+    "shots/tc-12-palette.png"
+  ],
+  "ms": 9148,
+  "oneLiner": "Ctrl+K 打开 ✓（焦点 palette-input）；「用例」1 条（≤20 ✓）；↓+Enter /overview → /cases；「roce」0 条空态 ✓；最近 1 条（≤5 ✓）"
+}

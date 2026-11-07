@@ -1,0 +1,116 @@
+{
+  "parse": {
+    "code": 0,
+    "codeName": "OK",
+    "message": "OK",
+    "data": {
+      "runId": "RUN-20261107121600-e80000",
+      "projectId": 29,
+      "state": "finished",
+      "exportable": false,
+      "metadataMissing": [
+        "BASELINE",
+        "OPERATOR",
+        "STARTED_AT",
+        "CASE_KIND"
+      ],
+      "metadata": {
+        "CASE_ID": "A5-LOOP-001",
+        "DUT": "LOCAL-HOST",
+        "LINK": "LOCAL",
+        "RUN_ID": "a5-browser-loop",
+        "QA_PROJECT": "qa-e2e-fixture",
+        "SW_BUILD": "v2.1-a5"
+      },
+      "counts": {
+        "pass": 1,
+        "fail": 0,
+        "skip": 0
+      },
+      "startedAt": "2026-11-07T04:16:00.504Z",
+      "finishedAt": "2026-11-07T04:16:02.443Z"
+    },
+    "success": true
+  },
+  "tree": {
+    "code": 0,
+    "codeName": "OK",
+    "message": "OK",
+    "data": {
+      "name": "RUN-20261107121600-e80000",
+      "status": "PASS",
+      "suites": [
+        {
+          "name": "run-RUN-20261107121600-e80000",
+          "status": "PASS",
+          "suites": [
+            {
+              "name": "Loop-Demo",
+              "status": "PASS",
+              "suites": [],
+              "cases": [
+                {
+                  "caseKey": "run-RUN-20261107121600-e80000/Loop-Demo.A5 循环与分支",
+                  "name": "A5 循环与分支",
+                  "verdict": "PASS",
+                  "durationMs": 6,
+                  "failureMsg": null,
+                  "keywords": [
+                    {
+                      "name": "Log To Console",
+                      "status": "PASS",
+                      "children": []
+                    },
+                    {
+                      "name": "Log",
+                      "status": "PASS",
+                      "children": []
+                    },
+                    {
+                      "name": "Log To Console",
+                      "status": "PASS",
+                      "children": []
+                    },
+                    {
+                      "name": "Log",
+                      "status": "PASS",
+                      "children": []
+                    },
+                    {
+                      "name": "Log To Console",
+                      "status": "PASS",
+                      "children": []
+                    },
+                    {
+                      "name": "Log",
+                      "status": "PASS",
+                      "children": []
+                    },
+                    {
+                      "name": "Log To Console",
+                      "status": "NOT RUN",
+                      "children": []
+                    },
+                    {
+                      "name": "Log",
+                      "status": "NOT RUN",
+                      "children": []
+                    },
+                    {
+                      "name": "Log",
+                      "status": "PASS",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "cases": []
+        }
+      ],
+      "cases": []
+    },
+    "success": true
+  }
+}

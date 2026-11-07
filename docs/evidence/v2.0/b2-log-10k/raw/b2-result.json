@@ -1,0 +1,50 @@
+{
+  "run": "RUN-20261107151924-000000",
+  "at": "2026-11-07T07:21:54.300Z",
+  "click": {
+    "foundRowAndButton": true,
+    "firstLineMs": 158
+  },
+  "panel": {
+    "lines": 52,
+    "preText": "2026-11-07T07:19:25.051585238Z [pabot] [system] run RUN-20261107151924-000000 启动\n\n2026-11-07T07:19:25.059336623Z [pabot]",
+    "scrollHeight": 2250,
+    "clientHeight": 420,
+    "heapMB": 19.8
+  },
+  "scrollReal": {
+    "frames": 90,
+    "avgMs": 16.67,
+    "p95Ms": 16.7,
+    "maxMs": 16.8
+  },
+  "api": {
+    "status": 200,
+    "bytes": 4084,
+    "ms": 25.2,
+    "lines": 26
+  },
+  "download": {
+    "status": 200,
+    "bytes": 1609,
+    "lines": 27,
+    "ms": 35
+  },
+  "stress": {
+    "2000": {
+      "frames": 90,
+      "avgMs": 16.67,
+      "p95Ms": 16.7,
+      "maxMs": 16.8,
+      "domNodes": 2000
+    },
+    "10000": {
+      "frames": 90,
+      "avgMs": 16.67,
+      "p95Ms": 16.7,
+      "maxMs": 16.8,
+      "domNodes": 10000
+    }
+  },
+  "note": "stress 段是把同结构 span 直接注入 DOM（不经 Vue），只用于回答「真渲染 N 行会怎样」"
+}

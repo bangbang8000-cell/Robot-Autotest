@@ -1,0 +1,50 @@
+=== B6: ADR-0008 ===
+-rw-r--r-- 1 evergreen evergreen 4677 Nov  7 15:03 docs/adr/0008-cross-env-baseline.md
+=== B6: PRD 引用 ===
+docs/release/v0.5-report/PRD.md:94:| FR-v0.5-14 | 历史取「上一次同用例同环境」的运行，可手动切换基线 | P1 | 可切换基线 run，列标题随之更新；**手动基线允许跨环境，但必须显式标注（ADR-0008）** | RPT-03 |
+docs/release/v0.5-report/PRD.md:100:> **口径补记（2026-11-07，ADR-0008）**：自动基线仍限「同 DUT/LINK」，**手动基线允许跨 DUT/LINK**，
+=== B6: 代码现状（仍是 400）===
+174:                        "手动基线与本轮环境不一致：本轮 DUT=" + display(current.dut())
+175-                                + " LINK=" + display(current.link())
+176-                                + "；基线 DUT=" + display(manual.dut())
+=== B7: CONVENTIONS-frontend 第 10 节 ===
+## 10. 空值显示口径（`started_at` 为 `NULL` 等）
+
+> 2026-11-07 定案（对应 `06-收口执行计划-20261106.md` §4 **B7**）。背景：`run.started_at`
+> 在「已创建未开始」的 run 上天然为 `NULL`，历史迁移数据也可能缺失；若前端把它当
+> `new Date(null)`（= 1970-01-01）或 `"Invalid Date"` 展示，会直接污染排序、时长与导出件。
+
+- **展示**：`NULL` 一律走 `formatDateTime(value, fallback)`，fallback 用 `—`；
+  **禁止**把 `NULL` 传进 `new Date()` 后再格式化。
+- **区分原因**（能区分时）：未开始的 run 显示 `—（未开始）`；已结束但缺失显示 `—（历史缺失）`。
+  分不清就只显示 `—`，**不猜测**。
+- **排序**：`NULL` 排最后，不按 1970 参与升/降序。
+- **时长**：`started_at` 或 `finished_at` 任一为 `NULL` → 时长显示 `—`，不显示 `0s`、不显示负值。
+- **图表 / 趋势**：`NULL` 点跳过，不插 0、不连线跨过缺失点（与 FR-v0.5-20 一致）。
+- **筛选**：时间范围过滤时 `NULL` 不落入任何区间（显式排除，不靠数据库隐式转换）。
+- **导出**（CSV / PDF / Word / MD）：保留空单元格或 `—`，**禁止**出现 `Invalid Date`、`1970-01-01`。
+- **测试**：每个展示 `started_at` 的组件至少 1 条 `null` 断言，且断言结果不含
+  `Invalid Date` / `1970`。
+
+## 11. 自检
+=== B7: 当前格式化实现对 null 的行为 ===
+38:export function formatDateTime(value: string | null | undefined, fallback = EMPTY): string {
+39-  if (!value) return fallback
+40-  const date = new Date(value)
+41-  if (Number.isNaN(date.getTime())) return value
+42-  try {
+43-    return new Intl.DateTimeFormat(locale(), {
+44-      year: 'numeric',
+45-      month: '2-digit',
+46-      day: '2-digit',
+=== B7: 现有单测是否覆盖 null ===
+frontend/src/utils/format.spec.ts:12:  formatDateTime,
+frontend/src/utils/format.spec.ts:42:describe('formatDateTime / formatDate 跟随语言（TC-I18N-06）', () => {
+frontend/src/utils/format.spec.ts:47:    const en = formatDateTime(iso)
+frontend/src/utils/format.spec.ts:49:    const zh = formatDateTime(iso)
+frontend/src/utils/format.spec.ts:57:    expect(formatDateTime(null)).toBe(EMPTY)
+frontend/src/utils/format.spec.ts:58:    expect(formatDateTime('')).toBe(EMPTY)
+frontend/src/utils/format.spec.ts:59:    expect(formatDateTime('not-a-date')).toBe('not-a-date')
+frontend/src/utils/format.spec.ts:12:  formatDateTime,
+frontend/src/utils/format.spec.ts:42:describe('formatDateTime / formatDate 跟随语言（TC-I18N-06）', () => {
+frontend/src/utils/format.spec.ts:47:    const en = formatDateTime(iso)

@@ -1,0 +1,52 @@
+=== 取证会话的 token（本演练每次运行新建一条） ===
++-----+---------+-------------------------+-------------------------+-------------------------+
+| id  | user_id | last_used_at            | updated_at              | created_at              |
++-----+---------+-------------------------+-------------------------+-------------------------+
+| 431 |      17 | 2026-11-07 13:14:24.280 | 2026-11-07 13:14:24.281 | 2026-11-07 13:14:24.049 |
+| 430 |      17 | 2026-11-07 13:14:15.133 | 2026-11-07 13:14:15.136 | 2026-11-07 13:13:02.604 |
+| 429 |      17 | 2026-11-07 13:12:43.032 | 2026-11-07 13:12:43.035 | 2026-11-07 13:11:34.008 |
+| 428 |      17 | 2026-11-07 13:14:23.213 | 2026-11-07 13:14:23.213 | 2026-11-07 13:09:19.726 |
++-----+---------+-------------------------+-------------------------+-------------------------+
+=== 在跑 run 的租约（last_heartbeat_at 每约 60 秒刷新） ===
++-----+---------------------------+-------------+-------------------------+-------------------------+-------------------------+-------------------------+
+| id  | run_id                    | lease_state | leased_at               | last_heartbeat_at       | expires_at              | updated_at              |
++-----+---------------------------+-------------+-------------------------+-------------------------+-------------------------+-------------------------+
+| 303 | RUN-20261107014329-910000 | held        | 2026-11-07 01:43:29.278 | 2026-11-07 13:17:34.907 | 2026-11-07 13:17:34.907 | 2026-11-07 13:15:34.908 |
++-----+---------------------------+-------------+-------------------------+-------------------------+-------------------------+-------------------------+
+=== 列序（db-diff.json 的 col# 对应） ===
++--------------+--------------+------+-----+----------------------+--------------------------------------------------+
+| Field        | Type         | Null | Key | Default              | Extra                                            |
++--------------+--------------+------+-----+----------------------+--------------------------------------------------+
+| id           | bigint       | NO   | PRI | NULL                 | auto_increment                                   |
+| user_id      | bigint       | NO   | MUL | NULL                 |                                                  |
+| name         | varchar(128) | NO   |     | NULL                 |                                                  |
+| token_hash   | varchar(100) | NO   | UNI | NULL                 |                                                  |
+| last_used_at | datetime(3)  | YES  |     | NULL                 |                                                  |
+| expires_at   | datetime(3)  | YES  |     | NULL                 |                                                  |
+| revoked_at   | datetime(3)  | YES  |     | NULL                 |                                                  |
+| created_at   | datetime(3)  | NO   |     | CURRENT_TIMESTAMP(3) | DEFAULT_GENERATED                                |
+| created_by   | bigint       | YES  |     | NULL                 |                                                  |
+| updated_at   | datetime(3)  | NO   |     | CURRENT_TIMESTAMP(3) | DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3) |
+| updated_by   | bigint       | YES  |     | NULL                 |                                                  |
+| token_kind   | varchar(16)  | NO   | MUL | session              |                                                  |
+| project_id   | bigint       | YES  | MUL | NULL                 |                                                  |
+| scopes       | varchar(128) | NO   |     |                      |                                                  |
++--------------+--------------+------+-----+----------------------+--------------------------------------------------+
++-------------------+--------------+------+-----+----------------------+--------------------------------------------------+
+| Field             | Type         | Null | Key | Default              | Extra                                            |
++-------------------+--------------+------+-----+----------------------+--------------------------------------------------+
+| id                | bigint       | NO   | PRI | NULL                 | auto_increment                                   |
+| job_id            | bigint       | NO   | MUL | NULL                 |                                                  |
+| run_id            | varchar(64)  | YES  |     | NULL                 |                                                  |
+| project_id        | bigint       | YES  | MUL | NULL                 |                                                  |
+| resource_key      | varchar(128) | NO   | UNI | NULL                 |                                                  |
+| lease_state       | varchar(16)  | NO   | MUL | held                 |                                                  |
+| release_reason    | varchar(64)  | YES  |     | NULL                 |                                                  |
+| leased_at         | datetime(3)  | NO   |     | CURRENT_TIMESTAMP(3) | DEFAULT_GENERATED                                |
+| last_heartbeat_at | datetime(3)  | YES  |     | NULL                 |                                                  |
+| expires_at        | datetime(3)  | YES  |     | NULL                 |                                                  |
+| created_at        | datetime(3)  | NO   |     | CURRENT_TIMESTAMP(3) | DEFAULT_GENERATED                                |
+| created_by        | bigint       | YES  |     | NULL                 |                                                  |
+| updated_at        | datetime(3)  | NO   |     | CURRENT_TIMESTAMP(3) | DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3) |
+| updated_by        | bigint       | YES  |     | NULL                 |                                                  |
++-------------------+--------------+------+-----+----------------------+--------------------------------------------------+

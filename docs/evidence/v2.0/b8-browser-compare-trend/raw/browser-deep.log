@@ -1,0 +1,57 @@
+[cdp] Chrome/159.0.8130.0
+[app] http://localhost:8001  routes=/,/runs,/assets,/reports/templates,/nodes  mode=regress
+
+[auth] 登录成功
+
+PASS  /@1440-route  path=/overview
+PASS  /@1440-main  content=1240px
+PASS  /@1440-utilization  utilization=86.1%
+PASS  /@1440-no-js-error  0 exception
+PASS  /@1280-route  path=/overview
+PASS  /@1280-main  content=1080px
+PASS  /@1280-no-hscroll  scrollWidth=1280 viewport=1280
+PASS  /@1280-no-js-error  0 exception
+PASS  /runs@1440-route  path=/runs
+PASS  /runs@1440-main  content=1240px
+PASS  /runs@1440-utilization  utilization=86.1%
+PASS  /runs@1440-no-js-error  0 exception
+PASS  /runs@1280-route  path=/runs
+PASS  /runs@1280-main  content=1080px
+PASS  /runs@1280-no-hscroll  scrollWidth=1280 viewport=1280
+PASS  /runs@1280-no-js-error  0 exception
+PASS  /assets@1440-route  path=/assets
+PASS  /assets@1440-main  content=1240px
+PASS  /assets@1440-utilization  utilization=86.1%
+PASS  /assets@1440-no-js-error  0 exception
+PASS  /assets@1280-route  path=/assets
+PASS  /assets@1280-main  content=1080px
+PASS  /assets@1280-no-hscroll  scrollWidth=1280 viewport=1280
+PASS  /assets@1280-no-js-error  0 exception
+PASS  /reports/templates@1440-route  path=/reports/templates
+PASS  /reports/templates@1440-main  content=1240px
+PASS  /reports/templates@1440-utilization  utilization=86.1%
+PASS  /reports/templates@1440-no-js-error  0 exception
+PASS  /reports/templates@1280-route  path=/reports/templates
+PASS  /reports/templates@1280-main  content=1080px
+PASS  /reports/templates@1280-no-hscroll  scrollWidth=1280 viewport=1280
+PASS  /reports/templates@1280-no-js-error  0 exception
+PASS  /nodes@1440-route  path=/nodes
+PASS  /nodes@1440-main  content=1240px
+PASS  /nodes@1440-utilization  utilization=86.1%
+PASS  /nodes@1440-no-js-error  0 exception
+PASS  /nodes@1280-route  path=/nodes
+PASS  /nodes@1280-main  content=1080px
+PASS  /nodes@1280-no-hscroll  scrollWidth=1280 viewport=1280
+PASS  /nodes@1280-no-js-error  0 exception
+
+[report] 深检对比/趋势：RUN-20261107151146-000000
+PASS  report-route  path=/reports/RUN-20261107151146-000000
+PASS  report-main  content=1240px
+PASS  report-no-hscroll  scrollWidth=1440 viewport=1440
+PASS  report-trend-rendered  {"hasTitle":true,"empty":false,"marks":111,"svgs":32}
+PASS  report-compare-toggle  clicked
+PASS  report-compare-rendered  {"title":true,"noBaseline":false,"rows":14}
+[shot] docs/evidence/v2.0/b8-browser-compare-trend/raw/shot/report-RUN-20261107151146-000000.png
+PASS  report-no-js-error  0 exception
+
+BROWSER_REGRESSION checks=47 fails=0

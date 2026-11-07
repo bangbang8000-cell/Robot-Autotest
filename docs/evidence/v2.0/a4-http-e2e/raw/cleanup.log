@@ -1,0 +1,6 @@
+## 清理（自建夹具回滚）
+  test_report = 0
+  test_scenario = 0
+  user_group = 0
+  project_group_role = 0
+  user_group_member = 0

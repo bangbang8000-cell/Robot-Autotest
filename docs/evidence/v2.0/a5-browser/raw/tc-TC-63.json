@@ -1,0 +1,64 @@
+{
+  "id": "TC-63",
+  "title": "Tab 顺序/焦点可见/Esc 归还",
+  "verdict": "PARTIAL",
+  "facts": {
+    "openedBy": {
+      "focusedBefore": "BUTTON",
+      "label": "命令面板"
+    },
+    "inPalette": {
+      "open": true,
+      "focusInPalette": true,
+      "focusClass": "palette-input"
+    },
+    "traps": [
+      {
+        "inPalette": true,
+        "tag": "BUTTON",
+        "label": "palette-entry"
+      },
+      {
+        "inPalette": true,
+        "tag": "BUTTON",
+        "label": "palette-star"
+      },
+      {
+        "inPalette": true,
+        "tag": "BUTTON",
+        "label": "palette-entry"
+      },
+      {
+        "inPalette": true,
+        "tag": "BUTTON",
+        "label": "palette-star"
+      },
+      {
+        "inPalette": true,
+        "tag": "BUTTON",
+        "label": "palette-entry"
+      },
+      {
+        "inPalette": true,
+        "tag": "BUTTON",
+        "label": "palette-star"
+      }
+    ],
+    "closedFromInput": {
+      "open": false,
+      "activeTag": "BODY",
+      "activeLabel": ""
+    },
+    "closedFromButton": {
+      "open": true,
+      "activeTag": "BUTTON",
+      "activeClass": "palette-entry"
+    }
+  },
+  "shots": [
+    "shots/tc-63-focus.png",
+    "shots/tc-63-esc-close.png"
+  ],
+  "ms": 11750,
+  "oneLiner": "Tab 12 步中可见焦点 12 步；打开面板焦点入内 ✓；Tab 6 步跑出弹层 0 次；Esc(输入框) 关闭 ✓，焦点归还 ✗（落在 BODY）；Esc(结果按钮) 关闭 ✗"
+}

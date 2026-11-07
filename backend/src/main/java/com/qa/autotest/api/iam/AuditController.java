@@ -49,9 +49,11 @@ public class AuditController {
             @RequestParam(required = false) String from,
             @RequestParam(required = false) String to,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String cursor) {
+        Cursor at = Cursor.parse(cursor);
         return ApiResponse.ok(audits.page(new AuditQuery(projectId, action,
-                parse(from, false), parse(to, true), page, size)));
+                parse(from, false), parse(to, true), page, size, at.at(), at.id())));
     }
 
     @GetMapping("/export")
@@ -97,6 +99,30 @@ public class AuditController {
         } catch (DateTimeParseException ex) {
             throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
                     "时间格式非法，应为 ISO-8601 或 yyyy-MM-dd HH:mm:ss");
+        }
+    }
+
+    /**
+     * keyset 游标：{@code <epochMillis>_<id>}，即上一页最后一行的
+     * {@code occurred_at} 与主键。不透明格式，前端只负责原样回传。
+     */
+    record Cursor(Instant at, Long id) {
+
+        static Cursor parse(String raw) {
+            if (raw == null || raw.isBlank()) {
+                return new Cursor(null, null);
+            }
+            String[] parts = raw.trim().split("_", 2);
+            try {
+                if (parts.length != 2) {
+                    throw new NumberFormatException();
+                }
+                return new Cursor(Instant.ofEpochMilli(Long.parseLong(parts[0])),
+                        Long.parseLong(parts[1]));
+            } catch (NumberFormatException ex) {
+                throw new BusinessException(ErrorCode.INVALID_ARGUMENT,
+                        "cursor 格式非法，应为 <epochMillis>_<id>");
+            }
         }
     }
 }

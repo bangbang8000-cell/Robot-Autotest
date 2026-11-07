@@ -230,7 +230,7 @@
 | v2.0 的 `execution_plan` / `execution_plan_dependency` | 已在（F1/F2） | D1 的前置，无需改造 |
 | `case_source` 引用与副本模型（IMP-01） | 已在 | D3 的前置 |
 | C5 白名单 + `check_report_sensitive.py` | 已定案 | D2 的硬约束来源 |
-| pytest 运行时（A1） | **未就绪**（F12） | 只影响 FR-v2.1-17 的 pytest 那一份，RF 那份不受阻 |
+| pytest 运行时（A1） | **已就绪**（2026-11-06 落地：`~/venvs/pytest-kernel`，pytest 9.2.0 + json-report 1.5.0 + xdist 3.8.0） | 原「未就绪」已过期；FR-v2.1-17 的 RF 与 pytest 两份均可实跑（证据 `docs/evidence/v2.0/A1/README.md`） |
 | 第二节点机器 | **未定** | D4 的开发期可用本机第二端口模拟，验收需真第二台 |
 
 **假设**
@@ -275,3 +275,4 @@
 | 2026-11-06 | v1.1 | §0 F4 改写：`FailureClassifier` 已实现四类判定，缺的是簇级聚合；FR-v2.1-04 改为类 + 簇两级 | 写开工单时读代码发现分类器已存在，避免重复造组件 |
 | 2026-11-06 | v1.2 | FR-v2.1-04 与 §0 F4 订正簇键来源：由「`failure_reason` 优先 / `failure_message` 首行」改为**只用 `test_result.failure_msg`**；补记 `run` 表三个字段是整轮结论 | **ORCH-03 实测推翻**：`test_result` 没有 `failure_reason` / `failure_message` 列，二者在 `run` 表上。原文照字面开发会读不到值，簇全落「未分类」。证据见 `docs/evidence/v2.1/ORCH-03/README.md` §4.1 |
 | 2026-11-06 | v1.1 | ① §0 F4 据实订正：**既有 `FailureClassifier` 已实现四类（CANCELED/ENV/INFRA/ASSERT）**，缺的是簇级聚合，不是分类能力；② FR-v2.1-04 改为「类 + 簇两级」，明确复用既有分类器、不重写；③ §1 定位表同步 | 写开工单时读代码发现：初版把「无聚类」误写成「无分类」，若照原文实现会重复造一个已有组件 |
+| 2026-11-07 | v1.3 | 依赖风险表订正：pytest 运行时（A1）由「未就绪（F12）」改为**已就绪**，并给出实测版本与证据路径 | A1 已于 2026-11-06 落地，原文已过期；FR-v2.1-17 的 pytest 分支不再是 NOT-RUN 的口实 |

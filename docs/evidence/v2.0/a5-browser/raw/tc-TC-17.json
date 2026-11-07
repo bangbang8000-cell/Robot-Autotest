@@ -1,0 +1,86 @@
+{
+  "id": "TC-17",
+  "title": "折叠/收藏/切项目持久化",
+  "verdict": "PASS",
+  "facts": {
+    "collapsed": {
+      "classCollapsed": true,
+      "stored": "true"
+    },
+    "persisted": {
+      "path": "/cases",
+      "classCollapsed": true
+    },
+    "navToggle": {
+      "ok": true,
+      "groups": 3,
+      "before": "true"
+    },
+    "navAfter": {
+      "expanded": "{\"assets\":false}",
+      "groups": [
+        "false",
+        "true",
+        "true"
+      ],
+      "firstChildrenVisible": false
+    },
+    "navReload": {
+      "expanded": "{\"assets\":false}",
+      "groups": [
+        "false",
+        "true",
+        "true"
+      ],
+      "firstChildrenVisible": false
+    },
+    "favBefore": {
+      "key": "用例",
+      "favs": [
+        "overview"
+      ]
+    },
+    "favAfterReload": {
+      "favs": [
+        "overview"
+      ]
+    },
+    "before": {
+      "project": "29",
+      "rows": [
+        "运行号 状态 PASS / FAIL / SKIP 开始时间 可对外",
+        "RUN-20261107121600-e80000 已完成 undefined / undefined / undefined 2026-11-07T04:16:00.504Z 缺项BASELINE, OPERATOR, STARTED_AT, CASE_KIND",
+        "RUN-20261107115743-e80000 已完成 undefined / undefined / undefined 2026-11-07T03:57:43.692Z 缺项"
+      ],
+      "path": "/reports"
+    },
+    "after": {
+      "project": "1",
+      "selectedText": "演示项目",
+      "rows": [
+        "运行号 状态 PASS / FAIL / SKIP 开始时间 可对外",
+        "RUN-RPT05EXT-20261106-101647 已完成 undefined / undefined / undefined 2026-11-06T02:16:48Z 可对外",
+        "RUN-20261104155814-952426 已完成 undefined / undefined / undefined 2026-11-04T07:58:15.046Z 缺项CASE_ID, RUN_ID, QA_PROJECT, DUT, LINK, SW_BUILD, BASELINE, OPERATOR, STARTED_AT, CASE_KIND"
+      ],
+      "path": "/reports"
+    },
+    "back": {
+      "project": "29",
+      "path": "/reports",
+      "rows": 11
+    },
+    "beforeData": [
+      "RUN-20261107121600-e80000 已完成 undefined / undefined / undefined 2026-11-07T04:16:00.504Z 缺项BASELINE, OPERATOR, STARTED_AT, CASE_KIND",
+      "RUN-20261107115743-e80000 已完成 undefined / undefined / undefined 2026-11-07T03:57:43.692Z 缺项"
+    ],
+    "afterData": [
+      "RUN-RPT05EXT-20261106-101647 已完成 undefined / undefined / undefined 2026-11-06T02:16:48Z 可对外",
+      "RUN-20261104155814-952426 已完成 undefined / undefined / undefined 2026-11-04T07:58:15.046Z 缺项CASE_ID, RUN_ID, QA_PROJECT, DUT, LINK, SW_BUILD, BASELINE, OPERATOR, STARTED_AT, CASE_KIND"
+    ]
+  },
+  "shots": [
+    "shots/tc-17-side-collapsed.png"
+  ],
+  "ms": 17560,
+  "oneLiner": "侧栏折叠 ✓（刷新//cases 保持 ✓）；分组折叠 true→false、刷新后 aria=false/true/true 子项可见=false；收藏 用例 刷新后 1 条；切项目 29→1 路由 /reports→/reports，首条数据「RUN-20261107121600-e80」→「RUN-RPT05EXT-20261106-」"
+}

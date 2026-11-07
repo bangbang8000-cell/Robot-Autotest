@@ -1,0 +1,31 @@
+# A8 报告链路取证环境快照
+# captured_at 2026-11-07 14:44:31 CST
+
+## 监听端口
+LISTEN 0      70          127.0.0.1:33060      0.0.0.0:*                                                 
+LISTEN 0      500           0.0.0.0:3306       0.0.0.0:*                                                 
+LISTEN 0      511           0.0.0.0:8001       0.0.0.0:*    users:(("node-MainThread",pid=1730265,fd=21))
+LISTEN 0      100                 *:8081             *:*    users:(("java",pid=1778309,fd=15))           
+
+## 后端服务
+active
+MainPID=1778309
+your 131072x1 screen size is bogus. expect trouble
+    PID ELAPSED COMMAND
+1778309      53 /usr/bin/java -jar /home/evergreen/robot-autotest/backend/target/robot-autotest-backend-0.1.0-SNAPSHOT.jar --planning.scheduler-enabled=true
+
+## 报告相关环境变量
+REPORT_PRINT_BASE_URL=http://127.0.0.1:8001
+REPORT_PDF_CHROME=/home/evergreen/robot-autotest/scripts/chrome-wsl-bridge.sh
+
+## drop-in 30-a8-exercise.conf
+[Service]
+# 2026-11-07 A8 取证：打印基址指向统一入口 8001。
+# 默认 drop-in 10-report-export.conf 里是 5273（Vite 开发前台），对 TC-67「PDF 导出 URL 指向 8001」不成立；
+# 本机实际入口就是 8001（静态前端 + /api 反代 8081），故保留此覆盖。
+# 取证期间临时加入的保留策略阈值（REPORT_RETENTION_MAX_DAYS / KEEP_RECENT_RUNS）已移除，恢复代码默认。
+Environment=REPORT_PRINT_BASE_URL=http://127.0.0.1:8001
+
+## 健康检查
+GET http://127.0.0.1:8001/api/health -> 200
+GET http://127.0.0.1:8081/api/health -> 200

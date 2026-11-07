@@ -1,0 +1,29 @@
+{
+  "id": "TC-62",
+  "title": "1280×720 无横滚/侧栏折叠/可达",
+  "verdict": "PARTIAL",
+  "facts": {
+    "runs": {
+      "vw": 1280,
+      "vh": 720,
+      "overflowX": false,
+      "scrollWidth": 1280,
+      "sideCollapsed": false,
+      "sideWidth": 200,
+      "navCount": 13,
+      "rows": 11,
+      "firstRow": "运行号 状态 通过/总数 设备范围 失败原因 开始时间 结束时间 操作"
+    },
+    "cases": {
+      "path": "/cases",
+      "tableRows": 6,
+      "overflowX": false
+    }
+  },
+  "shots": [
+    "shots/tc-62-1280-runs.png",
+    "shots/tc-62-1280-cases.png"
+  ],
+  "ms": 8964,
+  "oneLiner": "1280×720 横滚 无（scrollWidth 1280 / vw 1280）；侧栏自动折叠 ✗（媒体查询阈值 999px），宽 200px；菜单 13 项；用例页 /cases 行 6 横滚 无"
+}

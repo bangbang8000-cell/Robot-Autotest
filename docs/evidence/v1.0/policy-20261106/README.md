@@ -56,7 +56,8 @@
 
 ## 五、门禁读数
 
-命令：`bash docs/evidence/v1.0/policy-20261106/gates.sh`；日志在 `logs/`（该目录被 `.gitignore` 忽略，重跑即重建）。
+命令：`bash scripts/gates.sh`（2026-11-07 B4 起唯一入口，现 16 步）；本包当时跑的是本目录的 10 步版本
+（该副本已按 B4 收敛删除），日志在 `logs/`（该目录被 `.gitignore` 忽略，重跑即重建）。
 结果 **FAILS=0 / 10 步全 PASS / 合计 80 秒**。
 
 | 步 | 门禁 | 结果 | 耗时 | 关键读数 |
@@ -94,7 +95,7 @@
 | `docs/process/版本开发流程.md` | §2.6 / §2.7 谁做谁批；§5 分工表 ⑥⑦ 与四道闸门段；§10 补记行 |
 | `docs/plan/WBS-STATUS.md` | 头部补「授权来源」一行（状态与五数不动） |
 | `docs/plan/决策纪要-20261106.md` | 新增：授权原文、两套口径时间线、判定规则、**五条边界**、回写清单、五批工作范围 |
-| `docs/evidence/v1.0/policy-20261106/` | 新增：`apply-policy.py` / `check_md_tables.py` / `gates.sh` / 本 README / `logs/` |
+| `docs/evidence/v1.0/policy-20261106/` | 新增：`apply-policy.py` / `check_md_tables.py` / `gates.sh`（**2026-11-07 已收敛至 `scripts/gates.sh`，本目录副本删除**） / 本 README / `logs/` |
 
 **刻意不动**：版本划分、KPI、G0–G8 检查项、v2.0 波次依赖（W2 需 G5、W3 需 G4）、
 C 类包风险要求、七道环节与 ⑥⑦ 不可裁、ADR-0013 禁跑令、发版与对外口径归属。

@@ -1,0 +1,64 @@
+{
+  "tables_total": 67,
+  "changed": {
+    "api_token": [
+      {
+        "cols": [
+          {
+            "kind": "value",
+            "row": 421,
+            "col": 4,
+            "old": "2026-11-07 13:13:02.666",
+            "new": "2026-11-07 13:14:15.133",
+            "pk": "",
+            "column": "last_used_at"
+          },
+          {
+            "kind": "value",
+            "row": 421,
+            "col": 9,
+            "old": "2026-11-07 13:13:02.666",
+            "new": "2026-11-07 13:14:15.136",
+            "pk": "",
+            "column": "updated_at"
+          }
+        ]
+      }
+    ],
+    "resource_lease": [
+      {
+        "cols": [
+          {
+            "kind": "value",
+            "row": 0,
+            "col": 8,
+            "old": "2026-11-07 13:14:42.768",
+            "new": "2026-11-07 13:16:14.877",
+            "pk": "",
+            "column": "last_heartbeat_at"
+          },
+          {
+            "kind": "value",
+            "row": 0,
+            "col": 9,
+            "old": "2026-11-07 13:14:42.768",
+            "new": "2026-11-07 13:16:14.877",
+            "pk": "",
+            "column": "expires_at"
+          },
+          {
+            "kind": "value",
+            "row": 0,
+            "col": 12,
+            "old": "2026-11-07 13:12:42.771",
+            "new": "2026-11-07 13:14:14.881",
+            "pk": "",
+            "column": "updated_at"
+          }
+        ]
+      }
+    ]
+  },
+  "changed_count": 2,
+  "rows_inserted_or_deleted": "0（67 表行数逐一相同，见 drill.py 的 db_before/db_after counts）"
+}

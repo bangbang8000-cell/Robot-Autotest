@@ -73,4 +73,16 @@ class PytestKernelTest {
         assertTrue(argv.stream().anyMatch(a -> a.startsWith("--junitxml=")));
         assertTrue(argv.contains("tests/test_a.py::test_ok"));
     }
+
+    @Test
+    void commandUsesXdistOnlyWhenParallel() {
+        KernelRequest serial = new KernelRequest(1L, "R5", 0, 1,
+                List.of("tests/"), List.of(), null, "serial");
+        assertTrue(!kernel.command(serial, Path.of("a")).contains("-n"), "串行不得带 -n");
+        KernelRequest parallel = new KernelRequest(1L, "R6", 0, 4,
+                List.of("tests/"), List.of(), null, "parallel");
+        List<String> argv = kernel.command(parallel, Path.of("a"));
+        int at = argv.indexOf("-n");
+        assertTrue(at > 0 && "4".equals(argv.get(at + 1)), "并行应带 -n 4: " + argv);
+    }
 }

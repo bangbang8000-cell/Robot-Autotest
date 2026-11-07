@@ -1,0 +1,40 @@
+{
+  "id": "TC-51",
+  "title": "AI 抽屉开合/调宽/刷新",
+  "verdict": "FAIL",
+  "facts": {
+    "opened": {
+      "open": true,
+      "drawerWidth": 340,
+      "mainWidth": 1044,
+      "overlap": false,
+      "hint": "NORMAL",
+      "stored": null
+    },
+    "widen": true,
+    "afterWiden": {
+      "stored": "360",
+      "hint": "NORMAL",
+      "width": 340
+    },
+    "afterReload": {
+      "open": true,
+      "stored": "true",
+      "width": "360"
+    },
+    "closed": {
+      "drawers": 0,
+      "stored": "true",
+      "floating": 0
+    },
+    "afterCloseReload": {
+      "open": true,
+      "stored": "true"
+    }
+  },
+  "shots": [
+    "shots/tc-51-drawer.png"
+  ],
+  "ms": 10875,
+  "oneLiner": "开 ✓（抽屉 340px / 主区 1044px，重叠 无）；调宽 null→360（实际 340→340px，未生效：CSS 栅格固定 340px）；刷新后开 ✓、宽 360；关闭后残留 0 个、stored=true，再刷新 ✗ 又弹开"
+}

@@ -1,0 +1,417 @@
+{
+  "stamp": "20261107144236",
+  "checks": {
+    "project_created": true,
+    "suites_uploaded": true,
+    "runs_terminal": true,
+    "test_failure_marks_run_failed": true,
+    "test_failure_message_not_confusing": false,
+    "detail_counts_match_db": true,
+    "digest_recent_contains_3": true,
+    "passrate_trend_matches_impl": true,
+    "passrate_excludes_skip_as_prd": false,
+    "multi_run_report_supported": false,
+    "failed_distribution_matches": true,
+    "report_frozen": true,
+    "source_run_api_gone": true,
+    "render_identical_after_source_deleted": true,
+    "snapshot_hash_unchanged": true,
+    "three_formats_exported": true,
+    "exports_headers_ok": false,
+    "exports_no_sensitive_data": true,
+    "pdf_downloadurl_via_8001": true,
+    "pdf_download_sha256_matches_db": true,
+    "print_base_is_8001": true,
+    "retention_dryrun_equals_real": true,
+    "retention_deleted_files": true,
+    "retention_protects_exported_run": true,
+    "retention_targets_plain_run": true,
+    "retention_keeps_run_rows": true,
+    "no_cross_project_purge": true
+  },
+  "runs": [
+    {
+      "index": 1,
+      "suite": "suites/a8/pass2.robot",
+      "runRequestId": "A8-20261107144236-r1",
+      "create_status": 200,
+      "runId": "RUN-20261107144240-580000",
+      "terminal_state": "finished",
+      "failure_reason": "NULL",
+      "failure_message": "NULL",
+      "parse_status": 200,
+      "detail_status": 200,
+      "detail_counts": {
+        "pass": 2,
+        "fail": 0,
+        "skip": 0
+      },
+      "detail_exportable": true,
+      "db_verdicts": {
+        "PASS": 2
+      },
+      "run_row": {
+        "id": "16528",
+        "run_status": "finished",
+        "pass_count": "2",
+        "fail_count": "0",
+        "skip_count": "0",
+        "exportable": "1",
+        "artifacts_dir": "/home/evergreen/robot-test/artifacts/RUN-20261107144240-580000"
+      },
+      "testReportId": 10,
+      "freeze_status": 200,
+      "freeze_state": "FROZEN",
+      "test_report_row": {
+        "state": "FROZEN",
+        "version": "2",
+        "snapshot_hash": "e882e9aab843cc1ac83a12ee57ca544ea0ea7987bfd59f08208404c591cf5312",
+        "frozen_at": "2026-11-07 14:42:48.156"
+      },
+      "render_before": {
+        "status": 200,
+        "bytes": 589,
+        "sha256": "cff41a60ce0be75813147f48267ac9f40d598928385476880298384856edec2e"
+      },
+      "delete_sql": [
+        {
+          "rc": 0,
+          "out": ""
+        },
+        {
+          "rc": 0,
+          "out": ""
+        },
+        {
+          "rc": 0,
+          "out": ""
+        },
+        {
+          "rc": 0,
+          "out": ""
+        },
+        {
+          "rc": 1,
+          "out": "ERROR 1292 (22007) at line 1: Truncated incorrect DOUBLE value: 'RUN-TPLX2-0001'\n"
+        },
+        {
+          "rc": 0,
+          "out": ""
+        }
+      ],
+      "artifacts_moved_to": "/home/evergreen/robot-autotest/docs/evidence/v2.0/a8-report-chain/raw/deleted-run-artifacts",
+      "source_report_after_delete": {
+        "status": 404
+      },
+      "render_after": {
+        "status": 200,
+        "bytes": 589,
+        "sha256": "cff41a60ce0be75813147f48267ac9f40d598928385476880298384856edec2e"
+      },
+      "snapshot_hash_after": "e882e9aab843cc1ac83a12ee57ca544ea0ea7987bfd59f08208404c591cf5312"
+    },
+    {
+      "index": 2,
+      "suite": "suites/a8/skip1.robot",
+      "runRequestId": "A8-20261107144236-r2",
+      "create_status": 200,
+      "runId": "RUN-20261107144242-580000",
+      "terminal_state": "finished",
+      "failure_reason": "NULL",
+      "failure_message": "NULL",
+      "parse_status": 200,
+      "detail_status": 200,
+      "detail_counts": {
+        "pass": 1,
+        "fail": 0,
+        "skip": 1
+      },
+      "detail_exportable": true,
+      "db_verdicts": {
+        "PASS": 1,
+        "SKIP": 1
+      },
+      "run_row": {
+        "id": "16529",
+        "run_status": "finished",
+        "pass_count": "1",
+        "fail_count": "0",
+        "skip_count": "1",
+        "exportable": "1",
+        "artifacts_dir": "/home/evergreen/robot-test/artifacts/RUN-20261107144242-580000"
+      }
+    },
+    {
+      "index": 3,
+      "suite": "suites/a8/fail1.robot",
+      "runRequestId": "A8-20261107144236-r3",
+      "create_status": 200,
+      "runId": "RUN-20261107144245-580000",
+      "terminal_state": "failed",
+      "failure_reason": "ok",
+      "failure_message": "分片执行失败: ok",
+      "parse_status": 200,
+      "detail_status": 200,
+      "detail_counts": {
+        "pass": 1,
+        "fail": 1,
+        "skip": 0
+      },
+      "detail_exportable": true,
+      "db_verdicts": {
+        "PASS": 1,
+        "FAIL": 1
+      },
+      "run_row": {
+        "id": "16530",
+        "run_status": "failed",
+        "pass_count": "1",
+        "fail_count": "1",
+        "skip_count": "0",
+        "exportable": "1",
+        "artifacts_dir": "/home/evergreen/robot-test/artifacts/RUN-20261107144245-580000"
+      }
+    }
+  ],
+  "exports": {
+    "pdf": {
+      "status": 200,
+      "bytes": 1535,
+      "contentType": "application/pdf",
+      "sha256": "76d72b9f73aa4dedc6896518a60f2ed90f6aca0ff0f7545683b29d9844d04cc6",
+      "magic_ok": true,
+      "path": "raw/export-pdf"
+    },
+    "docx": {
+      "status": 200,
+      "bytes": 2678,
+      "contentType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "sha256": "c3427370dd5af997239ed6bd126c9cf5fee0d7dfb0ac4099d9fbebdba1a07257",
+      "magic_ok": true,
+      "path": "raw/export-docx"
+    },
+    "html": {
+      "status": 200,
+      "bytes": 1558,
+      "contentType": "text/html;charset=UTF-8",
+      "sha256": "87c9ccb4108fb5700e95eea9256bba0a3fd31cf7d02e225ca7a59dc3976349d1",
+      "magic_ok": true,
+      "path": "raw/export-html"
+    }
+  },
+  "notes": [],
+  "db_before_gz_bytes": 152798,
+  "db_before_sha256": "3d13205e0b8385d5117835fbfa7f0024dc3e97b4327990ed1f551f692d6c27a8",
+  "p29_artifacts_before": "65",
+  "login_status": 200,
+  "project": {
+    "status": 200,
+    "projectId": 76
+  },
+  "started_at_utc": "2026-11-07T06:41:39Z",
+  "uploads": [
+    {
+      "path": "suites/a8/pass2.robot",
+      "status": 200
+    },
+    {
+      "path": "suites/a8/skip1.robot",
+      "status": 200
+    },
+    {
+      "path": "suites/a8/fail1.robot",
+      "status": 200
+    }
+  ],
+  "terminal_states": [
+    "finished",
+    "finished",
+    "failed"
+  ],
+  "digest_status": 200,
+  "digest": {
+    "projectId": 76,
+    "generatedAt": "2026-11-07T06:42:47.857391224Z",
+    "windowDays": 30,
+    "recentReports": [
+      {
+        "runId": "RUN-20261107144245-580000",
+        "state": "failed",
+        "finishedAt": "2026-11-07T06:42:46.636Z",
+        "total": 2,
+        "pass": 1,
+        "fail": 1,
+        "skip": 0,
+        "passRateBp": 5000
+      },
+      {
+        "runId": "RUN-20261107144242-580000",
+        "state": "finished",
+        "finishedAt": "2026-11-07T06:42:44.576Z",
+        "total": 2,
+        "pass": 1,
+        "fail": 0,
+        "skip": 1,
+        "passRateBp": 5000
+      },
+      {
+        "runId": "RUN-20261107144240-580000",
+        "state": "finished",
+        "finishedAt": "2026-11-07T06:42:42.571Z",
+        "total": 2,
+        "pass": 2,
+        "fail": 0,
+        "skip": 0,
+        "passRateBp": 10000
+      }
+    ],
+    "topFailedCases": [
+      {
+        "caseKey": "run-RUN-20261107144245-580000.A8 FAIL 01",
+        "failures": 1,
+        "lastFailedAt": "2026-11-07T06:42:46.636Z"
+      }
+    ],
+    "coverage": {
+      "caseTotal": 0,
+      "covered": 0,
+      "neverExecuted": 0
+    },
+    "passRateTrend": [
+      {
+        "runId": "RUN-20261107144240-580000",
+        "finishedAt": "2026-11-07T06:42:42.571Z",
+        "passRateBp": 10000,
+        "fail": 0
+      },
+      {
+        "runId": "RUN-20261107144242-580000",
+        "finishedAt": "2026-11-07T06:42:44.576Z",
+        "passRateBp": 5000,
+        "fail": 0
+      },
+      {
+        "runId": "RUN-20261107144245-580000",
+        "finishedAt": "2026-11-07T06:42:46.636Z",
+        "passRateBp": 5000,
+        "fail": 1
+      }
+    ]
+  },
+  "aggregate": {
+    "pass": 4,
+    "fail": 1,
+    "skip": 1
+  },
+  "passrate": {
+    "impl_expected": {
+      "RUN-20261107144240-580000": 10000,
+      "RUN-20261107144242-580000": 5000,
+      "RUN-20261107144245-580000": 5000
+    },
+    "prd_expected": {
+      "RUN-20261107144240-580000": 10000,
+      "RUN-20261107144242-580000": 10000,
+      "RUN-20261107144245-580000": 5000
+    },
+    "trend_actual": {
+      "RUN-20261107144240-580000": 10000,
+      "RUN-20261107144242-580000": 5000,
+      "RUN-20261107144245-580000": 5000
+    },
+    "aggregate_impl_bp": 6667,
+    "aggregate_prd_bp": 8000
+  },
+  "multi_run_create": {
+    "status": 400,
+    "body": {
+      "code": 40001,
+      "codeName": "INVALID_ARGUMENT",
+      "message": "runId 不能为空",
+      "data": null,
+      "success": false
+    }
+  },
+  "failed_cases": [
+    {
+      "caseKey": "run-RUN-20261107144245-580000.A8 FAIL 01",
+      "failures": 1,
+      "lastFailedAt": "2026-11-07T06:42:46.636Z"
+    }
+  ],
+  "export_content": {
+    "html_has_version_and_frozen": true,
+    "docx_has_version_and_frozen": true,
+    "pdf_has_version_and_frozen": true,
+    "pdf_preserves_cjk_title": false,
+    "html_preserves_cjk_title": true
+  },
+  "export_leaks": {
+    "html": [],
+    "docx": [],
+    "pdf": []
+  },
+  "run_export": {
+    "status": 200,
+    "body": {
+      "exportId": 28,
+      "format": "pdf",
+      "mode": "external",
+      "bytes": 199465,
+      "sha256": "1a19e3fb88476dac5c39a9905621383a41c3dc760c22c1204f0577546496219c",
+      "downloadUrl": "/api/exports/28/download?projectId=76"
+    },
+    "print_base": "http://127.0.0.1:8001",
+    "download": {
+      "status": 200,
+      "bytes": 199465,
+      "sha256": "1a19e3fb88476dac5c39a9905621383a41c3dc760c22c1204f0577546496219c",
+      "url": "/api/exports/28/download?projectId=76",
+      "absolute": "http://127.0.0.1:8001/api/exports/28/download?projectId=76",
+      "via_entry": true,
+      "db_sha256": "1a19e3fb88476dac5c39a9905621383a41c3dc760c22c1204f0577546496219c"
+    }
+  },
+  "retention_dry": {
+    "status": 200,
+    "data": {
+      "dryRun": true,
+      "runCount": 1,
+      "totalBytes": 4141,
+      "projectBytes": 7380,
+      "keptRecentRuns": 0,
+      "deletedFiles": 0,
+      "items": [
+        {
+          "runId": "RUN-20261107144245-580000",
+          "bytes": 4141,
+          "reason": "expired"
+        }
+      ]
+    }
+  },
+  "retention_real": {
+    "status": 200,
+    "data": {
+      "dryRun": false,
+      "runCount": 1,
+      "totalBytes": 4141,
+      "projectBytes": 7380,
+      "keptRecentRuns": 0,
+      "deletedFiles": 3,
+      "items": [
+        {
+          "runId": "RUN-20261107144245-580000",
+          "bytes": 4141,
+          "reason": "expired"
+        }
+      ]
+    }
+  },
+  "runs_kept_in_db": 2,
+  "p29_artifacts_after": "65",
+  "audit_artifact_purge_rows": "2",
+  "db_after_gz_bytes": 154769,
+  "db_after_sha256": "94d9f95128deb9620b06d8dedf5c2d7bb3b0444acbf1ac9ec97c08c63ffb8548",
+  "PASS": false
+}

@@ -1,0 +1,12 @@
+kernel=robot
+total=8
+failures=0
+  PASS	Bench-1-A	PASS
+  PASS	Bench-1-B	PASS
+  PASS	Bench-2-A	PASS
+  PASS	Bench-2-B	PASS
+  PASS	Bench-3-A	PASS
+  PASS	Bench-3-B	PASS
+  PASS	Bench-4-A	PASS
+  PASS	Bench-4-B	PASS
+passed=8

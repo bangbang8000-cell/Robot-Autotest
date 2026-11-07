@@ -1,0 +1,11 @@
+# test_result.case_key 索引评估（克隆表 test_result_b5，100 万行）
+## 无 case_key 索引
+TREND case_key join                                           544 ms
+id	select_type	table	partitions	type	possible_keys	key	key_len	ref	rows	filtered	Extra
+1	SIMPLE	t	NULL	ALL	idx_test_result_run_case	NULL	NULL	NULL	993110	10.00	Using where; Using temporary; Using filesort
+1	SIMPLE	r	NULL	eq_ref	PRIMARY,uk_run_project_request,idx_run_project_started,idx_run_plan	PRIMARY	8	robot_dev.t.run_id	1	78.98	Using where
+## 有 (case_key, run_id) 索引
+TREND case_key join                                            46 ms
+id	select_type	table	partitions	type	possible_keys	key	key_len	ref	rows	filtered	Extra
+1	SIMPLE	t	NULL	ref	idx_test_result_run_case,idx_test_result_case_key	idx_test_result_case_key	642	const	200	100.00	Using temporary; Using filesort
+1	SIMPLE	r	NULL	eq_ref	PRIMARY,uk_run_project_request,idx_run_project_started,idx_run_plan	PRIMARY	8	robot_dev.t.run_id	1	78.98	Using where

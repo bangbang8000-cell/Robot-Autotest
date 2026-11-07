@@ -1,0 +1,37 @@
+{
+ "code": 0,
+ "codeName": "OK",
+ "message": "OK",
+ "data": {
+  "caseKey": "run-RUN-20261107151146-000000.B8 用例甲",
+  "currentEnvKey": "DUT=LOCAL-HOST;LINK=LOCAL",
+  "baselineMs": null,
+  "deviated": false,
+  "points": [
+   {
+    "runId": "RUN-20261107151146-000000",
+    "startedAt": "2026-11-07T07:11:46.439Z",
+    "verdict": "PASS",
+    "durationMs": 2,
+    "envKey": "DUT=LOCAL-HOST;LINK=LOCAL",
+    "deviated": false
+   }
+  ],
+  "series": [
+   {
+    "envKey": "DUT=LOCAL-HOST;LINK=LOCAL",
+    "points": [
+     {
+      "runId": "RUN-20261107151146-000000",
+      "startedAt": "2026-11-07T07:11:46.439Z",
+      "verdict": "PASS",
+      "durationMs": 2,
+      "envKey": "DUT=LOCAL-HOST;LINK=LOCAL",
+      "deviated": false
+     }
+    ]
+   }
+  ]
+ },
+ "success": true
+}

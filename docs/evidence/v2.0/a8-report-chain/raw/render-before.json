@@ -1,0 +1,31 @@
+{
+  "code": 0,
+  "codeName": "OK",
+  "message": "OK",
+  "data": {
+    "reportId": 10,
+    "title": "A8 冻结报告 20261107144236",
+    "version": 2,
+    "frozenAt": "2026-11-07T06:42:48.156Z",
+    "conclusion": "PASS",
+    "passCount": 2,
+    "failCount": 0,
+    "skipCount": 0,
+    "passRate": 100.0,
+    "caseTotal": 2,
+    "caseCovered": 2,
+    "coverageRate": 100.0,
+    "failureDistribution": {
+      "fail": 0
+    },
+    "trend": [],
+    "projectName": "project-76",
+    "swBuild": "v2.1-a8",
+    "caseKind": "report-chain",
+    "startedAt": "2026-11-07T06:41:39Z",
+    "finishedAt": "2026-11-07T06:42:42.571Z",
+    "disclaimer": "INTERNAL USE ONLY - NOT FOR EXTERNAL DISTRIBUTION",
+    "watermark": "INTERNAL USE ONLY"
+  },
+  "success": true
+}

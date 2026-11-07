@@ -1,0 +1,1 @@
+{"code":0,"codeName":"OK","message":"OK","data":{"source":"PabotCommandBuilder / C4 白名单命令","argv":["pytest","--json-report","--json-report-file=artifacts/kernel-pytest-1/pytest-report.json","--junitxml=artifacts/kernel-pytest-1/junit.xml","-q","-n","4","fixtures/smoke/2node-smoke.robot"],"kernel":"pytest"},"success":true}

@@ -1,0 +1,105 @@
+{
+  "id": "TC-11",
+  "title": "4 角色菜单矩阵 + 直达 403 不闪现",
+  "verdict": "FAIL",
+  "facts": {
+    "roles": [
+      {
+        "user": "qa-e2e-admin",
+        "leaves": 13,
+        "expected": 13,
+        "ok": true,
+        "labels": [
+          "工作台",
+          "设备",
+          "链路",
+          "凭据",
+          "用例",
+          "运行记录",
+          "执行计划",
+          "报告",
+          "用户与项目",
+          "审计日志",
+          "系统设置",
+          "关于",
+          "版本迭代"
+        ],
+        "apiRoles": [
+          "admin"
+        ]
+      },
+      {
+        "user": "qa-e2e-pm",
+        "leaves": 9,
+        "expected": 12,
+        "ok": false,
+        "labels": [
+          "工作台",
+          "设备",
+          "链路",
+          "凭据",
+          "用例",
+          "报告",
+          "用户与项目",
+          "关于",
+          "版本迭代"
+        ],
+        "apiRoles": []
+      },
+      {
+        "user": "qa-e2e-engineer",
+        "leaves": 9,
+        "expected": 11,
+        "ok": false,
+        "labels": [
+          "工作台",
+          "设备",
+          "链路",
+          "凭据",
+          "用例",
+          "报告",
+          "用户与项目",
+          "关于",
+          "版本迭代"
+        ],
+        "apiRoles": [],
+        "forbiddenRoute": {
+          "finalPath": "/settings",
+          "sawSettings": true,
+          "sawForbidden": false,
+          "samples": 14
+        }
+      },
+      {
+        "user": "qa-e2e-viewer",
+        "leaves": 9,
+        "expected": 9,
+        "ok": true,
+        "labels": [
+          "工作台",
+          "设备",
+          "链路",
+          "凭据",
+          "用例",
+          "报告",
+          "用户与项目",
+          "关于",
+          "版本迭代"
+        ],
+        "apiRoles": [],
+        "forbiddenRoute": {
+          "finalPath": "/settings",
+          "sawSettings": true,
+          "sawForbidden": false,
+          "samples": 14
+        }
+      }
+    ]
+  },
+  "shots": [
+    "shots/tc-11-viewer-nav.png",
+    "shots/tc-11-viewer-403.png"
+  ],
+  "ms": 27834,
+  "oneLiner": "菜单叶子 admin=13 / pm=9≠12 / engineer=9≠11 / viewer=9；/api/auth/me.roles admin=[admin] / pm=[空] / engineer=[空] / viewer=[空]；直达 /settings → engineer=/settings / viewer=/settings；闪现 有"
+}

@@ -1,0 +1,11 @@
+{
+  "cmd": ["pytest", "--json-report", "--json-report-file=/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/raw/pytest-art-xdist/pytest-report.json", "--junitxml=/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/raw/pytest-art-xdist/junit.xml", "-q", "-n", "2", "/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/pytest_slow/test_slow.py"],
+  "pid": 1736261,
+  "deadline_sec": 20,
+  "descendants_before_kill": [{"pid": 1736264, "cmd": "/usr/bin/python3.12 -u -c import sys;exec(eval(sys.stdin.readline()))"}, {"pid": 1736267, "cmd": "/usr/bin/python3.12 -u -c import sys;exec(eval(sys.stdin.readline()))"}],
+  "kill": {"terminated": true, "forced": false, "waited_ms": 4},
+  "parent_alive_after_2s": false,
+  "residual_descendants": [],
+  "elapsed_ms": 20012
+}
+

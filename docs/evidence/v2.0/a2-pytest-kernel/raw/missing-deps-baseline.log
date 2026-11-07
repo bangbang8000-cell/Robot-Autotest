@@ -1,0 +1,182 @@
+python/sdk/tests/test_macos_deployment_target.py::test_otool_parser_uses_the_newest_macho_slice
+python/sdk/tests/test_macos_deployment_target.py::test_otool_parser_requires_a_deployment_target
+python/sdk/tests/test_macos_deployment_target.py::test_otool_parser_ignores_unrelated_version_fields
+python/sdk/tests/test_macos_deployment_target.py::test_wheel_tag_rejects_a_newer_executable_target
+python/sdk/tests/test_macos_deployment_target.py::test_wheel_tag_accepts_only_supported_macos_architectures
+python/sdk/tests/test_release_version.py::test_repository_version_matches_root_package_json
+python/sdk/tests/test_release_version.py::test_release_tag_is_optional_for_non_release_builds
+python/sdk/tests/test_release_version.py::test_wheel_verification_uses_distribution_metadata_not_nested_libraries
+python/sdk/tests/test_release_version.py::test_release_tag_must_match_repository_version
+python/sdk/tests/test_release_version.py::test_repository_version_accepts_a_prerelease
+python/sdk/tests/test_release_version.py::test_repository_version_rejects_malformed_versions
+python/sdk/tests/test_release_version.py::test_pep440_version_spells_a_prerelease_the_python_way
+python/sdk/tests/test_release_version.py::test_macos_wheel_tag_does_not_claim_unsupported_node_platforms
+python/sdk/tests/test_release_version.py::test_windows_wheel_tag_and_payload_are_x64_only
+python/sdk/tests/test_release_version.py::test_platform_manifest_rejects_incomplete_entries
+python/sdk/tests/test_release_version.py::test_stage_sdk_keeps_distribution_module_and_runtime_pin_distinct
+python/sdk/tests/test_release_version.py::test_copy_package_omits_generated_carriers_before_staging_one_target
+python/sdk/tests/test_release_version.py::test_stage_runtime_copies_platform_payload[linux-x64-False]
+python/sdk/tests/test_release_version.py::test_stage_runtime_copies_platform_payload[macos-arm64-True]
+python/sdk/tests/test_release_version.py::test_stage_runtime_copies_platform_payload[macos-x64-True]
+python/sdk/tests/test_release_version.py::test_stage_runtime_copies_platform_payload[win-x64.exe-False]
+python/sdk/tests/test_release_version.py::test_stage_runtime_rejects_a_noncanonical_executable_name
+python/sdk/tests/test_release_version.py::test_wheel_verification_rejects_oversized_artifacts
+
+==================================== ERRORS ====================================
+_____ ERROR collecting python/sdk/tests/test_account_provider_snapshot.py ______
+ImportError while importing test module '/home/evergreen/deepseek-harness/python/sdk/tests/test_account_provider_snapshot.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/sdk/tests/test_account_provider_snapshot.py:9: in <module>
+    from deepseek_harness import DeepSeekHarness
+E   ModuleNotFoundError: No module named 'deepseek_harness'
+______________ ERROR collecting python/sdk/tests/test_approval.py ______________
+ImportError while importing test module '/home/evergreen/deepseek-harness/python/sdk/tests/test_approval.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/sdk/tests/test_approval.py:8: in <module>
+    from pydantic import ValidationError
+E   ModuleNotFoundError: No module named 'pydantic'
+__________ ERROR collecting python/sdk/tests/test_approval_runtime.py __________
+ImportError while importing test module '/home/evergreen/deepseek-harness/python/sdk/tests/test_approval_runtime.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/sdk/tests/test_approval_runtime.py:10: in <module>
+    from pydantic import BaseModel
+E   ModuleNotFoundError: No module named 'pydantic'
+__________ ERROR collecting python/sdk/tests/test_bundled_runtime.py ___________
+ImportError while importing test module '/home/evergreen/deepseek-harness/python/sdk/tests/test_bundled_runtime.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/sdk/tests/test_bundled_runtime.py:14: in <module>
+    from deepseek_harness import DeepSeekHarness, HarnessClient, HarnessConfig
+E   ModuleNotFoundError: No module named 'deepseek_harness'
+_______________ ERROR collecting python/sdk/tests/test_client.py _______________
+ImportError while importing test module '/home/evergreen/deepseek-harness/python/sdk/tests/test_client.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/sdk/tests/test_client.py:12: in <module>
+    from deepseek_harness import DeepSeekHarness, HarnessClient, HarnessConfig, Notification, RunResult, SdkProtocolError
+E   ModuleNotFoundError: No module named 'deepseek_harness'
+_____ ERROR collecting python/sdk/tests/test_cot_translation_projection.py _____
+ImportError while importing test module '/home/evergreen/deepseek-harness/python/sdk/tests/test_cot_translation_projection.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/sdk/tests/test_cot_translation_projection.py:8: in <module>
+    from deepseek_harness import DeepSeekHarness
+E   ModuleNotFoundError: No module named 'deepseek_harness'
+_______________ ERROR collecting python/sdk/tests/test_office.py _______________
+ImportError while importing test module '/home/evergreen/deepseek-harness/python/sdk/tests/test_office.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/sdk/tests/test_office.py:10: in <module>
+    import deepseek_harness_runtime
+E   ModuleNotFoundError: No module named 'deepseek_harness_runtime'
+_________ ERROR collecting python/sdk/tests/test_office_interrupts.py __________
+ImportError while importing test module '/home/evergreen/deepseek-harness/python/sdk/tests/test_office_interrupts.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/sdk/tests/test_office_interrupts.py:14: in <module>
+    from deepseek_harness_runtime import _resources
+E   ModuleNotFoundError: No module named 'deepseek_harness_runtime'
+___________ ERROR collecting python/sdk/tests/test_office_render.py ____________
+ImportError while importing test module '/home/evergreen/deepseek-harness/python/sdk/tests/test_office_render.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/sdk/tests/test_office_render.py:11: in <module>
+    from PIL import Image, ImageDraw
+E   ModuleNotFoundError: No module named 'PIL'
+_______________ ERROR collecting python/sdk/tests/test_resume.py _______________
+ImportError while importing test module '/home/evergreen/deepseek-harness/python/sdk/tests/test_resume.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/sdk/tests/test_resume.py:9: in <module>
+    from deepseek_harness import DeepSeekHarness
+E   ModuleNotFoundError: No module named 'deepseek_harness'
+_________ ERROR collecting python/sdk/tests/test_runtime_resolution.py _________
+ImportError while importing test module '/home/evergreen/deepseek-harness/python/sdk/tests/test_runtime_resolution.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/sdk/tests/test_runtime_resolution.py:14: in <module>
+    import deepseek_harness_runtime as runtime
+E   ModuleNotFoundError: No module named 'deepseek_harness_runtime'
+____________ ERROR collecting python/sdk/tests/test_smoke_model.py _____________
+ImportError while importing test module '/home/evergreen/deepseek-harness/python/sdk/tests/test_smoke_model.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/sdk/tests/test_smoke_model.py:12: in <module>
+    from deepseek_harness import RunResult
+E   ModuleNotFoundError: No module named 'deepseek_harness'
+___________ ERROR collecting python/sdk/tests/test_user_questions.py ___________
+ImportError while importing test module '/home/evergreen/deepseek-harness/python/sdk/tests/test_user_questions.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/sdk/tests/test_user_questions.py:8: in <module>
+    from pydantic import BaseModel
+E   ModuleNotFoundError: No module named 'pydantic'
+_________ ERROR collecting python/sdk/tests/test_working_directory.py __________
+ImportError while importing test module '/home/evergreen/deepseek-harness/python/sdk/tests/test_working_directory.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/sdk/tests/test_working_directory.py:8: in <module>
+    from pydantic import ValidationError
+E   ModuleNotFoundError: No module named 'pydantic'
+=========================== short test summary info ============================
+ERROR python/sdk/tests/test_account_provider_snapshot.py
+ERROR python/sdk/tests/test_approval.py
+ERROR python/sdk/tests/test_approval_runtime.py
+ERROR python/sdk/tests/test_bundled_runtime.py
+ERROR python/sdk/tests/test_client.py
+ERROR python/sdk/tests/test_cot_translation_projection.py
+ERROR python/sdk/tests/test_office.py
+ERROR python/sdk/tests/test_office_interrupts.py
+ERROR python/sdk/tests/test_office_render.py
+ERROR python/sdk/tests/test_resume.py
+ERROR python/sdk/tests/test_runtime_resolution.py
+ERROR python/sdk/tests/test_smoke_model.py
+ERROR python/sdk/tests/test_user_questions.py
+ERROR python/sdk/tests/test_working_directory.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 14 errors during collection !!!!!!!!!!!!!!!!!!!
+23 tests collected, 14 errors in 0.25s

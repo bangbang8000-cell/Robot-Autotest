@@ -1,0 +1,695 @@
+{
+  "dry_run": false,
+  "tag": "a6-baseline",
+  "db": "robot_dev",
+  "baseline_build_info": {
+    "app": "robot-autotest",
+    "version": "0.1.0-SNAPSHOT",
+    "gitCommit": "61c49dd",
+    "buildTime": "2026-11-06T11:01:08Z",
+    "source": "build",
+    "entryPort": "8001",
+    "backendPort": "8081",
+    "devPort": "5173",
+    "license": "Apache-2.0（见仓库 LICENSE / NOTICE）",
+    "dependencies": [
+      {
+        "name": "robot-autotest",
+        "version": "0.1.0-SNAPSHOT",
+        "source": "build"
+      },
+      {
+        "name": "Spring Boot",
+        "version": "3.3.5",
+        "source": "build"
+      },
+      {
+        "name": "Java",
+        "version": "21",
+        "source": "build"
+      },
+      {
+        "name": "poi-ooxml",
+        "version": "5.2.5",
+        "source": "build"
+      },
+      {
+        "name": "@fontsource/jetbrains-mono",
+        "version": "^5.3.0",
+        "source": "build"
+      },
+      {
+        "name": "@fontsource/noto-sans-sc",
+        "version": "^5.3.1",
+        "source": "build"
+      },
+      {
+        "name": "lucide-vue-next",
+        "version": "^0.577.0",
+        "source": "build"
+      },
+      {
+        "name": "naive-ui",
+        "version": "^2.45.3",
+        "source": "build"
+      },
+      {
+        "name": "pinia",
+        "version": "^2.2.6",
+        "source": "build"
+      },
+      {
+        "name": "vue",
+        "version": "^3.5.13",
+        "source": "build"
+      },
+      {
+        "name": "vue-i18n",
+        "version": "^10.0.5",
+        "source": "build"
+      },
+      {
+        "name": "vue-router",
+        "version": "^4.4.5",
+        "source": "build"
+      },
+      {
+        "name": "@eslint/js",
+        "version": "^9.16.0",
+        "source": "build"
+      },
+      {
+        "name": "@types/node",
+        "version": "^22.10.1",
+        "source": "build"
+      },
+      {
+        "name": "@vitejs/plugin-vue",
+        "version": "^5.2.1",
+        "source": "build"
+      },
+      {
+        "name": "eslint",
+        "version": "^9.16.0",
+        "source": "build"
+      },
+      {
+        "name": "eslint-plugin-vue",
+        "version": "^9.32.0",
+        "source": "build"
+      },
+      {
+        "name": "happy-dom",
+        "version": "^18.0.1",
+        "source": "build"
+      },
+      {
+        "name": "typescript",
+        "version": "~5.6.3",
+        "source": "build"
+      },
+      {
+        "name": "typescript-eslint",
+        "version": "^8.17.0",
+        "source": "build"
+      },
+      {
+        "name": "vite",
+        "version": "^6.0.3",
+        "source": "build"
+      },
+      {
+        "name": "vitest",
+        "version": "^3.2.7",
+        "source": "build"
+      },
+      {
+        "name": "vue-tsc",
+        "version": "^2.1.10",
+        "source": "build"
+      }
+    ],
+    "selfCheck": {
+      "database": "OK",
+      "executor": "NOT_INSTALLED",
+      "kernel": "NOT_INSTALLED",
+      "aiCli": "OK"
+    }
+  },
+  "preflight": {
+    "healthz": 200,
+    "api_health": {
+      "app": "robot-autotest",
+      "check": "readiness",
+      "database": "UP",
+      "status": "UP"
+    },
+    "index": 200
+  },
+  "artifact_before": {
+    "jar_sha256": "b7bc6c7ae4242ae82879fadffe94cf39ac163fe2bbd11cd98a78a93ea9c45357",
+    "dist_sha256": "b831adc5326829c0cf0b17726f2c7f3ae63103aef582a3b972fe4791eec993db"
+  },
+  "db_before": {
+    "counts": {
+      "ai_action": 0,
+      "ai_cli_probe": 0,
+      "ai_session": 0,
+      "api_token": 422,
+      "app_user": 9,
+      "asset_version": 0,
+      "audit_log": 1433,
+      "case_requirement": 0,
+      "case_source": 0,
+      "ci_trigger": 0,
+      "credential": 2,
+      "device": 3,
+      "device_check": 0,
+      "device_port": 0,
+      "editor_keyword": 29,
+      "env_profile": 0,
+      "execution_event": 0,
+      "execution_job": 28,
+      "execution_node": 9,
+      "execution_plan": 108,
+      "execution_plan_dependency": 102,
+      "execution_queue": 27,
+      "export_record": 5,
+      "flyway_schema_history": 35,
+      "import_batch": 0,
+      "keyword_result": 24,
+      "link": 2,
+      "notification": 0,
+      "plan_group": 0,
+      "plan_group_item": 0,
+      "project": 5,
+      "project_asset": 8,
+      "project_group_role": 0,
+      "project_label": 0,
+      "project_member": 10,
+      "project_setting": 0,
+      "project_template": 0,
+      "report_template": 1,
+      "report_template_field": 21,
+      "resource_lease": 1,
+      "resource_lease_history": 21,
+      "retention_policy": 0,
+      "robot_file": 5,
+      "robot_file_version": 10,
+      "role": 1,
+      "run": 31,
+      "run_artifact": 48,
+      "run_attempt": 0,
+      "run_metadata": 5,
+      "schedule": 0,
+      "schedule_dependency": 0,
+      "schedule_trigger_log": 0,
+      "system_setting": 0,
+      "test_case": 231,
+      "test_case_step": 0,
+      "test_report": 0,
+      "test_report_audit": 0,
+      "test_report_export": 0,
+      "test_result": 36,
+      "test_scenario": 0,
+      "test_set": 0,
+      "test_set_item": 0,
+      "topology_node": 0,
+      "user_group": 0,
+      "user_group_member": 0,
+      "user_preference": 4,
+      "user_role": 4
+    },
+    "dump_sha256": "25b7e5b8d24a98a56ced692e98c73e8da7d03be5b43f259a9bc0017376609fd1",
+    "dump_bytes": 143782
+  },
+  "deploy": {
+    "rc": 0,
+    "wall_s": 62.0,
+    "health_s": 0.0,
+    "healthz": 200,
+    "api_health": {
+      "app": "robot-autotest",
+      "check": "readiness",
+      "database": "UP",
+      "status": "UP"
+    },
+    "build_info": {
+      "app": "robot-autotest",
+      "version": "0.1.0-SNAPSHOT",
+      "gitCommit": "7a6a604",
+      "buildTime": "2026-11-07T05:13:05Z",
+      "source": "build",
+      "entryPort": "8001",
+      "backendPort": "8081",
+      "devPort": "5173",
+      "license": "Apache-2.0（见仓库 LICENSE / NOTICE）",
+      "dependencies": [
+        {
+          "name": "robot-autotest",
+          "version": "0.1.0-SNAPSHOT",
+          "source": "build"
+        },
+        {
+          "name": "Spring Boot",
+          "version": "3.3.5",
+          "source": "build"
+        },
+        {
+          "name": "Java",
+          "version": "21",
+          "source": "build"
+        },
+        {
+          "name": "poi-ooxml",
+          "version": "5.2.5",
+          "source": "build"
+        },
+        {
+          "name": "@fontsource/jetbrains-mono",
+          "version": "^5.3.0",
+          "source": "build"
+        },
+        {
+          "name": "@fontsource/noto-sans-sc",
+          "version": "^5.3.1",
+          "source": "build"
+        },
+        {
+          "name": "lucide-vue-next",
+          "version": "^0.577.0",
+          "source": "build"
+        },
+        {
+          "name": "naive-ui",
+          "version": "^2.45.3",
+          "source": "build"
+        },
+        {
+          "name": "pinia",
+          "version": "^2.2.6",
+          "source": "build"
+        },
+        {
+          "name": "vue",
+          "version": "^3.5.13",
+          "source": "build"
+        },
+        {
+          "name": "vue-i18n",
+          "version": "^10.0.5",
+          "source": "build"
+        },
+        {
+          "name": "vue-router",
+          "version": "^4.4.5",
+          "source": "build"
+        },
+        {
+          "name": "@eslint/js",
+          "version": "^9.16.0",
+          "source": "build"
+        },
+        {
+          "name": "@types/node",
+          "version": "^22.10.1",
+          "source": "build"
+        },
+        {
+          "name": "@vitejs/plugin-vue",
+          "version": "^5.2.1",
+          "source": "build"
+        },
+        {
+          "name": "eslint",
+          "version": "^9.16.0",
+          "source": "build"
+        },
+        {
+          "name": "eslint-plugin-vue",
+          "version": "^9.32.0",
+          "source": "build"
+        },
+        {
+          "name": "happy-dom",
+          "version": "^18.0.1",
+          "source": "build"
+        },
+        {
+          "name": "typescript",
+          "version": "~5.6.3",
+          "source": "build"
+        },
+        {
+          "name": "typescript-eslint",
+          "version": "^8.17.0",
+          "source": "build"
+        },
+        {
+          "name": "vite",
+          "version": "^6.0.3",
+          "source": "build"
+        },
+        {
+          "name": "vitest",
+          "version": "^3.2.7",
+          "source": "build"
+        },
+        {
+          "name": "vue-tsc",
+          "version": "^2.1.10",
+          "source": "build"
+        }
+      ],
+      "selfCheck": {
+        "database": "OK",
+        "executor": "NOT_INSTALLED",
+        "kernel": "NOT_INSTALLED",
+        "aiCli": "OK"
+      }
+    },
+    "build_info_changed": true
+  },
+  "rollback": {
+    "rc": 0,
+    "wall_s": 8.2,
+    "health_s": 0.0,
+    "healthz": 200,
+    "api_health": {
+      "app": "robot-autotest",
+      "check": "readiness",
+      "database": "UP",
+      "status": "UP"
+    },
+    "build_info": {
+      "app": "robot-autotest",
+      "version": "0.1.0-SNAPSHOT",
+      "gitCommit": "61c49dd",
+      "buildTime": "2026-11-06T11:01:08Z",
+      "source": "build",
+      "entryPort": "8001",
+      "backendPort": "8081",
+      "devPort": "5173",
+      "license": "Apache-2.0（见仓库 LICENSE / NOTICE）",
+      "dependencies": [
+        {
+          "name": "robot-autotest",
+          "version": "0.1.0-SNAPSHOT",
+          "source": "build"
+        },
+        {
+          "name": "Spring Boot",
+          "version": "3.3.5",
+          "source": "build"
+        },
+        {
+          "name": "Java",
+          "version": "21",
+          "source": "build"
+        },
+        {
+          "name": "poi-ooxml",
+          "version": "5.2.5",
+          "source": "build"
+        },
+        {
+          "name": "@fontsource/jetbrains-mono",
+          "version": "^5.3.0",
+          "source": "build"
+        },
+        {
+          "name": "@fontsource/noto-sans-sc",
+          "version": "^5.3.1",
+          "source": "build"
+        },
+        {
+          "name": "lucide-vue-next",
+          "version": "^0.577.0",
+          "source": "build"
+        },
+        {
+          "name": "naive-ui",
+          "version": "^2.45.3",
+          "source": "build"
+        },
+        {
+          "name": "pinia",
+          "version": "^2.2.6",
+          "source": "build"
+        },
+        {
+          "name": "vue",
+          "version": "^3.5.13",
+          "source": "build"
+        },
+        {
+          "name": "vue-i18n",
+          "version": "^10.0.5",
+          "source": "build"
+        },
+        {
+          "name": "vue-router",
+          "version": "^4.4.5",
+          "source": "build"
+        },
+        {
+          "name": "@eslint/js",
+          "version": "^9.16.0",
+          "source": "build"
+        },
+        {
+          "name": "@types/node",
+          "version": "^22.10.1",
+          "source": "build"
+        },
+        {
+          "name": "@vitejs/plugin-vue",
+          "version": "^5.2.1",
+          "source": "build"
+        },
+        {
+          "name": "eslint",
+          "version": "^9.16.0",
+          "source": "build"
+        },
+        {
+          "name": "eslint-plugin-vue",
+          "version": "^9.32.0",
+          "source": "build"
+        },
+        {
+          "name": "happy-dom",
+          "version": "^18.0.1",
+          "source": "build"
+        },
+        {
+          "name": "typescript",
+          "version": "~5.6.3",
+          "source": "build"
+        },
+        {
+          "name": "typescript-eslint",
+          "version": "^8.17.0",
+          "source": "build"
+        },
+        {
+          "name": "vite",
+          "version": "^6.0.3",
+          "source": "build"
+        },
+        {
+          "name": "vitest",
+          "version": "^3.2.7",
+          "source": "build"
+        },
+        {
+          "name": "vue-tsc",
+          "version": "^2.1.10",
+          "source": "build"
+        }
+      ],
+      "selfCheck": {
+        "database": "OK",
+        "executor": "NOT_INSTALLED",
+        "kernel": "NOT_INSTALLED",
+        "aiCli": "OK"
+      }
+    },
+    "build_info_reverted": true
+  },
+  "artifact_after": {
+    "jar_sha256": "b7bc6c7ae4242ae82879fadffe94cf39ac163fe2bbd11cd98a78a93ea9c45357",
+    "dist_sha256": "b831adc5326829c0cf0b17726f2c7f3ae63103aef582a3b972fe4791eec993db"
+  },
+  "artifact_restored": true,
+  "db_after": {
+    "counts": {
+      "ai_action": 0,
+      "ai_cli_probe": 0,
+      "ai_session": 0,
+      "api_token": 422,
+      "app_user": 9,
+      "asset_version": 0,
+      "audit_log": 1433,
+      "case_requirement": 0,
+      "case_source": 0,
+      "ci_trigger": 0,
+      "credential": 2,
+      "device": 3,
+      "device_check": 0,
+      "device_port": 0,
+      "editor_keyword": 29,
+      "env_profile": 0,
+      "execution_event": 0,
+      "execution_job": 28,
+      "execution_node": 9,
+      "execution_plan": 108,
+      "execution_plan_dependency": 102,
+      "execution_queue": 27,
+      "export_record": 5,
+      "flyway_schema_history": 35,
+      "import_batch": 0,
+      "keyword_result": 24,
+      "link": 2,
+      "notification": 0,
+      "plan_group": 0,
+      "plan_group_item": 0,
+      "project": 5,
+      "project_asset": 8,
+      "project_group_role": 0,
+      "project_label": 0,
+      "project_member": 10,
+      "project_setting": 0,
+      "project_template": 0,
+      "report_template": 1,
+      "report_template_field": 21,
+      "resource_lease": 1,
+      "resource_lease_history": 21,
+      "retention_policy": 0,
+      "robot_file": 5,
+      "robot_file_version": 10,
+      "role": 1,
+      "run": 31,
+      "run_artifact": 48,
+      "run_attempt": 0,
+      "run_metadata": 5,
+      "schedule": 0,
+      "schedule_dependency": 0,
+      "schedule_trigger_log": 0,
+      "system_setting": 0,
+      "test_case": 231,
+      "test_case_step": 0,
+      "test_report": 0,
+      "test_report_audit": 0,
+      "test_report_export": 0,
+      "test_result": 36,
+      "test_scenario": 0,
+      "test_set": 0,
+      "test_set_item": 0,
+      "topology_node": 0,
+      "user_group": 0,
+      "user_group_member": 0,
+      "user_preference": 4,
+      "user_role": 4
+    },
+    "dump_sha256": "a1eff21b86828a995839e1f1dd79f0051005944135bdc2b3bfc16a3b3e09c0b6",
+    "dump_bytes": 143787
+  },
+  "db_row_count_diff": {},
+  "db_content_diff": {
+    "tables_total": 67,
+    "changed": {
+      "api_token": [
+        {
+          "cols": [
+            {
+              "kind": "value",
+              "row": 421,
+              "col": 4,
+              "old": "2026-11-07 13:13:02.666",
+              "new": "2026-11-07 13:14:15.133",
+              "pk": "",
+              "column": "last_used_at"
+            },
+            {
+              "kind": "value",
+              "row": 421,
+              "col": 9,
+              "old": "2026-11-07 13:13:02.666",
+              "new": "2026-11-07 13:14:15.136",
+              "pk": "",
+              "column": "updated_at"
+            }
+          ]
+        }
+      ],
+      "resource_lease": [
+        {
+          "cols": [
+            {
+              "kind": "value",
+              "row": 0,
+              "col": 8,
+              "old": "2026-11-07 13:14:42.768",
+              "new": "2026-11-07 13:16:14.877",
+              "pk": "",
+              "column": "last_heartbeat_at"
+            },
+            {
+              "kind": "value",
+              "row": 0,
+              "col": 9,
+              "old": "2026-11-07 13:14:42.768",
+              "new": "2026-11-07 13:16:14.877",
+              "pk": "",
+              "column": "expires_at"
+            },
+            {
+              "kind": "value",
+              "row": 0,
+              "col": 12,
+              "old": "2026-11-07 13:12:42.771",
+              "new": "2026-11-07 13:14:14.881",
+              "pk": "",
+              "column": "updated_at"
+            }
+          ]
+        }
+      ]
+    },
+    "changed_count": 2,
+    "rows_inserted_or_deleted": "0（67 表行数逐一相同，见 drill.py 的 db_before/db_after counts）"
+  },
+  "db_content_diff_summary": {
+    "changed_tables": [
+      "api_token",
+      "resource_lease"
+    ],
+    "changed_columns": [
+      "expires_at",
+      "last_heartbeat_at",
+      "last_used_at",
+      "updated_at"
+    ],
+    "heartbeat_timestamps_only": true
+  },
+  "rto_table": {
+    "deploy_build_deploy_s": 62.0,
+    "deploy_health_verify_s": 0.0,
+    "rollback_backup_deploy_restart_s": 8.2,
+    "rollback_health_verify_s": 0.0,
+    "loop_total_s": 70.2
+  },
+  "verdict": {
+    "deploy_rc0": true,
+    "deploy_health_200": true,
+    "deploy_build_info_changed": true,
+    "rollback_rc0": true,
+    "rollback_health_200": true,
+    "build_info_reverted": true,
+    "artifacts_restored": true,
+    "row_counts_identical": true,
+    "no_business_value_changed": true
+  },
+  "PASS": true
+}

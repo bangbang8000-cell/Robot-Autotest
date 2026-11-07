@@ -1,0 +1,4 @@
+## TC-13 平台设置：默认值/非管理员 403/非法值 400/实库写入+审计
+## verdict: PASS
+## numbers: 默认键 5；403/400/200 = [403, 400, 200]；实库 0->1；审计 +1
+## detail: GET=200 keys=['ai.enabled', 'report.retentionDays', 'execution.defaultTimeoutSeconds', 'execution.maxParallel', 'entry.port']; viewer PUT=403; 非法值 PUT=400 msg='设置值必须是整数：execution.maxParallel=abc'; 合法写入=200; system_setting 0->1; audit_log 1201->1202

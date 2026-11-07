@@ -1,0 +1,24 @@
+Initialized logging in /home/evergreen/robot-autotest/docs/evidence/v2.0/a3-rf-kernel/raw/dryrun-1/artifacts/shard-1/pabot_results
+Warning: specified pabotlibport 8270 is already in use. A free port will be assigned automatically.
+Robot Framework remote server at 127.0.0.1:46288 started.
+Storing .pabotsuitenames file
+2026-11-07 11:27:11.329340 [PID:1640144] [0] [ID:0] EXECUTING a3-kernel.Suite1 a3-kernel.Suite2
+2026-11-07 11:27:11.330202 [PID:1640145] [1] [ID:2] EXECUTING a3-kernel.Suite3 a3-kernel.Suite4
+2026-11-07 11:27:11.742067 [PID:1640144] [0] [ID:0] PASSED a3-kernel.Suite1 a3-kernel.Suite2 in 0.4 seconds
+2026-11-07 11:27:11.742514 [PID:1640145] [1] [ID:2] PASSED a3-kernel.Suite3 a3-kernel.Suite4 in 0.4 seconds
+8 tests, 8 passed, 0 failed, 0 skipped.
+===================================================
+Output:  /home/evergreen/robot-autotest/docs/evidence/v2.0/a3-rf-kernel/raw/dryrun-1/artifacts/shard-1/output.xml
+Log:     
+/home/evergreen/robot-autotest/docs/evidence/v2.0/a3-rf-kernel/raw/dryrun-1/artifacts/shard-1/log.html
+
+Report:  
+/home/evergreen/robot-autotest/docs/evidence/v2.0/a3-rf-kernel/raw/dryrun-1/artifacts/shard-1/report.html
+
+Finalizing Pabot execution...
+Stopping PabotLib process
+Robot Framework remote server at 127.0.0.1:46288 stopped.
+PabotLib process stopped
+Total testing: 0.80 seconds
+Elapsed time:  1.18 seconds
+Logs flushed successfully.

@@ -1,0 +1,32 @@
+Initialized logging in /home/evergreen/robot-autotest/docs/evidence/v2.0/a3-rf-kernel/raw/artifacts/shard-1/pabot_results
+Warning: specified pabotlibport 8270 is already in use. A free port will be assigned automatically.
+Robot Framework remote server at 127.0.0.1:47754 started.
+Storing .pabotsuitenames file
+2026-11-07 11:26:33.604740 [PID:1639958] [1] [ID:1] EXECUTING a3-kernel.Suite2
+2026-11-07 11:26:33.606573 [PID:1639959] [0] [ID:0] EXECUTING a3-kernel.Suite1
+2026-11-07 11:26:38.612209 [PID:1639958] [1] [ID:1] still running a3-kernel.Suite2 after 5.0s
+2026-11-07 11:26:38.613357 [PID:1639959] [0] [ID:0] still running a3-kernel.Suite1 after 5.0s
+2026-11-07 11:26:46.129274 [PID:1639959] [0] [ID:0] PASSED a3-kernel.Suite1 in 12.5 seconds
+2026-11-07 11:26:46.134057 [PID:1639972] [0] [ID:2] EXECUTING a3-kernel.Suite3
+2026-11-07 11:26:46.134578 [PID:1639958] [1] [ID:1] PASSED a3-kernel.Suite2 in 12.5 seconds
+2026-11-07 11:26:46.139140 [PID:1639976] [1] [ID:3] EXECUTING a3-kernel.Suite4
+2026-11-07 11:26:51.141121 [PID:1639972] [0] [ID:2] still running a3-kernel.Suite3 after 5.0s
+2026-11-07 11:26:51.146261 [PID:1639976] [1] [ID:3] still running a3-kernel.Suite4 after 5.0s
+2026-11-07 11:26:58.560758 [PID:1639972] [0] [ID:2] PASSED a3-kernel.Suite3 in 12.4 seconds
+2026-11-07 11:26:58.560984 [PID:1639976] [1] [ID:3] PASSED a3-kernel.Suite4 in 12.4 seconds
+8 tests, 8 passed, 0 failed, 0 skipped.
+===================================================
+Output:  /home/evergreen/robot-autotest/docs/evidence/v2.0/a3-rf-kernel/raw/artifacts/shard-1/output.xml
+Log:     
+/home/evergreen/robot-autotest/docs/evidence/v2.0/a3-rf-kernel/raw/artifacts/shard-1/log.html
+
+Report:  
+/home/evergreen/robot-autotest/docs/evidence/v2.0/a3-rf-kernel/raw/artifacts/shard-1/report.html
+
+Finalizing Pabot execution...
+Stopping PabotLib process
+Robot Framework remote server at 127.0.0.1:47754 stopped.
+PabotLib process stopped
+Total testing: 49.80 seconds
+Elapsed time:  25.67 seconds
+Logs flushed successfully.

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Rebot 7.5.1 (Python 3.12.3 on linux)" generated="2026-11-07T14:29:43.289140" rpa="false" schemaversion="5">
+<suite id="s1" name="run-RUN-20261107142942-580000" source="/home/evergreen/robot-test/artifacts/RUN-20261107142942-580000/workspace/suites/a8/pass2.robot">
+<test id="s1-t1" name="A8 PASS 01" line="17">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T14:29:43.064350" level="INFO">a8 pass 01</msg>
+<arg>a8 pass 01</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T14:29:43.061975" elapsed="0.002460"/>
+</kw>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T14:29:43.061294" elapsed="0.003262"/>
+</test>
+<test id="s1-t2" name="A8 PASS 02" line="19">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T14:29:43.065441" level="INFO">a8 pass 02</msg>
+<arg>a8 pass 02</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T14:29:43.065109" elapsed="0.000380"/>
+</kw>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T14:29:43.064800" elapsed="0.000765"/>
+</test>
+<doc>A8 报告链路取证夹具</doc>
+<meta name="BASELINE">n/a</meta>
+<meta name="CASE_ID">A8-RPT-PASS2</meta>
+<meta name="CASE_KIND">report-chain</meta>
+<meta name="DUT">LOCAL-HOST</meta>
+<meta name="LINK">LOCAL</meta>
+<meta name="OPERATOR">大师</meta>
+<meta name="QA_PROJECT">a8-report-fixture</meta>
+<meta name="RUN_ID">A8-RPT-PASS2-20261107142938</meta>
+<meta name="STARTED_AT">2026-11-07T06:30:00Z</meta>
+<meta name="SW_BUILD">v2.1-a8</meta>
+<status status="PASS" start="2026-11-07T14:29:43.031000" elapsed="0.004000"/>
+</suite>
+<statistics>
+<total>
+<stat pass="2" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat name="run-RUN-20261107142942-580000" id="s1" pass="2" fail="0" skip="0">run-RUN-20261107142942-580000</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

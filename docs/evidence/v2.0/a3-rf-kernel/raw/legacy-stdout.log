@@ -1,0 +1,71 @@
+Initialized logging in /home/evergreen/robot-autotest/docs/evidence/v2.0/a3-rf-kernel/raw/legacy-artifacts/shard-1/pabot_results
+Warning: specified pabotlibport 8270 is already in use. A free port will be assigned automatically.
+Robot Framework remote server at 127.0.0.1:45516 started.
+Storing .pabotsuitenames file
+2026-11-07 11:27:00.348197 [PID:1640039] [0] [ID:0] EXECUTING legacy-kernel.legacy-01 TN-IMP-014
+2026-11-07 11:27:00.759664 [PID:1640039] [0] [ID:0] PASSED legacy-kernel.legacy-01 TN-IMP-014 in 0.4 seconds
+2026-11-07 11:27:00.764448 [PID:1640043] [0] [ID:1] EXECUTING legacy-kernel.legacy-02 TN-IMP-020
+2026-11-07 11:27:01.173998 [PID:1640043] [0] [ID:1] PASSED legacy-kernel.legacy-02 TN-IMP-020 in 0.4 seconds
+2026-11-07 11:27:01.178742 [PID:1640047] [0] [ID:2] EXECUTING legacy-kernel.legacy-03 TN-IMP-025
+2026-11-07 11:27:01.586685 [PID:1640047] [0] [ID:2] PASSED legacy-kernel.legacy-03 TN-IMP-025 in 0.4 seconds
+2026-11-07 11:27:01.590516 [PID:1640051] [0] [ID:3] EXECUTING legacy-kernel.legacy-04 TN-IMP-057
+2026-11-07 11:27:02.001480 [PID:1640051] [0] [ID:3] PASSED legacy-kernel.legacy-04 TN-IMP-057 in 0.4 seconds
+2026-11-07 11:27:02.005618 [PID:1640055] [0] [ID:4] EXECUTING legacy-kernel.legacy-05 TN-IMP-069
+2026-11-07 11:27:02.415235 [PID:1640055] [0] [ID:4] Execution failed in legacy-kernel.legacy-05 TN-IMP-069 with 1 failing test(s)
+==============================================================================
+legacy-kernel
+==============================================================================
+legacy-kernel.legacy-05 TN-IMP-069 :: 8001 台账抽取：TN-IMP-069 TSO功能关闭...
+==============================================================================
+TN-IMP-069 TSO功能关闭多次抓包测试（MTU1500） :: 1. GPU01回读TSO=o... | FAIL |
+Invalid IF condition: Evaluating expression '"sudo ip link set dev ens17np0 mtu 1500 sudo ethtool -K ens17np0 tso off ethtool -k ens17np0 sudo timeout 15 tcpdump -i ens17np0 -s 0 -U -w /tmp/TN-IMP-069_1.pcap "tcp and host 172." != ""' failed: SyntaxError: unterminated string literal (detected at line 1) (<string>, line 1)
+
+Variables in the original expression '"${A_CMD}" != ""' were resolved before the expression was evaluated. Try using '$A_CMD != ""' syntax to avoid that. See Evaluating Expressions appendix in Robot Framework User Guide for more details.
+------------------------------------------------------------------------------
+legacy-kernel.legacy-05 TN-IMP-069 :: 8001 台账抽取：TN-IMP-069 TS... | FAIL |
+1 test, 0 passed, 1 failed
+==============================================================================
+legacy-kernel                                                         | FAIL |
+1 test, 0 passed, 1 failed
+==============================================================================
+Output:  /home/evergreen/robot-autotest/docs/evidence/v2.0/a3-rf-kernel/raw/legacy-artifacts/shard-1/pabot_results/4/output.xml
+2026-11-07 11:27:02.419795 [PID:1640059] [0] [ID:5] EXECUTING legacy-kernel.legacy-06 TN-IMP-089
+2026-11-07 11:27:02.830000 [PID:1640059] [0] [ID:5] PASSED legacy-kernel.legacy-06 TN-IMP-089 in 0.4 seconds
+2026-11-07 11:27:02.835926 [PID:1640063] [0] [ID:6] EXECUTING legacy-kernel.legacy-07 TN-IMP-095
+2026-11-07 11:27:05.229078 [PID:1640063] [0] [ID:6] PASSED legacy-kernel.legacy-07 TN-IMP-095 in 2.4 seconds
+2026-11-07 11:27:05.233394 [PID:1640067] [0] [ID:7] EXECUTING legacy-kernel.legacy-08 TN-IMP-096
+2026-11-07 11:27:05.644935 [PID:1640067] [0] [ID:7] PASSED legacy-kernel.legacy-08 TN-IMP-096 in 0.4 seconds
+2026-11-07 11:27:05.648928 [PID:1640072] [0] [ID:8] EXECUTING legacy-kernel.legacy-09 TN-IMP-101
+2026-11-07 11:27:06.158563 [PID:1640072] [0] [ID:8] PASSED legacy-kernel.legacy-09 TN-IMP-101 in 0.5 seconds
+2026-11-07 11:27:06.164474 [PID:1640076] [0] [ID:9] EXECUTING legacy-kernel.legacy-10 TN-IMP-118
+2026-11-07 11:27:06.679177 [PID:1640076] [0] [ID:9] PASSED legacy-kernel.legacy-10 TN-IMP-118 in 0.5 seconds
+2026-11-07 11:27:06.685964 [PID:1640080] [0] [ID:10] EXECUTING legacy-kernel.legacy-11 TN-IMP-119
+2026-11-07 11:27:07.195969 [PID:1640080] [0] [ID:10] PASSED legacy-kernel.legacy-11 TN-IMP-119 in 0.5 seconds
+2026-11-07 11:27:07.199986 [PID:1640084] [0] [ID:11] EXECUTING legacy-kernel.legacy-12 TN-IMP-123
+2026-11-07 11:27:07.609839 [PID:1640084] [0] [ID:11] PASSED legacy-kernel.legacy-12 TN-IMP-123 in 0.4 seconds
+2026-11-07 11:27:07.615387 [PID:1640088] [0] [ID:12] EXECUTING legacy-kernel.legacy-13 TN-IMP-136
+2026-11-07 11:27:08.128504 [PID:1640088] [0] [ID:12] PASSED legacy-kernel.legacy-13 TN-IMP-136 in 0.5 seconds
+2026-11-07 11:27:08.134802 [PID:1640092] [0] [ID:13] EXECUTING legacy-kernel.legacy-14 TN-IMP-142
+2026-11-07 11:27:08.545535 [PID:1640092] [0] [ID:13] PASSED legacy-kernel.legacy-14 TN-IMP-142 in 0.4 seconds
+2026-11-07 11:27:08.549985 [PID:1640096] [0] [ID:14] EXECUTING legacy-kernel.legacy-15 TN-IMP-159
+2026-11-07 11:27:08.960695 [PID:1640096] [0] [ID:14] PASSED legacy-kernel.legacy-15 TN-IMP-159 in 0.4 seconds
+2026-11-07 11:27:08.965283 [PID:1640100] [0] [ID:15] EXECUTING legacy-kernel.legacy-16 TN-IMP-167
+2026-11-07 11:27:09.377193 [PID:1640100] [0] [ID:15] PASSED legacy-kernel.legacy-16 TN-IMP-167 in 0.4 seconds
+2026-11-07 11:27:09.382817 [PID:1640104] [0] [ID:16] EXECUTING legacy-kernel.legacy-17 TN-IMP-176
+2026-11-07 11:27:09.890711 [PID:1640104] [0] [ID:16] PASSED legacy-kernel.legacy-17 TN-IMP-176 in 0.5 seconds
+17 tests, 16 passed, 1 failed, 0 skipped.
+===================================================
+Output:  /home/evergreen/robot-autotest/docs/evidence/v2.0/a3-rf-kernel/raw/legacy-artifacts/shard-1/output.xml
+Log:     
+/home/evergreen/robot-autotest/docs/evidence/v2.0/a3-rf-kernel/raw/legacy-artifacts/shard-1/log.html
+
+Report:  
+/home/evergreen/robot-autotest/docs/evidence/v2.0/a3-rf-kernel/raw/legacy-artifacts/shard-1/report.html
+
+Finalizing Pabot execution...
+Stopping PabotLib process
+Robot Framework remote server at 127.0.0.1:45516 stopped.
+PabotLib process stopped
+Total testing: 9.30 seconds
+Elapsed time:  10.45 seconds
+Logs flushed successfully.

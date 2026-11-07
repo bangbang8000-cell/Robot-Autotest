@@ -1,0 +1,221 @@
+{
+  "stamp": "20261107144859",
+  "projectId": 29,
+  "checks": {
+    "login_ok": true,
+    "state_has_probe_fields": true,
+    "session_open_ok": true,
+    "suggest_ok_no_error": true,
+    "suggest_response_no_secret": true,
+    "execute_without_confirm_403": true,
+    "execute_normal_returns_200": true,
+    "terminate_ok": true,
+    "audit_session_open": true,
+    "audit_suggest": true,
+    "audit_execute": true,
+    "audit_terminate": true,
+    "cli_on_path": true,
+    "cli_version_ok": true,
+    "product_argv_matches_real_cli": false,
+    "real_model_call_ok": true,
+    "real_output_redacted": true
+  },
+  "login": {
+    "status": 200,
+    "user": "qa-e2e-admin"
+  },
+  "state": {
+    "status": 200,
+    "data": {
+      "claude": false,
+      "codex": true,
+      "gemini": false,
+      "aider": false,
+      "anyAvailable": true,
+      "maxLevel": "L3",
+      "mode": "NORMAL",
+      "nonInteractiveOnly": true,
+      "projectId": 29,
+      "timeoutSeconds": 60,
+      "encoding": "UTF-8",
+      "contextMaxChars": 8000,
+      "executeRequiresConfirmation": true
+    }
+  },
+  "product_cli_mode": "NORMAL",
+  "session": {
+    "status": 200,
+    "sessionId": 1001
+  },
+  "suggest": {
+    "status": 200,
+    "data": {
+      "action": "SUGGEST",
+      "level": "L1",
+      "degraded": false,
+      "summary": "上下文已打包，可执行 L2 解释（150 字符）",
+      "audited": true
+    }
+  },
+  "suggest_response_secret_hits": {},
+  "execute_unconfirmed": {
+    "status": 403,
+    "body": {
+      "code": 40300,
+      "codeName": "FORBIDDEN",
+      "message": "发起执行必须二次确认",
+      "data": null,
+      "success": false
+    }
+  },
+  "execute_confirmed": {
+    "status": 200,
+    "data": {
+      "action": "EXECUTE",
+      "level": "L3",
+      "degraded": false,
+      "summary": "已按二次确认发起执行: PERF-IPERF-200G-001",
+      "audited": true
+    }
+  },
+  "terminate": {
+    "status": 200,
+    "data": {
+      "action": "TERMINATE",
+      "level": "L1",
+      "degraded": false,
+      "summary": "会话已关闭，进程树已终止",
+      "audited": true
+    }
+  },
+  "audit_rows": [
+    [
+      "AI_SESSION_OPEN",
+      "ai_session",
+      "1001",
+      "project=2; user=0",
+      "2026-11-06 18:43:45.223"
+    ],
+    [
+      "AI_SESSION_OPEN",
+      "ai_session",
+      "1001",
+      "project=29; user=0",
+      "2026-11-06 18:48:41.404"
+    ],
+    [
+      "AI_SESSION_OPEN",
+      "ai_session",
+      "1001",
+      "project=1; user=0",
+      "2026-11-06 19:18:52.949"
+    ],
+    [
+      "AI_SESSION_OPEN",
+      "ai_session",
+      "1001",
+      "project=1; user=0",
+      "2026-11-06 20:26:09.549"
+    ],
+    [
+      "AI_SESSION_OPEN",
+      "ai_session",
+      "1001",
+      "project=1; user=0",
+      "2026-11-06 20:30:03.538"
+    ],
+    [
+      "AI_SESSION_OPEN",
+      "ai_session",
+      "1001",
+      "project=1; user=0",
+      "2026-11-06 22:52:03.349"
+    ],
+    [
+      "AI_SESSION_OPEN",
+      "ai_session",
+      "1001",
+      "project=1; user=0",
+      "2026-11-06 23:38:44.987"
+    ],
+    [
+      "AI_SESSION_OPEN",
+      "ai_session",
+      "1001",
+      "project=61; user=0",
+      "2026-11-07 09:58:07.136"
+    ],
+    [
+      "AI_SESSION_OPEN",
+      "ai_session",
+      "1001",
+      "project=1; user=0",
+      "2026-11-07 13:50:17.865"
+    ],
+    [
+      "AI_SESSION_OPEN",
+      "ai_session",
+      "1001",
+      "project=29; user=1",
+      "2026-11-07 14:49:01.178"
+    ],
+    [
+      "AI_SUGGEST",
+      "ai_action",
+      "1001",
+      "上下文已打包，可执行 L2 解释（150 字符）",
+      "2026-11-07 14:49:01.275"
+    ],
+    [
+      "AI_EXECUTE",
+      "ai_action",
+      "1001",
+      "已按二次确认发起执行: PERF-IPERF-200G-001",
+      "2026-11-07 14:49:01.373"
+    ],
+    [
+      "AI_TERMINATE",
+      "ai_action",
+      "1001",
+      "会话已关闭，进程树已终止",
+      "2026-11-07 14:49:01.417"
+    ]
+  ],
+  "cli_found": "claude",
+  "cli_version": {
+    "rc": 0,
+    "out": "2.1.267 (Claude Code)"
+  },
+  "product_argv": {
+    "argv": [
+      "claude",
+      "--print",
+      "--output-format",
+      "text",
+      "--prompt-file",
+      "/home/evergreen/robot-autotest/docs/evidence/v2.0/a9-ai-call/raw/a9-prompt.txt"
+    ],
+    "rc": 1,
+    "stderr": "error: unknown option '--prompt-file'",
+    "stdout": ""
+  },
+  "real_call": {
+    "cli": "claude",
+    "argv": [
+      "claude",
+      "-p",
+      "你是测试平台助手。请只输出一行中文，回答：判定一次自动化测试是否通过，必须同时具备哪三类证据？不要输出任何 IP、路径、命令。",
+      "<prompt>"
+    ],
+    "rc": 0,
+    "chars": 40,
+    "stdout": "判定一次自动化测试是否通过，必须同时具备执行日志、测试报告与界面截图这三类证据。",
+    "stderr": "[claude-code:unrecognized_model] {\"model\":\"deepseek-v4-flash\",\"query_source\":\"generate_session_title\"}"
+  },
+  "real_output_secret_hits": {},
+  "pass": 16,
+  "fail": 1,
+  "failed_checks": [
+    "product_argv_matches_real_cli"
+  ]
+}

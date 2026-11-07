@@ -1,0 +1,9 @@
+PASS offset 每页 20 行
+PASS keyset 每页 20 行
+PASS keyset 首行 = offset 下一页第 2 行（游标行本身不重复）
+PASS keyset 与上一页无重叠
+PASS keyset 按 occurred_at 降序
+PASS keyset 页内 id 降序
+offset25000 last id: 1050214
+offset25001 first id: 1019143 second: 1019142
+keyset first id: 1019142 last: 1019123

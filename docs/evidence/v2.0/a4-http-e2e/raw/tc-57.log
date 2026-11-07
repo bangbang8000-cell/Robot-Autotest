@@ -1,0 +1,4 @@
+## TC-57 AI 执行进程：二次确认、进程树、cwd/env
+## verdict: GAP
+## numbers: 未确认 execute 403（403 必须二次确认）；进程树端点 404；ai_action 行 0；cwd/env 列 0
+## detail: AiProcessManager 只拼 argv，无 ProcessBuilder.directory/env；ai_action 列=['id', 'session_id', 'action', 'level', 'confirmed', 'result', 'summary', 'created_at']

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="1" skipped="2" tests="6" time="0.036" timestamp="2026-11-07T11:22:06.838061+08:00" hostname="Thinkbook14G5"><testcase classname="test_states" name="test_pass" time="0.000" /><testcase classname="test_states" name="test_fail" time="0.000"><failure message="AssertionError: sample: intentional failure&#10;assert False">def test_fail():
+&gt;       assert False, "sample: intentional failure"
+E       AssertionError: sample: intentional failure
+E       assert False
+
+test_states.py:16: AssertionError</failure></testcase><testcase classname="test_states" name="test_skip" time="0.000"><skipped type="pytest.skip" message="sample: intentional skip">/home/evergreen/robot-autotest/docs/evidence/v2.0/a2-pytest-kernel/states/test_states.py:19: sample: intentional skip</skipped></testcase><testcase classname="test_states" name="test_xfail" time="0.000"><skipped type="pytest.xfail" message="sample: intentional xfail" /></testcase><testcase classname="test_states" name="test_xpass" time="0.000" /><testcase classname="test_states" name="test_error" time="0.000"><error message="failed on setup with &quot;RuntimeError: sample: intentional fixture error&quot;">@pytest.fixture
+    def broken_fixture():
+&gt;       raise RuntimeError("sample: intentional fixture error")
+E       RuntimeError: sample: intentional fixture error
+
+test_states.py:36: RuntimeError</error></testcase></testsuite></testsuites>

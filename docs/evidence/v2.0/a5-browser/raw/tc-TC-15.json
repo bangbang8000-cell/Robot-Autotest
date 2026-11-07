@@ -1,0 +1,47 @@
+{
+  "id": "TC-15",
+  "title": "关于页与构建产物逐字段一致",
+  "verdict": "PASS",
+  "facts": {
+    "api": {
+      "status": 200,
+      "version": "0.1.0-SNAPSHOT",
+      "gitCommit": "61c49dd",
+      "buildTime": "2026-11-06T11:01:08Z",
+      "license": "Apache-2.0（见仓库 LICENSE / NOTICE）",
+      "deps": 23,
+      "selfCheck": {
+        "database": "OK",
+        "executor": "NOT_INSTALLED",
+        "kernel": "NOT_INSTALLED",
+        "aiCli": "OK"
+      },
+      "source": "build"
+    },
+    "page": {
+      "chips": [
+        "数据库：正常",
+        "执行器：未安装",
+        "测试内核：未安装",
+        "AI 命令行：正常"
+      ],
+      "depRows": 24,
+      "head": "AIDC自动化测试\n工作台\n资产\n用例\n执行\n运行记录\n执行计划\n报告\n管理\n用户与项目\n审计日志\n系统设置\n关于\n版本迭代\nAIDC 硬件与网络自动化测试平台\n暂无项目\n验收夹具·平台属主\n验收夹具·HTTP 全链路\nNODX-03 fixture\nAST-05 共享演示\n演示项目\nHTTP E2E admin\n中文\nEnglish\n退出登录\n关于本平台\n\nAIDC 硬件与网络自动化测试平台\n\n版本\n版本\n0.1.0-SNAPSHOT\n构建提交\n61c49dd\n构建时间\n2026-11-06T11:01:08Z\n信息来源\n构建产物\n许可证\nApache-2.0（见仓库 LICENSE / NOTICE）\n端口矩阵\n统一入口\n8001\n后端 API\n8081\n开发服务\n5173\n环境自检\n数据库：正常\n执行器：未安装\n测试内核：未安装\nAI 命令行：正常\n依赖清单（23）\n组件\n\t\n版本\n"
+    },
+    "gitHead": "7a6a604afb0fcd5073f279320d44aab5c12162d5",
+    "gitHeadMatches": false,
+    "checks": {
+      "version": true,
+      "gitCommit": true,
+      "buildTime": true,
+      "license": true,
+      "deps": true,
+      "selfCheck4": true
+    }
+  },
+  "shots": [
+    "shots/tc-15-about.png"
+  ],
+  "ms": 5058,
+  "oneLiner": "页面对 API 逐字段 version=✓ gitCommit=✓ buildTime=✓ license=✓ deps=✓ selfCheck4=✓；自检 4 项；依赖 23 条；git HEAD 7a6a604a vs build 61c49dd（不一致（构建产物早于 HEAD））"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "TC-64",
+  "title": "16 张基线存在 + diff 可定位",
+  "verdict": "PASS",
+  "facts": {
+    "baseline": 16,
+    "current": 16,
+    "baselineDir": "baseline/",
+    "currentDir": "shots/pages/"
+  },
+  "shots": [],
+  "ms": 6,
+  "oneLiner": "基线 16/16（复制自 v1.0 w7-design）；当前 16/16；逐像素 diff 见 analyze.py（raw/tc-64-diff.json）"
+}

@@ -1,0 +1,662 @@
+{
+  "run_tag": "A7-20261107_134041",
+  "base": "http://127.0.0.1:8001",
+  "project_id": 29,
+  "env": {
+    "default_run_timeout_seconds_from_code": 3600
+  },
+  "fixture": {
+    "endpoint": "PUT /api/editor/save",
+    "status": 200,
+    "path": "suites/a7/slow-b.robot",
+    "db_row": [
+      "11",
+      "484"
+    ],
+    "response": "ok"
+  },
+  "rf_cancel": {
+    "mode": "cancel",
+    "create_status": 200,
+    "run_id": "RUN-20261107134042-eb0000",
+    "request": {
+      "suitePaths": [
+        "suites/e2e-nodx03/demo-slow.robot",
+        "suites/a7/slow-b.robot"
+      ],
+      "concurrency": 2,
+      "timeoutSeconds": 60
+    },
+    "state_when_snapshot": "running",
+    "markers": [
+      "RUN-20261107134042-eb0000",
+      "NULL",
+      "NULL"
+    ],
+    "ps_before": {
+      "file": "ps-cancel-before.txt",
+      "tree_size": 4,
+      "pabot": [
+        {
+          "pid": 1736040,
+          "ppid": 1730324,
+          "pgid": 1730324,
+          "etimes": 0,
+          "stat": "Sl",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/pabot --outputdir /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0 --processes 2 --name run-RUN-20261107134042-eb0000 suites/e2e-nodx03/demo-slow.robot suites/a7/slow-b.robot"
+        },
+        {
+          "pid": 1736044,
+          "ppid": 1736040,
+          "pgid": 1736044,
+          "etimes": 0,
+          "stat": "Ss",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python -m pabot.pabotlib  127.0.0.1 8270"
+        },
+        {
+          "pid": 1736052,
+          "ppid": 1736040,
+          "pgid": 1736052,
+          "etimes": 0,
+          "stat": "Rs",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0/pabot_results/0/robot_argfile.txt"
+        },
+        {
+          "pid": 1736056,
+          "ppid": 1736040,
+          "pgid": 1736056,
+          "etimes": 0,
+          "stat": "Rs",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0/pabot_results/1/robot_argfile.txt"
+        }
+      ],
+      "robot_children": [
+        {
+          "pid": 1736040,
+          "ppid": 1730324,
+          "pgid": 1730324,
+          "etimes": 0,
+          "stat": "Sl",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/pabot --outputdir /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0 --processes 2 --name run-RUN-20261107134042-eb0000 suites/e2e-nodx03/demo-slow.robot suites/a7/slow-b.robot"
+        },
+        {
+          "pid": 1736052,
+          "ppid": 1736040,
+          "pgid": 1736052,
+          "etimes": 0,
+          "stat": "Rs",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0/pabot_results/0/robot_argfile.txt"
+        },
+        {
+          "pid": 1736056,
+          "ppid": 1736040,
+          "pgid": 1736056,
+          "etimes": 0,
+          "stat": "Rs",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0/pabot_results/1/robot_argfile.txt"
+        }
+      ],
+      "all": [
+        {
+          "pid": 1736040,
+          "ppid": 1730324,
+          "pgid": 1730324,
+          "etimes": 0,
+          "stat": "Sl",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/pabot --outputdir /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0 --processes 2 --name run-RUN-20261107134042-eb0000 suites/e2e-nodx03/demo-slow.robot suites/a7/slow-b.robot"
+        },
+        {
+          "pid": 1736044,
+          "ppid": 1736040,
+          "pgid": 1736044,
+          "etimes": 0,
+          "stat": "Ss",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python -m pabot.pabotlib  127.0.0.1 8270"
+        },
+        {
+          "pid": 1736052,
+          "ppid": 1736040,
+          "pgid": 1736052,
+          "etimes": 0,
+          "stat": "Rs",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0/pabot_results/0/robot_argfile.txt"
+        },
+        {
+          "pid": 1736056,
+          "ppid": 1736040,
+          "pgid": 1736056,
+          "etimes": 0,
+          "stat": "Rs",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0/pabot_results/1/robot_argfile.txt"
+        }
+      ]
+    },
+    "cancel": {
+      "status": 200,
+      "state": "CANCELED",
+      "message": "A7 取消取证"
+    },
+    "terminal_state": "canceled",
+    "after_shutdown_s": 3,
+    "ps_after": {
+      "pids_still_alive": [],
+      "args_still_matching": []
+    },
+    "row": {
+      "run_status": "canceled",
+      "failure_reason": "canceled",
+      "failure_class": "CANCELED",
+      "failure_message": "A7 取消取证",
+      "artifacts_dir": "/home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000",
+      "workspace_dir": "NULL",
+      "started_at": "2026-11-07 13:40:42.324",
+      "finished_at": "2026-11-07 13:40:43.012",
+      "elapsed_s": "0.6880"
+    },
+    "log": {
+      "status": 200,
+      "lines": [
+        {
+          "seq": 1,
+          "tsGen": "2026-11-07T05:40:42.343205285Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[system] run RUN-20261107134042-eb0000 启动"
+        },
+        {
+          "seq": 2,
+          "tsGen": "2026-11-07T05:40:42.345558767Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[system] 开始执行 pabot: /home/evergreen/rf-stack/.venv/bin/pabot --outputdir /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0 --processes 2 --name run-RUN-20261107134042-eb0000 suites/e2e-nodx03/demo-slow.robot suites/a7/slow-b.robot"
+        },
+        {
+          "seq": 3,
+          "tsGen": "2026-11-07T05:40:42.860048249Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[stdout] Initialized logging in /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0/pabot_results"
+        },
+        {
+          "seq": 4,
+          "tsGen": "2026-11-07T05:40:42.860297879Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[stdout] Robot Framework remote server at 127.0.0.1:8270 started."
+        },
+        {
+          "seq": 5,
+          "tsGen": "2026-11-07T05:40:42.860324952Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[stdout] Storing .pabotsuitenames file"
+        },
+        {
+          "seq": 6,
+          "tsGen": "2026-11-07T05:40:42.860343564Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[stdout] 2026-11-07 13:40:42.755659 [PID:1736052] [0] [ID:0] EXECUTING run-RUN-20261107134042-eb0000.Demo-Slow"
+        },
+        {
+          "seq": 7,
+          "tsGen": "2026-11-07T05:40:42.861606724Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[stdout] 2026-11-07 13:40:42.758805 [PID:1736056] [1] [ID:1] EXECUTING run-RUN-20261107134042-eb0000.Slow-B"
+        },
+        {
+          "seq": 8,
+          "tsGen": "2026-11-07T05:40:43.004503410Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[system] 进程退出码=143，耗时=PT0.658691928S"
+        },
+        {
+          "seq": 9,
+          "tsGen": "2026-11-07T05:40:43.004900868Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[system] 产物校验失败: reason=missing, exit=143"
+        },
+        {
+          "seq": 10,
+          "tsGen": "2026-11-07T05:40:43.004970910Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[system] 诊断顺序 1/3: pabot_manager.log 存在 /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0/pabot_results/pabot_manager.log"
+        },
+        {
+          "seq": 11,
+          "tsGen": "2026-11-07T05:40:43.004993638Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[system] 诊断顺序 2/3: robot_stderr.out 存在 /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0/robot_stderr.out"
+        },
+        {
+          "seq": 12,
+          "tsGen": "2026-11-07T05:40:43.005010782Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[system] 诊断顺序 3/3: stdout.log 存在 /home/evergreen/robot-test/artifacts/RUN-20261107134042-eb0000/shard-0/stdout.log"
+        }
+      ]
+    },
+    "kernel_named_in_failure_message": false,
+    "kernel_named_in_log": true,
+    "verdict": {
+      "created": true,
+      "ran_and_snapshot_nonempty": true,
+      "terminal": true,
+      "no_residual_pids": true,
+      "no_residual_args": true,
+      "failure_reason": "canceled"
+    }
+  },
+  "rf_timeout": {
+    "mode": "timeout",
+    "create_status": 200,
+    "run_id": "RUN-20261107134046-eb0000",
+    "request": {
+      "suitePaths": [
+        "suites/e2e-nodx03/demo-slow.robot",
+        "suites/a7/slow-b.robot"
+      ],
+      "concurrency": 2,
+      "timeoutSeconds": 20
+    },
+    "state_when_snapshot": "running",
+    "markers": [
+      "RUN-20261107134046-eb0000",
+      "NULL",
+      "NULL"
+    ],
+    "ps_before": {
+      "file": "ps-timeout-before.txt",
+      "tree_size": 4,
+      "pabot": [
+        {
+          "pid": 1736076,
+          "ppid": 1730324,
+          "pgid": 1730324,
+          "etimes": 0,
+          "stat": "Sl",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/pabot --outputdir /home/evergreen/robot-test/artifacts/RUN-20261107134046-eb0000/shard-0 --processes 2 --name run-RUN-20261107134046-eb0000 suites/e2e-nodx03/demo-slow.robot suites/a7/slow-b.robot"
+        },
+        {
+          "pid": 1736080,
+          "ppid": 1736076,
+          "pgid": 1736080,
+          "etimes": 0,
+          "stat": "Ss",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python -m pabot.pabotlib  127.0.0.1 46350"
+        },
+        {
+          "pid": 1736089,
+          "ppid": 1736076,
+          "pgid": 1736089,
+          "etimes": 0,
+          "stat": "Rs",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /home/evergreen/robot-test/artifacts/RUN-20261107134046-eb0000/shard-0/pabot_results/0/robot_argfile.txt"
+        },
+        {
+          "pid": 1736093,
+          "ppid": 1736076,
+          "pgid": 1736093,
+          "etimes": 0,
+          "stat": "Rs",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /home/evergreen/robot-test/artifacts/RUN-20261107134046-eb0000/shard-0/pabot_results/1/robot_argfile.txt"
+        }
+      ],
+      "robot_children": [
+        {
+          "pid": 1736076,
+          "ppid": 1730324,
+          "pgid": 1730324,
+          "etimes": 0,
+          "stat": "Sl",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/pabot --outputdir /home/evergreen/robot-test/artifacts/RUN-20261107134046-eb0000/shard-0 --processes 2 --name run-RUN-20261107134046-eb0000 suites/e2e-nodx03/demo-slow.robot suites/a7/slow-b.robot"
+        },
+        {
+          "pid": 1736089,
+          "ppid": 1736076,
+          "pgid": 1736089,
+          "etimes": 0,
+          "stat": "Rs",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /home/evergreen/robot-test/artifacts/RUN-20261107134046-eb0000/shard-0/pabot_results/0/robot_argfile.txt"
+        },
+        {
+          "pid": 1736093,
+          "ppid": 1736076,
+          "pgid": 1736093,
+          "etimes": 0,
+          "stat": "Rs",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /home/evergreen/robot-test/artifacts/RUN-20261107134046-eb0000/shard-0/pabot_results/1/robot_argfile.txt"
+        }
+      ],
+      "all": [
+        {
+          "pid": 1736076,
+          "ppid": 1730324,
+          "pgid": 1730324,
+          "etimes": 0,
+          "stat": "Sl",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/pabot --outputdir /home/evergreen/robot-test/artifacts/RUN-20261107134046-eb0000/shard-0 --processes 2 --name run-RUN-20261107134046-eb0000 suites/e2e-nodx03/demo-slow.robot suites/a7/slow-b.robot"
+        },
+        {
+          "pid": 1736080,
+          "ppid": 1736076,
+          "pgid": 1736080,
+          "etimes": 0,
+          "stat": "Ss",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python -m pabot.pabotlib  127.0.0.1 46350"
+        },
+        {
+          "pid": 1736089,
+          "ppid": 1736076,
+          "pgid": 1736089,
+          "etimes": 0,
+          "stat": "Rs",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /home/evergreen/robot-test/artifacts/RUN-20261107134046-eb0000/shard-0/pabot_results/0/robot_argfile.txt"
+        },
+        {
+          "pid": 1736093,
+          "ppid": 1736076,
+          "pgid": 1736093,
+          "etimes": 0,
+          "stat": "Rs",
+          "args": "/home/evergreen/rf-stack/.venv/bin/python /home/evergreen/rf-stack/.venv/bin/robot -A /home/evergreen/robot-test/artifacts/RUN-20261107134046-eb0000/shard-0/pabot_results/1/robot_argfile.txt"
+        }
+      ]
+    },
+    "terminal_state": "failed",
+    "after_shutdown_s": 3,
+    "ps_after": {
+      "pids_still_alive": [],
+      "args_still_matching": []
+    },
+    "row": {
+      "run_status": "failed",
+      "failure_reason": "timeout",
+      "failure_class": "CANCELED",
+      "failure_message": "分片执行失败: timeout",
+      "artifacts_dir": "/home/evergreen/robot-test/artifacts/RUN-20261107134046-eb0000",
+      "workspace_dir": "NULL",
+      "started_at": "2026-11-07 13:40:46.435",
+      "finished_at": "2026-11-07 13:41:06.491",
+      "elapsed_s": "20.0560"
+    },
+    "log": {
+      "status": 200,
+      "lines": [
+        {
+          "seq": 1,
+          "tsGen": "2026-11-07T05:40:46.449738548Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[system] run RUN-20261107134046-eb0000 启动"
+        },
+        {
+          "seq": 2,
+          "tsGen": "2026-11-07T05:40:46.450781161Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[system] 开始执行 pabot: /home/evergreen/rf-stack/.venv/bin/pabot --outputdir /home/evergreen/robot-test/artifacts/RUN-20261107134046-eb0000/shard-0 --processes 2 --name run-RUN-20261107134046-eb0000 suites/e2e-nodx03/demo-slow.robot suites/a7/slow-b.robot"
+        },
+        {
+          "seq": 3,
+          "tsGen": "2026-11-07T05:40:46.974162074Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[stdout] Initialized logging in /home/evergreen/robot-test/artifacts/RUN-20261107134046-eb0000/shard-0/pabot_results"
+        },
+        {
+          "seq": 4,
+          "tsGen": "2026-11-07T05:40:46.974340243Z",
+          "source": "pabot",
+          "level": "WARN",
+          "text": "[stdout] Warning: specified pabotlibport 8270 is already in use. A free port will be assigned automatically."
+        },
+        {
+          "seq": 5,
+          "tsGen": "2026-11-07T05:40:46.974386759Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[stdout] Robot Framework remote server at 127.0.0.1:46350 started."
+        },
+        {
+          "seq": 6,
+          "tsGen": "2026-11-07T05:40:46.974426194Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[stdout] Storing .pabotsuitenames file"
+        },
+        {
+          "seq": 7,
+          "tsGen": "2026-11-07T05:40:46.974463900Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[stdout] 2026-11-07 13:40:46.869666 [PID:1736089] [0] [ID:0] EXECUTING run-RUN-20261107134046-eb0000.Demo-Slow"
+        },
+        {
+          "seq": 8,
+          "tsGen": "2026-11-07T05:40:46.974501103Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[stdout] 2026-11-07 13:40:46.873165 [PID:1736093] [1] [ID:1] EXECUTING run-RUN-20261107134046-eb0000.Slow-B"
+        },
+        {
+          "seq": 9,
+          "tsGen": "2026-11-07T05:40:51.984463197Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[stdout] 2026-11-07 13:40:51.880965 [PID:1736089] [0] [ID:0] still running run-RUN-20261107134046-eb0000.Demo-Slow after 5.0s"
+        },
+        {
+          "seq": 10,
+          "tsGen": "2026-11-07T05:40:51.984635896Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[stdout] 2026-11-07 13:40:51.883673 [PID:1736093] [1] [ID:1] still running run-RUN-20261107134046-eb0000.Slow-B after 5.0s"
+        },
+        {
+          "seq": 11,
+          "tsGen": "2026-11-07T05:41:02.001935164Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[stdout] 2026-11-07 13:41:01.901247 [PID:1736089] [0] [ID:0] still running run-RUN-20261107134046-eb0000.Demo-Slow after 15.0s"
+        },
+        {
+          "seq": 12,
+          "tsGen": "2026-11-07T05:41:02.002104085Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[stdout] 2026-11-07 13:41:01.901393 [PID:1736093] [1] [ID:1] still running run-RUN-20261107134046-eb0000.Slow-B after 15.0s"
+        },
+        {
+          "seq": 13,
+          "tsGen": "2026-11-07T05:41:06.452577803Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[system] 执行超时，已强制终止 PID=1736076"
+        },
+        {
+          "seq": 14,
+          "tsGen": "2026-11-07T05:41:06.455009790Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[system] 进程退出码=-2147483648，耗时=PT20.004068286S"
+        },
+        {
+          "seq": 15,
+          "tsGen": "2026-11-07T05:41:06.455294182Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[system] 分片不完整: reason=shard_incomplete, 空分片=[0, 1]"
+        },
+        {
+          "seq": 16,
+          "tsGen": "2026-11-07T05:41:06.455362983Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[system] 产物校验失败: reason=timeout, exit=-2147483648"
+        },
+        {
+          "seq": 17,
+          "tsGen": "2026-11-07T05:41:06.455389068Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[system] 诊断顺序 1/3: pabot_manager.log 存在 /home/evergreen/robot-test/artifacts/RUN-20261107134046-eb0000/shard-0/pabot_results/pabot_manager.log"
+        },
+        {
+          "seq": 18,
+          "tsGen": "2026-11-07T05:41:06.455411740Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[system] 诊断顺序 2/3: robot_stderr.out 存在 /home/evergreen/robot-test/artifacts/RUN-20261107134046-eb0000/shard-0/robot_stderr.out"
+        },
+        {
+          "seq": 19,
+          "tsGen": "2026-11-07T05:41:06.455424942Z",
+          "source": "pabot",
+          "level": "INFO",
+          "text": "[system] 诊断顺序 3/3: stdout.log 存在 /home/evergreen/robot-test/artifacts/RUN-20261107134046-eb0000/shard-0/stdout.log"
+        }
+      ]
+    },
+    "kernel_named_in_failure_message": false,
+    "kernel_named_in_log": true,
+    "verdict": {
+      "created": true,
+      "ran_and_snapshot_nonempty": true,
+      "terminal": true,
+      "no_residual_pids": true,
+      "no_residual_args": true,
+      "failure_reason": "timeout"
+    }
+  },
+  "pytest_plain": {
+    "cmd": [
+      "pytest",
+      "--json-report",
+      "--json-report-file=/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/raw/pytest-art-plain/pytest-report.json",
+      "--junitxml=/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/raw/pytest-art-plain/junit.xml",
+      "-q",
+      "/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/pytest_slow/test_slow.py"
+    ],
+    "pid": 1736200,
+    "deadline_sec": 20,
+    "descendants_before_kill": [],
+    "kill": {
+      "terminated": true,
+      "forced": false,
+      "waited_ms": 4
+    },
+    "parent_alive_after_2s": false,
+    "residual_descendants": [],
+    "elapsed_ms": 20012,
+    "product_preview_argv": [
+      "pytest",
+      "--json-report",
+      "--json-report-file=artifacts/kernel-pytest-1/pytest-report.json",
+      "--junitxml=artifacts/kernel-pytest-1/junit.xml",
+      "-q",
+      "fixtures/smoke/2node-smoke.robot"
+    ],
+    "probe_argv": [
+      "pytest",
+      "--json-report",
+      "--json-report-file=/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/raw/pytest-art-plain/pytest-report.json",
+      "--junitxml=/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/raw/pytest-art-plain/junit.xml",
+      "-q",
+      "/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/pytest_slow/test_slow.py"
+    ],
+    "marker": "/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/pytest_slow/test_slow.py",
+    "residual_ps": {
+      "pids_still_alive": [],
+      "args_still_matching": []
+    },
+    "heartbeat_file": "/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/raw/pytest-art-plain/heartbeat.txt",
+    "heartbeat": [
+      "2026-11-07T13:41:11.083 start test_a7_slow_one pid=1736200"
+    ],
+    "xdist": false
+  },
+  "pytest_xdist": {
+    "cmd": [
+      "pytest",
+      "--json-report",
+      "--json-report-file=/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/raw/pytest-art-xdist/pytest-report.json",
+      "--junitxml=/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/raw/pytest-art-xdist/junit.xml",
+      "-q",
+      "-n",
+      "2",
+      "/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/pytest_slow/test_slow.py"
+    ],
+    "pid": 1736261,
+    "deadline_sec": 20,
+    "descendants_before_kill": [
+      {
+        "pid": 1736264,
+        "cmd": "/usr/bin/python3.12 -u -c import sys;exec(eval(sys.stdin.readline()))"
+      },
+      {
+        "pid": 1736267,
+        "cmd": "/usr/bin/python3.12 -u -c import sys;exec(eval(sys.stdin.readline()))"
+      }
+    ],
+    "kill": {
+      "terminated": true,
+      "forced": false,
+      "waited_ms": 4
+    },
+    "parent_alive_after_2s": false,
+    "residual_descendants": [],
+    "elapsed_ms": 20012,
+    "product_preview_argv": [
+      "pytest",
+      "--json-report",
+      "--json-report-file=artifacts/kernel-pytest-1/pytest-report.json",
+      "--junitxml=artifacts/kernel-pytest-1/junit.xml",
+      "-q",
+      "fixtures/smoke/2node-smoke.robot"
+    ],
+    "probe_argv": [
+      "pytest",
+      "--json-report",
+      "--json-report-file=/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/raw/pytest-art-xdist/pytest-report.json",
+      "--junitxml=/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/raw/pytest-art-xdist/junit.xml",
+      "-q",
+      "-n",
+      "2",
+      "/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/pytest_slow/test_slow.py"
+    ],
+    "marker": "/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/pytest_slow/test_slow.py",
+    "residual_ps": {
+      "pids_still_alive": [],
+      "args_still_matching": []
+    },
+    "heartbeat_file": "/home/evergreen/robot-autotest/docs/evidence/v2.0/a7-process-tree/raw/pytest-art-xdist/heartbeat.txt",
+    "heartbeat": [
+      "2026-11-07T13:41:34.216 start test_a7_slow_two pid=1736267",
+      "2026-11-07T13:41:34.216 start test_a7_slow_one pid=1736264"
+    ],
+    "xdist": true
+  },
+  "checks": {
+    "rf_cancel": true,
+    "rf_cancel_tree_has_pabot_and_robot": true,
+    "rf_timeout": true,
+    "rf_timeout_elapsed_near_20s": true,
+    "pytest_plain_killed": true,
+    "pytest_plain_no_residual": true,
+    "pytest_plain_was_executing": true,
+    "pytest_xdist_had_children": true,
+    "pytest_xdist_killed": true,
+    "pytest_xdist_no_residual": true,
+    "pytest_xdist_was_executing": true,
+    "timeout_message_names_kernel": false,
+    "cancel_message_names_kernel": false
+  },
+  "PASS": false
+}

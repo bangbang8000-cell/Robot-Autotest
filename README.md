@@ -47,7 +47,7 @@
 ## 技术架构
 
 - **后端**：Spring Boot 3 + Java 21，分层 `api / application / domain / infrastructure / common`，ArchUnit 约束依赖方向。
-- **数据库**：MySQL 8.0，Flyway 版本化迁移（当前 **35 个迁移至 `V9_5`，66 张业务表**），手写 down 脚本；dev / it 双库（`robot_dev` / `robot_it`）。每张表须带「代理主键 `id` + 审计四列」，`scripts/db-audit.sh` 可单独体检，且已纳入提交门禁。
+- **数据库**：MySQL 8.0，Flyway 版本化迁移（当前 **36 个迁移至 `V10_1`，66 张业务表**），手写 down 脚本；dev / it 双库（`robot_dev` / `robot_it`）。每张表须带「代理主键 `id` + 审计四列」，`scripts/db-audit.sh` 可单独体检，且已纳入提交门禁。
 - **前端**：Vue 3 + Vite + TypeScript + Pinia + vue-i18n + naive-ui，Vitest 单测；主题走「localStorage + 服务端偏好（按用户）+ `data-theme/data-accent/data-density`」三层，naive-ui 主题由语义 token 单向派生。
 - **编辑器**：独立子包 `packages/editor`（CodeMirror 6），有自己的 vitest 工程与 dist 产物，**构建先于前端**。
 - **测试内核**：Robot Framework 7.5（pabot 并发、robotdashboard 看板）+ pytest（`pytest-json-report` / `junitxml`），经 `ExecutionKernel` SPI 接入。

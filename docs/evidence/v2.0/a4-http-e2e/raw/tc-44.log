@@ -1,0 +1,4 @@
+## TC-44 移除组成员后下一次请求立即 403
+## verdict: GAP
+## numbers: 加成员 200/200；移除成员端点 404/200；移除前后项目访问 [403,403]；组成员行 1
+## detail: FR-34 要求有“移除组成员”动作；实测 GroupController 只有 POST /groups/member，无 /groups/member/remove（404），移除动作无法通过 HTTP 完成，故无法验证 403 翻转。另：项目访问只查 project_member（AccessControlService.requireProjectAccess），组成员关系本就不影响项目访问，访问恒为 403

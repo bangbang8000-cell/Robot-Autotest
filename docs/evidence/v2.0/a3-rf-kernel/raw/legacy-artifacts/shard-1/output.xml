@@ -1,0 +1,1064 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Rebot 7.5.1 (Python 3.12.3 on linux)" generated="2026-11-07T11:27:09.982637" rpa="false" schemaversion="5">
+<suite id="s1" name="legacy-kernel" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy">
+<suite id="s1-s1" name="legacy-01 TN-IMP-014" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-01_TN-IMP-014.robot">
+<test id="s1-s1-t1" name="TN-IMP-014 网卡信息检查" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:00.588578" level="INFO">${A_CMD} = lspci -Dnnk -d 15b3:1021 ethtool -i ens17np0 ethtool ens17np0 ip address show dev ens17np0</msg>
+<var>${A_CMD}</var>
+<arg>lspci -Dnnk -d 15b3:1021 ethtool -i ens17np0 ethtool ens17np0 ip address show dev ens17np0</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:00.587039" elapsed="0.001593"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:00.589278" level="INFO">lspci -Dnnk -d 15b3:1021 ethtool -i ens17np0 ethtool ens17np0 ip address show dev ens17np0</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:00.588862" elapsed="0.000478"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:00.589658" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:00.589689" level="INFO">lspci -Dnnk -d 15b3:1021 ethtool -i ens17np0 ethtool ens17np0 ip address show dev ens17np0</msg>
+<msg time="2026-11-07T11:27:00.589708" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:00.589723" level="INFO">（无）</msg>
+<arg>A 端命令原文</arg>
+<arg>lspci -Dnnk -d 15b3:1021 ethtool -i ens17np0 ethtool ens17np0 ip address show dev ens17np0</arg>
+<arg>B 端命令原文</arg>
+<arg>（无）</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:00.589461" elapsed="0.000286"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:00.590336" level="INFO">已记录 A 端命令原文</msg>
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:00.590108" elapsed="0.000273"/>
+</kw>
+<status status="PASS" start="2026-11-07T11:27:00.589857" elapsed="0.000553"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:00.590553" elapsed="0.000016"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:00.590436" elapsed="0.000155"/>
+</branch>
+<status status="PASS" start="2026-11-07T11:27:00.589820" elapsed="0.000787"/>
+</if>
+<doc>1. 能读取目标CX7的PCI Vendor/Device ID及驱动绑定信息。 2. ens17np0接口存在、MAC地址有效，链路状态及协商速率有明确输出。 3. ethtool可显示当前驱动、固件版本及PCI总线地址，与目标设备一致。</doc>
+<tag>legacy</tag>
+<tag>legacy-01</tag>
+<tag>TN-IMP-014</tag>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T11:27:00.583593" elapsed="0.007114"/>
+</test>
+<doc>8001 台账抽取：TN-IMP-014 网卡信息检查
+技术域：OS安装与网卡识别测试</doc>
+<status status="PASS" start="2026-11-07T11:27:00.581000" elapsed="0.007000"/>
+</suite>
+<suite id="s1-s2" name="legacy-02 TN-IMP-020" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-02_TN-IMP-020.robot">
+<test id="s1-s2-t1" name="TN-IMP-020 LLDP 功能测试" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:00.995115" level="INFO">${A_CMD} = sudo lldpcli show neighbors ports ens17np0 details</msg>
+<var>${A_CMD}</var>
+<arg>sudo lldpcli show neighbors ports ens17np0 details</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:00.994258" elapsed="0.000903"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:00.995655" level="INFO">sudo lldpcli show neighbors ports ens17np0 details</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:00.995342" elapsed="0.000368"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:00.996110" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:00.996144" level="INFO">sudo lldpcli show neighbors ports ens17np0 details</msg>
+<msg time="2026-11-07T11:27:00.996163" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:00.996180" level="INFO">（无）</msg>
+<arg>A 端命令原文</arg>
+<arg>sudo lldpcli show neighbors ports ens17np0 details</arg>
+<arg>B 端命令原文</arg>
+<arg>（无）</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:00.995820" elapsed="0.000387"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:00.996965" level="INFO">已记录 A 端命令原文</msg>
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:00.996618" elapsed="0.000414"/>
+</kw>
+<status status="PASS" start="2026-11-07T11:27:00.996302" elapsed="0.000773"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:00.997289" elapsed="0.000040"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:00.997113" elapsed="0.000258"/>
+</branch>
+<status status="PASS" start="2026-11-07T11:27:00.996273" elapsed="0.001126"/>
+</if>
+<doc>1. ens17np0能够发现预期交换机邻居，输出包含远端Chassis ID与Port ID。 2. 远端端口编号与现场连接记录一致；无邻居或端口不符不判通过。</doc>
+<tag>legacy</tag>
+<tag>legacy-02</tag>
+<tag>TN-IMP-020</tag>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T11:27:00.991719" elapsed="0.005820"/>
+</test>
+<doc>8001 台账抽取：TN-IMP-020 LLDP 功能测试
+技术域：LLDP 功能测试</doc>
+<status status="PASS" start="2026-11-07T11:27:00.989917" elapsed="0.008187"/>
+</suite>
+<suite id="s1-s3" name="legacy-03 TN-IMP-025" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-03_TN-IMP-025.robot">
+<test id="s1-s3-t1" name="TN-IMP-025 光模块数字诊断指标验证" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:01.402059" level="INFO">${A_CMD} = sudo ethtool -m ens17np0</msg>
+<var>${A_CMD}</var>
+<arg>sudo ethtool -m ens17np0</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:01.401078" elapsed="0.001037"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:01.402685" level="INFO">sudo ethtool -m ens17np0</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:01.402325" elapsed="0.000418"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:01.403057" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:01.403088" level="INFO">sudo ethtool -m ens17np0</msg>
+<msg time="2026-11-07T11:27:01.403107" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:01.403124" level="INFO">（无）</msg>
+<arg>A 端命令原文</arg>
+<arg>sudo ethtool -m ens17np0</arg>
+<arg>B 端命令原文</arg>
+<arg>（无）</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:01.402855" elapsed="0.000293"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:01.403748" level="INFO">已记录 A 端命令原文</msg>
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:01.403483" elapsed="0.000319"/>
+</kw>
+<status status="PASS" start="2026-11-07T11:27:01.403241" elapsed="0.000596"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:01.404003" elapsed="0.000019"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:01.403868" elapsed="0.000181"/>
+</branch>
+<status status="PASS" start="2026-11-07T11:27:01.403211" elapsed="0.000861"/>
+</if>
+<doc>1. 能正常读取光模块DOM/DDM数据，显示温度、电压及模块实际支持的TX/RX光功率指标。 2. 数值有效且未出现模块报告的异常告警；不支持的单项指标如实记录。 3. 若当前为不支持DOM的无源DAC，不得判为验证通过。</doc>
+<tag>legacy</tag>
+<tag>legacy-03</tag>
+<tag>TN-IMP-025</tag>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T11:27:01.396917" elapsed="0.007267"/>
+</test>
+<doc>8001 台账抽取：TN-IMP-025 光模块数字诊断指标验证
+技术域：光模块 DDM 指标监控测试</doc>
+<status status="PASS" start="2026-11-07T11:27:01.394535" elapsed="0.010081"/>
+</suite>
+<suite id="s1-s4" name="legacy-04 TN-IMP-057" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-04_TN-IMP-057.robot">
+<test id="s1-s4-t1" name="TN-IMP-057 GRO功能关闭多次抓包测试（MTU1500）" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:01.804919" level="INFO">${A_CMD} = sudo ip link set dev ens17np0 mtu 1500 sudo ethtool -K ens17np0 gro off ethtool -k ens17np0 sudo ethtool -K ens17np0 lro off sudo timeout 15 tcpdump -i ens17np0 -s 0 -U -w /tmp/TN-</msg>
+<var>${A_CMD}</var>
+<arg>sudo ip link set dev ens17np0 mtu 1500 sudo ethtool -K ens17np0 gro off ethtool -k ens17np0 sudo ethtool -K ens17np0 lro off sudo timeout 15 tcpdump -i ens17np0 -s 0 -U -w /tmp/TN-</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:01.804017" elapsed="0.000956"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:01.805525" level="INFO">sudo ip link set dev ens17np0 mtu 1500 sudo ethtool -K ens17np0 gro off ethtool -k ens17np0 sudo ethtool -K ens17np0 lro off sudo timeout 15 tcpdump -i ens17np0 -s 0 -U -w /tmp/TN-</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:01.805184" elapsed="0.000400"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:01.806025" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:01.806064" level="INFO">sudo ip link set dev ens17np0 mtu 1500 sudo ethtool -K ens17np0 gro off ethtool -k ens17np0 sudo ethtool -K ens17np0 lro off sudo timeout 15 tcpdump -i ens17np0 -s 0 -U -w /tmp/TN-</msg>
+<msg time="2026-11-07T11:27:01.806088" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:01.806107" level="INFO">sudo ip link set dev ens17np0 mtu 1500 iperf3 -s -B 172.30.1.2 -p 5201 -1 sudo ip link set dev ens17np0 mtu 9000</msg>
+<arg>A 端命令原文</arg>
+<arg>sudo ip link set dev ens17np0 mtu 1500 sudo ethtool -K ens17np0 gro off ethtool -k ens17np0 sudo ethtool -K ens17np0 lro off sudo timeout 15 tcpdump -i ens17np0 -s 0 -U -w /tmp/TN-</arg>
+<arg>B 端命令原文</arg>
+<arg>sudo ip link set dev ens17np0 mtu 1500 iperf3 -s -B 172.30.1.2 -p 5201 -1 sudo ip link set dev ens17np0 mtu 9000</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:01.805727" elapsed="0.000409"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:01.806757" level="INFO">已记录 A 端命令原文</msg>
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:01.806496" elapsed="0.000311"/>
+</kw>
+<status status="PASS" start="2026-11-07T11:27:01.806244" elapsed="0.000596"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:01.807004" elapsed="0.000016"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:01.806870" elapsed="0.000176"/>
+</branch>
+<status status="PASS" start="2026-11-07T11:27:01.806210" elapsed="0.000854"/>
+</if>
+<doc>1. GPU01 回读 GRO=off，两端测试 MTU=1500，iperf3 反向 TCP 流成功。 2. GPU01 生成 3 份非空、可解析的接收口 pcap，均包含 GPU02→GPU01 的 TCP 报文；检查 IP 报文长度符</doc>
+<tag>legacy</tag>
+<tag>legacy-04</tag>
+<tag>TN-IMP-057</tag>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T11:27:01.800764" elapsed="0.006430"/>
+</test>
+<doc>8001 台账抽取：TN-IMP-057 GRO功能关闭多次抓包测试（MTU1500）
+技术域：GRO功能测试</doc>
+<status status="PASS" start="2026-11-07T11:27:01.798606" elapsed="0.009057"/>
+</suite>
+<suite id="s1-s5" name="legacy-05 TN-IMP-069" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-05_TN-IMP-069.robot">
+<test id="s1-s5-t1" name="TN-IMP-069 TSO功能关闭多次抓包测试（MTU1500）" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:02.213327" level="INFO">${A_CMD} = sudo ip link set dev ens17np0 mtu 1500 sudo ethtool -K ens17np0 tso off ethtool -k ens17np0 sudo timeout 15 tcpdump -i ens17np0 -s 0 -U -w /tmp/TN-IMP-069_1.pcap "tcp and host 172.</msg>
+<var>${A_CMD}</var>
+<arg>sudo ip link set dev ens17np0 mtu 1500 sudo ethtool -K ens17np0 tso off ethtool -k ens17np0 sudo timeout 15 tcpdump -i ens17np0 -s 0 -U -w /tmp/TN-IMP-069_1.pcap "tcp and host 172.</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:02.212583" elapsed="0.000786"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:02.213842" level="INFO">sudo ip link set dev ens17np0 mtu 1500 sudo ethtool -K ens17np0 tso off ethtool -k ens17np0 sudo timeout 15 tcpdump -i ens17np0 -s 0 -U -w /tmp/TN-IMP-069_1.pcap "tcp and host 172.</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:02.213532" elapsed="0.000359"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:02.214139" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:02.214165" level="INFO">sudo ip link set dev ens17np0 mtu 1500 sudo ethtool -K ens17np0 tso off ethtool -k ens17np0 sudo timeout 15 tcpdump -i ens17np0 -s 0 -U -w /tmp/TN-IMP-069_1.pcap "tcp and host 172.</msg>
+<msg time="2026-11-07T11:27:02.214181" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:02.214196" level="INFO">sudo ip link set dev ens17np0 mtu 1500 iperf3 -s -B 172.30.1.2 -p 5201 -1 sudo ip link set dev ens17np0 mtu 9000</msg>
+<arg>A 端命令原文</arg>
+<arg>sudo ip link set dev ens17np0 mtu 1500 sudo ethtool -K ens17np0 tso off ethtool -k ens17np0 sudo timeout 15 tcpdump -i ens17np0 -s 0 -U -w /tmp/TN-IMP-069_1.pcap "tcp and host 172.</arg>
+<arg>B 端命令原文</arg>
+<arg>sudo ip link set dev ens17np0 mtu 1500 iperf3 -s -B 172.30.1.2 -p 5201 -1 sudo ip link set dev ens17np0 mtu 9000</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:02.213982" elapsed="0.000237"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:02.214533" elapsed="0.000015"/>
+</kw>
+<msg time="2026-11-07T11:27:02.214577" level="FAIL">Invalid IF condition: Evaluating expression '"sudo ip link set dev ens17np0 mtu 1500 sudo ethtool -K ens17np0 tso off ethtool -k ens17np0 sudo timeout 15 tcpdump -i ens17np0 -s 0 -U -w /tmp/TN-IMP-069_1.pcap "tcp and host 172." != ""' failed: SyntaxError: unterminated string literal (detected at line 1) (&lt;string&gt;, line 1)
+
+Variables in the original expression '"${A_CMD}" != ""' were resolved before the expression was evaluated. Try using '$A_CMD != ""' syntax to avoid that. See Evaluating Expressions appendix in Robot Framework User Guide for more details.</msg>
+<status status="FAIL" start="2026-11-07T11:27:02.214298" elapsed="0.000314">Invalid IF condition: Evaluating expression '"sudo ip link set dev ens17np0 mtu 1500 sudo ethtool -K ens17np0 tso off ethtool -k ens17np0 sudo timeout 15 tcpdump -i ens17np0 -s 0 -U -w /tmp/TN-IMP-069_1.pcap "tcp and host 172." != ""' failed: SyntaxError: unterminated string literal (detected at line 1) (&lt;string&gt;, line 1)
+
+Variables in the original expression '"${A_CMD}" != ""' were resolved before the expression was evaluated. Try using '$A_CMD != ""' syntax to avoid that. See Evaluating Expressions appendix in Robot Framework User Guide for more details.</status>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:02.214730" elapsed="0.000012"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:02.214640" elapsed="0.000121"/>
+</branch>
+<status status="FAIL" start="2026-11-07T11:27:02.214271" elapsed="0.000505">Invalid IF condition: Evaluating expression '"sudo ip link set dev ens17np0 mtu 1500 sudo ethtool -K ens17np0 tso off ethtool -k ens17np0 sudo timeout 15 tcpdump -i ens17np0 -s 0 -U -w /tmp/TN-IMP-069_1.pcap "tcp and host 172." != ""' failed: SyntaxError: unterminated string literal (detected at line 1) (&lt;string&gt;, line 1)
+
+Variables in the original expression '"${A_CMD}" != ""' were resolved before the expression was evaluated. Try using '$A_CMD != ""' syntax to avoid that. See Evaluating Expressions appendix in Robot Framework User Guide for more details.</status>
+</if>
+<doc>1. GPU01回读TSO=off，两端MTU=1500，三轮TCP发送均成功。 2. GPU02生成3份有目标TCP报文的有效pcap，能够核对接收侧分段长度；与同MTU的反向TSO状态对照，结合实际存在的TSO专有计数判断卸载效果。 3</doc>
+<tag>legacy</tag>
+<tag>legacy-05</tag>
+<tag>TN-IMP-069</tag>
+<timeout value="30 minutes"/>
+<status status="FAIL" start="2026-11-07T11:27:02.209765" elapsed="0.005139">Invalid IF condition: Evaluating expression '"sudo ip link set dev ens17np0 mtu 1500 sudo ethtool -K ens17np0 tso off ethtool -k ens17np0 sudo timeout 15 tcpdump -i ens17np0 -s 0 -U -w /tmp/TN-IMP-069_1.pcap "tcp and host 172." != ""' failed: SyntaxError: unterminated string literal (detected at line 1) (&lt;string&gt;, line 1)
+
+Variables in the original expression '"${A_CMD}" != ""' were resolved before the expression was evaluated. Try using '$A_CMD != ""' syntax to avoid that. See Evaluating Expressions appendix in Robot Framework User Guide for more details.</status>
+</test>
+<doc>8001 台账抽取：TN-IMP-069 TSO功能关闭多次抓包测试（MTU1500）
+技术域：TSO功能测试</doc>
+<status status="FAIL" start="2026-11-07T11:27:02.208033" elapsed="0.007380"/>
+</suite>
+<suite id="s1-s6" name="legacy-06 TN-IMP-089" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-06_TN-IMP-089.robot">
+<test id="s1-s6-t1" name="TN-IMP-089 校验和卸载功能验证" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:02.653145" level="INFO">${A_CMD} = ethtool -k ens17np0 ethtool -S ens17np0 sudo ethtool -K ens17np0 tx off rx off iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 8 -t 30 -i 1 --bidir iperf3 -c 172.30.1.2 -B 172.30.1.1</msg>
+<var>${A_CMD}</var>
+<arg>ethtool -k ens17np0 ethtool -S ens17np0 sudo ethtool -K ens17np0 tx off rx off iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 8 -t 30 -i 1 --bidir iperf3 -c 172.30.1.2 -B 172.30.1.1</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:02.651962" elapsed="0.001241"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:02.653880" level="INFO">ethtool -k ens17np0 ethtool -S ens17np0 sudo ethtool -K ens17np0 tx off rx off iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 8 -t 30 -i 1 --bidir iperf3 -c 172.30.1.2 -B 172.30.1.1</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:02.653432" elapsed="0.000515"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:02.654339" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:02.654377" level="INFO">ethtool -k ens17np0 ethtool -S ens17np0 sudo ethtool -K ens17np0 tx off rx off iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 8 -t 30 -i 1 --bidir iperf3 -c 172.30.1.2 -B 172.30.1.1</msg>
+<msg time="2026-11-07T11:27:02.654398" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:02.654417" level="INFO">iperf3 -s -B 172.30.1.2 -p 5201 -1</msg>
+<arg>A 端命令原文</arg>
+<arg>ethtool -k ens17np0 ethtool -S ens17np0 sudo ethtool -K ens17np0 tx off rx off iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 8 -t 30 -i 1 --bidir iperf3 -c 172.30.1.2 -B 172.30.1.1</arg>
+<arg>B 端命令原文</arg>
+<arg>iperf3 -s -B 172.30.1.2 -p 5201 -1</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:02.654076" elapsed="0.000369"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:02.655090" level="INFO">已记录 A 端命令原文</msg>
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:02.654834" elapsed="0.000303"/>
+</kw>
+<status status="PASS" start="2026-11-07T11:27:02.654549" elapsed="0.000620"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:02.655333" elapsed="0.000016"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:02.655199" elapsed="0.000175"/>
+</branch>
+<status status="PASS" start="2026-11-07T11:27:02.654515" elapsed="0.000877"/>
+</if>
+<doc>1. GPU01的TX/RX校验和卸载确实能够分别达到on及off，且结束时恢复原始全部卸载状态。 2. 开启/关闭两组模式下，双向TCP/UDP实际通信成功；iperf3无异常连接失败，UDP丢包和接口错误计数无异常增长；异常须保留日志分</doc>
+<tag>legacy</tag>
+<tag>legacy-06</tag>
+<tag>TN-IMP-089</tag>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T11:27:02.647382" elapsed="0.008119"/>
+</test>
+<doc>8001 台账抽取：TN-IMP-089 校验和卸载功能验证
+技术域：硬件校验和卸载测试</doc>
+<status status="PASS" start="2026-11-07T11:27:02.644818" elapsed="0.011186"/>
+</suite>
+<suite id="s1-s7" name="legacy-07 TN-IMP-095" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-07_TN-IMP-095.robot">
+<test id="s1-s7-t1" name="TN-IMP-095 RSS 流量分发验证" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:05.028180" level="INFO">${A_CMD} = ethtool -l ens17np0 sudo ethtool -L ens17np0 combined 8 ethtool -x ens17np0 ethtool -S ens17np0 iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 16 -t 30 -i 1 -R ethtool -S ens17np0 s</msg>
+<var>${A_CMD}</var>
+<arg>ethtool -l ens17np0 sudo ethtool -L ens17np0 combined 8 ethtool -x ens17np0 ethtool -S ens17np0 iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 16 -t 30 -i 1 -R ethtool -S ens17np0 s</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:05.027168" elapsed="0.001065"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:05.028887" level="INFO">ethtool -l ens17np0 sudo ethtool -L ens17np0 combined 8 ethtool -x ens17np0 ethtool -S ens17np0 iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 16 -t 30 -i 1 -R ethtool -S ens17np0 s</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:05.028442" elapsed="0.000520"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:05.029299" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:05.029329" level="INFO">ethtool -l ens17np0 sudo ethtool -L ens17np0 combined 8 ethtool -x ens17np0 ethtool -S ens17np0 iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 16 -t 30 -i 1 -R ethtool -S ens17np0 s</msg>
+<msg time="2026-11-07T11:27:05.029347" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:05.029362" level="INFO">iperf3 -s -B 172.30.1.2 -p 5201 -1</msg>
+<arg>A 端命令原文</arg>
+<arg>ethtool -l ens17np0 sudo ethtool -L ens17np0 combined 8 ethtool -x ens17np0 ethtool -S ens17np0 iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 16 -t 30 -i 1 -R ethtool -S ens17np0 s</arg>
+<arg>B 端命令原文</arg>
+<arg>iperf3 -s -B 172.30.1.2 -p 5201 -1</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:05.029089" elapsed="0.000295"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:05.029935" level="INFO">已记录 A 端命令原文</msg>
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:05.029722" elapsed="0.000341"/>
+</kw>
+<status status="PASS" start="2026-11-07T11:27:05.029506" elapsed="0.000591"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:05.030254" elapsed="0.000019"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:05.030127" elapsed="0.000171"/>
+</branch>
+<status status="PASS" start="2026-11-07T11:27:05.029471" elapsed="0.000845"/>
+</if>
+<doc>1. GPU02→GPU01的16路TCP通信成功，GPU01为接收方向。 2. 至少两个不同RX队列的packets计数相对测试前出现正增量；须保留RSS间接表、计数前后差值和iperf3日志。 3. 无逐队列计数或仅1个队列增长时不判定</doc>
+<tag>legacy</tag>
+<tag>legacy-07</tag>
+<tag>TN-IMP-095</tag>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T11:27:05.023353" elapsed="0.007167"/>
+</test>
+<doc>8001 台账抽取：TN-IMP-095 RSS 流量分发验证
+技术域：RSS 接收侧缩放测试</doc>
+<status status="PASS" start="2026-11-07T11:27:05.021606" elapsed="0.009756"/>
+</suite>
+<suite id="s1-s8" name="legacy-08 TN-IMP-096" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-08_TN-IMP-096.robot">
+<test id="s1-s8-t1" name="TN-IMP-096 中断聚合功能测试01" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:05.448850" level="INFO">${A_CMD} = ethtool -c ens17np0 sudo ethtool -C ens17np0 adaptive-rx off rx-usecs 56 ethtool -c ens17np0 ls /sys/bus/pci/devices/0000:45:00.0/msi_irqs cat /proc/interrupts ip -s link show dev</msg>
+<var>${A_CMD}</var>
+<arg>ethtool -c ens17np0 sudo ethtool -C ens17np0 adaptive-rx off rx-usecs 56 ethtool -c ens17np0 ls /sys/bus/pci/devices/0000:45:00.0/msi_irqs cat /proc/interrupts ip -s link show dev</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:05.448129" elapsed="0.000763"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:05.449400" level="INFO">ethtool -c ens17np0 sudo ethtool -C ens17np0 adaptive-rx off rx-usecs 56 ethtool -c ens17np0 ls /sys/bus/pci/devices/0000:45:00.0/msi_irqs cat /proc/interrupts ip -s link show dev</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:05.449071" elapsed="0.000383"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:05.449736" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:05.449764" level="INFO">ethtool -c ens17np0 sudo ethtool -C ens17np0 adaptive-rx off rx-usecs 56 ethtool -c ens17np0 ls /sys/bus/pci/devices/0000:45:00.0/msi_irqs cat /proc/interrupts ip -s link show dev</msg>
+<msg time="2026-11-07T11:27:05.449783" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:05.449798" level="INFO">iperf3 -s -B 172.30.1.2 -p 5201 -1</msg>
+<arg>A 端命令原文</arg>
+<arg>ethtool -c ens17np0 sudo ethtool -C ens17np0 adaptive-rx off rx-usecs 56 ethtool -c ens17np0 ls /sys/bus/pci/devices/0000:45:00.0/msi_irqs cat /proc/interrupts ip -s link show dev</arg>
+<arg>B 端命令原文</arg>
+<arg>iperf3 -s -B 172.30.1.2 -p 5201 -1</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:05.449555" elapsed="0.000286"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:05.450323" level="INFO">已记录 A 端命令原文</msg>
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:05.450132" elapsed="0.000231"/>
+</kw>
+<status status="PASS" start="2026-11-07T11:27:05.449933" elapsed="0.000455"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:05.450521" elapsed="0.000013"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:05.450413" elapsed="0.000142"/>
+</branch>
+<status status="PASS" start="2026-11-07T11:27:05.449903" elapsed="0.000666"/>
+</if>
+<doc>1. rx-usecs发生真实变更并准确回读；不支持参数修改时记录设备能力受限。 2. GPU02向GPU01发流成功，GPU01 RX报文和该CX7对应MSI-X IRQ计数均有增长。 3. rx-usecs与adaptive-rx在测试</doc>
+<tag>legacy</tag>
+<tag>legacy-08</tag>
+<tag>TN-IMP-096</tag>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T11:27:05.445377" elapsed="0.005277"/>
+</test>
+<doc>8001 台账抽取：TN-IMP-096 中断聚合功能测试01
+技术域：中断功能测试</doc>
+<status status="PASS" start="2026-11-07T11:27:05.443505" elapsed="0.007496"/>
+</suite>
+<suite id="s1-s9" name="legacy-09 TN-IMP-101" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-09_TN-IMP-101.robot">
+<test id="s1-s9-t1" name="TN-IMP-101 多队列收发包测试01" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:05.904132" level="INFO">${A_CMD} = ethtool -l ens17np0 sudo ethtool -L ens17np0 combined 63 ethtool -x ens17np0 ethtool -S ens17np0 iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 32 -t 30 -i 1 -R ethtool -S ens17np0</msg>
+<var>${A_CMD}</var>
+<arg>ethtool -l ens17np0 sudo ethtool -L ens17np0 combined 63 ethtool -x ens17np0 ethtool -S ens17np0 iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 32 -t 30 -i 1 -R ethtool -S ens17np0</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:05.903259" elapsed="0.000921"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:05.904688" level="INFO">ethtool -l ens17np0 sudo ethtool -L ens17np0 combined 63 ethtool -x ens17np0 ethtool -S ens17np0 iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 32 -t 30 -i 1 -R ethtool -S ens17np0</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:05.904365" elapsed="0.000374"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:05.905050" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:05.905084" level="INFO">ethtool -l ens17np0 sudo ethtool -L ens17np0 combined 63 ethtool -x ens17np0 ethtool -S ens17np0 iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 32 -t 30 -i 1 -R ethtool -S ens17np0</msg>
+<msg time="2026-11-07T11:27:05.905103" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:05.905118" level="INFO">iperf3 -s -B 172.30.1.2 -p 5201 -1</msg>
+<arg>A 端命令原文</arg>
+<arg>ethtool -l ens17np0 sudo ethtool -L ens17np0 combined 63 ethtool -x ens17np0 ethtool -S ens17np0 iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 32 -t 30 -i 1 -R ethtool -S ens17np0</arg>
+<arg>B 端命令原文</arg>
+<arg>iperf3 -s -B 172.30.1.2 -p 5201 -1</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:05.904842" elapsed="0.000300"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:05.905671" level="INFO">已记录 A 端命令原文</msg>
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:05.905453" elapsed="0.000260"/>
+</kw>
+<status status="PASS" start="2026-11-07T11:27:05.905235" elapsed="0.000504"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:05.905875" elapsed="0.000013"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:05.905766" elapsed="0.000143"/>
+</branch>
+<status status="PASS" start="2026-11-07T11:27:05.905203" elapsed="0.000720"/>
+</if>
+<doc>1. Combined确已处驱动支持的最大值，iperf3 32路接收业务完成。 2. 至少2个不同RX队列的packets计数产生有效正增量；不要求哈希流量均匀或所有最大队列均被命中。 3. 保存RSS映射和队列差值，恢复原Combine</doc>
+<tag>legacy</tag>
+<tag>legacy-09</tag>
+<tag>TN-IMP-101</tag>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T11:27:05.899435" elapsed="0.006582"/>
+</test>
+<doc>8001 台账抽取：TN-IMP-101 多队列收发包测试01
+技术域：队列功能测试</doc>
+<status status="PASS" start="2026-11-07T11:27:05.896740" elapsed="0.009694"/>
+</suite>
+<suite id="s1-s10" name="legacy-10 TN-IMP-118" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-10_TN-IMP-118.robot">
+<test id="s1-s10-t1" name="TN-IMP-118 ip link逻辑UP/DOWN循环100次" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:06.403770" level="INFO">${A_CMD} = sudo ip link set dev ens17np0 down ip link show dev ens17np0 sudo ip link set dev ens17np0 up ethtool ens17np0 ping -c 3 -I ens17np0 172.30.1.2</msg>
+<var>${A_CMD}</var>
+<arg>sudo ip link set dev ens17np0 down ip link show dev ens17np0 sudo ip link set dev ens17np0 up ethtool ens17np0 ping -c 3 -I ens17np0 172.30.1.2</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:06.402704" elapsed="0.001121"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:06.404436" level="INFO">sudo ip link set dev ens17np0 down ip link show dev ens17np0 sudo ip link set dev ens17np0 up ethtool ens17np0 ping -c 3 -I ens17np0 172.30.1.2</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:06.404029" elapsed="0.000467"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:06.404800" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:06.404832" level="INFO">sudo ip link set dev ens17np0 down ip link show dev ens17np0 sudo ip link set dev ens17np0 up ethtool ens17np0 ping -c 3 -I ens17np0 172.30.1.2</msg>
+<msg time="2026-11-07T11:27:06.404851" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:06.404867" level="INFO">（无）</msg>
+<arg>A 端命令原文</arg>
+<arg>sudo ip link set dev ens17np0 down ip link show dev ens17np0 sudo ip link set dev ens17np0 up ethtool ens17np0 ping -c 3 -I ens17np0 172.30.1.2</arg>
+<arg>B 端命令原文</arg>
+<arg>（无）</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:06.404614" elapsed="0.000276"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:06.405483" level="INFO">已记录 A 端命令原文</msg>
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:06.405251" elapsed="0.000277"/>
+</kw>
+<status status="PASS" start="2026-11-07T11:27:06.404993" elapsed="0.000564"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:06.405703" elapsed="0.000014"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:06.405585" elapsed="0.000154"/>
+</branch>
+<status status="PASS" start="2026-11-07T11:27:06.404954" elapsed="0.000802"/>
+</if>
+<doc>1. 必须完成100轮，各轮DOWN/UP标志正确，物理Link均在30秒内恢复。 2. 最终Ping GPU02成功；检查期间不存在新增且影响该接口的驱动/PCIe故障。 3. 任意轮失败、最终不通或存在关联故障不得判通过。</doc>
+<tag>legacy</tag>
+<tag>legacy-10</tag>
+<tag>TN-IMP-118</tag>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T11:27:06.398539" elapsed="0.007316"/>
+</test>
+<doc>8001 台账抽取：TN-IMP-118 ip link逻辑UP/DOWN循环100次
+技术域：网卡逻辑状态测试（源表续行）</doc>
+<status status="PASS" start="2026-11-07T11:27:06.395706" elapsed="0.010576"/>
+</suite>
+<suite id="s1-s11" name="legacy-11 TN-IMP-119" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-11_TN-IMP-119.robot">
+<test id="s1-s11-t1" name="TN-IMP-119 大文件传输" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:07.019040" level="INFO">${A_CMD} = dd if=/dev/urandom of=/tmp/TN-IMP-119_source.bin bs=1M count=1024 status=progress sha256sum /tmp/TN-IMP-119_source.bin scp -o BindAddress=172.30.1.1 /tmp/TN-IMP-119_source.bin insp</msg>
+<var>${A_CMD}</var>
+<arg>dd if=/dev/urandom of=/tmp/TN-IMP-119_source.bin bs=1M count=1024 status=progress sha256sum /tmp/TN-IMP-119_source.bin scp -o BindAddress=172.30.1.1 /tmp/TN-IMP-119_source.bin insp</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:07.018185" elapsed="0.000904"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:07.019628" level="INFO">dd if=/dev/urandom of=/tmp/TN-IMP-119_source.bin bs=1M count=1024 status=progress sha256sum /tmp/TN-IMP-119_source.bin scp -o BindAddress=172.30.1.1 /tmp/TN-IMP-119_source.bin insp</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:07.019273" elapsed="0.000428"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:07.020055" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:07.020088" level="INFO">dd if=/dev/urandom of=/tmp/TN-IMP-119_source.bin bs=1M count=1024 status=progress sha256sum /tmp/TN-IMP-119_source.bin scp -o BindAddress=172.30.1.1 /tmp/TN-IMP-119_source.bin insp</msg>
+<msg time="2026-11-07T11:27:07.020107" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:07.020122" level="INFO">sha256sum /tmp/TN-IMP-119_received.bin</msg>
+<arg>A 端命令原文</arg>
+<arg>dd if=/dev/urandom of=/tmp/TN-IMP-119_source.bin bs=1M count=1024 status=progress sha256sum /tmp/TN-IMP-119_source.bin scp -o BindAddress=172.30.1.1 /tmp/TN-IMP-119_source.bin insp</arg>
+<arg>B 端命令原文</arg>
+<arg>sha256sum /tmp/TN-IMP-119_received.bin</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:07.019851" elapsed="0.000296"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:07.020742" level="INFO">已记录 A 端命令原文</msg>
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:07.020492" elapsed="0.000303"/>
+</kw>
+<status status="PASS" start="2026-11-07T11:27:07.020247" elapsed="0.000581"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:07.020989" elapsed="0.000016"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:07.020861" elapsed="0.000169"/>
+</branch>
+<status status="PASS" start="2026-11-07T11:27:07.020210" elapsed="0.000837"/>
+</if>
+<doc>1. 传输通过172.30.1.1→172.30.1.2数据面完成，SCP退出码为0。 2. 两端文件大小均为4294967296字节，SHA256完全一致。 3. 失败/中断或数据不一致不得通过；清理临时文件不代表传输已通过。</doc>
+<tag>legacy</tag>
+<tag>legacy-11</tag>
+<tag>TN-IMP-119</tag>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T11:27:07.015011" elapsed="0.006149"/>
+</test>
+<doc>8001 台账抽取：TN-IMP-119 大文件传输
+技术域：文件传输测试</doc>
+<status status="PASS" start="2026-11-07T11:27:07.011719" elapsed="0.009918"/>
+</suite>
+<suite id="s1-s12" name="legacy-12 TN-IMP-123" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-12_TN-IMP-123.robot">
+<test id="s1-s12-t1" name="TN-IMP-123 MTU9000 收发包测试" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:07.428854" level="INFO">${A_CMD} = sudo ip link set dev ens17np0 mtu 9000 ip link show dev ens17np0 ping -c 4 -M do -s 8972 -I ens17np0 172.30.1.2 sudo ip link set dev ens17np0 mtu 9000</msg>
+<var>${A_CMD}</var>
+<arg>sudo ip link set dev ens17np0 mtu 9000 ip link show dev ens17np0 ping -c 4 -M do -s 8972 -I ens17np0 172.30.1.2 sudo ip link set dev ens17np0 mtu 9000</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:07.428010" elapsed="0.000890"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:07.429430" level="INFO">sudo ip link set dev ens17np0 mtu 9000 ip link show dev ens17np0 ping -c 4 -M do -s 8972 -I ens17np0 172.30.1.2 sudo ip link set dev ens17np0 mtu 9000</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:07.429116" elapsed="0.000367"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:07.429754" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:07.429784" level="INFO">sudo ip link set dev ens17np0 mtu 9000 ip link show dev ens17np0 ping -c 4 -M do -s 8972 -I ens17np0 172.30.1.2 sudo ip link set dev ens17np0 mtu 9000</msg>
+<msg time="2026-11-07T11:27:07.429804" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:07.429820" level="INFO">sudo ip link set dev ens17np0 mtu 9000 ip link show dev ens17np0 sudo ip link set dev ens17np0 mtu 9000</msg>
+<arg>A 端命令原文</arg>
+<arg>sudo ip link set dev ens17np0 mtu 9000 ip link show dev ens17np0 ping -c 4 -M do -s 8972 -I ens17np0 172.30.1.2 sudo ip link set dev ens17np0 mtu 9000</arg>
+<arg>B 端命令原文</arg>
+<arg>sudo ip link set dev ens17np0 mtu 9000 ip link show dev ens17np0 sudo ip link set dev ens17np0 mtu 9000</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:07.429582" elapsed="0.000261"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:07.430344" level="INFO">已记录 A 端命令原文</msg>
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:07.430136" elapsed="0.000254"/>
+</kw>
+<status status="PASS" start="2026-11-07T11:27:07.429931" elapsed="0.000519"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:07.430602" elapsed="0.000016"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:07.430480" elapsed="0.000180"/>
+</branch>
+<status status="PASS" start="2026-11-07T11:27:07.429902" elapsed="0.000779"/>
+</if>
+<doc>1. 两端MTU9000均设置并回读成功。 2. 8972字节DF Ping发送4次均收到应答；8973字节DF探测因本地MTU限制失败。 3. 测试结束两端恢复原MTU；链路不支持9000或报文丢失时不得判通过。</doc>
+<tag>legacy</tag>
+<tag>legacy-12</tag>
+<tag>TN-IMP-123</tag>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T11:27:07.425431" elapsed="0.005346"/>
+</test>
+<doc>8001 台账抽取：TN-IMP-123 MTU9000 收发包测试
+技术域：收发包测试</doc>
+<status status="PASS" start="2026-11-07T11:27:07.423783" elapsed="0.007353"/>
+</suite>
+<suite id="s1-s13" name="legacy-13 TN-IMP-136" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-13_TN-IMP-136.robot">
+<test id="s1-s13-t1" name="TN-IMP-136 测试Vlan模式下网卡的连通性" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:07.872607" level="INFO">${A_CMD} = sudo ip link add link ens17np0 name tnv1101 type vlan id 1101 sudo ip addr add 198.19.11.1/30 dev tnv1101 sudo ip link set tnv1101 up ip -d link show dev tnv1101 ping -c 4 -I tnv11</msg>
+<var>${A_CMD}</var>
+<arg>sudo ip link add link ens17np0 name tnv1101 type vlan id 1101 sudo ip addr add 198.19.11.1/30 dev tnv1101 sudo ip link set tnv1101 up ip -d link show dev tnv1101 ping -c 4 -I tnv11</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:07.871183" elapsed="0.001509"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:07.873643" level="INFO">sudo ip link add link ens17np0 name tnv1101 type vlan id 1101 sudo ip addr add 198.19.11.1/30 dev tnv1101 sudo ip link set tnv1101 up ip -d link show dev tnv1101 ping -c 4 -I tnv11</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:07.873012" elapsed="0.000734"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:07.874344" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:07.874399" level="INFO">sudo ip link add link ens17np0 name tnv1101 type vlan id 1101 sudo ip addr add 198.19.11.1/30 dev tnv1101 sudo ip link set tnv1101 up ip -d link show dev tnv1101 ping -c 4 -I tnv11</msg>
+<msg time="2026-11-07T11:27:07.874434" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:07.874467" level="INFO">sudo ip link add link ens17np0 name tnv1101 type vlan id 1101 sudo ip addr add 198.19.11.2/30 dev tnv1101 sudo ip link set tnv1101 up ip -s link show dev tnv1101 sudo ip link delet</msg>
+<arg>A 端命令原文</arg>
+<arg>sudo ip link add link ens17np0 name tnv1101 type vlan id 1101 sudo ip addr add 198.19.11.1/30 dev tnv1101 sudo ip link set tnv1101 up ip -d link show dev tnv1101 ping -c 4 -I tnv11</arg>
+<arg>B 端命令原文</arg>
+<arg>sudo ip link add link ens17np0 name tnv1101 type vlan id 1101 sudo ip addr add 198.19.11.2/30 dev tnv1101 sudo ip link set tnv1101 up ip -s link show dev tnv1101 sudo ip link delet</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:07.873959" elapsed="0.000554"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:07.875526" level="INFO">已记录 A 端命令原文</msg>
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:07.875081" elapsed="0.000506"/>
+</kw>
+<status status="PASS" start="2026-11-07T11:27:07.874692" elapsed="0.000932"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:07.875780" elapsed="0.000017"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:07.875652" elapsed="0.000171"/>
+</branch>
+<status status="PASS" start="2026-11-07T11:27:07.874617" elapsed="0.001222"/>
+</if>
+<doc>1. 两端实际具有802.1Q VID1101子接口，配置了规划地址。 2. GPU01以VLAN接口发送的4个ICMP Echo全部收到应答（4/4），接口收发计数有业务增长。 3. 双端测试接口均能在结束后移除；若现网未放通VID110</doc>
+<tag>legacy</tag>
+<tag>legacy-13</tag>
+<tag>TN-IMP-136</tag>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T11:27:07.866353" elapsed="0.009595"/>
+</test>
+<doc>8001 台账抽取：TN-IMP-136 测试Vlan模式下网卡的连通性
+技术域：VLAN功能测试</doc>
+<status status="PASS" start="2026-11-07T11:27:07.863470" elapsed="0.012961"/>
+</suite>
+<suite id="s1-s14" name="legacy-14 TN-IMP-142" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-14_TN-IMP-142.robot">
+<test id="s1-s14-t1" name="TN-IMP-142 VXLAN开关checksum offload测试" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:08.374337" level="INFO">${A_CMD} = sudo ip link add cx7vx142 type vxlan id 42 local 172.30.2.3 remote 172.30.2.4 dev ens24np0 dstport 4789 udpcsum sudo ip link set cx7vx142 mtu 8950 up sudo ip addr add 198.19.42.1/3</msg>
+<var>${A_CMD}</var>
+<arg>sudo ip link add cx7vx142 type vxlan id 42 local 172.30.2.3 remote 172.30.2.4 dev ens24np0 dstport 4789 udpcsum sudo ip link set cx7vx142 mtu 8950 up sudo ip addr add 198.19.42.1/3</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:08.373227" elapsed="0.001164"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:08.374953" level="INFO">sudo ip link add cx7vx142 type vxlan id 42 local 172.30.2.3 remote 172.30.2.4 dev ens24np0 dstport 4789 udpcsum sudo ip link set cx7vx142 mtu 8950 up sudo ip addr add 198.19.42.1/3</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:08.374594" elapsed="0.000420"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:08.375336" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:08.375369" level="INFO">sudo ip link add cx7vx142 type vxlan id 42 local 172.30.2.3 remote 172.30.2.4 dev ens24np0 dstport 4789 udpcsum sudo ip link set cx7vx142 mtu 8950 up sudo ip addr add 198.19.42.1/3</msg>
+<msg time="2026-11-07T11:27:08.375388" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:08.375403" level="INFO">sudo ip link add cx7vx142 type vxlan id 42 local 172.30.2.4 remote 172.30.2.3 dev ens24np0 dstport 4789 udpcsum sudo ip link set cx7vx142 mtu 8950 up sudo ip addr add 198.19.42.2/3</msg>
+<arg>A 端命令原文</arg>
+<arg>sudo ip link add cx7vx142 type vxlan id 42 local 172.30.2.3 remote 172.30.2.4 dev ens24np0 dstport 4789 udpcsum sudo ip link set cx7vx142 mtu 8950 up sudo ip addr add 198.19.42.1/3</arg>
+<arg>B 端命令原文</arg>
+<arg>sudo ip link add cx7vx142 type vxlan id 42 local 172.30.2.4 remote 172.30.2.3 dev ens24np0 dstport 4789 udpcsum sudo ip link set cx7vx142 mtu 8950 up sudo ip addr add 198.19.42.2/3</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:08.375127" elapsed="0.000317"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:08.376298" level="INFO">已记录 A 端命令原文</msg>
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:08.375959" elapsed="0.000396"/>
+</kw>
+<status status="PASS" start="2026-11-07T11:27:08.375615" elapsed="0.000772"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:08.376539" elapsed="0.000015"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:08.376419" elapsed="0.000159"/>
+</branch>
+<status status="PASS" start="2026-11-07T11:27:08.375571" elapsed="0.001024"/>
+</if>
+<doc>off/on两阶段TCP接收字节&gt;0且双方退出0；关闭时tx_tso_inner_packets增量0、开启时增量&gt;0；独立接收抓包中VNI42，外层UDP校验和非零且正确，内层TCP校验和正确，外层IP长度&lt;=9000。</doc>
+<tag>legacy</tag>
+<tag>legacy-14</tag>
+<tag>TN-IMP-142</tag>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T11:27:08.370492" elapsed="0.006204"/>
+</test>
+<doc>8001 台账抽取：TN-IMP-142 VXLAN开关checksum offload测试
+技术域：VXLAN功能测试</doc>
+<status status="PASS" start="2026-11-07T11:27:08.368769" elapsed="0.008328"/>
+</suite>
+<suite id="s1-s15" name="legacy-15 TN-IMP-159" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-15_TN-IMP-159.robot">
+<test id="s1-s15-t1" name="TN-IMP-159 RDMA 功能测试 - PFC 优先级流控测试" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:08.785340" level="INFO">${A_CMD} = ethtool -S ens17np0 ib_write_bw -d mlx5_0 -i 1 -x 3 -p 18515 --tclass 104 -s 65536 -D 60 --report_gbits 172.30.1.2 ethtool -S ens17np0</msg>
+<var>${A_CMD}</var>
+<arg>ethtool -S ens17np0 ib_write_bw -d mlx5_0 -i 1 -x 3 -p 18515 --tclass 104 -s 65536 -D 60 --report_gbits 172.30.1.2 ethtool -S ens17np0</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:08.784359" elapsed="0.001044"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:08.786304" level="INFO">ethtool -S ens17np0 ib_write_bw -d mlx5_0 -i 1 -x 3 -p 18515 --tclass 104 -s 65536 -D 60 --report_gbits 172.30.1.2 ethtool -S ens17np0</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:08.785697" elapsed="0.000675"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:08.786819" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:08.786854" level="INFO">ethtool -S ens17np0 ib_write_bw -d mlx5_0 -i 1 -x 3 -p 18515 --tclass 104 -s 65536 -D 60 --report_gbits 172.30.1.2 ethtool -S ens17np0</msg>
+<msg time="2026-11-07T11:27:08.786874" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:08.786892" level="INFO">ethtool -S ens17np0 ib_write_bw -d mlx5_0 -i 1 -x 3 -p 18515 --tclass 104 -s 65536 -D 60 --report_gbits ethtool -S ens17np0</msg>
+<arg>A 端命令原文</arg>
+<arg>ethtool -S ens17np0 ib_write_bw -d mlx5_0 -i 1 -x 3 -p 18515 --tclass 104 -s 65536 -D 60 --report_gbits 172.30.1.2 ethtool -S ens17np0</arg>
+<arg>B 端命令原文</arg>
+<arg>ethtool -S ens17np0 ib_write_bw -d mlx5_0 -i 1 -x 3 -p 18515 --tclass 104 -s 65536 -D 60 --report_gbits ethtool -S ens17np0</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:08.786527" elapsed="0.000391"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:08.787989" level="INFO">已记录 A 端命令原文</msg>
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:08.787579" elapsed="0.000479"/>
+</kw>
+<status status="PASS" start="2026-11-07T11:27:08.787150" elapsed="0.000953"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:08.788320" elapsed="0.000023"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:08.788141" elapsed="0.000233"/>
+</branch>
+<status status="PASS" start="2026-11-07T11:27:08.787073" elapsed="0.001320"/>
+</if>
+<doc>1. 交换机拥塞/队列计数证明目标业务优先级确有拥塞，且网卡或交换机对应UP3/UP6中实际使用的UP的PFC Pause计数较基线有正增量。 2. RDMA Write正常完成，未出现无法接受的丢包、超时、CQ错误；记录UP、PFC收发方</doc>
+<tag>legacy</tag>
+<tag>legacy-15</tag>
+<tag>TN-IMP-159</tag>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T11:27:08.780478" elapsed="0.008035"/>
+</test>
+<doc>8001 台账抽取：TN-IMP-159 RDMA 功能测试 - PFC 优先级流控测试
+技术域：RDMA 功能测试</doc>
+<status status="PASS" start="2026-11-07T11:27:08.778457" elapsed="0.010522"/>
+</suite>
+<suite id="s1-s16" name="legacy-16 TN-IMP-167" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-16_TN-IMP-167.robot">
+<test id="s1-s16-t1" name="TN-IMP-167 iperf打流测试-单口单向TCP性能测试" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:09.195880" level="INFO">${A_CMD} = iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 8 -t 30 -i 1</msg>
+<var>${A_CMD}</var>
+<arg>iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 8 -t 30 -i 1</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:09.195176" elapsed="0.000745"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:09.196385" level="INFO">iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 8 -t 30 -i 1</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:09.196098" elapsed="0.000336"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:09.196757" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:09.196787" level="INFO">iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 8 -t 30 -i 1</msg>
+<msg time="2026-11-07T11:27:09.196804" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:09.196819" level="INFO">iperf3 -s -B 172.30.1.2 -p 5201 -1</msg>
+<arg>A 端命令原文</arg>
+<arg>iperf3 -c 172.30.1.2 -B 172.30.1.1 -p 5201 -P 8 -t 30 -i 1</arg>
+<arg>B 端命令原文</arg>
+<arg>iperf3 -s -B 172.30.1.2 -p 5201 -1</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:09.196570" elapsed="0.000272"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:09.197615" level="INFO">已记录 A 端命令原文</msg>
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:09.197288" elapsed="0.000432"/>
+</kw>
+<status status="PASS" start="2026-11-07T11:27:09.196933" elapsed="0.000822"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:09.197902" elapsed="0.000018"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:09.197785" elapsed="0.000159"/>
+</branch>
+<status status="PASS" start="2026-11-07T11:27:09.196900" elapsed="0.001061"/>
+</if>
+<doc>1. 双端完成20秒单口单向8流TCP传输，iperf3退出正常，接收端有有效receiver SUM吞吐及发送端重传统计。 2. 核实客户端源172.30.1.1和服务端目的172.30.1.2确对应平面1物理网口，并记录实际Gb/s、R</doc>
+<tag>legacy</tag>
+<tag>legacy-16</tag>
+<tag>TN-IMP-167</tag>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T11:27:09.192250" elapsed="0.005836"/>
+</test>
+<doc>8001 台账抽取：TN-IMP-167 iperf打流测试-单口单向TCP性能测试
+技术域：物理网口TCP/IP单口单向性能测试</doc>
+<status status="PASS" start="2026-11-07T11:27:09.190213" elapsed="0.008341"/>
+</suite>
+<suite id="s1-s17" name="legacy-17 TN-IMP-176" source="/home/evergreen/robot-autotest/fixtures/roundtrip/legacy/legacy-17_TN-IMP-176.robot">
+<test id="s1-s17-t1" name="TN-IMP-176 perftest 读延时测试" line="8">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-07T11:27:09.625812" level="INFO">${A_CMD} = numactl --physcpubind=16 --membind=0 /home/inspur/aisoft/share/perftest/ib_read_lat -d mlx5_0 -i 1 -x 3 -p 19353 --tclass 104 -a -n 10000 172.30.1.2</msg>
+<var>${A_CMD}</var>
+<arg>numactl --physcpubind=16 --membind=0 /home/inspur/aisoft/share/perftest/ib_read_lat -d mlx5_0 -i 1 -x 3 -p 19353 --tclass 104 -a -n 10000 172.30.1.2</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-07T11:27:09.624680" elapsed="0.001182"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:09.627058" level="INFO">numactl --physcpubind=16 --membind=0 /home/inspur/aisoft/share/perftest/ib_read_lat -d mlx5_0 -i 1 -x 3 -p 19353 --tclass 104 -a -n 10000 172.30.1.2</msg>
+<arg>${A_CMD}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:09.626244" elapsed="0.000941"/>
+</kw>
+<kw name="Log Many" owner="BuiltIn">
+<msg time="2026-11-07T11:27:09.627750" level="INFO">A 端命令原文</msg>
+<msg time="2026-11-07T11:27:09.627808" level="INFO">numactl --physcpubind=16 --membind=0 /home/inspur/aisoft/share/perftest/ib_read_lat -d mlx5_0 -i 1 -x 3 -p 19353 --tclass 104 -a -n 10000 172.30.1.2</msg>
+<msg time="2026-11-07T11:27:09.627830" level="INFO">B 端命令原文</msg>
+<msg time="2026-11-07T11:27:09.627847" level="INFO">numactl --physcpubind=16 --membind=0 /home/inspur/aisoft/harry/perftest/ib_read_lat -d mlx5_0 -i 1 -x 3 -p 19353 --tclass 104 -a -n 10000</msg>
+<arg>A 端命令原文</arg>
+<arg>numactl --physcpubind=16 --membind=0 /home/inspur/aisoft/share/perftest/ib_read_lat -d mlx5_0 -i 1 -x 3 -p 19353 --tclass 104 -a -n 10000 172.30.1.2</arg>
+<arg>B 端命令原文</arg>
+<arg>numactl --physcpubind=16 --membind=0 /home/inspur/aisoft/harry/perftest/ib_read_lat -d mlx5_0 -i 1 -x 3 -p 19353 --tclass 104 -a -n 10000</arg>
+<doc>Logs the given messages as separate entries using the INFO level.</doc>
+<status status="PASS" start="2026-11-07T11:27:09.627355" elapsed="0.000528"/>
+</kw>
+<if>
+<branch type="IF" condition="&quot;${A_CMD}&quot; != &quot;&quot;">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-11-07T11:27:09.628870" level="INFO">已记录 A 端命令原文</msg>
+<arg>已记录 A 端命令原文</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-11-07T11:27:09.628522" elapsed="0.000414"/>
+</kw>
+<status status="PASS" start="2026-11-07T11:27:09.628238" elapsed="0.000737"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>无 A 端命令，按台账保留手工判据</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-11-07T11:27:09.629164" elapsed="0.000023"/>
+</kw>
+<status status="NOT RUN" start="2026-11-07T11:27:09.629011" elapsed="0.000204"/>
+</branch>
+<status status="PASS" start="2026-11-07T11:27:09.628180" elapsed="0.001054"/>
+</if>
+<doc>1. 所有指定轨真实运行，完整23档、每档10000次，双方退出0且无QP/CQE错误。 2. 各报文typical时延≤冻结历史同方法、同轨基线的125%；保留min/max/typical/avg/p99。</doc>
+<tag>legacy</tag>
+<tag>legacy-17</tag>
+<tag>TN-IMP-176</tag>
+<timeout value="30 minutes"/>
+<status status="PASS" start="2026-11-07T11:27:09.621793" elapsed="0.007755"/>
+</test>
+<doc>8001 台账抽取：TN-IMP-176 perftest 读延时测试
+技术域：RoCE 单口单向性能测试</doc>
+<status status="PASS" start="2026-11-07T11:27:09.619432" elapsed="0.010769"/>
+</suite>
+<status status="FAIL" start="2026-11-07T11:27:00.550000" elapsed="9.081000"/>
+</suite>
+<statistics>
+<total>
+<stat pass="16" fail="1" skip="0">All Tests</stat>
+</total>
+<tag>
+<stat pass="16" fail="1" skip="0">legacy</stat>
+<stat pass="1" fail="0" skip="0">legacy-01</stat>
+<stat pass="1" fail="0" skip="0">legacy-02</stat>
+<stat pass="1" fail="0" skip="0">legacy-03</stat>
+<stat pass="1" fail="0" skip="0">legacy-04</stat>
+<stat pass="0" fail="1" skip="0">legacy-05</stat>
+<stat pass="1" fail="0" skip="0">legacy-06</stat>
+<stat pass="1" fail="0" skip="0">legacy-07</stat>
+<stat pass="1" fail="0" skip="0">legacy-08</stat>
+<stat pass="1" fail="0" skip="0">legacy-09</stat>
+<stat pass="1" fail="0" skip="0">legacy-10</stat>
+<stat pass="1" fail="0" skip="0">legacy-11</stat>
+<stat pass="1" fail="0" skip="0">legacy-12</stat>
+<stat pass="1" fail="0" skip="0">legacy-13</stat>
+<stat pass="1" fail="0" skip="0">legacy-14</stat>
+<stat pass="1" fail="0" skip="0">legacy-15</stat>
+<stat pass="1" fail="0" skip="0">legacy-16</stat>
+<stat pass="1" fail="0" skip="0">legacy-17</stat>
+<stat pass="1" fail="0" skip="0">TN-IMP-014</stat>
+<stat pass="1" fail="0" skip="0">TN-IMP-020</stat>
+<stat pass="1" fail="0" skip="0">TN-IMP-025</stat>
+<stat pass="1" fail="0" skip="0">TN-IMP-057</stat>
+<stat pass="0" fail="1" skip="0">TN-IMP-069</stat>
+<stat pass="1" fail="0" skip="0">TN-IMP-089</stat>
+<stat pass="1" fail="0" skip="0">TN-IMP-095</stat>
+<stat pass="1" fail="0" skip="0">TN-IMP-096</stat>
+<stat pass="1" fail="0" skip="0">TN-IMP-101</stat>
+<stat pass="1" fail="0" skip="0">TN-IMP-118</stat>
+<stat pass="1" fail="0" skip="0">TN-IMP-119</stat>
+<stat pass="1" fail="0" skip="0">TN-IMP-123</stat>
+<stat pass="1" fail="0" skip="0">TN-IMP-136</stat>
+<stat pass="1" fail="0" skip="0">TN-IMP-142</stat>
+<stat pass="1" fail="0" skip="0">TN-IMP-159</stat>
+<stat pass="1" fail="0" skip="0">TN-IMP-167</stat>
+<stat pass="1" fail="0" skip="0">TN-IMP-176</stat>
+</tag>
+<suite>
+<stat name="legacy-kernel" id="s1" pass="16" fail="1" skip="0">legacy-kernel</stat>
+<stat name="legacy-01 TN-IMP-014" id="s1-s1" pass="1" fail="0" skip="0">legacy-kernel.legacy-01 TN-IMP-014</stat>
+<stat name="legacy-02 TN-IMP-020" id="s1-s2" pass="1" fail="0" skip="0">legacy-kernel.legacy-02 TN-IMP-020</stat>
+<stat name="legacy-03 TN-IMP-025" id="s1-s3" pass="1" fail="0" skip="0">legacy-kernel.legacy-03 TN-IMP-025</stat>
+<stat name="legacy-04 TN-IMP-057" id="s1-s4" pass="1" fail="0" skip="0">legacy-kernel.legacy-04 TN-IMP-057</stat>
+<stat name="legacy-05 TN-IMP-069" id="s1-s5" pass="0" fail="1" skip="0">legacy-kernel.legacy-05 TN-IMP-069</stat>
+<stat name="legacy-06 TN-IMP-089" id="s1-s6" pass="1" fail="0" skip="0">legacy-kernel.legacy-06 TN-IMP-089</stat>
+<stat name="legacy-07 TN-IMP-095" id="s1-s7" pass="1" fail="0" skip="0">legacy-kernel.legacy-07 TN-IMP-095</stat>
+<stat name="legacy-08 TN-IMP-096" id="s1-s8" pass="1" fail="0" skip="0">legacy-kernel.legacy-08 TN-IMP-096</stat>
+<stat name="legacy-09 TN-IMP-101" id="s1-s9" pass="1" fail="0" skip="0">legacy-kernel.legacy-09 TN-IMP-101</stat>
+<stat name="legacy-10 TN-IMP-118" id="s1-s10" pass="1" fail="0" skip="0">legacy-kernel.legacy-10 TN-IMP-118</stat>
+<stat name="legacy-11 TN-IMP-119" id="s1-s11" pass="1" fail="0" skip="0">legacy-kernel.legacy-11 TN-IMP-119</stat>
+<stat name="legacy-12 TN-IMP-123" id="s1-s12" pass="1" fail="0" skip="0">legacy-kernel.legacy-12 TN-IMP-123</stat>
+<stat name="legacy-13 TN-IMP-136" id="s1-s13" pass="1" fail="0" skip="0">legacy-kernel.legacy-13 TN-IMP-136</stat>
+<stat name="legacy-14 TN-IMP-142" id="s1-s14" pass="1" fail="0" skip="0">legacy-kernel.legacy-14 TN-IMP-142</stat>
+<stat name="legacy-15 TN-IMP-159" id="s1-s15" pass="1" fail="0" skip="0">legacy-kernel.legacy-15 TN-IMP-159</stat>
+<stat name="legacy-16 TN-IMP-167" id="s1-s16" pass="1" fail="0" skip="0">legacy-kernel.legacy-16 TN-IMP-167</stat>
+<stat name="legacy-17 TN-IMP-176" id="s1-s17" pass="1" fail="0" skip="0">legacy-kernel.legacy-17 TN-IMP-176</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

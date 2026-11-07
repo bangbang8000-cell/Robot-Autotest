@@ -1,0 +1,49 @@
+{
+  "id": "TC-59",
+  "title": "双主题 8 页截图 + token/颜色扫描",
+  "verdict": "PARTIAL",
+  "facts": {
+    "pageShots": 16,
+    "themeApplied": 16,
+    "tokensCode": 0,
+    "colorsCode": 0,
+    "tokensTail": [
+      "扫描 52 个文件：108 个 token 定义，352 处不同引用",
+      "[PASS] var 引用 0 悬空；px 字面量 708 处全部在白名单内（39 个取值）"
+    ],
+    "colorsTail": [
+      "[PASS] 146 个文件无硬编码色值"
+    ],
+    "codeWhiteBlocks": {
+      "overview": 0,
+      "assets": 0,
+      "cases": 120,
+      "runs": 178,
+      "reports": 414,
+      "groups": 0,
+      "imports": 0,
+      "test-reports": 0
+    },
+    "changedPairs": 16
+  },
+  "shots": [
+    "shots/pages/overview-light-1440.png",
+    "shots/pages/assets-light-1440.png",
+    "shots/pages/cases-light-1440.png",
+    "shots/pages/runs-light-1440.png",
+    "shots/pages/reports-light-1440.png",
+    "shots/pages/test-reports-light-1440.png",
+    "shots/pages/imports-light-1440.png",
+    "shots/pages/groups-light-1440.png",
+    "shots/pages/overview-dark-1440.png",
+    "shots/pages/assets-dark-1440.png",
+    "shots/pages/cases-dark-1440.png",
+    "shots/pages/runs-dark-1440.png",
+    "shots/pages/reports-dark-1440.png",
+    "shots/pages/test-reports-dark-1440.png",
+    "shots/pages/imports-dark-1440.png",
+    "shots/pages/groups-dark-1440.png"
+  ],
+  "ms": 38881,
+  "oneLiner": "16 张 ✓，主题生效 16/16；check_tokens exit=0；check_colors exit=0；深色白块 ✗ cases/runs/reports（120/178/414 块）"
+}

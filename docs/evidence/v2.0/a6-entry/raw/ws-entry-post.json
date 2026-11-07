@@ -1,0 +1,14 @@
+{
+  "target": "127.0.0.1:8001/ws/runs/a6-probe-1794028197388",
+  "status": "HTTP/1.1 101 ",
+  "code101": true,
+  "headers": {
+    "upgrade": "websocket",
+    "connection": "upgrade",
+    "sec-websocket-accept": "rcu7OC+whozEIQmarFmYdbUPpLk=",
+    "date": "Sat, 07 Nov 2026 05:09:57 GMT"
+  },
+  "sec_accept_ok": true,
+  "frame": null,
+  "elapsed_ms": 2033.6
+}

@@ -38,7 +38,7 @@ GATES_RESULT FAILS=0
 | 统一入口 | `PASS=12 FAIL=0` | `scripts/verify-entry.sh` |
 | 数据回填 | `domain_tag` 空值 0 / `owner_id` 为空 0 / 旧 owner 角色 0 | `p1-closeout/apply_migrations.py` |
 
-> `logs/` 被 `.gitignore` 忽略，不是「证据丢失」，可用 `bash docs/evidence/v1.0/policy-20261106/gates.sh` 原地重建。
+> `logs/` 被 `.gitignore` 忽略，不是「证据丢失」，可用 `bash scripts/gates.sh` 原地重建。
 > 8001 入口与 8081 后端在收口时均在运行：`node scripts/serve-entry.mjs`（pid 972670）、
 > `java -jar backend/target/robot-autotest-backend-0.1.0-SNAPSHOT.jar`（pid 972542）。
 
@@ -77,7 +77,7 @@ GATES_RESULT FAILS=0
 
 ```bash
 cd ~/robot-autotest
-bash docs/evidence/v1.0/policy-20261106/gates.sh   # 八步 + 2 项，期望 FAILS=0
+bash scripts/gates.sh   # 八步 + 2 项，期望 FAILS=0
 bash scripts/verify-entry.sh                       # 期望 PASS=12 FAIL=0
 python3 tools/check_release_docs.py                # 期望 FAIL 0 项
 python3 tools/check_wbs_consistency.py             # 期望 130 包自洽

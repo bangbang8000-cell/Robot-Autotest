@@ -1,0 +1,12 @@
+=== qa-e2e-viewer ===
+GET /api/system/settings -> 200 bytes=203
+PUT /api/system/settings -> 403 body={"code":40300,"codeName":"FORBIDDEN","message":"平台设置仅管理员可修改","data":null,"success":false}
+GET /projects/29/settings -> 200 body={"code":0,"codeName":"OK","message":"OK","data":{"execution.timeoutSeconds":"1800","case.tagSet":"","kernel.default":"ro
+=== qa-e2e-engineer ===
+GET /api/system/settings -> 200 bytes=203
+PUT /api/system/settings -> 403 body={"code":40300,"codeName":"FORBIDDEN","message":"平台设置仅管理员可修改","data":null,"success":false}
+GET /projects/29/settings -> 200 body={"code":0,"codeName":"OK","message":"OK","data":{"execution.timeoutSeconds":"1800","case.tagSet":"","kernel.default":"ro
+=== qa-e2e-pm ===
+GET /api/system/settings -> 200 bytes=203
+PUT /api/system/settings -> 403 body={"code":40300,"codeName":"FORBIDDEN","message":"平台设置仅管理员可修改","data":null,"success":false}
+GET /projects/29/settings -> 200 body={"code":0,"codeName":"OK","message":"OK","data":{"execution.timeoutSeconds":"1800","case.tagSet":"","kernel.default":"ro

@@ -1,0 +1,14 @@
+{
+  "target": "127.0.0.1:8001/ws/runs/RUN-20261107121600-e80000",
+  "status": "HTTP/1.1 101 ",
+  "code101": true,
+  "headers": {
+    "upgrade": "websocket",
+    "connection": "upgrade",
+    "sec-websocket-accept": "DydKKLcHaWByqO8uYkqlwO078Kg=",
+    "date": "Sat, 07 Nov 2026 05:10:01 GMT"
+  },
+  "sec_accept_ok": true,
+  "frame": null,
+  "elapsed_ms": 2010.5
+}

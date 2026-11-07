@@ -152,6 +152,29 @@ class AuditQueryTest {
     }
 
     @Test
+    @DisplayName("cursor 走 keyset：游标解析进查询条件，非法游标 400")
+    void cursorKeyset() throws Exception {
+        sessions.userId = ADMIN;
+        // 2026-11-01T10:00:00Z 的毫秒值 + 主键
+        long millis = Instant.parse("2026-11-01T10:00:00Z").toEpochMilli();
+        mockMvc.perform(get("/api/audit")
+                .param("projectId", String.valueOf(ALPHA))
+                .param("cursor", millis + "_123")
+                .param("size", "50")
+                .header("Authorization", "Bearer t")).andReturn();
+        AuditQuery keyset = auditRepo.lastQuery;
+        assertNotNull(keyset);
+        assertTrue(keyset.keyset(), "带 cursor 时 keyset 应生效");
+        assertEquals(Instant.ofEpochMilli(millis), keyset.cursorAt());
+        assertEquals(123L, keyset.cursorId());
+
+        MvcResult bad = mockMvc.perform(get("/api/audit")
+                .param("cursor", "not-a-cursor")
+                .header("Authorization", "Bearer t")).andReturn();
+        assertEquals(400, bad.getResponse().getStatus());
+    }
+
+    @Test
     @DisplayName("CSV 导出含固定表头与数据行")
     void csvExport() throws Exception {
         sessions.userId = ADMIN;

@@ -87,8 +87,8 @@ W1（未开工）、产品代码。
 | `lint.sh` 与 `git diff --check` | PASS / 无空白错误 |
 | 回写脚本幂等 | 首跑 **PASS=19**、重跑 **SKIP=19**，无重复追加 |
 
-> 门禁日志在本机 `docs/evidence/v1.0/policy-20261106/logs/`，**被根 `.gitignore` 第 5 行 `logs/` 忽略、不入库**；
-> 换机或在别处核对读数时，复跑 `bash docs/evidence/v1.0/policy-20261106/gates.sh` 即可重建。
+> 门禁日志在本机 `docs/evidence/gates/logs/`，**被根 `.gitignore` 第 5 行 `logs/` 忽略、不入库**；
+> 换机或在别处核对读数时，复跑 `bash scripts/gates.sh` 即可重建。
 
 ---
 
@@ -100,5 +100,5 @@ python3 docs/evidence/v1.0/decision-20261106/apply-decision.py     # 幂等，�
 python3 docs/evidence/v1.0/policy-20261106/check_md_tables.py      # 表格列数
 python3 tools/check_release_docs.py                                 # 版本文档门禁
 python3 tools/check_wbs_consistency.py                              # WBS 五数自洽
-bash docs/evidence/v1.0/policy-20261106/gates.sh                   # 八步 + 2 项专属
+bash scripts/gates.sh                   # 八步 + 2 项专属
 ```

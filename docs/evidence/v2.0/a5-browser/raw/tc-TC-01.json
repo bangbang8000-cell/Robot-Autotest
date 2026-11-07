@@ -1,0 +1,32 @@
+{
+  "id": "TC-01",
+  "title": "两路由互不跳转 + 测试报告创建入口",
+  "verdict": "PASS",
+  "facts": {
+    "reportDetail": {
+      "path": "/reports/RUN-20261107121600-e80000",
+      "testReportLinks": 0,
+      "hasTree": true,
+      "head": "← 返回报告列表\nRUN-20261107121600-e80000"
+    },
+    "testReports": {
+      "path": "/test-reports",
+      "inputPlaceholder": "输入 RUN_ID 创建草稿",
+      "buttons": [
+        "资产",
+        "执行",
+        "管理",
+        "退出登录",
+        "创建草稿",
+        "刷新"
+      ],
+      "hasCreate": true
+    }
+  },
+  "shots": [
+    "shots/tc-01-report-detail.png",
+    "shots/tc-01-test-reports.png"
+  ],
+  "ms": 6892,
+  "oneLiner": "detail 路由未跳 ✓；detail 内 /test-reports 链接 0 个；test-reports 路由未跳 ✓；创建入口 ✓"
+}

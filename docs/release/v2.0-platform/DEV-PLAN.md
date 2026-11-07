@@ -303,7 +303,7 @@ run ──1:N── test_report_run ──N:1── test_report ──1:N── 
 
 ## 8. 质量门禁
 
-每批合并前跑八步门禁（模板 `docs/evidence/v1.0/longhist/gates.sh`）：
+每批合并前跑八步门禁（模板 `scripts/gates.sh`）：
 
 1. `python3 tools/subset_font.py`
 2. `cd frontend && npx vitest run`

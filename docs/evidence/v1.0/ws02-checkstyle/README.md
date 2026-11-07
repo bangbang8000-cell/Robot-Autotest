@@ -76,7 +76,7 @@ mvn -B -q checkstyle:check     # 必须 PASS
 | Markdown 表格 | 本轮新文档 7 份 / 79 块 / 548 行列数一致 |
 | `git diff --check` | 无空白错误 |
 
-> 门禁日志在本机 `docs/evidence/v1.0/policy-20261106/logs/`（`.gitignore` 忽略，不入库），
+> 门禁日志在本机 `docs/evidence/gates/logs/`（`.gitignore` 忽略，不入库），
 > 复跑 `gates.sh` 可重建；Checkstyle 自身日志在 `artifacts/mvn-checkstyle.log`。
 
 ---
@@ -87,5 +87,5 @@ mvn -B -q checkstyle:check     # 必须 PASS
 cd ~/robot-autotest
 bash scripts/lint.sh                                    # 含 checkstyle 真实阻断
 cd backend && mvn -B checkstyle:check                    # 单独复跑
-cd ~/robot-autotest && bash docs/evidence/v1.0/policy-20261106/gates.sh
+cd ~/robot-autotest && bash scripts/gates.sh
 ```

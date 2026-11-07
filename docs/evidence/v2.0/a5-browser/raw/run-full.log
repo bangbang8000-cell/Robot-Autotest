@@ -1,0 +1,15 @@
+[cdp] Chrome/159.0.8130.0  app=http://localhost:8001  run=RUN-20261107121600-e80000
+[TC-01] PASS  detail 路由未跳 ✓；detail 内 /test-reports 链接 0 个；test-reports 路由未跳 ✓；创建入口 ✓
+[TC-02] PARTIAL  kw 节点 9 / children 0 / FOR false / IF false；循环内 3 轮消息可见 ✓；下载 200 1548B（命令+stdout ✓）→ 结构未嵌套，判 PARTIAL
+[TC-11] FAIL  菜单叶子 admin=13 / pm=9≠12 / engineer=9≠11 / viewer=9；/api/auth/me.roles admin=[admin] / pm=[空] / engineer=[空] / viewer=[空]；直达 /settings → engineer=/settings / viewer=/settings；闪现 有
+[TC-12] PASS  Ctrl+K 打开 ✓（焦点 palette-input）；「用例」1 条（≤20 ✓）；↓+Enter /overview → /cases；「roce」0 条空态 ✓；最近 1 条（≤5 ✓）
+[TC-15] PASS  页面对 API 逐字段 version=✓ gitCommit=✓ buildTime=✓ license=✓ deps=✓ selfCheck4=✓；自检 4 项；依赖 23 条；git HEAD 7a6a604a vs build 61c49dd（不一致（构建产物早于 HEAD））
+[TC-17] PASS  侧栏折叠 ✓（刷新//cases 保持 ✓）；分组折叠 true→false、刷新后 aria=false/true/true 子项可见=false；收藏 用例 刷新后 1 条；切项目 29→1 路由 /reports→/reports，首条数据「RUN-20261107121600-e80」→「RUN-RPT05EXT-20261106-」
+[TC-47] PASS  项目 29→1；29 的 10 个 runId 残留 0 个；新列表 3 行含 RUN-RPT05EXT ✓；面包屑元素 0 个（组件缺失 → 子项 GAP）
+[TC-51] FAIL  开 ✓（抽屉 340px / 主区 1044px，重叠 无）；调宽 null→360（实际 340→340px，未生效：CSS 栅格固定 340px）；刷新后开 ✓、宽 360；关闭后残留 0 个、stored=true，再刷新 ✗ 又弹开
+[TC-59] PASS  16 张 ✓，主题生效 16/16；check_tokens exit=0；check_colors exit=0（深色白块像素扫描见 analyze.py）
+[TC-60] FAIL  1440×(侧栏 200+主区 1044+抽屉 340)；利用率(主区/(视口-抽屉)) 94.9%（≥78 ✓；按整视口 72.5%）；横滚 无；首屏行 10/11（≥12 ✗）
+[TC-62] PASS  1280×720 横滚 无（scrollWidth 1280 / vw 1280）；侧栏自动折叠 ✓，宽 200px；菜单 13 项；用例页 /cases 行 6 横滚 无
+[TC-63] PARTIAL  Tab 12 步中可见焦点 12 步；打开面板焦点入内 ✓；Tab 6 步跑出弹层 0 次；Esc(输入框) 关闭 ✓，焦点归还 ✗（落在 BODY）；Esc(结果按钮) 关闭 ✗
+[TC-64] PASS  基线 16/16（复制自 v1.0 w7-design）；当前 16/16；逐像素 diff 见 analyze.py（raw/tc-64-diff.json）
+[summary] TC-01 PASS · TC-02 PARTIAL · TC-11 FAIL · TC-12 PASS · TC-15 PASS · TC-17 PASS · TC-47 PASS · TC-51 FAIL · TC-59 PASS · TC-60 FAIL · TC-62 PASS · TC-63 PARTIAL · TC-64 PASS

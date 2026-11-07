@@ -1,0 +1,4 @@
+## TC-28 同 run 混合内核应 400 拒绝
+## verdict: GAP
+## numbers: 选择接口 200（未拦截）；混合提交 200（期望 400）；终态 canceled
+## detail: select robot+pytest => 200 kernel=pytest source=CASE_OVERRIDE; 强行混合提交 => 200 runId=RUN-20261107115742-e80000 终态=canceled; 能力位 sameRunMixedKernels=False 仅常量，无 400 分支

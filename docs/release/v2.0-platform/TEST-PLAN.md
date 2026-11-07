@@ -56,13 +56,20 @@
 | M1 | RF × 单项目 × 串行 | 与 v1.0 行为一致 |
 | M2 | RF × 单项目 × 并行 4 | 分片结果合并正确 |
 | M3 | pytest × 单项目 × 串行 | 状态映射正确 |
-| M4 | pytest × 单项目 × 并行（xdist 或平台分片二选一，需 ADR） | 结果不重复不丢 |
+| M4 | pytest × 单项目 × 并行（**ADR-0007 定案：xdist `-n N`**） | 结果不重复不丢 |
 | M5 | RF + pytest × 同项目不同用例集 | 拆两个 run，租约不冲突 |
 | M6 | RF + pytest × 多项目并发 | 互不串结果，租约按项目隔离 |
 | M7 | pytest 7 与 pytest 8 | 归一结果一致 |
 | M8 | 无 pytest 环境 | 422 + 指引，不产生假 run |
 | M9 | 取消/超时（两内核） | 进程树无残留，状态正确 |
 | M10 | 历史 run（kernel=robot） | 打开与导出不报错 |
+
+> **M4 实测（2026-11-07，ADR-0007 定案后）**：pytest 并行取 **xdist `-n N`**；真实工程
+> `~/deepseek-harness`（254 条）串行/并行各跑两轮，json-report 均为 **254 条、重复 0**，
+> nodeid 集合与串行**逐条一致**（丢失 0 / 多出 0），`RESULT: PASS (不重复不丢)`；
+> 墙钟 31.2s → 27.1s（1.15×）。产品 argv 已含 `-n 4`（`processes=1` 时不含）。
+> 证据 `docs/evidence/v2.0/b1-m4-adr/`；另有 3 个独立缺口（能力矩阵 `pytest=false`、
+> 预览 `source` 文案、无平台 run 入口）记在证据 README §4。
 
 **T4 人工抽样复核（不可跳过）**：准备**同一份**含 pass / fail / skip / xfail / error 五类结果的样本工程，在 RF 与 pytest 内核各跑一次，按 `external_id` 逐条比对状态与失败分类。两轮修不掉差异时，按规划 §4.3 T4 —— **B9 停在 W2，W3 之后波次不启动，不允许降级成单内核交付**。比对记录（双列对照表 + 原始输出）存入 `docs/evidence/v2.0/KRN-01/`。
 
@@ -87,6 +94,24 @@
 | TC-v2.0-08 | G | FR-v2.0-06 | 保留策略清理过期报告 | 过期报告不可见；审计留清理记录 |
 | TC-v2.0-09 | U | FR-v2.0-04 | 同一用例在两次 run 中一次通过一次失败 | 趋势对比正确；不按名称模糊合并 |
 
+> **实测（2026-11-07 14:42–14:44，A8 真实链路抽样）**，详见 `docs/evidence/v2.0/a8-report-chain/README.md`
+> （隔离项目 76，3 个真实 run：finished 2P / finished 1P1S / failed 1P1F；取证前后各一次 `mysqldump`）：
+> - **TC-v2.0-03 PASS**：冻结 `reportId=10`（version 2、`snapshot_hash=e882e9aa…`）；删源 run（6 张表 + 产物目录）后
+>   两次渲染 **589 B / sha256 `cff41a60…` 逐字节相同**，`snapshot_hash` 未变，源 run 明细 404。
+>   本版**没有报告内容修改接口**（冻结态只暴露 revoke/archive），「修改返回 409」无可调用入口，以「快照对源数据不可变」取证代替。
+> - **TC-v2.0-04 PARTIAL**：digest 聚合 3 个 run 正常（4 PASS/1 FAIL/1 SKIP，`topFailedCases` 与明细一致）；
+>   但 **测试报告不支持多 run**——`POST /api/test-reports` 传 `runIds` 数组 → `400 runId 不能为空`（PRD FR-v2.0-03 要求 1..N）；
+>   且**通过率把 skip 计入分母**（1P1S → 5000 bp，PRD 口径应为 10000），与 FR-v2.0-04 冲突。
+> - **TC-v2.0-05 PARTIAL**：HTML(1,558 B)/DOCX(2,678 B)/PDF(1,535 B) 均 200、魔数正确、页眉含 version+frozenAt、无敏感串；
+>   但 **PDF 中文标题变 `????`**（fallback 生成器 `/BaseFont /Helvetica`，无 CJK），三格式内容不一致。
+> - **TC-v2.0-08 PASS**：`max_days=0` 下 dry-run 与实删清单完全一致（1 run / 4,141 B / `expired`）；实删 3 文件；
+>   run/test_result 行保留；已导出 PDF 的 run 未入候选（保护生效）；项目 29 产物 65→65 零误删；`audit_log` 记 `artifact_purge` 2 行。
+> - 另记：含失败用例的 run 落库为 `failed` 且 `failure_message="分片执行失败: ok"`（分片实际执行成功，reason 取的是产物校验 ok），语义误导。
+
+> **实测（2026-11-07，A5 真实浏览器，Chrome 159 @ `:8001`）**，详见 `docs/evidence/v2.0/a5-browser/README.md`：
+> - **TC-v2.0-01 PASS**：`/reports/<id>/detailed` 不跳转；detail 内 `/test-reports` 链接 0 个；`/test-reports` 路由可达；未创建时创建入口存在。
+> - **TC-v2.0-02 PARTIAL**：`kw-node` 9、`kw-children` 0、FOR/IF 节点无（结构扁平化，G-3，同 v1.0 已知项）；循环 3 轮消息 `A5-STEP-0/1/2` 在日志可见；命令与 stdout 下载 200 / 1548 B。
+
 ### 4.2 菜单与系统页（FR-v2.0-07 ~ 13）
 
 | TC | 层 | 覆盖 | 场景 | 期望结果 |
@@ -99,6 +124,12 @@
 | TC-v2.0-15 | E | FR-v2.0-11 | 打开关于页 | 版本/commit/构建时间与构建产物一致；依赖与许可证可打开；自检四项有状态 |
 | TC-v2.0-16 | F | FR-v2.0-12 | 打开版本迭代页 | 按版本倒序；四类变更齐全；当前版本高亮 |
 | TC-v2.0-17 | F | FR-v2.0-13 | 折叠菜单、收藏项、切换项目后刷新 | 折叠与收藏保留；切换后项目页跳同名页；跨项目页保持 |
+
+> **实测（2026-11-07，A5 真实浏览器）**，详见 `docs/evidence/v2.0/a5-browser/README.md`：
+> - **TC-v2.0-11 FAIL**：菜单 admin 13 ✓ / pm **9**（期望 12）/ engineer **9**（期望 11）/ viewer 9 ✓；`/api/auth/me.roles` 仅 admin 有值，pm/engineer/viewer 全空（DB `project_member` 有 PM/ENGINEER/VIEWER，未进能力计算，G-1）；engineer/viewer 直达 `/settings` **不跳 /403** 且渲染完整表单（读 200 / 写 403，G-2）。
+> - **TC-v2.0-12 PASS**：`Ctrl+K` 打开且焦点在 `palette-input`；「用例」1 条；↓+Enter `/overview → /cases`；「roce」0 条空态；最近 1 条（≤5）。
+> - **TC-v2.0-15 PASS**：version / gitCommit / buildTime / license / deps / 4 项自检全部与 `/api/system/build-info` 一致；依赖 23 条。**注意** git HEAD `7a6a604a` ≠ 产物 build `61c49dd`（产物早于 HEAD）。
+> - **TC-v2.0-17 PASS**：侧栏折叠跨路由保持；分组 `aria-expanded` true→false 且刷新后保持；收藏刷新后 1 条；29→1 切项目后路由仍 `/reports`，首条数据换成新项目 `RUN-RPT05EXT-*`。
 
 ### 4.3 双内核（FR-v2.0-14 ~ 22）
 
@@ -116,6 +147,16 @@
 | TC-v2.0-27 | E | FR-v2.0-21 | pytest 超时 + RF 超时 | 均按同一阈值判定；报错文案含内核名 |
 | TC-v2.0-28 | I | FR-v2.0-14 | 查询能力矩阵并尝试不支持的选项 | 不支持的选项被禁用；强行提交返回 400 |
 | TC-v2.0-29 | U | FR-v2.0-18 | 切换项目默认内核后查历史 run | 历史 run 的 kernel 不变；新 run 用新内核 |
+
+> **实测（2026-11-07 13:40–13:42，A7 真实进程树取证）**，详见 `docs/evidence/v2.0/a7-process-tree/README.md`：
+> - **TC-v2.0-26 PARTIAL**：RF 侧通过——真实 run `RUN-20261107134042-eb0000` 在 `running` 时抓树 4 个进程（pabot + pabotlib + 2 robot），
+>   `POST /runs/{id}/cancel` 后 `canceled`，3s 后 ps **零残留**（`pabot` 行 0、`pids_still_alive=[]`、`args_still_matching=[]`）。
+>   pytest 侧产品**无 run 入口**（`run` 表无 kernel 列、`CreateRunRequest` 忽略 `kernel`），改以产品 argv 形状 + 产品 `ProcessTreeKiller`
+>   的独立探针取证：plain 与 `-n 2`（2 个 worker）均在 20s 点 `terminated`、`forced=false`、零残留，用例心跳证明系执行中途被杀。
+>   **未达「双内核各取消一次」的原意**——pytest 取消走不到产品 `CancelService`，故记 PARTIAL。
+> - **TC-v2.0-27 PARTIAL**：同一阈值成立（RF `timeoutSeconds=20` 实测 20.056s 命中 `failed(timeout)`；pytest 探针同一 20s 截止点），
+>   但**「报错文案含内核名」FAIL**：`failure_message` 超时为 `分片执行失败: timeout`、取消为操作人 reason，均不含内核名；
+>   内核名只出现在 run 日志 `[system] 开始执行 pabot: ...`。属产品缺口，记入缺陷台账（不改产品代码）。
 
 ### 4.4 解耦与导入（FR-v2.0-23 ~ 31）
 
@@ -148,6 +189,9 @@
 | TC-v2.0-49 | G | FR-v2.0-38 | 建场景（2 用例 + 1 用例集）并执行 | 按序执行；结果归属该场景；顺序可调 |
 | TC-v2.0-50 | I | FR-v2.0-39 | 建组/授权/移除/归档四次操作 | 审计四条齐全（操作人/对象/前后值/时间） |
 
+> **实测（2026-11-07，A5 真实浏览器）**，详见 `docs/evidence/v2.0/a5-browser/README.md`：
+> - **TC-v2.0-47 PASS**（面包屑子项 GAP）：项目 29→1 后 10 个旧 runId 残留 **0**；新列表 3 行含 `RUN-RPT05EXT` ✓；面包屑元素 **0 个**（G-7，单列缺陷，不改本 TC 结论）。
+
 ### 4.6 AI 智能体（FR-v2.0-40 ~ 46）
 
 | TC | 层 | 覆盖 | 场景 | 期望结果 |
@@ -161,6 +205,23 @@
 | TC-v2.0-57 | S | FR-v2.0-46 | 检查进程 cwd 与环境变量 | cwd 为项目工作区；无密钥变量；超时可终止 |
 | TC-v2.0-58 | I | FR-v2.0-46 | 删除/伪造 CLI 后打开面板 | 面板降级为安装指引；主功能全部可用；无 500 |
 
+> **实测（2026-11-07，A5 真实浏览器）**，详见 `docs/evidence/v2.0/a5-browser/README.md`：
+> - **TC-v2.0-51 FAIL**：开抽屉 ✓（抽屉 340 px / 主区 1044 px，无重叠）；调宽写入 `360` 但**实际仍 340 px**（CSS 栅格硬编码，G-4）；关闭后 DOM 残留 0，但 `robot.ai.drawer.open` 仍 `true`，**刷新后又弹开**。
+
+> **实测（2026-11-07 14:49，A9 真实模型调用）**，详见 `docs/evidence/v2.0/a9-ai-call/README.md`
+> （真实 HTTP + 真库 `audit_log` + 真实 CLI `claude 2.1.267`；17 项判据 16 true / 1 false）：
+> - **TC-v2.0-52 PARTIAL**：`GET /api/ai/state` 实测 `claude=false / codex=true / anyAvailable=true / mode=NORMAL`，
+>   与交互式 shell 可见性一致（产品只看服务进程 PATH）；**「0 个 CLI」与「2 个 CLI」两态未实跑**，降级分支仅有代码路径 + 单测。
+> - **TC-v2.0-53 PARTIAL**：注入 `10.202.54.106` / `SuperSecret!42` / `/home/evergreen/...` / `ssh -o ...` 四类敏感串，
+>   `suggest` 响应零泄漏、摘要仅「上下文已打包（150 字符）」；打包体本身不随响应外泄，**超限截断未单独实跑**。
+> - **TC-v2.0-55 PARTIAL**：未确认 → **403 `发起执行必须二次确认`**（硬闸门生效）；确认 → 200 + 审计 `AI_EXECUTE`；
+>   **但产品不真正调模型**——`application/ai/` 全包无 `ProcessBuilder`/`Runtime.exec`，L3 只是审计占位（缺口 G-A9-1）；
+>   且构造的 argv `--prompt-file` 被真实 CLI 拒绝（`error: unknown option '--prompt-file'`，缺口 G-A9-2）。
+> - **真实模型输出（判据要求的那 1 条，已脱敏）**：`claude -p '<prompt>' --output-format text` → 40 字符中文回答，
+>   四条敏感正则扫描 0 命中（`raw/a9-real-model-output.txt`）。
+> - **动作审计 PASS**：会话 1001 下 `AI_SESSION_OPEN / AI_SUGGEST / AI_EXECUTE / AI_TERMINATE` 四行可查；
+>   另记缺口 G-A9-3：会话 id 内存计数重启回 1001，`audit_log.resource_id` 跨会话同 id 会串台。
+
 ### 4.7 界面体系（FR-v2.0-47 ~ 52）
 
 | TC | 层 | 覆盖 | 场景 | 期望结果 |
@@ -172,6 +233,15 @@
 | TC-v2.0-63 | F | FR-v2.0-51 | 键盘 Tab / Esc / 焦点陷阱 | 顺序合理；焦点可见；弹层可 Esc 关闭并归还焦点 |
 | TC-v2.0-64 | E | FR-v2.0-52 | 运行截图基线与 diff | 16 张基线存在；改动可定位；无意外差异 |
 
+> **实测（2026-11-07，A5 真实浏览器 + `analyze.py` 像素分析）**，详见 `docs/evidence/v2.0/a5-browser/README.md`：
+> - **TC-v2.0-59 PARTIAL**：8 页 × 2 主题 = 16/16 张，主题生效 16/16；`check_tokens` exit 0、`check_colors` exit 0；**深色白块** cases 120 块（9.5%）、runs 178（14.1%）、reports 414（32.9%）→ G-5。
+> - **TC-v2.0-60 FAIL**：侧栏 200 + 主区 1044 + 抽屉 340；主区利用率 **94.9%**（按整视口 72.5%，口径已记录）；无横滚；首屏行 **10/11 < 12**（G-6）。
+> - **TC-v2.0-62 PARTIAL**：横滚无（scrollWidth 1280 = vw）；侧栏自动折叠 **✗**（媒体查询阈值 999 px，1280 仍 200 px，G-8）；菜单 13 项；`/cases` 可达、6 行、无横滚。
+> - **TC-v2.0-63 PARTIAL**：Tab 12 步焦点全部可见（12/12）；面板内 Tab 6 步 0 次跑出（陷阱有效）；Esc（焦点在输入框）可关但焦点落 **BODY**；Esc（焦点在结果按钮）**无效**（handler 只绑 input，G-8）。
+> - **TC-v2.0-64 PASS**（差异需读边界）：基线 16/16（复制自 v1.0 `w7-design/shots`），当前 16/16；逐像素 diff 1.99%–64.78% 且每张有 bbox；差异主要来自 G-5 白块与两版数据量不同，幅度本身不作为「无意外差异」的证明。
+>
+> 合计：**PASS 6 / PARTIAL 4 / FAIL 3**（13 条）。
+
 ### 4.8 端口与交付（FR-v2.0-53 ~ 55）
 
 | TC | 层 | 覆盖 | 场景 | 期望结果 |
@@ -179,6 +249,12 @@
 | TC-v2.0-65 | E | FR-v2.0-53 | 访问 `:8001/`、深链接 `/reports/123`、静态资源 | 均 200；无 404；`index.html` no-cache；指纹资源长缓存 |
 | TC-v2.0-66 | E | FR-v2.0-54 | 通过 8001 调 `/api/health` 与 `/healthz`，建立 WS | 均 200/101；矩阵三处一致（设置/关于/手册） |
 | TC-v2.0-67 | E | FR-v2.0-55 | 部署 → 健康检查 → 回滚 → 再检查 | 部署自检通过；回滚后旧版可用；PDF 导出 URL 指向 8001 |
+
+> **实测（2026-11-07 13:14–13:16，A6 真实部署/回滚演练）**，详见 `docs/evidence/v2.0/a6-entry/README.md`：
+> - **TC-v2.0-66 PASS**：`/healthz=200`、`/api/health` `status=UP` 且 `database=UP`；WS 握手 **101**（入口 `:8001` 与后端直连 `:8081` 各 1 次，另加真实 runId 1 次，共 5 次探测全 101）。
+> - **TC-v2.0-67 PARTIAL（部署/回滚部分 PASS，PDF 部分未完）**：`deploy → health → rollback → health` 9/9 子项全绿；RTO deploy **62.0 s** / rollback **8.2 s** / 闭环 **70.2 s**；回滚后 `build-info` 由 `7a6a604` 回到基线 `61c49dd`，jar 与 dist 摘要与演练前逐字节相同；67 张表行数一致，内容差异仅 2 行心跳时间戳（0 业务写入）。
+>   **未判**：`ExportService` 的 `downloadUrl` 需真实导出一次才能取证，归 A8。
+
 
 ---
 
@@ -283,6 +359,9 @@ C4 已定案、C6 已探测，详见 `docs/plan/前置条件闭环-20261106.md`�
 
 | 2026-11-06 | v1.5 | §6 样本硬约束按前置闭环实测回写：C2/C3 本机预检级补齐、C4/C5 定案、C6 探测；新增「本机 PARTIAL / 真机 NOT-RUN」分层口径 | 大师 16:50 二次授权；**67 条 TC / 10 条退出标准 / M1–M10 / T4 一项未动** |
 | 2026-11-06 | v1.4 | AI 书面评审**有条件通过**（大师 15:23 一次性授权）；34 包并入 WBS（96→130），W1 六包开工 | 人工复核为最终确认；W2–W7 仍受 G4/G5 与 C2/C3/C5 约束 |
+| 2026-11-07 | v1.6 | §4.3 增 A7 实测块：TC-26 / TC-27 由 `NOT-RUN（需真机 ADR-0013）` 改为 **PARTIAL**，写明 RF 侧零残留实测值与 pytest 无 run 入口的替代口径，并单列「文案含内核名」FAIL 为产品缺口 | 原 NOT-RUN 理由（需真机）已过时：A3 已用合成夹具实跑 RF，本次以真实 run 抓到进程树。**67 条 TC 口径 / 退出标准 / M1–M10 / T4 一项未动**，只把「未跑」换成「跑过、结论有限」 |
+| 2026-11-07 | v1.7 | §4.6 增 A9 实测块：TC-52 / 53 / 55 记 **PARTIAL**（探测、脱敏、二次确认有真实读数；「0 CLI / 2 CLI」「超限截断」未实跑，L3 不真正调模型）；新增缺口 G-A9-1（L3 无子进程）/ G-A9-2（`--prompt-file` 真实 CLI 拒绝）/ G-A9-3（会话 id 重启复用）；真实模型输出 1 条脱敏留档 | A9 真实模型调用取证（`docs/evidence/v2.0/a9-ai-call/`）：17 项判据 16 true / 1 false，唯一 false 即 argv 契约缺口。**67 条 TC 口径 / 退出标准 / M1–M10 一项未动** |
+| 2026-11-07 | v1.8 | §3 双内核矩阵 **M4** 由「二选一，需 ADR」改为「ADR-0007 定案：xdist `-n N`」，并补 M4 实测块（254 条、两轮、重复 0 / 丢失 0） | B1 落 `docs/adr/0007-pytest-parallel-xdist.md`；M4 首次有路线与实跑证据。**矩阵其余 9 行 / T4 口径 / 67 条 TC 未动** |
 
 *后续演进（同日 15:23 之后，非本补记原意）：大师给出一次性开发授权后，AI 出具
 `docs/plan/PRD评审结论-v2.0-20261106.md`（**有条件通过**），34 包并入 WBS（分母 96 → 130），

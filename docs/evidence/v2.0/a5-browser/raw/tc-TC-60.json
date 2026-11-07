@@ -1,0 +1,22 @@
+{
+  "id": "TC-60",
+  "title": "1440×900 三栏 + 抽屉利用率/首屏行数",
+  "verdict": "FAIL",
+  "facts": {
+    "vw": 1440,
+    "main": 1044,
+    "side": 200,
+    "drawer": 340,
+    "utilizationUsable": 0.9490909090909091,
+    "utilizationViewport": 0.725,
+    "overflowX": false,
+    "visibleRows": 10,
+    "totalRows": 11,
+    "columns": "56px 1044px 340px"
+  },
+  "shots": [
+    "shots/tc-60-1440-drawer.png"
+  ],
+  "ms": 8412,
+  "oneLiner": "1440×(侧栏 200+主区 1044+抽屉 340)；利用率(主区/(视口-抽屉)) 94.9%（≥78 ✓；按整视口 72.5%）；横滚 无；首屏行 10/11（≥12 ✗）"
+}

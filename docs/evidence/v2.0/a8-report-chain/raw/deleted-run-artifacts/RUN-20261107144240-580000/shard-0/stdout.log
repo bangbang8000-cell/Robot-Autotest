@@ -1,0 +1,21 @@
+Initialized logging in /home/evergreen/robot-test/artifacts/RUN-20261107144240-580000/shard-0/pabot_results
+Robot Framework remote server at 127.0.0.1:8270 started.
+Storing .pabotsuitenames file
+2026-11-07 14:42:41.364516 [PID:1777107] [0] [ID:0] EXECUTING run-RUN-20261107144240-580000
+2026-11-07 14:42:41.772898 [PID:1777107] [0] [ID:0] PASSED run-RUN-20261107144240-580000 in 0.4 seconds
+2 tests, 2 passed, 0 failed, 0 skipped.
+===================================================
+Output:  /home/evergreen/robot-test/artifacts/RUN-20261107144240-580000/shard-0/output.xml
+Log:     
+/home/evergreen/robot-test/artifacts/RUN-20261107144240-580000/shard-0/log.html
+
+Report:  
+/home/evergreen/robot-test/artifacts/RUN-20261107144240-580000/shard-0/report.html
+
+Finalizing Pabot execution...
+Stopping PabotLib process
+Robot Framework remote server at 127.0.0.1:8270 stopped.
+PabotLib process stopped
+Total testing: 0.40 seconds
+Elapsed time:  1.17 seconds
+Logs flushed successfully.

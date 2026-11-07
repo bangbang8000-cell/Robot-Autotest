@@ -1,0 +1,25 @@
+[system] run RUN-20261107144240-580000 启动
+[system] 开始执行 pabot: /home/evergreen/rf-stack/.venv/bin/pabot --outputdir /home/evergreen/robot-test/artifacts/RUN-20261107144240-580000/shard-0 --processes 1 --name run-RUN-20261107144240-580000 suites/a8/pass2.robot
+[stdout] Initialized logging in /home/evergreen/robot-test/artifacts/RUN-20261107144240-580000/shard-0/pabot_results
+[stdout] Robot Framework remote server at 127.0.0.1:8270 started.
+[stdout] Storing .pabotsuitenames file
+[stdout] 2026-11-07 14:42:41.364516 [PID:1777107] [0] [ID:0] EXECUTING run-RUN-20261107144240-580000
+[stdout] 2026-11-07 14:42:41.772898 [PID:1777107] [0] [ID:0] PASSED run-RUN-20261107144240-580000 in 0.4 seconds
+[stdout] 2 tests, 2 passed, 0 failed, 0 skipped.
+[stdout] ===================================================
+[stdout] Output:  /home/evergreen/robot-test/artifacts/RUN-20261107144240-580000/shard-0/output.xml
+[stdout] Log:     
+[stdout] /home/evergreen/robot-test/artifacts/RUN-20261107144240-580000/shard-0/log.html
+[stdout] 
+[stdout] Report:  
+[stdout] /home/evergreen/robot-test/artifacts/RUN-20261107144240-580000/shard-0/report.html
+[stdout] 
+[stdout] Finalizing Pabot execution...
+[stdout] Stopping PabotLib process
+[stdout] Robot Framework remote server at 127.0.0.1:8270 stopped.
+[stdout] PabotLib process stopped
+[stdout] Total testing: 0.40 seconds
+[stdout] Elapsed time:  1.17 seconds
+[stdout] Logs flushed successfully.
+[system] 进程退出码=0，耗时=PT1.50115661S
+[system] 产物校验通过，totalTests=2

@@ -1,0 +1,134 @@
+<unknown>:637: SyntaxWarning: invalid escape sequence '\`'
+<unknown>:702: SyntaxWarning: invalid escape sequence '\`'
+<unknown>:1: SyntaxWarning: invalid escape sequence '\s'
+<unknown>:402: SyntaxWarning: invalid escape sequence '\d'
+<unknown>:102: SyntaxWarning: invalid escape sequence '\S'
+# hermes-agent 依赖缺口扫描
+# 扫描目录: /home/evergreen/.hermes/hermes-agent
+# 测试文件: 5204 个 test_*.py
+# 顶层 import 去重后: 256 个模块
+# 缺失: 96 个 / 可导入(含 stdlib+本地): 160 个
+
+## 缺失清单（模块, 引用次数, 状态）
+httpx	150	MISSING
+fastapi	109	MISSING
+prompt_toolkit	108	MISSING
+starlette	96	MISSING
+aiohttp	93	MISSING
+mcp	52	MISSING
+openai	48	MISSING
+psutil	44	MISSING
+jsonschema	41	MISSING
+acp	26	MISSING
+cryptography	25	MISSING
+websockets	23	MISSING
+requests	22	MISSING
+botocore	16	MISSING
+referencing	14	MISSING
+httpcore	12	MISSING
+rich	12	MISSING
+telegram	12	MISSING
+discord	11	MISSING
+pptx	10	MISSING
+anthropic	9	MISSING
+ruamel	9	MISSING
+certifi	8	MISSING
+anyio	7	MISSING
+dotenv	6	MISSING
+jwt	5	MISSING
+ptyprocess	5	MISSING
+opentelemetry	4	MISSING
+reportlab	4	MISSING
+_common	3	MISSING
+check_deps	3	MISSING
+mem0	3	MISSING
+slack_bolt	3	MISSING
+truststore	3	MISSING
+urllib3	3	MISSING
+uvicorn	3	MISSING
+add_contributor	2	MISSING
+conftest_dashboard_auth	2	MISSING
+extract_schema	2	MISSING
+jsonschema_specifications	2	MISSING
+lxml	2	MISSING
+ntsecuritycon	2	MISSING
+numpy	2	MISSING
+pypdf	2	MISSING
+pytest_asyncio	2	MISSING
+wcwidth	2	MISSING
+win32security	2	MISSING
+_cffi_backend	1	MISSING
+attrs	1	MISSING
+autopilot	1	MISSING
+badbool	1	MISSING
+brokers	1	MISSING
+check_config_yaml_writers	1	MISSING
+check_os_marker_fakes	1	MISSING
+concurrent_log_handler	1	MISSING
+config	1	MISSING
+croniter	1	MISSING
+distlib	1	MISSING
+docx	1	MISSING
+dossier	1	MISSING
+emailer	1	MISSING
+fal_client	1	MISSING
+feed	1	MISSING
+fetch_transcript	1	MISSING
+generate_conformance_vectors	1	MISSING
+health_check	1	MISSING
+honcho	1	MISSING
+httpx2	1	MISSING
+jsonpath_ng	1	MISSING
+lark_oapi	1	MISSING
+ledger	1	MISSING
+legal	1	MISSING
+mautrix	1	MISSING
+memento_cards	1	MISSING
+microsoft_teams	1	MISSING
+openpyxl	1	MISSING
+parallel	1	MISSING
+parse_deploy_output	1	MISSING
+pdd	1	MISSING
+portalocker	1	MISSING
+provider_dep	1	MISSING
+pypdfium2	1	MISSING
+qrcode	1	MISSING
+reddit	1	MISSING
+report	1	MISSING
+retag_wheel	1	MISSING
+rpds	1	MISSING
+run_workflow	1	MISSING
+slack_sdk	1	MISSING
+stage_apt_repo	1	MISSING
+stage_runtime_libs	1	MISSING
+storage	1	MISSING
+tiers	1	MISSING
+voice_mixer	1	MISSING
+winpty	1	MISSING
+youtube_quiz	1	MISSING
+
+## 缺失按引用次数排序（前 20）
+  150  httpx
+  109  fastapi
+  108  prompt_toolkit
+   96  starlette
+   93  aiohttp
+   52  mcp
+   48  openai
+   44  psutil
+   41  jsonschema
+   26  acp
+   25  cryptography
+   23  websockets
+   22  requests
+   16  botocore
+   14  referencing
+   12  httpcore
+   12  rich
+   12  telegram
+   11  discord
+   10  pptx
+
+## 结论
+缺失 96 个第三方/内部包 → 全仓 pytest collect 必然大面积报错，
+故规模样本只做『规模存在性』佐证；collect 计数一致性证据取自 deepseek-harness。

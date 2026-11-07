@@ -1,0 +1,1 @@
+{"code":0,"codeName":"OK","message":"OK","data":{"baseline":{"runId":"RUN-20261107150611-000000","startedAt":"2026-11-07T07:06:12.283Z"},"rows":[{"caseKey":"","history":{"verdict":"PASS","durationMs":0},"current":{"verdict":"FAIL","durationMs":0},"change":"PASS_TO_FAIL"}],"summary":{"newFail":1,"newPass":0,"bothFail":0,"notRun":0}},"success":true}

@@ -1,0 +1,80 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 990 >>
+stream
+BT
+/F1 11 Tf
+50 790 Td
+15 TL
+(Test Report / INTERNAL USE ONLY) Tj
+T*
+(reportId | reportId | 10) Tj
+T*
+(title | title | A8 ???? 20261107144236) Tj
+T*
+(version | version | 2) Tj
+T*
+(frozenAt | frozenAt | 2026-11-07T06:42:48.156Z) Tj
+T*
+(conclusion | conclusion | PASS) Tj
+T*
+(passCount | passCount | 2) Tj
+T*
+(failCount | failCount | 0) Tj
+T*
+(skipCount | skipCount | 0) Tj
+T*
+(passRate | passRate | 100.0) Tj
+T*
+(caseTotal | caseTotal | 2) Tj
+T*
+(caseCovered | caseCovered | 2) Tj
+T*
+(coverageRate | coverageRate | 100.0) Tj
+T*
+(failureDistribution | failureDistribution | {fail=0}) Tj
+T*
+(trend | trend | []) Tj
+T*
+(projectName | projectName | project-76) Tj
+T*
+(swBuild | swBuild | v2.1-a8) Tj
+T*
+(caseKind | caseKind | report-chain) Tj
+T*
+(startedAt | startedAt | 2026-11-07T06:41:39Z) Tj
+T*
+(finishedAt | finishedAt | 2026-11-07T06:42:42.571Z) Tj
+T*
+(disclaimer | disclaimer | INTERNAL USE ONLY - NOT FOR EXTERNAL DISTRIBUTION) Tj
+T*
+(watermark | watermark | INTERNAL USE ONLY) Tj
+T*
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1351
+%%EOF

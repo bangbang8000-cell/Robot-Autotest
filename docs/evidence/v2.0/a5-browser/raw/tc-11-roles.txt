@@ -1,0 +1,36 @@
+=== qa-e2e-admin ===
+-- login.user.roles --
+['admin']
+-- GET /api/auth/me --
+{"code":0,"codeName":"OK","message":"OK","data":{"id":17,"username":"qa-e2e-admin","displayName":"HTTP E2E admin","email":null,"orgId":null,"enabled":true,"passwordExpiresAt":null,"lastLoginAt":"2026-11-07T04:38:30.345Z","roles":["admin"]},"success":true}
+HTTP=200
+-- GET /api/auth/me?projectId=29 --
+{"code":0,"codeName":"OK","message":"OK","data":{"id":17,"username":"qa-e2e-admin","displayName":"HTTP E2E admin","email":null,"orgId":null,"enabled":true,"passwordExpiresAt":null,"lastLoginAt":"2026-11-07T04:38:30.345Z","roles":["admin"]},"success":true}
+HTTP=200
+=== qa-e2e-pm ===
+-- login.user.roles --
+[]
+-- GET /api/auth/me --
+{"code":0,"codeName":"OK","message":"OK","data":{"id":16,"username":"qa-e2e-pm","displayName":"HTTP E2E pm","email":null,"orgId":null,"enabled":true,"passwordExpiresAt":null,"lastLoginAt":"2026-11-07T04:38:30.537Z","roles":[]},"success":true}
+HTTP=200
+-- GET /api/auth/me?projectId=29 --
+{"code":0,"codeName":"OK","message":"OK","data":{"id":16,"username":"qa-e2e-pm","displayName":"HTTP E2E pm","email":null,"orgId":null,"enabled":true,"passwordExpiresAt":null,"lastLoginAt":"2026-11-07T04:38:30.537Z","roles":[]},"success":true}
+HTTP=200
+=== qa-e2e-engineer ===
+-- login.user.roles --
+[]
+-- GET /api/auth/me --
+{"code":0,"codeName":"OK","message":"OK","data":{"id":15,"username":"qa-e2e-engineer","displayName":"HTTP E2E engineer","email":null,"orgId":null,"enabled":true,"passwordExpiresAt":null,"lastLoginAt":"2026-11-07T04:38:30.676Z","roles":[]},"success":true}
+HTTP=200
+-- GET /api/auth/me?projectId=29 --
+{"code":0,"codeName":"OK","message":"OK","data":{"id":15,"username":"qa-e2e-engineer","displayName":"HTTP E2E engineer","email":null,"orgId":null,"enabled":true,"passwordExpiresAt":null,"lastLoginAt":"2026-11-07T04:38:30.676Z","roles":[]},"success":true}
+HTTP=200
+=== qa-e2e-viewer ===
+-- login.user.roles --
+[]
+-- GET /api/auth/me --
+{"code":0,"codeName":"OK","message":"OK","data":{"id":14,"username":"qa-e2e-viewer","displayName":"HTTP E2E viewer","email":null,"orgId":null,"enabled":true,"passwordExpiresAt":null,"lastLoginAt":"2026-11-07T04:38:30.823Z","roles":[]},"success":true}
+HTTP=200
+-- GET /api/auth/me?projectId=29 --
+{"code":0,"codeName":"OK","message":"OK","data":{"id":14,"username":"qa-e2e-viewer","displayName":"HTTP E2E viewer","email":null,"orgId":null,"enabled":true,"passwordExpiresAt":null,"lastLoginAt":"2026-11-07T04:38:30.823Z","roles":[]},"success":true}
+HTTP=200

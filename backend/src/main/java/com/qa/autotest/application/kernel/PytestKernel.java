@@ -21,6 +21,9 @@ import org.w3c.dom.NodeList;
 /**
  * pytest 内核（KRN-03）：主通道 pytest-json-report，兜底 junitxml。
  * 参数化用例保留 [param] 后缀独立成条，xfail / xpass / error 不折叠成 PASS/FAIL。
+ *
+ * <p>并行路线见 ADR-0007：走 pytest-xdist（{@code -n N}），不引入平台侧分片合并。
+ * 并发为 1 时不加 {@code -n}，与 A2/A3 取证时的串行命令逐字等价。
  */
 @Service
 public class PytestKernel implements ExecutionKernel {
@@ -47,6 +50,11 @@ public class PytestKernel implements ExecutionKernel {
         argv.add("--json-report-file=" + dir.resolve("pytest-report.json"));
         argv.add("--junitxml=" + dir.resolve("junit.xml"));
         argv.add("-q");
+        // ADR-0007：并行统一由 xdist 承担（json-report 由 master 聚合），不用平台分片。
+        if (request.processes() > 1) {
+            argv.add("-n");
+            argv.add(Integer.toString(request.processes()));
+        }
         for (String test : request.testNames()) {
             argv.add(test);
         }

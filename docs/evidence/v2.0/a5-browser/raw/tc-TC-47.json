@@ -1,0 +1,50 @@
+{
+  "id": "TC-47",
+  "title": "切项目后数据无残留",
+  "verdict": "PASS",
+  "facts": {
+    "p29": {
+      "path": "/reports",
+      "project": "29",
+      "rows": [
+        "运行号 状态 PASS / FAIL / SKIP 开始时间 可对外",
+        "RUN-20261107121600-e80000 已完成 undefined / undefined / undefined 2026-11-07T04:16:00.504Z 缺项BASELINE, OPERATOR, STARTED_AT, CASE_KIND",
+        "RUN-20261107115743-e80000 已完成 undefined / undefined / undefined 2026-11-07T03:57:43.692Z 缺项",
+        "RUN-20261107115648-e80000 已完成 undefined / undefined / undefined 2026-11-07T03:56:48.371Z 缺项",
+        "RUN-20261107115049-e80000 已取消 undefined / undefined / undefined 2026-11-07T03:50:49.447Z 缺项",
+        "RUN-20261107115047-e80000 失败 undefined / undefined / undefined 2026-11-07T03:50:47.581Z 缺项",
+        "RUN-20261107114420-e80000 失败 undefined / undefined / undefined 2026-11-07T03:44:20.402Z 缺项",
+        "RUN-20261107030039-e80000 失败 undefined / undefined / undefined 2026-11-06T19:00:40.038Z 缺项",
+        "RUN-20261107030006-e80000 失败 undefined / undefined / undefined 2026-11-06T19:00:08.539Z 缺项",
+        "RUN-20261107030007-e80000 失败 undefined / undefined / undefined 2026-11-06T19:00:08.508Z 缺项",
+        "RUN-20261107014329-910000 失败 undefined / undefined / undefined 2026-11-06T17:43:29.293Z 缺项"
+      ],
+      "breadcrumbs": 0
+    },
+    "p1": {
+      "path": "/reports",
+      "project": "1",
+      "selectedText": "演示项目",
+      "rows": [
+        "运行号 状态 PASS / FAIL / SKIP 开始时间 可对外",
+        "RUN-RPT05EXT-20261106-101647 已完成 undefined / undefined / undefined 2026-11-06T02:16:48Z 可对外",
+        "RUN-20261104155814-952426 已完成 undefined / undefined / undefined 2026-11-04T07:58:15.046Z 缺项CASE_ID, RUN_ID, QA_PROJECT, DUT, LINK, SW_BUILD, BASELINE, OPERATOR, STARTED_AT, CASE_KIND"
+      ],
+      "breadcrumbs": 0
+    },
+    "runs1": {
+      "project": "1",
+      "rows": [
+        "运行号 状态 通过/总数 设备范围 失败原因 开始时间 结束时间 操作",
+        "RUN-RPT05EXT-20261106-101647 已完成 2 / 3 全部设备（不互斥） — 2026/11/06 10:16:48 2026/11/06 10:16:48 查看日志",
+        "RUN-20261104155814-952426 已完成 2 / 2 全部设备（不互斥） — 2026/11/04 15:58:15 2026/11/04 15:58:28 查看日志"
+      ]
+    }
+  },
+  "shots": [
+    "shots/tc-47-p1-reports.png"
+  ],
+  "ms": 8410,
+  "oneLiner": "项目 29→1；29 的 10 个 runId 残留 0 个；新列表 3 行含 RUN-RPT05EXT ✓；面包屑元素 0 个（组件缺失 → 子项 GAP）",
+  "note": "TC-47 的「面包屑为新项目」子项因全局无面包屑组件判 GAP；数据侧已实测通过。"
+}

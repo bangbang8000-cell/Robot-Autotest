@@ -123,7 +123,7 @@ def build(directory: str, label: str, name: str, gate: str, batch: str) -> str:
         lines.append(f"| {gate_name} | `{command}` | {reading} | PASS |")
     lines += [
         "",
-        "> 原始日志由 `docs/evidence/v1.0/policy-20261106/gates.sh` 复跑重建（logs/ 被 .gitignore 忽略）。",
+        "> 原始日志由 `scripts/gates.sh` 复跑重建（logs/ 被 .gitignore 忽略）。",
         "",
         "## 3. 历史证据清单",
         "",

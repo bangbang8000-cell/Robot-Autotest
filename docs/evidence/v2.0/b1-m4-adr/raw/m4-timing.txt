@@ -1,0 +1,4 @@
+serial-r1 rc=0 wall_ms=31378
+xdist-r1 rc=0 wall_ms=26783
+serial-r2 rc=0 wall_ms=31038
+xdist-r2 rc=0 wall_ms=27352

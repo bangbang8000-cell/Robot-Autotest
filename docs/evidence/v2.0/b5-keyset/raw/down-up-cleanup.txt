@@ -1,0 +1,29 @@
+# B5 索引体积（100 万行时）
+ERROR 1142 (42000) at line 1: SELECT command denied to user 'robot'@'localhost' for table 'innodb_index_stats'
+
+# down 脚本回放 db/down/V10_1__audit_keyset.down.sql
+down 后 audit_log 索引:
+(none)
+down 后 test_result 索引:
+(none)
+
+# up 脚本回放 db/migration/V10_1__audit_keyset.sql
+up 耗时 3755 ms（表内仍有 100 万行）
+up 后索引:
+audit_log	idx_audit_time_id	occurred_at,id
+test_result	idx_test_result_case_key	case_key,run_id
+test_result_b5	idx_test_result_case_key	case_key,run_id
+
+# 清理造数（保留索引）
+  batch  1 剩余 900000
+  batch  2 剩余 800000
+  batch  3 剩余 700000
+  batch  4 剩余 600000
+  batch  5 剩余 500000
+  batch  6 剩余 400000
+  batch  7 剩余 300000
+  batch  8 剩余 200000
+  batch  9 剩余 100000
+  batch 10 剩余 0
+清理后 audit_log 行数: 1566
+test_result_b5 是否还在: 0

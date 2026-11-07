@@ -32,7 +32,7 @@
 | 统一入口实测 | `bash scripts/verify-entry.sh` | 12 / 12 PASS | PASS |
 | WBS 自洽 | `python3 tools/check_wbs_consistency.py` | 130 包 / 87 已完成，五数自洽 | PASS |
 
-> 原始日志由 `docs/evidence/v1.0/policy-20261106/gates.sh` 复跑重建（logs/ 被 .gitignore 忽略）。
+> 原始日志由 `scripts/gates.sh` 复跑重建（logs/ 被 .gitignore 忽略）。
 > **2026-11-06 二轮复跑（本节读数为最终值）**：门禁从 10 步扩到 **11 步**（新增
 > `11-editor_test`：`packages/editor` 有自己的 vitest 工程，frontend 的 vitest 扫不到它，
 > 而 EDT-03/EDT-05 的回归用例正住在那里）。11 步 `GATES_RESULT FAILS=0`，实测读数：

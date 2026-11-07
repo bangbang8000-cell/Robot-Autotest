@@ -1,0 +1,60 @@
+[cdp] Chrome/159.0.8130.0
+[app] http://localhost:8001  dataRunId=RUN-RPT05EXT-20261106-101647
+
+[auth] 登录成功，令牌已注入 localStorage
+
+=== templates  /reports/templates  (project 44) ===
+PASS  TC31-templates-loading-state  templates loading 态可判  —  {"listItems":0,"hasNewButton":true,"loadingText":true,"errorText":"","platformTag":false}
+PASS  TC31-templates-loading-util  templates loading 1440 利用率 ≥ 78%  —  86.1%
+PASS  TC31-templates-loading-narrow  templates loading 1280 无横滚  —  scrollWidth=1280, viewport=1280
+  [loading] snap={"listItems":0,"hasNewButton":true,"loadingText":true,"errorText":"","platformTag":false}  util=86.1%  narrowOverflow=false
+PASS  TC31-templates-empty-state  templates empty 态可判  —  {"listItems":0,"hasNewButton":true,"loadingText":false,"errorText":"","platformTag":false}
+PASS  TC31-templates-empty-util  templates empty 1440 利用率 ≥ 78%  —  86.1%
+PASS  TC31-templates-empty-narrow  templates empty 1280 无横滚  —  scrollWidth=1280, viewport=1280
+  [empty] snap={"listItems":0,"hasNewButton":true,"loadingText":false,"errorText":"","platformTag":false}  util=86.1%  narrowOverflow=false
+PASS  TC31-templates-error-state  templates error 态可判  —  {"listItems":0,"hasNewButton":true,"loadingText":false,"errorText":"TC-31 注入错误（仅取证）","platformTag":false}
+PASS  TC31-templates-error-util  templates error 1440 利用率 ≥ 78%  —  86.1%
+PASS  TC31-templates-error-narrow  templates error 1280 无横滚  —  scrollWidth=1280, viewport=1280
+  [error] snap={"listItems":0,"hasNewButton":true,"loadingText":false,"errorText":"TC-31 注入错误（仅取证）","platformTag":false}  util=86.1%  narrowOverflow=false
+PASS  TC31-templates-data-state  templates data 态可判  —  {"listItems":1,"hasNewButton":true,"loadingText":false,"errorText":"","platformTag":true}
+PASS  TC31-templates-data-util  templates data 1440 利用率 ≥ 78%  —  86.1%
+PASS  TC31-templates-data-narrow  templates data 1280 无横滚  —  scrollWidth=1280, viewport=1280
+  [data] snap={"listItems":1,"hasNewButton":true,"loadingText":false,"errorText":"","platformTag":true}  util=86.1%  narrowOverflow=false
+
+=== nodes  /nodes  (project 44) ===
+PASS  TC31-nodes-loading-state  nodes loading 态可判  —  {"bars":48,"busy":"true","emptyText":false,"errorText":"","statuses":[]}
+PASS  TC31-nodes-loading-util  nodes loading 1440 利用率 ≥ 78%  —  86.1%
+PASS  TC31-nodes-loading-narrow  nodes loading 1280 无横滚  —  scrollWidth=1280, viewport=1280
+  [loading] snap={"bars":48,"busy":"true","emptyText":false,"errorText":"","statuses":[]}  util=86.1%  narrowOverflow=false
+PASS  TC31-nodes-empty-state  nodes empty 态可判  —  {"bars":0,"busy":"false","emptyText":true,"errorText":"","statuses":[]}
+PASS  TC31-nodes-empty-util  nodes empty 1440 利用率 ≥ 78%  —  86.1%
+PASS  TC31-nodes-empty-narrow  nodes empty 1280 无横滚  —  scrollWidth=1280, viewport=1280
+  [empty] snap={"bars":0,"busy":"false","emptyText":true,"errorText":"","statuses":[]}  util=86.1%  narrowOverflow=false
+PASS  TC31-nodes-error-state  nodes error 态可判  —  {"bars":0,"busy":"false","emptyText":false,"errorText":"TC-31 注入错误（仅取证）\n技术详情","statuses":[]}
+PASS  TC31-nodes-error-util  nodes error 1440 利用率 ≥ 78%  —  86.1%
+PASS  TC31-nodes-error-narrow  nodes error 1280 无横滚  —  scrollWidth=1280, viewport=1280
+  [error] snap={"bars":0,"busy":"false","emptyText":false,"errorText":"TC-31 注入错误（仅取证）\n技术详情","statuses":[]}  util=86.1%  narrowOverflow=false
+PASS  TC31-nodes-data-state  nodes data 态可判  —  {"bars":0,"busy":"false","emptyText":false,"errorText":"","statuses":["已停用","离线","待心跳","离线","离线","已停用","待心跳","待心跳","待心跳"]}
+PASS  TC31-nodes-data-util  nodes data 1440 利用率 ≥ 78%  —  86.1%
+PASS  TC31-nodes-data-narrow  nodes data 1280 无横滚  —  scrollWidth=1280, viewport=1280
+  [data] snap={"bars":0,"busy":"false","emptyText":false,"errorText":"","statuses":["已停用","离线","待心跳","离线","离线","已停用","待心跳","待心跳","待心跳"]}  util=86.1%  narrowOverflow=false
+
+=== clusters  /runs/failure-clusters  (project 1) ===
+PASS  TC31-clusters-loading-state  clusters loading 态可判  —  {"submitDisabled":true,"summary":"","noFailure":false,"errorText":"","groups":0,"clusterRows":0}
+PASS  TC31-clusters-loading-util  clusters loading 1440 利用率 ≥ 78%  —  86.1%
+PASS  TC31-clusters-loading-narrow  clusters loading 1280 无横滚  —  scrollWidth=1280, viewport=1280
+  [loading] snap={"submitDisabled":true,"summary":"","noFailure":false,"errorText":"","groups":0,"clusterRows":0}  util=86.1%  narrowOverflow=false
+PASS  TC31-clusters-empty-state  clusters empty 态可判  —  {"submitDisabled":false,"summary":"共 0 条失败，分成 0 个类别","noFailure":true,"errorText":"","groups":0,"clusterRows":0}
+PASS  TC31-clusters-empty-util  clusters empty 1440 利用率 ≥ 78%  —  86.1%
+PASS  TC31-clusters-empty-narrow  clusters empty 1280 无横滚  —  scrollWidth=1280, viewport=1280
+  [empty] snap={"submitDisabled":false,"summary":"共 0 条失败，分成 0 个类别","noFailure":true,"errorText":"","groups":0,"clusterRows":0}  util=86.1%  narrowOverflow=false
+PASS  TC31-clusters-error-state  clusters error 态可判  —  {"submitDisabled":false,"summary":"","noFailure":false,"errorText":"TC-31 注入错误（仅取证）","groups":0,"clusterRows":0}
+PASS  TC31-clusters-error-util  clusters error 1440 利用率 ≥ 78%  —  86.1%
+PASS  TC31-clusters-error-narrow  clusters error 1280 无横滚  —  scrollWidth=1280, viewport=1280
+  [error] snap={"submitDisabled":false,"summary":"","noFailure":false,"errorText":"TC-31 注入错误（仅取证）","groups":0,"clusterRows":0}  util=86.1%  narrowOverflow=false
+PASS  TC31-clusters-data-state  clusters data 态可判  —  {"submitDisabled":false,"summary":"共 1 条失败，分成 1 个类别","noFailure":false,"errorText":"","groups":1,"clusterRows":1}
+PASS  TC31-clusters-data-util  clusters data 1440 利用率 ≥ 78%  —  86.1%
+PASS  TC31-clusters-data-narrow  clusters data 1280 无横滚  —  scrollWidth=1280, viewport=1280
+  [data] snap={"submitDisabled":false,"summary":"共 1 条失败，分成 1 个类别","noFailure":false,"errorText":"","groups":1,"clusterRows":1}  util=86.1%  narrowOverflow=false
+
+合计 36 项，FAIL 0 项

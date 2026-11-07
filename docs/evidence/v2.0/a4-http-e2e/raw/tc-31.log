@@ -1,0 +1,4 @@
+## TC-31 平台 PUBLIC 用例被 2 个项目引用
+## verdict: GAP
+## numbers: 可见性/公开列 0；跨项目共享校验和 0；读取端点 404/200
+## detail: case_source 列=['id', 'project_id', 'batch_id', 'rel_path', 'kind', 'node_id', 'checksum', 'created_at', 'created_by', 'updated_at', 'updated_by']；行数=0；跨项目同校验和=0；GET /api/case-sources => 404 {'code': 40400, 'codeName': 'NOT_FOUND', 'message': '路径不存在：api/case-sources', 'data': None, 'success': False}。case_source 按 project_id 分行存储，无可见性字段，也无用例源读取端点，因此“仅 1 份存储 + 两项目可见 + 副本独立演进”无法成立

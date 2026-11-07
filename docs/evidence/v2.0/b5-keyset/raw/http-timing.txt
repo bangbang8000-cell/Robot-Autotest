@@ -1,0 +1,9 @@
+# B5 HTTP 实测 @ 2026-11-07T16:15:56+08:00  audit_log rows=1001565
+# cursor(project=-1): 2026-01-06 18:53:20.000 / 1019143 -> 1767696800000
+# cursor(global):     2026-01-06 19:19:25.000 / 1051778 -> 1767698365000
+
+P-OFFSET page1                                  186 ms
+P-OFFSET page25000                             1263 ms
+P-KEYSET after 500k                             190 ms
+G-OFFSET page25000                             1576 ms
+G-KEYSET after 500k                             130 ms

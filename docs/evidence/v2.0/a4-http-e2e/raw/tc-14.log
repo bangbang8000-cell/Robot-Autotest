@@ -1,0 +1,4 @@
+## TC-14 项目级设置与平台级设置隔离
+## verdict: PASS
+## numbers: 项目键 3；平台键 5；交集 0；平台键未变 True；项目库落值 pytest
+## detail: 项目键=['execution.timeoutSeconds', 'case.tagSet', 'kernel.default']；平台键=['ai.enabled', 'report.retentionDays', 'execution.defaultTimeoutSeconds', 'execution.maxParallel', 'entry.port']；写项目设置=200

@@ -1,0 +1,23 @@
+.FsxXE                                                                   [100%]
+==================================== ERRORS ====================================
+_________________________ ERROR at setup of test_error _________________________
+
+    @pytest.fixture
+    def broken_fixture():
+>       raise RuntimeError("sample: intentional fixture error")
+E       RuntimeError: sample: intentional fixture error
+
+test_states.py:36: RuntimeError
+=================================== FAILURES ===================================
+__________________________________ test_fail ___________________________________
+
+    def test_fail():
+>       assert False, "sample: intentional failure"
+E       AssertionError: sample: intentional failure
+E       assert False
+
+test_states.py:16: AssertionError
+=========================== short test summary info ============================
+FAILED test_states.py::test_fail - AssertionError: sample: intentional failure
+ERROR test_states.py::test_error - RuntimeError: sample: intentional fixture ...
+1 failed, 1 passed, 1 skipped, 1 xfailed, 1 xpassed, 1 error in 0.03s

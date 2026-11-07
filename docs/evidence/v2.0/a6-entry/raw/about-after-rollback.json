@@ -1,0 +1,16 @@
+{
+  "url": "http://localhost:8001/about",
+  "buildTime": "61c49dd",
+  "dds": [
+    "0.1.0-SNAPSHOT",
+    "61c49dd",
+    "2026-11-06T11:01:08Z",
+    "构建产物",
+    "Apache-2.0（见仓库 LICENSE / NOTICE）",
+    "8001",
+    "8081",
+    "5173"
+  ],
+  "bodyHead": "AIDC自动化测试\n工作台\n资产\n用例\n执行\n运行记录\n执行计划\n报告\n管理\n用户与项目\n审计日志\n系统设置\n关于\n版本迭代\nAIDC 硬件与网络自动化测试平台\n暂无项目\n验收夹具·平台属主\n验收夹具·HTTP 全链路\nNODX-03 fixture\nAST-05 共享演示\n演示项目\nHTTP E2E admin\n中文\nEnglish\n退出登录\n关于本平台\nAIDC 硬件与网络自动化测试平台\n版本\n版本\n0.1.0-SNAPSHOT\n构建提交\n61c49dd\n构建时间\n2026-11-06T11:01:08Z\n信息来源\n构建产物\n许可证\nApache-2.0（见仓库 LICENSE / NOTICE）\n端口矩阵\n统一入口\n8001\n后端 API\n8081\n开发服务\n5173\n环境自检\n数据库：正常\n执行器：未安装\n测试内核：未安装\nAI 命令行：正常\n依赖清单（23）\n组件\n\t\n版本\n\t\n信息来源\nrobot-autotest\t0.1.0-SNAPSHOT\tbuild\nSpring Boot\t3.3.5\tbuild\nJava\t21\tbuild\npoi-ooxml\t5.2.5\tbuild\n@fontsource/jetbrains-mono\t^5.3.0\tbuild\n@fontsource/noto-sans-sc\t^5.3.1\tbuild\nlucide-vue-next\t^0.577.0\tbuild\nnaive-ui\t^2.45.3\tbuild\npinia\t^2.2.6\tbuild\nvue\t^3.5.13\tbuild\nvue-i18n\t^10.0.5\tbuild\nvue-router\t^4.4.5\tbuild\n@eslint/js\t^9.16.0\tbuild\n@types/node\t^22.10.1\tbuild\n@vitejs/plugin-vue\t^5.2.1\tbuild\neslint\t^9.16.0\tbuild\neslint-plugin-vue\t^9.32.0\tbuild\nhappy-dom\t^18.0.1\tbuild\ntypescript\t~5.6.3\tbuild\ntypescript-eslint\t^8.17.0\tbuild\nvite\t^6.0.3\tbuild\nvitest\t^3.2.7\tbuild\nvue-tsc\t^2.1.10\tbuild",
+  "shot": "shots/about-after-rollback.png"
+}

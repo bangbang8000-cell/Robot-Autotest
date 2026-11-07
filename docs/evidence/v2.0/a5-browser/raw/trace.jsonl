@@ -1,0 +1,69 @@
+{"ts":"2026-11-07T04:33:24.697Z","tc":"TC-01","verdict":"PASS","oneLiner":"detail 路由未跳 ✓；detail 内 /test-reports 链接 0 个；test-reports 路由未跳 ✓；创建入口 ✓","ms":7331}
+{"ts":"2026-11-07T04:33:43.637Z","tc":"TC-02","verdict":"PARTIAL","oneLiner":"kw 节点 0 / children 0 / FOR false / IF false；循环内 3 轮消息可见 ✗；下载 200 1548B（命令+stdout ✓）→ 结构未嵌套，判 PARTIAL","ms":11745}
+{"ts":"2026-11-07T04:34:57.412Z","tc":"TC-02","verdict":"PARTIAL","oneLiner":"kw 节点 9 / children 0 / FOR false / IF false；循环内 3 轮消息可见 ✓；下载 200 1548B（命令+stdout ✓）→ 结构未嵌套，判 PARTIAL","ms":7749}
+{"ts":"2026-11-07T04:35:34.173Z","tc":"TC-11","verdict":"FAIL","oneLiner":"菜单叶子 admin=13 / pm=9≠12 / engineer=9≠11 / viewer=9；直达 /settings → engineer=/settings / viewer=/settings；闪现 有","ms":29656}
+{"ts":"2026-11-07T04:38:52.719Z","tc":"TC-01","verdict":"PASS","oneLiner":"detail 路由未跳 ✓；detail 内 /test-reports 链接 0 个；test-reports 路由未跳 ✓；创建入口 ✓","ms":7146}
+{"ts":"2026-11-07T04:39:00.808Z","tc":"TC-02","verdict":"PARTIAL","oneLiner":"kw 节点 9 / children 0 / FOR false / IF false；循环内 3 轮消息可见 ✓；下载 200 1548B（命令+stdout ✓）→ 结构未嵌套，判 PARTIAL","ms":8087}
+{"ts":"2026-11-07T04:39:29.123Z","tc":"TC-11","verdict":"FAIL","oneLiner":"菜单叶子 admin=13 / pm=9≠12 / engineer=9≠11 / viewer=9；直达 /settings → engineer=/settings / viewer=/settings；闪现 有","ms":28315}
+{"ts":"2026-11-07T04:39:38.491Z","tc":"TC-12","verdict":"PASS","oneLiner":"Ctrl+K 打开 ✓（焦点 palette-input）；「用例」1 条（≤20 ✓）；↓+Enter /overview → /cases；「roce」0 条空态 ✓；最近 1 条（≤5 ✓）","ms":9368}
+{"ts":"2026-11-07T04:39:43.514Z","tc":"TC-15","verdict":"PASS","oneLiner":"页面对 API 逐字段 version=✓ gitCommit=✓ buildTime=✓ license=✓ deps=✓ selfCheck4=✓；自检 4 项；依赖 23 条；git HEAD 7a6a604a vs build 61c49dd（不一致（构建产物早于 HEAD））","ms":5023}
+{"ts":"2026-11-07T04:40:00.036Z","tc":"TC-17","verdict":"FAIL","oneLiner":"侧栏折叠 ✓（刷新//cases 保持 ✓）；资产组折叠 ✗、刷新后 ✗；收藏 工作台 刷新后 1 条；切项目 29→1 路由 /reports→/reports，首行「运行号 状态 PASS / FAIL」→「运行号 状态 PASS / FAIL」","ms":16522}
+{"ts":"2026-11-07T04:40:08.402Z","tc":"TC-47","verdict":"PASS","oneLiner":"项目 29→1；29 的 10 个 runId 残留 0 个；新列表 3 行含 RUN-RPT05EXT ✓；面包屑元素 0 个（组件缺失 → 子项 GAP）","ms":8366}
+{"ts":"2026-11-07T04:40:17.844Z","tc":"TC-51","verdict":"FAIL","oneLiner":"开 ✓（抽屉 340px / 主区 1044px，重叠 无）；调宽 null→360（实际 340→340px，未生效：CSS 栅格固定 340px）；刷新后开 ✓、宽 360；关闭后残留 0 个","ms":9442}
+{"ts":"2026-11-07T04:40:54.359Z","tc":"TC-59","verdict":"PASS","oneLiner":"16 张 ✓，主题生效 16/16；check_tokens exit=0；check_colors exit=0（深色白块像素扫描见 analyze.py）","ms":36515}
+{"ts":"2026-11-07T04:41:00.221Z","tc":"TC-60","verdict":"FAIL","oneLiner":"1440×(侧栏 200+主区 1384+抽屉 0)；利用率(主区/(视口-抽屉)) 96.1%（≥78 ✓；按整视口 96.1%）；横滚 无；首屏行 10/11（≥12 ✗）","ms":5862}
+{"ts":"2026-11-07T04:41:06.547Z","tc":"TC-62","verdict":"FAIL","oneLiner":"1280×720 横滚 无（scrollWidth 1280 / vw 1280）；侧栏自动折叠 ✓，宽 200px；菜单 13 项；用例页 /runs 行 11 横滚 无","ms":6325}
+{"ts":"2026-11-07T04:41:14.865Z","tc":"TC-63","verdict":"FAIL","oneLiner":"Tab 12 步中可见焦点 12 步；打开面板焦点入内 ✓；Tab 6 步跑出弹层 0 次；Esc 关闭 ✗，焦点归还 ✗（落在 BUTTON/收藏）","ms":8318}
+{"ts":"2026-11-07T04:41:14.867Z","tc":"TC-64","verdict":"FAIL","oneLiner":"基线 0/16（复制自 v1.0 w7-design）；当前 16/16；逐像素 diff 见 analyze.py（raw/tc-64-diff.json）","ms":2}
+{"ts":"2026-11-07T04:45:03.159Z","tc":"TC-01","verdict":"PASS","oneLiner":"detail 路由未跳 ✓；detail 内 /test-reports 链接 0 个；test-reports 路由未跳 ✓；创建入口 ✓","ms":6947}
+{"ts":"2026-11-07T04:45:11.001Z","tc":"TC-02","verdict":"PARTIAL","oneLiner":"kw 节点 9 / children 0 / FOR false / IF false；循环内 3 轮消息可见 ✓；下载 200 1548B（命令+stdout ✓）→ 结构未嵌套，判 PARTIAL","ms":7842}
+{"ts":"2026-11-07T04:45:38.963Z","tc":"TC-11","verdict":"FAIL","oneLiner":"菜单叶子 admin=13 / pm=9≠12 / engineer=9≠11 / viewer=9；/api/auth/me.roles admin=[admin] / pm=[空] / engineer=[空] / viewer=[空]；直达 /settings → engineer=/settings / viewer=/settings；闪现 有","ms":27962}
+{"ts":"2026-11-07T04:45:48.155Z","tc":"TC-12","verdict":"PASS","oneLiner":"Ctrl+K 打开 ✓（焦点 palette-input）；「用例」1 条（≤20 ✓）；↓+Enter /overview → /cases；「roce」0 条空态 ✓；最近 1 条（≤5 ✓）","ms":9192}
+{"ts":"2026-11-07T04:45:53.126Z","tc":"TC-15","verdict":"PASS","oneLiner":"页面对 API 逐字段 version=✓ gitCommit=✓ buildTime=✓ license=✓ deps=✓ selfCheck4=✓；自检 4 项；依赖 23 条；git HEAD 7a6a604a vs build 61c49dd（不一致（构建产物早于 HEAD））","ms":4971}
+{"ts":"2026-11-07T04:46:09.626Z","tc":"TC-17","verdict":"FAIL","oneLiner":"侧栏折叠 ✗（刷新//cases 保持 ✗）；分组折叠 true→true、刷新后 aria=false/true/true 子项可见=false；收藏 用例 刷新后 2 条；切项目 29→1 路由 /reports→/reports，首条数据「RUN-20261107121600-e80」→「RUN-RPT05EXT-20261106-」","ms":16500}
+{"ts":"2026-11-07T04:46:18.036Z","tc":"TC-47","verdict":"PASS","oneLiner":"项目 29→1；29 的 10 个 runId 残留 0 个；新列表 3 行含 RUN-RPT05EXT ✓；面包屑元素 0 个（组件缺失 → 子项 GAP）","ms":8409}
+{"ts":"2026-11-07T04:46:28.957Z","tc":"TC-51","verdict":"FAIL","oneLiner":"开 ✓（抽屉 340px / 主区 900px，重叠 无）；调宽 null→360（实际 340→340px，未生效：CSS 栅格固定 340px）；刷新后开 ✓、宽 360；关闭后残留 0 个、stored=true，再刷新 ✗ 又弹开","ms":10920}
+{"ts":"2026-11-07T04:47:05.675Z","tc":"TC-59","verdict":"PASS","oneLiner":"16 张 ✓，主题生效 16/16；check_tokens exit=0；check_colors exit=0（深色白块像素扫描见 analyze.py）","ms":36718}
+{"ts":"2026-11-07T04:47:11.541Z","tc":"TC-60","verdict":"FAIL","oneLiner":"1440×(侧栏 200+主区 1240+抽屉 0)；利用率(主区/(视口-抽屉)) 86.1%（≥78 ✓；按整视口 86.1%）；横滚 无；首屏行 10/11（≥12 ✗）","ms":5866}
+{"ts":"2026-11-07T04:47:17.886Z","tc":"TC-62","verdict":"PARTIAL","oneLiner":"1280×720 横滚 无（scrollWidth 1280 / vw 1280）；侧栏自动折叠 ✗（媒体查询阈值 999px），宽 200px；菜单 13 项；用例页 /cases 行 6 横滚 无","ms":6344}
+{"ts":"2026-11-07T04:47:27.271Z","tc":"TC-63","verdict":"PARTIAL","oneLiner":"Tab 12 步中可见焦点 12 步；打开面板焦点入内 ✓；Tab 6 步跑出弹层 0 次；Esc(输入框) 关闭 ✓，焦点归还 ✗（落在 BODY）；Esc(结果按钮) 关闭 ✗","ms":9385}
+{"ts":"2026-11-07T04:47:27.291Z","tc":"TC-64","verdict":"PASS","oneLiner":"基线 16/16（复制自 v1.0 w7-design）；当前 16/16；逐像素 diff 见 analyze.py（raw/tc-64-diff.json）","ms":18}
+{"ts":"2026-11-07T04:49:09.920Z","tc":"TC-01","verdict":"PASS","oneLiner":"detail 路由未跳 ✓；detail 内 /test-reports 链接 0 个；test-reports 路由未跳 ✓；创建入口 ✓","ms":6995}
+{"ts":"2026-11-07T04:49:17.752Z","tc":"TC-02","verdict":"PARTIAL","oneLiner":"kw 节点 9 / children 0 / FOR false / IF false；循环内 3 轮消息可见 ✓；下载 200 1548B（命令+stdout ✓）→ 结构未嵌套，判 PARTIAL","ms":7831}
+{"ts":"2026-11-07T04:49:45.587Z","tc":"TC-11","verdict":"FAIL","oneLiner":"菜单叶子 admin=13 / pm=9≠12 / engineer=9≠11 / viewer=9；/api/auth/me.roles admin=[admin] / pm=[空] / engineer=[空] / viewer=[空]；直达 /settings → engineer=/settings / viewer=/settings；闪现 有","ms":27833}
+{"ts":"2026-11-07T04:49:54.923Z","tc":"TC-12","verdict":"PASS","oneLiner":"Ctrl+K 打开 ✓（焦点 palette-input）；「用例」1 条（≤20 ✓）；↓+Enter /overview → /cases；「roce」0 条空态 ✓；最近 1 条（≤5 ✓）","ms":9335}
+{"ts":"2026-11-07T04:49:59.939Z","tc":"TC-15","verdict":"PASS","oneLiner":"页面对 API 逐字段 version=✓ gitCommit=✓ buildTime=✓ license=✓ deps=✓ selfCheck4=✓；自检 4 项；依赖 23 条；git HEAD 7a6a604a vs build 61c49dd（不一致（构建产物早于 HEAD））","ms":5016}
+{"ts":"2026-11-07T04:50:17.496Z","tc":"TC-17","verdict":"PASS","oneLiner":"侧栏折叠 ✓（刷新//cases 保持 ✓）；分组折叠 true→false、刷新后 aria=false/true/true 子项可见=false；收藏 用例 刷新后 1 条；切项目 29→1 路由 /reports→/reports，首条数据「RUN-20261107121600-e80」→「RUN-RPT05EXT-20261106-」","ms":17556}
+{"ts":"2026-11-07T04:50:25.885Z","tc":"TC-47","verdict":"PASS","oneLiner":"项目 29→1；29 的 10 个 runId 残留 0 个；新列表 3 行含 RUN-RPT05EXT ✓；面包屑元素 0 个（组件缺失 → 子项 GAP）","ms":8389}
+{"ts":"2026-11-07T04:50:36.753Z","tc":"TC-51","verdict":"FAIL","oneLiner":"开 ✓（抽屉 340px / 主区 1044px，重叠 无）；调宽 null→360（实际 340→340px，未生效：CSS 栅格固定 340px）；刷新后开 ✓、宽 360；关闭后残留 0 个、stored=true，再刷新 ✗ 又弹开","ms":10867}
+{"ts":"2026-11-07T04:51:14.210Z","tc":"TC-59","verdict":"PASS","oneLiner":"16 张 ✓，主题生效 16/16；check_tokens exit=0；check_colors exit=0（深色白块像素扫描见 analyze.py）","ms":37456}
+{"ts":"2026-11-07T04:51:22.823Z","tc":"TC-60","verdict":"FAIL","oneLiner":"1440×(侧栏 200+主区 1044+抽屉 340)；利用率(主区/(视口-抽屉)) 94.9%（≥78 ✓；按整视口 72.5%）；横滚 无；首屏行 10/11（≥12 ✗）","ms":8611}
+{"ts":"2026-11-07T04:51:31.674Z","tc":"TC-62","verdict":"PASS","oneLiner":"1280×720 横滚 无（scrollWidth 1280 / vw 1280）；侧栏自动折叠 ✓，宽 200px；菜单 13 项；用例页 /cases 行 6 横滚 无","ms":8851}
+{"ts":"2026-11-07T04:51:43.591Z","tc":"TC-63","verdict":"PARTIAL","oneLiner":"Tab 12 步中可见焦点 12 步；打开面板焦点入内 ✓；Tab 6 步跑出弹层 0 次；Esc(输入框) 关闭 ✓，焦点归还 ✗（落在 BODY）；Esc(结果按钮) 关闭 ✗","ms":11917}
+{"ts":"2026-11-07T04:51:43.602Z","tc":"TC-64","verdict":"PASS","oneLiner":"基线 16/16（复制自 v1.0 w7-design）；当前 16/16；逐像素 diff 见 analyze.py（raw/tc-64-diff.json）","ms":9}
+{"ts":"2026-11-07T04:53:52.269Z","tc":"TC-01","verdict":"PASS","oneLiner":"detail 路由未跳 ✓；detail 内 /test-reports 链接 0 个；test-reports 路由未跳 ✓；创建入口 ✓","ms":6869}
+{"ts":"2026-11-07T04:54:00.085Z","tc":"TC-02","verdict":"PARTIAL","oneLiner":"kw 节点 9 / children 0 / FOR false / IF false；循环内 3 轮消息可见 ✓；下载 200 1548B（命令+stdout ✓）→ 结构未嵌套，判 PARTIAL","ms":7815}
+{"ts":"2026-11-07T04:54:27.880Z","tc":"TC-11","verdict":"FAIL","oneLiner":"菜单叶子 admin=13 / pm=9≠12 / engineer=9≠11 / viewer=9；/api/auth/me.roles admin=[admin] / pm=[空] / engineer=[空] / viewer=[空]；直达 /settings → engineer=/settings / viewer=/settings；闪现 有","ms":27794}
+{"ts":"2026-11-07T04:54:37.062Z","tc":"TC-12","verdict":"PASS","oneLiner":"Ctrl+K 打开 ✓（焦点 palette-input）；「用例」1 条（≤20 ✓）；↓+Enter /overview → /cases；「roce」0 条空态 ✓；最近 1 条（≤5 ✓）","ms":9182}
+{"ts":"2026-11-07T04:54:42.014Z","tc":"TC-15","verdict":"PASS","oneLiner":"页面对 API 逐字段 version=✓ gitCommit=✓ buildTime=✓ license=✓ deps=✓ selfCheck4=✓；自检 4 项；依赖 23 条；git HEAD 7a6a604a vs build 61c49dd（不一致（构建产物早于 HEAD））","ms":4952}
+{"ts":"2026-11-07T04:54:59.548Z","tc":"TC-17","verdict":"PASS","oneLiner":"侧栏折叠 ✓（刷新//cases 保持 ✓）；分组折叠 true→false、刷新后 aria=false/true/true 子项可见=false；收藏 用例 刷新后 2 条；切项目 29→1 路由 /reports→/reports，首条数据「RUN-20261107121600-e80」→「RUN-RPT05EXT-20261106-」","ms":17533}
+{"ts":"2026-11-07T04:55:07.937Z","tc":"TC-47","verdict":"PASS","oneLiner":"项目 29→1；29 的 10 个 runId 残留 0 个；新列表 3 行含 RUN-RPT05EXT ✓；面包屑元素 0 个（组件缺失 → 子项 GAP）","ms":8388}
+{"ts":"2026-11-07T04:55:18.792Z","tc":"TC-51","verdict":"FAIL","oneLiner":"开 ✓（抽屉 340px / 主区 1044px，重叠 无）；调宽 null→360（实际 340→340px，未生效：CSS 栅格固定 340px）；刷新后开 ✓、宽 360；关闭后残留 0 个、stored=true，再刷新 ✗ 又弹开","ms":10854}
+{"ts":"2026-11-07T04:55:56.276Z","tc":"TC-59","verdict":"PASS","oneLiner":"16 张 ✓，主题生效 16/16；check_tokens exit=0；check_colors exit=0（深色白块像素扫描见 analyze.py）","ms":37484}
+{"ts":"2026-11-07T04:56:04.624Z","tc":"TC-60","verdict":"FAIL","oneLiner":"1440×(侧栏 200+主区 1044+抽屉 340)；利用率(主区/(视口-抽屉)) 94.9%（≥78 ✓；按整视口 72.5%）；横滚 无；首屏行 10/11（≥12 ✗）","ms":8347}
+{"ts":"2026-11-07T04:56:13.469Z","tc":"TC-62","verdict":"PARTIAL","oneLiner":"1280×720 横滚 无（scrollWidth 1280 / vw 1280）；侧栏自动折叠 ✗（媒体查询阈值 999px），宽 200px；菜单 13 项；用例页 /cases 行 6 横滚 无","ms":8845}
+{"ts":"2026-11-07T04:56:25.342Z","tc":"TC-63","verdict":"PARTIAL","oneLiner":"Tab 12 步中可见焦点 12 步；打开面板焦点入内 ✓；Tab 6 步跑出弹层 0 次；Esc(输入框) 关闭 ✓，焦点归还 ✗（落在 BODY）；Esc(结果按钮) 关闭 ✗","ms":11873}
+{"ts":"2026-11-07T04:56:25.347Z","tc":"TC-64","verdict":"PASS","oneLiner":"基线 16/16（复制自 v1.0 w7-design）；当前 16/16；逐像素 diff 见 analyze.py（raw/tc-64-diff.json）","ms":4}
+{"ts":"2026-11-07T04:56:54.855Z","tc":"TC-01","verdict":"PASS","oneLiner":"detail 路由未跳 ✓；detail 内 /test-reports 链接 0 个；test-reports 路由未跳 ✓；创建入口 ✓","ms":6892}
+{"ts":"2026-11-07T04:57:02.709Z","tc":"TC-02","verdict":"PARTIAL","oneLiner":"kw 节点 9 / children 0 / FOR false / IF false；循环内 3 轮消息可见 ✓；下载 200 1548B（命令+stdout ✓）→ 结构未嵌套，判 PARTIAL","ms":7853}
+{"ts":"2026-11-07T04:57:30.544Z","tc":"TC-11","verdict":"FAIL","oneLiner":"菜单叶子 admin=13 / pm=9≠12 / engineer=9≠11 / viewer=9；/api/auth/me.roles admin=[admin] / pm=[空] / engineer=[空] / viewer=[空]；直达 /settings → engineer=/settings / viewer=/settings；闪现 有","ms":27834}
+{"ts":"2026-11-07T04:57:39.692Z","tc":"TC-12","verdict":"PASS","oneLiner":"Ctrl+K 打开 ✓（焦点 palette-input）；「用例」1 条（≤20 ✓）；↓+Enter /overview → /cases；「roce」0 条空态 ✓；最近 1 条（≤5 ✓）","ms":9148}
+{"ts":"2026-11-07T04:57:44.751Z","tc":"TC-15","verdict":"PASS","oneLiner":"页面对 API 逐字段 version=✓ gitCommit=✓ buildTime=✓ license=✓ deps=✓ selfCheck4=✓；自检 4 项；依赖 23 条；git HEAD 7a6a604a vs build 61c49dd（不一致（构建产物早于 HEAD））","ms":5058}
+{"ts":"2026-11-07T04:58:02.312Z","tc":"TC-17","verdict":"PASS","oneLiner":"侧栏折叠 ✓（刷新//cases 保持 ✓）；分组折叠 true→false、刷新后 aria=false/true/true 子项可见=false；收藏 用例 刷新后 1 条；切项目 29→1 路由 /reports→/reports，首条数据「RUN-20261107121600-e80」→「RUN-RPT05EXT-20261106-」","ms":17560}
+{"ts":"2026-11-07T04:58:10.722Z","tc":"TC-47","verdict":"PASS","oneLiner":"项目 29→1；29 的 10 个 runId 残留 0 个；新列表 3 行含 RUN-RPT05EXT ✓；面包屑元素 0 个（组件缺失 → 子项 GAP）","ms":8410}
+{"ts":"2026-11-07T04:58:21.598Z","tc":"TC-51","verdict":"FAIL","oneLiner":"开 ✓（抽屉 340px / 主区 1044px，重叠 无）；调宽 null→360（实际 340→340px，未生效：CSS 栅格固定 340px）；刷新后开 ✓、宽 360；关闭后残留 0 个、stored=true，再刷新 ✗ 又弹开","ms":10875}
+{"ts":"2026-11-07T04:59:00.480Z","tc":"TC-59","verdict":"PARTIAL","oneLiner":"16 张 ✓，主题生效 16/16；check_tokens exit=0；check_colors exit=0；深色白块 ✗ cases/runs/reports（120/178/414 块）","ms":38881}
+{"ts":"2026-11-07T04:59:08.893Z","tc":"TC-60","verdict":"FAIL","oneLiner":"1440×(侧栏 200+主区 1044+抽屉 340)；利用率(主区/(视口-抽屉)) 94.9%（≥78 ✓；按整视口 72.5%）；横滚 无；首屏行 10/11（≥12 ✗）","ms":8412}
+{"ts":"2026-11-07T04:59:17.857Z","tc":"TC-62","verdict":"PARTIAL","oneLiner":"1280×720 横滚 无（scrollWidth 1280 / vw 1280）；侧栏自动折叠 ✗（媒体查询阈值 999px），宽 200px；菜单 13 项；用例页 /cases 行 6 横滚 无","ms":8964}
+{"ts":"2026-11-07T04:59:29.608Z","tc":"TC-63","verdict":"PARTIAL","oneLiner":"Tab 12 步中可见焦点 12 步；打开面板焦点入内 ✓；Tab 6 步跑出弹层 0 次；Esc(输入框) 关闭 ✓，焦点归还 ✗（落在 BODY）；Esc(结果按钮) 关闭 ✗","ms":11750}
+{"ts":"2026-11-07T04:59:29.615Z","tc":"TC-64","verdict":"PASS","oneLiner":"基线 16/16（复制自 v1.0 w7-design）；当前 16/16；逐像素 diff 见 analyze.py（raw/tc-64-diff.json）","ms":6}

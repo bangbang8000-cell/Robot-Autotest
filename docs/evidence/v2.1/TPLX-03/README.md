@@ -89,7 +89,7 @@ python3 tools/check_report_consistency.py \
 # 3) 正/负向完整自检
 python3 docs/evidence/v2.1/TPLX-03/run.py
 # 4) 门禁第 14 步
-bash docs/evidence/v1.0/policy-20261106/gates.sh
+bash scripts/gates.sh
 ```
 
 ---
